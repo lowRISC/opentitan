@@ -2,33 +2,49 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<%
+from ipgen.manager_split import rstmgr_clocks, rstmgr_is_array, rstmgr_out_domains
+split_clks = rstmgr_clocks(clk_freqs, leaf_rsts, rst_ni)
+# Select the field of each software reset in the primary partition's structs. The reset asserted
+# indications have the shape of the reset's power domains. The reset outputs have the shape of the
+# primary partition's outputs. Index 1 selects the Main power domain.
+rsts = {r['name']: r for r in output_rsts}
+en_sel, out_sel = {}, {}
+for device in sw_rsts:
+  assert 'Main' in rstmgr_out_domains(rsts[device], 'primary'), (
+      f"The primary partition must output the software reset {device} for the Main domain")
+  en_sel[device] = '[1]' if rstmgr_is_array(rsts[device]['domains'], power_domains) else ''
+  out_sel[device] = ('[1]' if rstmgr_is_array(rstmgr_out_domains(rsts[device], 'primary'), power_domains)
+                     else '')
+
+def sec_clk(clk):
+  """Connect a clock of the secondary partition: a port if it is the always-on clock, a field of
+  intraip_p2s_i if the primary partition forwards it."""
+  if clk in split_clks.ports['secondary']:
+    return f".clk_{clk}_i"
+  return f".clk_{clk}_i(intraip_p2s_i.clk_{clk})"
+%>\
 module rstmgr_bind;
+
+  // Each check binds to the partition that has the signals it checks, wherever a top or the
+  // block-level testbench instantiates that partition. The cascading and indication checks read the
+  // resets of both partitions, so each comes in two parts, one bound to each partition.
 `ifndef GATE_LEVEL
-  bind rstmgr tlul_assert #(
+  bind rstmgr_part_primary tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
 
   // In top-level testbench, do not bind the csr_assert_fpv to reduce simulation time.
 `ifndef TOP_LEVEL_DV
-  bind rstmgr rstmgr_csr_assert_fpv rstmgr_csr_assert (.clk_i, .rst_ni, .h2d(tl_i), .d2h(tl_o));
+  bind rstmgr_part_primary rstmgr_csr_assert_fpv rstmgr_csr_assert (
+    .clk_i,
+    .rst_ni,
+    .h2d(tl_i),
+    .d2h(tl_o)
+  );
 `endif
 
-  bind rstmgr rstmgr_cascading_sva_if rstmgr_cascading_sva_if (
-    .clk_i,
-% for clk in sorted(list(clk_freqs.keys())):
-    .clk_${clk}_i,
-% endfor
-    .por_n_i,
-    .scan_rst_ni,
-    .scanmode_i,
-    .resets_o,
-    .rst_lc_req(pwr_i.rst_lc_req),
-    .rst_sys_req(pwr_i.rst_sys_req),
-    .rst_lc_src_n(pwr_o.rst_lc_src_n),
-    .rst_sys_src_n(pwr_o.rst_sys_src_n)
-  );
-
-  bind rstmgr rstmgr_attrs_sva_if rstmgr_attrs_sva_if (
+  bind rstmgr_part_primary rstmgr_attrs_sva_if rstmgr_attrs_sva_if (
     .rst_ni,
     .actual_alert_info_attr(int'(hw2reg.alert_info_attr)),
     .actual_cpu_info_attr(int'(hw2reg.cpu_info_attr)),
@@ -36,10 +52,11 @@ module rstmgr_bind;
     .expected_cpu_info_attr(($bits(cpu_dump_i) + 31) / 32)
   );
 
-  bind rstmgr pwrmgr_rstmgr_sva_if #(
+  bind rstmgr_part_secondary pwrmgr_rstmgr_sva_if #(
     .PowerDomains(rstmgr_pkg::PowerDomains)
   ) pwrmgr_rstmgr_sva_if (
-    .clk_i(clk_i),
+    // The reset controllers that answer the power manager run on the POR clock.
+    .clk_i(clk_por),
     .rst_ni(rst_ni),
     .clk_slow_i(clk_aon_i),
     .rst_slow_ni(&rst_por_aon_n),
@@ -51,7 +68,7 @@ module rstmgr_bind;
     .rst_sys_src_n(pwr_o.rst_sys_src_n)
   );
 
-  bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
+  bind rstmgr_part_primary rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
     .clk_i({
 % for clk in list(reversed(sw_rsts.values())):
 <% sep = '' if loop.last else ',' %>\
@@ -59,29 +76,65 @@ module rstmgr_bind;
 % endfor
     }),
     .rst_ni,
-    .parent_rst_n(rst_sys_src_n[1]),
+    .parent_rst_n(intraip_s2p_i.rst_sys_src_n_main),
     .ctrl_ns(reg2hw.sw_rst_ctrl_n),
     .rst_ens({
 % for device in list(reversed(sw_rsts.keys())):
 <% sep = '' if loop.last else ',' %>\
-      rst_en_o.${device}[1] == prim_mubi_pkg::MuBi4True${sep}
+      rst_en_o.${device}${en_sel[device]} == prim_mubi_pkg::MuBi4True${sep}
 % endfor
     }),
     .rst_ns({
 % for device in list(reversed(sw_rsts.keys())):
 <% sep = '' if loop.last else ',' %>\
-      resets_o.rst_${device}_n[1]${sep}
+      resets_o.rst_${device}_n${out_sel[device]}${sep}
 % endfor
     })
   );
 
-  bind rstmgr rstmgr_rst_en_track_sva_if rstmgr_rst_en_track_sva_if (
-    .resets_i(resets_o),
-    .reset_en_i(rst_en_o),
-% for clk in sorted(list(clk_freqs.keys())):
+  // The primary partition's scan signals come from the secondary partition.
+  bind rstmgr_part_primary rstmgr_cascading_primary_sva_if rstmgr_cascading_primary_sva_if (
+% for clk in split_clks.primary:
     .clk_${clk}_i,
 % endfor
-    .rst_por_ni(rst_por_ni)
+    .scan_rst_ni(scan_rst_n),
+    .scanmode_i(intraip_s2p_i.scanmode),
+    .intraip_s2p_i,
+    .resets_o
+  );
+
+  // The secondary partition's clocks other than the always-on one come from the primary partition.
+  bind rstmgr_part_secondary rstmgr_cascading_secondary_sva_if rstmgr_cascading_secondary_sva_if (
+    .clk_i(intraip_p2s_i.clk),
+% for clk in split_clks.secondary:
+    ${sec_clk(clk)},
+% endfor
+    .por_n_i,
+    .pwr_i,
+    .pwr_o,
+    .scan_rst_ni,
+    .scanmode_i,
+    .resets_secondary_o,
+    .rst_por_aon_n
+  );
+
+  bind rstmgr_part_primary rstmgr_rst_en_track_primary_sva_if rstmgr_rst_en_track_primary_sva_if (
+% for clk in split_clks.primary:
+    .clk_${clk}_i,
+% endfor
+    .rst_por_ni,
+    .resets_o,
+    .rst_en_o
+  );
+
+  bind rstmgr_part_secondary rstmgr_rst_en_track_secondary_sva_if
+      rstmgr_rst_en_track_secondary_sva_if (
+% for clk in split_clks.secondary:
+    ${sec_clk(clk)},
+% endfor
+    .rst_por_ni,
+    .resets_secondary_o,
+    .intraip_s2p_o
   );
 
 `endif

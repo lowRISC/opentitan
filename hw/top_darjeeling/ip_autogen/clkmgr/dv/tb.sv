@@ -60,7 +60,8 @@ module tb;
     .rst_main_n(rst_main_ni)
   );
 
-  bind clkmgr clkmgr_csrs_if clkmgr_csrs_if (
+  // The registers are in the primary partition of the clkmgr.
+  bind clkmgr_part_primary clkmgr_csrs_if clkmgr_csrs_if (
     .clk(clk_i),
     .recov_err_csr({
         u_reg.u_recov_err_code_main_timeout_err.qs,
@@ -101,17 +102,22 @@ module tb;
 
   `DV_ALERT_IF_CONNECT()
 
-  // dut
-  clkmgr dut (
+  // The DUT is the two partitions of the clock manager, connected the same as a top connects them
+  // when both are in the same power domain.
+  clkmgr_pkg::intraip_s2p_t intraip_s2p;
+  clkmgr_pkg::intraip_p2s_t intraip_p2s;
+  clkmgr_pkg::clkmgr_out_primary_t clocks_primary;
+  clkmgr_pkg::clkmgr_out_secondary_t clocks_secondary;
+
+  clkmgr_part_primary dut_primary (
     .clk_i(clk),
     .rst_ni(rst_n),
     .rst_shadowed_ni(rst_shadowed_n),
 
-    .clk_aon_i (clk_aon),
-    .rst_aon_ni(rst_aon_n),
-    .clk_io_i (clk_io),
-    .rst_io_ni(rst_io_n),
     .clk_main_i (clk_main),
+    .clk_io_i (clk_io),
+    .rst_aon_ni(rst_aon_n),
+    .rst_io_ni(rst_io_n),
     .rst_main_ni(rst_main_n),
     // ICEBOX(#17934): differentiate the root resets as mentioned for rst_io_ni above.
     .rst_root_ni(rst_root_io_n),
@@ -124,17 +130,36 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .pwr_i(clkmgr_if.pwr_i),
-    .pwr_o(clkmgr_if.pwr_o),
-
-    .scanmode_i(clkmgr_if.scanmode_i),
     .idle_i    (clkmgr_if.idle_i),
 
     .cg_en_o(),
 
     .jitter_en_o(clkmgr_if.jitter_en_o),
-    .clocks_o   (clkmgr_if.clocks_o)
+    .clocks_o   (clocks_primary),
+
+    .intraip_s2p_i(intraip_s2p),
+    .intraip_p2s_o(intraip_p2s)
   );
+
+  clkmgr_part_secondary dut_secondary (
+    .clk_aon_i (clk_aon),
+    .rst_aon_ni(rst_aon_n),
+
+    .pwr_i(clkmgr_if.pwr_i),
+    .pwr_o(clkmgr_if.pwr_o),
+    .main_pd_aon_clk_en_i(clkmgr_if.main_pd_aon_clk_en),
+
+    .scanmode_i(clkmgr_if.scanmode_i),
+
+    .clocks_secondary_o(clocks_secondary),
+
+    .intraip_s2p_o(intraip_s2p),
+    .intraip_p2s_i(intraip_p2s)
+  );
+
+  // clkmgr_if presents the clocks of both partitions as one struct.
+  assign clkmgr_if.clocks_primary = clocks_primary;
+  assign clkmgr_if.clocks_secondary = clocks_secondary;
 
   initial begin
     // Register interfaces with uvm.
@@ -149,7 +174,7 @@ module tb;
     uvm_config_db#(virtual clkmgr_if)::set(null, "*.env", "clkmgr_vif", clkmgr_if);
 
     uvm_config_db#(virtual clkmgr_csrs_if)::set(null, "*.env", "clkmgr_csrs_vif",
-                                                dut.clkmgr_csrs_if);
+                                                dut_primary.clkmgr_csrs_if);
 
     // FIXME Un-comment this once interrupts are created for this ip.
     // uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);

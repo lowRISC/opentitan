@@ -4,6 +4,7 @@
 //
 // clkmgr interface.
 <% 
+from ipgen.manager_split import rstmgr_is_array, rstmgr_out_domains
 all_clks = set(clk_freqs.keys())
 
 if "io_div4" in all_clks:
@@ -14,6 +15,7 @@ else:
     assert 0, "No preferred clock available"
 
 preferred_rst_n = f"rst_lc_{preferred_domain}_n"
+preferred_por_n = f"rst_por_{preferred_domain}_n"
 %>\
 
 interface rstmgr_if (
@@ -26,6 +28,10 @@ interface rstmgr_if (
   import rstmgr_pkg::PowerDomains;
 
   logic                              [PowerDomains-1:0] por_n;
+
+  // The POR of the always-on power domain that resets the registers that the secondary partition
+  // keeps on the POR clock: RESET_INFO and the dump controls. A POR or a scan reset asserts it.
+  logic                                                 rst_por_aon_regs_n;
 
   pwrmgr_pkg::pwr_rst_req_t                             pwr_i;
   pwrmgr_pkg::pwr_rst_rsp_t                             pwr_o;
@@ -45,11 +51,52 @@ interface rstmgr_if (
   logic                                                 scan_rst_ni;
   prim_mubi_pkg::mubi4_t                                scanmode_i;
 
-  // Reset status for alert handler.
-  rstmgr_pkg::rstmgr_rst_en_t                           rst_en_o;
+`ifndef PATH_TO_SECONDARY
+  // The secondary partition of the rstmgr.
+  `define PATH_TO_SECONDARY tb.dut_secondary
+`endif
+
+  // The resets that the two partitions output, from the testbench.
+  rstmgr_pkg::rstmgr_out_primary_t                      resets_primary;
+  rstmgr_pkg::rstmgr_out_secondary_t                    resets_secondary;
+
+  // Every reset of the reset manager, for every power domain, as the single power-domain reset
+  // manager output them. Each reset comes from a partition that outputs it, the primary if both do.
+  // A power domain that a reset does not have holds it in reset, except rst_por_aon_n. The
+  // secondary partition generates rst_por_aon_n for every power domain, as the single power-domain
+  // reset manager did, and outputs only the domains of the reset tree. So resets_o takes it whole
+  // from the partition.
+  typedef struct packed {
+% for rst in output_rsts:
+  % if rst['shadowed']:
+    logic [rstmgr_pkg::PowerDomains-1:0] rst_${rst['name']}_shadowed_n;
+  % endif
+    logic [rstmgr_pkg::PowerDomains-1:0] rst_${rst['name']}_n;
+% endfor
+  } rstmgr_out_t;
 
   // reset outputs
-  rstmgr_pkg::rstmgr_out_t                              resets_o;
+  rstmgr_out_t                                          resets_o;
+
+% for rst in [r for r in output_rsts if r['name'] != 'por_aon']:
+<% names = [rst['name']] + ([rst['name'] + '_shadowed'] if rst['shadowed'] else []) %>\
+  % for n in names:
+    % for d in power_domains:
+      % if d in rst['domains']:
+<%
+part = 'primary' if d in rstmgr_out_domains(rst, 'primary', n) else 'secondary'
+sel = (f"[rstmgr_pkg::Domain{d}Sel]"
+       if rstmgr_is_array(rstmgr_out_domains(rst, part, n), power_domains) else "")
+%>\
+  assign resets_o.rst_${n}_n[rstmgr_pkg::Domain${d}Sel] =
+      resets_${part}.rst_${n}_n${sel};
+      % else:
+  assign resets_o.rst_${n}_n[rstmgr_pkg::Domain${d}Sel] = '0;
+      % endif
+    % endfor
+  % endfor
+% endfor
+  assign resets_o.rst_por_aon_n = `PATH_TO_SECONDARY.rst_por_aon_n;
 
   // Supporting code.
   int                                                   aon_cycles;
@@ -57,7 +104,8 @@ interface rstmgr_if (
 
   // Internal DUT signals.
 `ifndef PATH_TO_DUT
-  `define PATH_TO_DUT tb.dut
+  // The registers are in the primary partition of the rstmgr.
+  `define PATH_TO_DUT tb.dut_primary
 `endif
 
   logic [7:0] reset_info;
@@ -71,10 +119,12 @@ interface rstmgr_if (
   end
 
   logic alert_info_en;
-  always_comb alert_info_en = `PATH_TO_DUT.reg2hw.alert_info_ctrl.en.q;
+  assign rst_por_aon_regs_n = resets_o.${preferred_por_n}[rstmgr_pkg::DomainAonSel];
+
+  always_comb alert_info_en = `PATH_TO_DUT.intraip_s2p_i.alert_info_en_q;
 
   logic cpu_info_en;
-  always_comb cpu_info_en = `PATH_TO_DUT.reg2hw.cpu_info_ctrl.en.q;
+  always_comb cpu_info_en = `PATH_TO_DUT.intraip_s2p_i.cpu_info_en_q;
 
   bit rst_ni_inactive;
   always_comb rst_ni_inactive = resets_o.${preferred_rst_n}[rstmgr_pkg::DomainMainSel];

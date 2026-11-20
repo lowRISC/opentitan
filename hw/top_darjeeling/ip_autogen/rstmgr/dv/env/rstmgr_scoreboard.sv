@@ -16,6 +16,11 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
   // by POR only, since the CIP and lower layers will reset all CSRs.
   rstmgr_values_of_por_csr_fields_t por_fields;
 
+  // Set when the reset of these fields asserts, the POR of the always-on power domain, and cleared
+  // when the fields are restored. A POR or a scan reset asserts it, and resets these fields, so
+  // they are not restored after it.
+  bit aon_por_since_restore;
+
   // TLM agent fifos
 
   // local queues to hold incoming packets pending comparison
@@ -29,10 +34,11 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
 
   task run_phase(uvm_phase phase);
     super.run_phase(phase);
-    // Initial capture to be able to restore after POR.
+    // Initial capture to be able to restore after the first reset.
     capture_por_csr_fields();
     fork
       monitor_por();
+      monitor_aon_por();
       monitor_capture();
       monitor_tlul_rst();
     join_none
@@ -85,6 +91,14 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
           restore_por_csr_fields();
         end
       end
+  endtask
+
+  // Record that the reset of these fields asserted.
+  task monitor_aon_por();
+    forever begin
+      @(negedge cfg.rstmgr_vif.rst_por_aon_regs_n);
+      aon_por_since_restore = 1'b1;
+    end
   endtask
 
   // This converts the trailing digits in a name to a number.
@@ -251,34 +265,39 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
               "captured cpu_info_ctrl.index 0x%x", por_fields.cpu_info_ctrl_index), UVM_MEDIUM)
   endfunction
 
-  // Restore the alert and cpu_info_ctrl index values, and the enable bits only on low power reset
-  // since all other resets clear them.
+  // Restore the values of the fields that a reset other than a POR keeps. The index values are
+  // restored unless the POR of the always-on power domain asserted. The enable bits are restored
+  // only on a low power reset, since all other resets clear them. The registers are external, so
+  // the hardware keeps these values through the reset, and only the model needs them back.
   local task restore_por_csr_fields();
     if (cfg.rstmgr_vif.reset_info[ral.reset_info.low_power_exit.get_lsb_pos()]) begin
       `uvm_info(`gfn, $sformatf(
                 "Restoring alert_info_ctrl.en to 0x%x", por_fields.alert_info_ctrl_en), UVM_MEDIUM)
-      csr_wr(.ptr(ral.alert_info_ctrl.en), .value(por_fields.alert_info_ctrl_en), .backdoor(1),
-             .predict(1));
+      void'(ral.alert_info_ctrl.en.predict(.value(por_fields.alert_info_ctrl_en),
+                                           .kind(UVM_PREDICT_DIRECT)));
       `uvm_info(`gfn, $sformatf("Restoring cpu_info_ctrl.en to 0x%x", por_fields.cpu_info_ctrl_en),
                 UVM_MEDIUM)
-      csr_wr(.ptr(ral.cpu_info_ctrl.en), .value(por_fields.cpu_info_ctrl_en), .backdoor(1),
-             .predict(1));
+      void'(ral.cpu_info_ctrl.en.predict(.value(por_fields.cpu_info_ctrl_en),
+                                         .kind(UVM_PREDICT_DIRECT)));
     end
-    `uvm_info(`gfn, $sformatf(
-              "Restoring alert_info_ctrl.index to 0x%x", por_fields.alert_info_ctrl_index),
-              UVM_MEDIUM)
-    csr_wr(.ptr(ral.alert_info_ctrl.index), .value(por_fields.alert_info_ctrl_index), .backdoor(1),
-           .predict(1));
-    `uvm_info(`gfn, $sformatf(
-              "After restoring alert_info_ctrl mirrored value 0x%x", `gmv(ral.alert_info_ctrl)),
-              UVM_MEDIUM)
-    `uvm_info(`gfn, $sformatf(
-              "Restoring cpu_info_ctrl.index to 0x%x", por_fields.cpu_info_ctrl_index), UVM_MEDIUM)
-    csr_wr(.ptr(ral.cpu_info_ctrl.index), .value(por_fields.cpu_info_ctrl_index), .backdoor(1),
-           .predict(1));
-    `uvm_info(`gfn, $sformatf(
-              "After restoring cpu_info_ctrl mirrored value 0x%x", `gmv(ral.cpu_info_ctrl)),
-              UVM_MEDIUM)
+    if (!aon_por_since_restore) begin
+      `uvm_info(`gfn, $sformatf(
+                "Restoring alert_info_ctrl.index to 0x%x", por_fields.alert_info_ctrl_index),
+                UVM_MEDIUM)
+      void'(ral.alert_info_ctrl.index.predict(.value(por_fields.alert_info_ctrl_index),
+                                              .kind(UVM_PREDICT_DIRECT)));
+      `uvm_info(`gfn, $sformatf("After restoring alert_info_ctrl mirrored value 0x%x",
+                                `gmv(ral.alert_info_ctrl)), UVM_MEDIUM)
+      `uvm_info(`gfn, $sformatf(
+                "Restoring cpu_info_ctrl.index to 0x%x", por_fields.cpu_info_ctrl_index),
+                UVM_MEDIUM)
+      void'(ral.cpu_info_ctrl.index.predict(.value(por_fields.cpu_info_ctrl_index),
+                                            .kind(UVM_PREDICT_DIRECT)));
+      `uvm_info(`gfn, $sformatf(
+                "After restoring cpu_info_ctrl mirrored value 0x%x", `gmv(ral.cpu_info_ctrl)),
+                UVM_MEDIUM)
+    end
+    aon_por_since_restore = 1'b0;
   endtask
 
   // There are a handful of registers that are reset on POR only, but the dv_base classes

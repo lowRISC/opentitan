@@ -27,7 +27,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
 
   task body();
     for (int i = 0; i < LIST_OF_SHADOW_LEAFS.size(); ++i) begin
-      leaf_path = {"tb.dut.", LIST_OF_SHADOW_LEAFS[i]};
+      leaf_path = {"tb.", LIST_OF_SHADOW_LEAFS[i]};
       `uvm_info(`gfn, $sformatf("Round %0d %s ", i, leaf_path), UVM_MEDIUM)
 
       leaf_rst_attack(leaf_path, {leaf_path, "_shadowed"});
@@ -40,14 +40,17 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
     // Wait for any bit in rst_sys_io_div4_n to become inactive.
     wait(|cfg.rstmgr_vif.resets_o.${preferred_rst_n});
 % endif
-    // Disable cascading reset assertions, since forcing related signals causes failures.
-    cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b1;
+    // Disable the cascading reset assertions of both partitions, since forcing related signals
+    // causes failures.
+    cfg.rstmgr_cascading_primary_sva_vif.disable_sva = 1'b1;
+    cfg.rstmgr_cascading_secondary_sva_vif.disable_sva = 1'b1;
     `uvm_info(`gfn, $sformatf("Starting leaf attack between %s and %s", npath, gpath), UVM_MEDIUM)
     cfg.scoreboard.set_exp_alert("fatal_cnsty_fault", 1, 20);
     add_glitch(gpath);
     wait_and_check(npath);
     remove_glitch(gpath);
-    cfg.rstmgr_cascading_sva_vif.disable_sva = 1'b0;
+    cfg.rstmgr_cascading_primary_sva_vif.disable_sva = 1'b0;
+    cfg.rstmgr_cascading_secondary_sva_vif.disable_sva = 1'b0;
     `uvm_info(`gfn, "Ending leaf attack", UVM_MEDIUM)
 
     cfg.clk_rst_vif.wait_clks(10);

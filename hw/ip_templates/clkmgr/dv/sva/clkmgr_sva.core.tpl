@@ -37,4 +37,4 @@ targets:
     filesets:
       - files_formal
       - files_dv
-    toplevel: clkmgr
+    toplevel: clkmgr_part_primary

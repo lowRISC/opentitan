@@ -260,8 +260,8 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     case (clk)
 % for src in rg_srcs:
       ClkMesr${Name.to_camel_case(src)}: begin
-        if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.MaxWidth_A");
+        if (enable) $asserton(0, "tb.dut_primary.u_${src}_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut_primary.u_${src}_meas.u_meas.MaxWidth_A");
       end
 % endfor
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
@@ -272,8 +272,11 @@ ${spc}ral.${src}_meas_ctrl_shadowed.lo};
     case (clk)
 % for src in rg_srcs:
       ClkMesr${Name.to_camel_case(src)}: begin
-        if (enable) $asserton(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) begin
+          $asserton(0, "tb.dut_primary.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end else begin
+          $assertoff(0, "tb.dut_primary.u_${src}_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end
       end
 % endfor
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
