@@ -103,7 +103,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 6
+            lpg_idx: 9
         }
         {
             name: clkmgr_fatal_fault
@@ -112,7 +112,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 6
+            lpg_idx: 9
         }
         {
             name: pinmux_fatal_fault
@@ -130,7 +130,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 8
+            lpg_idx: 10
         }
         {
             name: flash_ctrl_recov_err
@@ -139,7 +139,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 9
+            lpg_idx: 11
         }
         {
             name: flash_ctrl_fatal_std_err
@@ -148,7 +148,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 9
+            lpg_idx: 11
         }
         {
             name: flash_ctrl_fatal_err
@@ -157,7 +157,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 9
+            lpg_idx: 11
         }
         {
             name: flash_ctrl_fatal_prim_flash_alert
@@ -166,7 +166,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 9
+            lpg_idx: 11
         }
         {
             name: flash_ctrl_recov_prim_flash_alert
@@ -175,7 +175,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 9
+            lpg_idx: 11
         }
         {
             name: rv_plic_fatal_fault
@@ -184,7 +184,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 10
+            lpg_idx: 12
         }
         {
             name: aes_recov_ctrl_update_err
@@ -193,7 +193,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 11
+            lpg_idx: 13
         }
         {
             name: aes_fatal_fault
@@ -202,7 +202,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 11
+            lpg_idx: 13
         }
         {
             name: sram_ctrl_main_fatal_error
@@ -211,7 +211,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 10
+            lpg_idx: 12
         }
         {
             name: rom_ctrl_fatal
@@ -220,7 +220,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 12
+            lpg_idx: 14
         }
         {
             name: rv_core_ibex_fatal_sw_err
@@ -229,7 +229,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 12
+            lpg_idx: 14
         }
         {
             name: rv_core_ibex_recov_sw_err
@@ -238,7 +238,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 12
+            lpg_idx: 14
         }
         {
             name: rv_core_ibex_fatal_hw_err
@@ -247,7 +247,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 12
+            lpg_idx: 14
         }
         {
             name: rv_core_ibex_recov_hw_err
@@ -256,7 +256,7 @@
             type: alert
             async: 1
             width: 1
-            lpg_idx: 12
+            lpg_idx: 14
         }
     ]
 }

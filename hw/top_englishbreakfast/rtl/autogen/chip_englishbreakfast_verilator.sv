@@ -257,8 +257,12 @@ module chip_englishbreakfast_verilator (
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
+  // The top outputs the clocks and resets of the primary partitions of the clkmgr and the rstmgr.
+  clkmgr_pkg::clkmgr_out_primary_t clkmgr_clocks;
+  // The AST also needs the always-on clocks, which only the secondary partition of the clkmgr
+  // outputs.
+  clkmgr_pkg::clkmgr_out_secondary_t clkmgr_clocks_secondary;
+  rstmgr_pkg::rstmgr_out_primary_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -429,17 +433,17 @@ module chip_englishbreakfast_verilator (
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_secure),
-    .clk_ast_adc_i (clkmgr_clocks.clk_aon_secure),
+    .clk_ast_adc_i (clkmgr_clocks.clk_aon_gated_secure),
     .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
     .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
     .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
     .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n),
+    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n),
+    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n),
+    .rst_ast_es_ni (rstmgr_resets.rst_sys_n),
+    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n),
+    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -563,39 +567,41 @@ module chip_englishbreakfast_verilator (
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .clkmgr_clocks_o          (clkmgr_clocks      ),
-    .clkmgr_cg_en_o           (                   ),
-    .clk_main_jitter_en_o     (clk_main_jitter_en ),
-    .hi_speed_sel_o           (hi_speed_sel       ),
-    .div_step_down_req_i      (div_step_down_req  ),
-    .all_clk_byp_req_o        (all_clk_byp_req    ),
-    .all_clk_byp_ack_i        (all_clk_byp_ack    ),
-    .io_clk_byp_req_o         (io_clk_byp_req     ),
-    .io_clk_byp_ack_i         (io_clk_byp_ack     ),
-    .flash_bist_enable_i      (flash_bist_enable  ),
-    .flash_power_down_h_i     (flash_power_down_h ),
-    .flash_power_ready_h_i    (flash_power_ready_h),
-    .obs_ctrl_i               (obs_ctrl           ),
-    .flash_obs_o              (flash_obs          ),
-    .ast_tl_req_o             (ast_tl_req         ),
-    .ast_tl_rsp_i             (ast_tl_rsp         ),
-    .dft_strap_test_o         (dft_strap_test     ),
-    .dft_hold_tap_sel_i       ('0                 ),
-    .usb_dp_pullup_en_o       (usb_dp_pullup_en   ),
-    .usb_dn_pullup_en_o       (usb_dn_pullup_en   ),
-    .pwrmgr_ast_req_o         (pwrmgr_ast_req     ),
-    .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp     ),
-    .por_n_i                  (por_n              ),
-    .rstmgr_resets_o          (rstmgr_resets      ),
-    .rstmgr_rst_en_o          (                   ),
-    .usbdev_usb_rx_d_i        (usb_rx_d           ),
-    .usbdev_usb_tx_d_o        (usb_tx_d           ),
-    .usbdev_usb_tx_se0_o      (usb_tx_se0         ),
-    .usbdev_usb_tx_use_d_se0_o(usb_tx_use_d_se0   ),
-    .usbdev_usb_rx_enable_o   (usb_rx_enable      ),
-    .usbdev_usb_ref_val_o     (usb_ref_val        ),
-    .usbdev_usb_ref_pulse_o   (usb_ref_pulse      ),
-    .sck_monitor_o            (sck_monitor        )
+    .clkmgr_clocks_o          (clkmgr_clocks          ),
+    .clkmgr_clocks_secondary_o(clkmgr_clocks_secondary),
+    .clkmgr_cg_en_o           (                       ),
+    .clk_main_jitter_en_o     (clk_main_jitter_en     ),
+    .hi_speed_sel_o           (hi_speed_sel           ),
+    .div_step_down_req_i      (div_step_down_req      ),
+    .all_clk_byp_req_o        (all_clk_byp_req        ),
+    .all_clk_byp_ack_i        (all_clk_byp_ack        ),
+    .io_clk_byp_req_o         (io_clk_byp_req         ),
+    .io_clk_byp_ack_i         (io_clk_byp_ack         ),
+    .flash_bist_enable_i      (flash_bist_enable      ),
+    .flash_power_down_h_i     (flash_power_down_h     ),
+    .flash_power_ready_h_i    (flash_power_ready_h    ),
+    .obs_ctrl_i               (obs_ctrl               ),
+    .flash_obs_o              (flash_obs              ),
+    .ast_tl_req_o             (ast_tl_req             ),
+    .ast_tl_rsp_i             (ast_tl_rsp             ),
+    .dft_strap_test_o         (dft_strap_test         ),
+    .dft_hold_tap_sel_i       ('0                     ),
+    .usb_dp_pullup_en_o       (usb_dp_pullup_en       ),
+    .usb_dn_pullup_en_o       (usb_dn_pullup_en       ),
+    .pwrmgr_ast_req_o         (pwrmgr_ast_req         ),
+    .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp         ),
+    .por_n_i                  (por_n                  ),
+    .rstmgr_resets_o          (rstmgr_resets          ),
+    .rstmgr_resets_secondary_o(                       ),
+    .rstmgr_rst_en_o          (                       ),
+    .usbdev_usb_rx_d_i        (usb_rx_d               ),
+    .usbdev_usb_tx_d_o        (usb_tx_d               ),
+    .usbdev_usb_tx_se0_o      (usb_tx_se0             ),
+    .usbdev_usb_tx_use_d_se0_o(usb_tx_use_d_se0       ),
+    .usbdev_usb_rx_enable_o   (usb_rx_enable          ),
+    .usbdev_usb_ref_val_o     (usb_ref_val            ),
+    .usbdev_usb_ref_pulse_o   (usb_ref_pulse          ),
+    .sck_monitor_o            (sck_monitor            )
   );
 
 endmodule

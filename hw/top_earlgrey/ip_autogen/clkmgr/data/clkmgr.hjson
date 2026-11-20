@@ -38,20 +38,34 @@
       dif_stage:          "S1",
     }
   ]
+  // The scan mode enters the secondary partition only (scan_partition), whose always-on gate needs
+  // it, and reaches the primary partition in intraip_s2p.
   scan: "true",
-  clocking: [
-    {clock: "clk_i", reset: "rst_ni", primary: true},
-    {reset: "rst_root_ni"},
-    {clock: "clk_main_i", reset: "rst_main_ni"},
-    {clock: "clk_io_i", reset: "rst_io_ni"},
-    {clock: "clk_usb_i", reset: "rst_usb_ni"},
-    {clock: "clk_aon_i", reset: "rst_aon_ni"},
-    {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
-    {reset: "rst_root_main_ni"},
-    {reset: "rst_root_io_ni"},
-    {reset: "rst_root_io_div4_ni"},
-    {reset: "rst_root_usb_ni"},
-  ]
+  scan_partition: "secondary",
+  is_split_ip: "true",
+  clocking: {
+    primary: [
+      {clock: "clk_i", reset: "rst_ni", primary: true},
+      {reset: "rst_root_ni"},
+      {clock: "clk_main_i", reset: "rst_main_ni"},
+      {clock: "clk_io_i", reset: "rst_io_ni"},
+      {clock: "clk_usb_i", reset: "rst_usb_ni"},
+      // The clock measurement of the primary partition uses the always-on clocks as its reference,
+      // so the primary partition also takes their resets.
+      {reset: "rst_aon_ni"},
+      {clock: "clk_io_div4_i", reset: "rst_io_div4_ni", internal: true},
+      {reset: "rst_root_main_ni"},
+      {reset: "rst_root_io_ni"},
+      {reset: "rst_root_io_div4_ni"},
+      {reset: "rst_root_usb_ni"},
+    ],
+    // The always-on source clock enters the block in the secondary partition, which buffers it and
+    // forwards it to the primary partition, gated around the clamp of the primary partition's power
+    // domain. Each partition has its own port for the reset of the source.
+    secondary: [
+      {clock: "clk_aon_i", reset: "rst_aon_ni", primary: true},
+    ],
+  },
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -158,18 +172,95 @@
 ]
 
   inter_signal_list: [
-    { struct:  "clkmgr_out",
+    { struct:  "clkmgr_out_primary",
       type:    "uni",
       name:    "clocks",
       act:     "req",
+      partition: "primary",
       package: "clkmgr_pkg",
+      desc:    '''
+        Clocks hosted in the primary partition.
+      '''
     },
 
-    { struct:  "clkmgr_cg_en",
+    { struct:  "clkmgr_out_secondary",
+      type:    "uni",
+      name:    "clocks_secondary",
+      act:     "req",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Clocks hosted in the secondary partition.
+      '''
+    },
+
+    { struct:  "clkmgr_cg_en_primary",
       type:    "uni",
       name:    "cg_en",
       act:     "req",
+      partition: "primary",
       package: "clkmgr_pkg",
+      desc:    '''
+        Clock gating indications for all the clocks (output by the primary partition).
+      '''
+    },
+
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "main_pd_aon_clk_en",
+      act:     "rcv",
+      package: "",
+      partition: "secondary",
+      desc:    '''The clkmgr uses this signal to gate clk_aon to the Main power domain during a
+               power-down. The gate prevents glitches on the clock. See the pwrmgr interface
+               definition for more details of main_pd_aon_clk_en_o.
+               ''',
+    },
+    // Intra-IP signalling between the partitions. Each direction has a req end in the partition
+    // that drives it and a rcv end in the partition that receives it. topgen connects the two ends.
+    { struct:  "intraip_s2p",
+      type:    "uni",
+      name:    "intraip_s2p",
+      act:     "req",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Secondary-to-primary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_s2p",
+      type:    "uni",
+      name:    "intraip_s2p",
+      act:     "rcv",
+      partition: "primary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Secondary-to-primary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_p2s",
+      type:    "uni",
+      name:    "intraip_p2s",
+      act:     "req",
+      partition: "primary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Primary-to-secondary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_p2s",
+      type:    "uni",
+      name:    "intraip_p2s",
+      act:     "rcv",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Primary-to-secondary partition communication.
+      '''
     },
 
     { struct:  "lc_tx",
@@ -248,6 +339,8 @@
       type:    "req_rsp",
       name:    "pwr",
       act:     "rsp",
+      // The power manager is in the power domain of the secondary partition.
+      partition: "secondary",
     },
 
     { struct:  "mubi4",

@@ -24,7 +24,8 @@ filesets:
       - rtl/rstmgr_por.sv
       - rtl/rstmgr_crash_info.sv
       - rtl/rstmgr_leaf_rst.sv
-      - rtl/rstmgr.sv
+      - rtl/rstmgr_part_primary.sv
+      - rtl/rstmgr_part_secondary.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -61,7 +62,8 @@ targets:
       - tool_ascentlint ? (files_ascentlint_waiver)
       - tool_slang      ? (files_slang_waiver)
       - files_rtl
-    toplevel: rstmgr
+    # The primary partition has the registers and most of the logic.
+    toplevel: rstmgr_part_primary
 
   lint:
     <<: *default_target

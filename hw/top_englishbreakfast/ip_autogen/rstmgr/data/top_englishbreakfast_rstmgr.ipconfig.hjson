@@ -68,11 +68,28 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_aon_n
         clock: aon
+        partition:
+        {
+          Aon: secondary
+          Main: secondary
+        }
+        out_partitions:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: por
@@ -80,13 +97,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_n
         parent: por_aon
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io
@@ -94,13 +122,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_io_n
         parent: por_aon
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io_div4
@@ -109,12 +148,40 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: true
         sw: false
         path: rst_por_io_div4_n
         parent: por_aon
         clock: io_div4
+        partition:
+        {
+          Aon: secondary
+          Main: primary
+        }
+        out_partitions:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_usb
@@ -122,13 +189,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_usb_n
         parent: por_aon
         clock: usb
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc
@@ -143,6 +221,24 @@
         path: rst_lc_n
         parent: lc_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc_io_div4
@@ -158,6 +254,22 @@
         path: rst_lc_io_div4_n
         parent: lc_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys
@@ -172,6 +284,24 @@
         path: rst_sys_n
         parent: sys_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: sys_io_div4
@@ -187,6 +317,22 @@
         path: rst_sys_io_div4_n
         parent: sys_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys_aon
@@ -202,6 +348,22 @@
         path: rst_sys_aon_n
         parent: sys_src
         clock: aon
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: spi_device
@@ -216,6 +378,17 @@
         path: rst_spi_device_n
         parent: sys_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_host0
@@ -230,6 +403,17 @@
         path: rst_spi_host0_n
         parent: sys_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: usb
@@ -244,6 +428,17 @@
         path: rst_usb_n
         parent: sys_src
         clock: usb
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
     ]
     leaf_rsts:
@@ -254,13 +449,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_n
         parent: por_aon
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io
@@ -268,13 +474,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_io_n
         parent: por_aon
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io_div4
@@ -283,12 +500,40 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: true
         sw: false
         path: rst_por_io_div4_n
         parent: por_aon
         clock: io_div4
+        partition:
+        {
+          Aon: secondary
+          Main: primary
+        }
+        out_partitions:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_usb
@@ -296,13 +541,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_usb_n
         parent: por_aon
         clock: usb
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc
@@ -317,6 +573,24 @@
         path: rst_lc_n
         parent: lc_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc_io_div4
@@ -332,6 +606,22 @@
         path: rst_lc_io_div4_n
         parent: lc_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys
@@ -346,6 +636,24 @@
         path: rst_sys_n
         parent: sys_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: sys_io_div4
@@ -361,6 +669,22 @@
         path: rst_sys_io_div4_n
         parent: sys_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys_aon
@@ -376,6 +700,22 @@
         path: rst_sys_aon_n
         parent: sys_src
         clock: aon
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: spi_device
@@ -390,6 +730,17 @@
         path: rst_spi_device_n
         parent: sys_src
         clock: io_div4
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_host0
@@ -404,6 +755,17 @@
         path: rst_spi_host0_n
         parent: sys_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: usb
@@ -418,11 +780,24 @@
         path: rst_usb_n
         parent: sys_src
         clock: usb
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
     with_alert_handler: false
+    bus_clk: io_div4
+    por_clk: io_div4
     topname: englishbreakfast
     uniquified_modules: {}
     module_instance_name: rstmgr
