@@ -94,7 +94,13 @@ def _qemu_opentitan_repos():
         url = url,
         build_file = Label(":BUILD.qemu_opentitan.bazel"),
         sha256 = "9e97f93b09912c904e84f06571e7b49023ccb405dd3caa232ad1e82a3f7b381c",
-        patch_cmds = ["touch {}".format(_ARCHIVE_MARKER_FILE)],
+        patch_cmds = [
+            "touch {}".format(_ARCHIVE_MARKER_FILE),
+            # Accept all single-letter LC state word names and ONE.
+            "sed -i 's/(\\[ABCDEFGH\\]\\\\d+|ZRO)/([A-Z]\\\\d+|ZRO|ONE)/' " +
+            "python/qemu/ot/otp/lifecycle.py",
+            "grep -q 'ZRO|ONE' python/qemu/ot/otp/lifecycle.py",
+        ],
     )
 
     qemu_bazel_build_or_forward(
