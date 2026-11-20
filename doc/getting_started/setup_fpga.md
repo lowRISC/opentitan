@@ -46,10 +46,9 @@ tar -xvf bitstream-latest.tar.gz
 popd
 ```
 
-By default, the bitstream is built with a version of the boot ROM used for testing (called the _test ROM_; pulled from `sw/device/lib/testing/test_rom`).
-There is also a version of the boot ROM used in production (called the _ROM_; pulled from `sw/device/silicon_creator/rom`).
-When the bitstream cache is used in bazel flows, the ROMs from the cache are not used.
-Instead, the bazel-built ROMs are programmed to the relevant FPGA BRAMs via the bkdr_loader, using the mechanism described [here](#programming-the-fpga-with-rom--otp-images).
+The pre-built CW340 bitstream is initialized with a minimal stub ROM (`sw/device/lib/testing/stub_rom`).
+For testing and normal execution, there are two boot ROM images: a version used for faster testing (called the _test ROM_, from `sw/device/lib/testing/test_rom`) and a version used in production (called the _ROM_, from `sw/device/silicon_creator/rom`).
+In Bazel flows, the requested ROM and OTP/RRAM images are programmed into the FPGA memories via the `bkdr_loader` IP, using the mechanism described [here](#programming-the-fpga-with-rom--otp-images).
 The metadata for the latest bitstream (the approximate creation time and the associated commit hash) is also available as a text file and can be [downloaded separately](https://storage.googleapis.com/opentitan-bitstreams/master/latest.txt).
 
 ### Using the `@bitstreams` repository
@@ -66,28 +65,21 @@ cp util/git/hooks/post-checkout .git/hooks/
 
 #### Using a Cached Bitstream
 
-The default bitstreams cached in our public GCS bucket are built with a test version of the boot ROM and a minimally configured OTP image.
-For FPGA workflows, there is a "backdoor loader" block that we use to load data into FPGA memories for test purposes.
-Because of this, it is sufficient to use the base CW340 bitstream which is available in the GCS bucket cache.
+The default bitstreams cached in our public GCS bucket contain a minimal stub ROM (`stub_rom`).
+For FPGA workflows, there is a "backdoor loader" block (`bkdr_loader`) that loads the desired ROM and OTP/RRAM images into FPGA memories over JTAG.
+Because of this, it is sufficient to use the base CW340 bitstream available in the GCS bucket cache.
 
 #### From Scratch
 
 If you would like to synthesize a bitstream from scratch (e.g., to test a new RTL change), you can synthesize one locally.
 Synthesizing a design for an FPGA board is simple with Bazel.
 While Bazel is the entry point for kicking off the FPGA synthesis, under the hood, it invokes FuseSoC, the hardware package manager / build system supported by OpenTitan.
-During the build process, the boot ROM is baked into the bitstream.
-As mentioned above, we maintain two boot ROM programs, one for faster testing (_test ROM_), and one for production (_ROM_).
+The synthesized bitstream embeds `stub_rom`, and the actual boot ROM (`test_rom` or `mask_rom`) is loaded later via `bkdr_loader`.
 
-To build an FPGA bitstream with the _test ROM_ for the chosen board, use:
+To build the base FPGA bitstream for CW340, use:
 ```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_${BOARD}_test_rom
-```
-
-To build an FPGA bitstream with the _ROM_ for the chosen board, use:
-```sh
-cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
+bazel build //hw/bitstream/vivado:fpga_${BOARD}
 ```
 
 >**Note**: Building these bitstreams will require Vivado to be installed on your system, with access to the proper (paid) licenses, described [here](./install_vivado/README.md).
@@ -203,9 +195,10 @@ To this end:
    1. Set to `HD` if you are using the HyperDebug board, as also explained in section [Before Connecting HyperDebug to the CW340 Base Board](#before-connecting-hyperdebug-to-the-cw340-base-board).
    2. Set to `FTDI` to (likely) route the UART0 to `/dev/ttyUSB2`.
    3. Set to `SAM` to route the UART0 to `/dev/ttyACM0`.
+1. Set jumper *JP9* (`!!VCCIOB SEL!!`, at the top of the board between `PMOD2` and `PMOD1`) to the **`1.8`** (middle) position so Bank B (`IOB0`–`IOB12`) uses 1.8 V, matching the FPGA `LVCMOS18` pin constraints and HyperDebug's 1.8 V I/O level (`JP4`). *(Note: the top-view photo below shows `JP9` on `3.3`, which should be moved to `1.8`.)*
 1. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
 1. Make sure the DIP switches on the bottom side of the board are set up as follows:
-   - SW1, SW2: all switches (1 to 8) in the OFF position
+   - SW1, SW2: all switches (1 to 8) in the OFF position *(required for automated tests; see [Bootstrapping the demo software](#bootstrapping-the-demo-software) if you want to enable the onboard switches and LEDs for `hello_world`)*
    - SW3: switch 1 in the ON position, switch 2, 3 in the OFF position.
    - SW10, SW11: all switches (1 to 3) in the ON position
    - SW12: all switches (1 to 6) in the ON position
@@ -312,23 +305,26 @@ The serial ports identified should be named `/dev/ttyACM*` + `/dev/ttyUSB*` + fo
 
 To ensure that you have sufficient access permissions, set up the udev rules as explained above.
 
-You will then need to run this command to configure the board. You only need to run it once.
+You will then need to run this command to configure the board's PLL. You only need to run it once (note that `fpga set-pll` must use `--interface=${BOARD}`, i.e. `--interface=cw340`, even if you have a HyperDebug attached, because the `hyper340` transport does not implement `set-pll`):
 ```sh
-bazel run //sw/host/opentitantool -- --interface=${INTERFACE} fpga set-pll
+bazel run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll
 ```
 
 Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
+On the first run after power-cycling the board (or when switching bitstreams/ROMs), loading the FPGA bitstream and preloading the ROM/RRAM over JTAG takes longer than Bazel's default 60 s `short` test timeout, so pass `--test_timeout=300` (subsequent runs reuse the loaded bitstream and ROM hash and complete in a few seconds):
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --test_output=streamed --test_timeout=300 //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
+To avoid passing `--test_timeout=300` manually on every cold run, you can add `test --test_timeout=300,300,1500,7200` to your `~/.bazelrc`.
 
 ### Troubleshooting
 
-If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`, see also below) then try adding `--rcfile=` to the `set-pll` command:
+If the tests/demo aren't working on the FPGA (especially if you get an error like `SFDP header contains incorrect signature`, see also below, or `JTAG scan chain interrogation failed: all ones` / `fpga_backdoor.tap: IR capture error; saw 0x1f not 0x01`), make sure you have run `set-pll` with `--interface=${BOARD}` so the CW340's 100 MHz FPGA clock is enabled:
 ```sh
-bazel run //sw/host/opentitantool -- --rcfile= --interface=${INTERFACE} fpga set-pll
+bazel run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll
 ```
+For JTAG `all ones` / `IR capture error` failures, also double-check that HyperDebug `JP4` is set to `1.8V`, the JTAG ribbon connects `J12`–`J13`, `JP11`/`JP12` are set to `HD`, and bottom DIP switch `SW12` is `ON`.
 It's also worth pressing the `USB_RST` and `USR_RESET` buttons on the FPGA if you face continued errors.
 
 #### USB enumeration errors of the device port (J9)
@@ -366,8 +362,8 @@ There are two ways to load a bitstream on to the FPGA and bootstrap software int
 1. **automatically**, on single invocations of `bazel test ...`.
 2. **manually**, using multiple invocations of `opentitantool`, and
 Which one you use, will depend on how the build target is defined for the software you would like to test on the FPGA.
-Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_test` Bazel macro, you will use the latter (**automatic**) approach.
-Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_binary` Bazel macro, you will use the former (**manual**) approach.
+Specifically, for software build targets defined in Bazel BUILD files using the `opentitan_test` Bazel macro, you will use the former (**automatic**) approach.
+Alternatively, for software build targets defined in Bazel BUILD files using the `opentitan_binary` Bazel macro, you will use the latter (**manual**) approach.
 
 See below for details on both approaches.
 
@@ -375,15 +371,15 @@ See below for details on both approaches.
 
 A majority of on-device software tests are defined using the custom `opentitan_test` Bazel macro, which under the hood, instantiates several Bazel [`native.sh_test` rules](https://docs.bazel.build/versions/main/be/shell.html#sh_test).
 In doing so, this macro provides a convenient interface for developers to run software tests on OpenTitan FPGA instances with a single invocation of `bazel test ...`.
-For example, to run the UART smoke test (which is an `opentitan_test` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use:
+For example, to run the UART smoke test (which is an `opentitan_test` defined in `sw/device/tests/BUILD`) on FPGA hardware, and see the output in real time, use (passing `--test_timeout=300` on the first run after power-on):
 ```sh
 cd $REPO_TOP
-bazel test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:uart_smoketest
+bazel test --test_tag_filters=${BOARD} --test_output=streamed --test_timeout=300 //sw/device/tests:uart_smoketest
 ```
 or
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --test_output=streamed --test_timeout=300 //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to:
@@ -550,31 +546,26 @@ bazel build //third_party/openocd:openocd_bin
 cd $REPO_TOP
 bazel run //sw/host/opentitantool -- fpga load-bitstream \
     --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
-    /tmp/bitstream-latest/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit.orig
+    /tmp/bitstream-latest/build-bin/hw/top_earlgrey/chip_earlgrey_${BOARD}/lowrisc_systems_chip_earlgrey_${BOARD}_0.1.bit
 ```
 ##### If you built the bitstream yourself:
 ```sh
 cd $REPO_TOP
 bazel run //sw/host/opentitantool -- fpga load-bitstream \
     --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
-    $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
+    $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_stub_rom)
 ```
 
 Depending on the FPGA device, the flashing itself may take several seconds.
-After completion, a message like this should be visible from the UART:
-
-```console
-I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-I00001 test_rom.c:118] Test ROM complete, jumping to flash!
-```
+Because the base CW340 bitstream ships with `stub_rom` (an infinite wait loop), nothing will be printed over UART until you load a boot ROM (`test_rom` or `mask_rom`) via the backdoor loader as shown below (or run any `bazel test` target).
 
 #### Programming the FPGA with ROM & OTP Images
 
 ##### Backdoor Loading
 
 When running a test, you may want to customize the ROM and OTP that are used to suit your execution environment.
-For FPGA, this is done using the unique "backdoor loader" IP", which you can communicate with using `opentitantool`.
-The backdoor loader can only be used by resetting OpenTitan with the both TAP straps enabled.
+For FPGA, this is done using the unique "backdoor loader" IP, which you can communicate with using `opentitantool`.
+The backdoor loader can only be used by resetting OpenTitan with both TAP straps enabled.
 After you have finished using the loader, it takes the chip out of reset, and the loader can no longer be used until the next reset.
 Because of this, `opentitantool` offers an `fpga backdoor enter` command to "enter" into the backdoor loading mode, and an `fpga backdoor exit` command to finish.
 
@@ -606,16 +597,7 @@ bazel run //sw/host/opentitantool -- --interface=${INTERFACE} fpga backdoor \
     write ROM vmem $(ci/scripts/target-location.sh //sw/device/silicon_creator/rom:mask_rom_fpga_cw340)
 ```
 
-If you need to load an OTP image, at this stage you can follow a similar flow:
-
-```sh
-# Build an OTP image that you want to use
-bazel build //hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized
-# Load the OTP image (assuming you already did `fpga backdoor enter` and have not yet done `fpga backdoor exit`)
-bazel run //sw/host/opentitantool -- --interface=${INTERFACE} fpga backdoor \
-    --openocd=$(ci/scripts/target-location.sh //third_party/openocd:openocd_bin) \
-    write OTP vmem $(ci/scripts/target-location.sh //hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized)
-```
+> **Note:** On EarlGrey CW340, OTP is stored inside the RRAM data array (`RRDA`), so there is no standalone `OTP` backdoor target (you can list the targets supported by the loaded bitstream with `opentitantool fpga backdoor info`). When running tests via `bazel test`, Bazel automatically converts the OTP image into an RRAM-layout `.otp.rram.vmem` file and writes it to `RRDA` using `fpga backdoor batch`.
 
 Finally, when you're done using the backdoor loader to interact with FPGA memories, you can exit with the following command:
 
@@ -640,49 +622,49 @@ To be sure that a bitstream is definitely running on the board, without any addi
 `--force` skips the USR_ACCESS check entirely and unconditionally reprograms:
 
 ```sh
-bazel run //sw/host/opentitantool -- fpga load-bitstream --force $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_test_rom)
+bazel run //sw/host/opentitantool -- fpga load-bitstream --force $(ci/scripts/target-location.sh //hw/bitstream/vivado:fpga_${BOARD}_stub_rom)
 ```
 
 #### Bootstrapping the demo software
 
-The `hello_world` demo software shows off some capabilities of the OpenTitan hardware.
+The `hello_world` demo software shows off basic UART and GPIO functionality of the OpenTitan hardware.
 To load `hello_world` into the FPGA on the ChipWhisperer CW340 board follow the steps shown below.
 
-1. Generate the bitstream and flash it to the FPGA as described above.
-2. Open a serial console (use the device file determined before) and connect.
-   Settings: 115200 baud, 8 bits per byte, no software flow-control for sending and receiving data.
-   ```sh
-   screen /dev/ttyACM1 115200,cs8,-ixon,-ixoff
-   ```
-3. Run `opentitantool`.
+1. Make sure the PLL has been configured once (using `--interface=${BOARD}`, i.e. `--interface=cw340`), and load the bitstream along with `test_rom` and the RRAM OTP image into the FPGA.
+   Because the base CW340 bitstream boots `stub_rom` (which does not implement SPI bootstrap), you must have `test_rom` loaded before bootstrapping `hello_world`. The simplest way to load the cached bitstream, `test_rom`, and OTP image together is to run a `test_rom` smoke test once after power-on:
    ```sh
    cd ${REPO_TOP}
-   bazel run //sw/host/opentitantool -- --interface=${INTERFACE} fpga set-pll # This needs to be done only once.
-   bazel build //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin
-   bazel run //sw/host/opentitantool -- bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)
+   bazel run //sw/host/opentitantool -- --rcfile= --interface=${BOARD} fpga set-pll # This needs to be done only once.
+   bazel test --test_timeout=300 //sw/device/tests:uart_smoketest_fpga_${BOARD}_test_rom
+   ```
+2. *(Optional, to see the onboard LEDs and flip physical DIP switches on CW340)*:
+   The standard board setup sets bottom DIP switches `SW1` (`SW ISOLATE`) and `SW2` (`LED ISOLATE`) to `OFF` for automated testing.
+   - To see `LED4`–`LED7` light up as you type, slide `SW2` switches **5–8** to `ON`.
+   - To use the physical top-side `SW4` (`USRDIP`) switches with `hello_world`, slide `SW1` switches **1, 4, 5, and 8** to `ON` (corresponding to `SW4` switches 1, 4, 5, and 8 — `USRDIP0`, `USRDIP3`, `USRDIP4`, `USRDIP7` — which wire to `IOB6`, `IOB9`, `IOB10`, and `IOR5`, respectively).
+   - Slide `SW1` and `SW2` back to `OFF` before running automated hardware tests.
+3. Build `hello_world`, bootstrap it over SPI, and open the built-in `opentitantool` UART console:
+   ```sh
+   cd ${REPO_TOP}
+   bazel build --output_groups=fpga_${BOARD}_binary //sw/device/examples/hello_world
+   bazel run //sw/host/opentitantool -- --rcfile= --interface=${INTERFACE} \
+     --exec="bootstrap --clear-uart=true $(ci/scripts/target-location.sh //sw/device/examples/hello_world --output_groups=fpga_${BOARD}_binary)" \
+     console
    ```
 
-   And then output like this should appear from the UART:
+   Output like this should appear from the UART:
    ```console
-   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-   I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-   I00001 test_rom.c:118] Test ROM complete, jumping to flash!
-   I00000 hello_world.c:66] Hello World!
-   I00001 hello_world.c:67] Built at: Jun 13 2022, 14:16:59
-   I00002 demos.c:18] Watch the LEDs!
-   I00003 hello_world.c:74] Try out the switches on the board
-   I00004 hello_world.c:75] or type anything into the console window.
-   I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
+   I00001 test_rom.c:221] kBuildInfo: scm_revision=...
+   I00002 test_rom.c:271] Test ROM complete, jumping to NVM (addr: 30000480)!
+   I00000 hello_world.c:81] Hello World!
+   I00001 hello_world.c:82] Built at: ...
+   I00002 demos.c:17] Watch the LEDs!
+   I00003 hello_world.c:89] Try out USERDIP switches 0-thru-3 on the board
+   I00004 hello_world.c:90] or type anything into the console window.
+   I00005 hello_world.c:93] The LEDs show the lower nibble of the ASCII code of the last character.
    ```
 
-4. Observe the output both on the board and the serial console. Type any text into the console window.
-5. Exit `screen` by pressing CTRL-a k, and confirm with y.
-6. Alternatively you can use the console embedded into `opentitantool` to see the output from the UART instead of `screen`.
-```sh
-bazel run //sw/host/opentitantool -- \
---exec "bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_${BOARD}_bin)"\
-console
-```
+4. Type any text into the console window to see it echoed back and reflected on `LED4`–`LED7`. Exit the `opentitantool` console with `Ctrl-C`.
+   *(Alternatively, you can connect separately with `screen /dev/ttyUSB<N> 115200,cs8,-ixon,-ixoff` using the HyperDebug/FTDI UART0 device port instead of the `console` subcommand.)*
 
 #### Troubleshooting
 
@@ -845,7 +827,7 @@ To download the bitstream:
 3. Scroll down to bottom of the page.
 4. Download the artifact for "partial-build-bin-chip_earlgrey_cw340".
 
-After extracting the artifact, the bitstream is located at `build-bin/hw/top_earlgrey/lowrisc_systems_chip_earlgrey_cw340_0.1.bit`.
+After extracting the artifact, the bitstream is located at `build-bin/hw/top_earlgrey/chip_earlgrey_cw340/lowrisc_systems_chip_earlgrey_cw340_0.1.bit`.
 
 Next, load the bitstream with opentitantool, followed by any relevant memories (e.g. ROM or OTP), and run the test.
 The FPGA tests attempt to load the latest bitstream by default, but because we wish to use the bitstream that we just loaded, we need to tell Bazel to skip the automatic bitstream loading.
