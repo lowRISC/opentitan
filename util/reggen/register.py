@@ -759,7 +759,7 @@ class Register(RegBase):
         # Attributes to be crosschecked
         attrs = [
             'async_clk', 'hwext', 'hwqe', 'hwre',
-            'update_err_alert', 'storage_err_alert', 'shadowed'
+            'update_err_alert', 'storage_err_alert', 'shadowed', 'reinit'
         ]
         for attr in attrs:
             if getattr(self, attr) != getattr(alias_reg, attr):
