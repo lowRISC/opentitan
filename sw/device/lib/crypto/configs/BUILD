@@ -68,13 +68,6 @@ config_setting(
     },
 )
 
-config_setting(
-    name = "disable_keyblob_masking",
-    flag_values = {
-        ":disable_keyblob_masking_flag": "True",
-    },
-)
-
 # Indicate how crypto API should be compiled:
 #    - static: using cc_library rule
 #    - binary_blob: using opentitan_binary_blob rule which create a binary blob
@@ -128,11 +121,5 @@ bool_flag(
 # Replace fault-hardened double-branch sequences in cryptolib with single checks.
 bool_flag(
     name = "disable_hardening_flag",
-    build_setting_default = False,
-)
-
-# Store software keyblobs as a single unmasked share at rest in Ibex memory.
-bool_flag(
-    name = "disable_keyblob_masking_flag",
     build_setting_default = False,
 )
