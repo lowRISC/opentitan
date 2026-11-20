@@ -177,9 +177,15 @@ Command request register
 {"reg": [{"name": "CMD_REQ", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                         |
-|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   wo   |   0x0   | CMD_REQ | Writing this request with defined CSRNG commands will initiate all possible CSRNG actions. The application interface must wait for the "ack" to return before issuing new commands. |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:0  |   wo   |   0x0   | [CMD_REQ](#cmd_req--cmd_req) |
+
+### CMD_REQ . CMD_REQ
+Writing this request with defined CSRNG commands will initiate all
+possible CSRNG actions. The application interface must wait for the
+"ack" to return before issuing new commands.
+Before writing each word of a command, [`SW_CMD_STS.CMD_RDY`](#sw_cmd_sts) needs to be polled.
 
 ## RESEED_INTERVAL
 CSRNG maximum number of generate requests allowed between reseeds register
@@ -279,10 +285,11 @@ The field is set to high once a SW command request has been acknowledged by the 
 In case of a generate command the acknowledgement goes high after all of the requested entropy is consumed.
 
 ### SW_CMD_STS . CMD_RDY
-This bit indicates when the command interface is ready to accept commands.
-Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
-0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
-0b1: CSRNG is ready to accept the next command.
+This bit indicates when the command interface is ready to accept the next command word.
+Before writing each word of a command to [`CMD_REQ`](#cmd_req), this field needs to be polled.
+Words written while this field is low are dropped.
+0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
+0b1: CSRNG is ready to accept the next command word.
 
 ## GENBITS_VLD
 Generate bits returned valid register
