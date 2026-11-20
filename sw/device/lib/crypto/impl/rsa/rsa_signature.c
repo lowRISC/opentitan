@@ -52,7 +52,7 @@ static status_t digest_check(const otcrypto_hash_digest_t digest,
                ? OTCRYPTO_OK
                : OTCRYPTO_BAD_ARGS;
   }
-  if (launder32(digest.len) != info.digest_wordlen) {
+  if (launderw(digest.len) != launderw(info.digest_wordlen)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(digest.len, info.digest_wordlen);

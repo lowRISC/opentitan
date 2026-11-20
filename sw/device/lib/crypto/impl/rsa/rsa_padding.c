@@ -73,7 +73,7 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
   }
   size_t digest_bytelen = message_digest.len;
   if (info.digest_wordlen != 0) {
-    if (launder32(message_digest.len) != info.digest_wordlen) {
+    if (launderw(message_digest.len) != launderw(info.digest_wordlen)) {
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(message_digest.len, info.digest_wordlen);
@@ -218,7 +218,7 @@ static status_t mgf1(otcrypto_hash_mode_t hash_mode, const uint8_t *seed,
   uint8_t hash_input[seed_len + sizeof(uint32_t)];
   memcpy(hash_input, seed, seed_len);
   uint32_t i = 0;
-  while (0 < mask_len) {
+  while (0 < launderw(mask_len)) {
     uint32_t ctr = __builtin_bswap32(i);
     memcpy(hash_input + seed_len, &ctr, sizeof(uint32_t));
     if (mask_len < digest_bytelen) {

@@ -570,7 +570,7 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
   HARDENED_TRY(check_lengths(&primary_ctx));
 
   // Check the digest length.
-  if (launder32(tag->len) != primary_ctx.digest_wordlen) {
+  if (launderw(tag->len) != launderw(primary_ctx.digest_wordlen)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(tag->len, primary_ctx.digest_wordlen);

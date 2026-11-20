@@ -64,7 +64,7 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
       break;
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
-      if (launder32(message_bytelen) != num_words * sizeof(uint32_t)) {
+      if (launderw(message_bytelen) != launderw(num_words * sizeof(uint32_t))) {
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(message_bytelen, num_words * sizeof(uint32_t));
