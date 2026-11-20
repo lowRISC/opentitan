@@ -94,6 +94,25 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: ctr_drbg_ctr_wrap
+      desc: '''
+            Verify that the CTR_DRBG counter in the low bits of V wraps around to zero instead of
+            saturating.
+
+            **Stimulus**:
+            - For a random instance, restore a state via INT_STATE_VAL whose counter is a few
+              blocks from overflowing, then send a Generate command long enough to cross the
+              overflow.
+
+            **Checks**:
+            - The generated bits and the internal state match the model, which increments only
+              the counter bits of V and leaves the upper bits unchanged.
+            - No error or alert is raised.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
