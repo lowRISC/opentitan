@@ -104,12 +104,16 @@ p256_shared_key:
    4. Multiply masks with z^-1 for use in
       affine space. */
 
-  /* Fetch fresh random numbers as masks.
-       w2 <= URND() = m_x
-       w3 <= URND() = m_y */
+  /* Fetch fresh random numbers as masks and reduce them modulo p so that
+     bn.subm cannot underflow below -p (2^256 < 2*p, so adding w31 = 0 reduces
+     any 256-bit value into [0, p-1]).
+       w2 <= URND() mod p = m_x
+       w3 <= URND() mod p = m_y */
   bn.wsrr   w2, URND
+  bn.addm   w2, w2, w31
   bn.xor    w31, w31, w31 /* dummy */
   bn.wsrr   w3, URND
+  bn.addm   w3, w3, w31
 
   /* Subtract random masks from x and y coordinates of
      projective point.
