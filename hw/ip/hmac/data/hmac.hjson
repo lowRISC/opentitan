@@ -80,7 +80,11 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected.
+      This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, when an FSM
+      is glitched into an invalid state, when the redundant check of the inner and outer hash rounds
+      fails, or when the multi-bit encoded `hmac_en` or `sha_en` configuration carries an invalid
+      encoding.
+      Except for TL-UL bus integrity faults, these faults also lock up HMAC until the next reset.
       '''
     }
   ],
@@ -189,6 +193,26 @@
     }
     { name: "KEY.SIDELOAD"
       desc: "Key from KeyMgr is sideloaded."
+    }
+    { name: "FSM.SPARSE"
+      desc: "The HMAC core and done-tracking FSMs are sparsely encoded."
+    }
+    { name: "FSM.LOCAL_ESC"
+      desc: '''
+            Upon detecting a fatal fault, the HMAC core FSM moves into a terminal error state and
+            a fatal error is latched in a multi-bit encoded register.
+            While latched, the SHA-2 engine is disabled and the digest registers read as zero
+            until the next reset.
+            '''
+    }
+    { name: "CONFIG.MUBI"
+      desc: "The hmac_en and sha_en configuration signals are multi-bit encoded."
+    }
+    { name: "CTR.REDUN"
+      desc: '''
+            A redundant round counter tracks the completion of the inner and outer hash and is
+            checked against the primary round tracking before signaling completion.
+            '''
     }
   ]
   regwidth: "32",
