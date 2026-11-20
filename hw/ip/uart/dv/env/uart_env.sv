@@ -26,7 +26,7 @@ class uart_env extends cip_base_env #(.CFG_T               (uart_env_cfg),
       m_uart_agent.monitor.tx_analysis_port.connect(scoreboard.uart_tx_fifo.analysis_export);
       m_uart_agent.monitor.rx_analysis_port.connect(scoreboard.uart_rx_fifo.analysis_export);
     end
-    if (cfg.m_uart_agent_cfg.is_active) begin
+    if (m_uart_agent.get_is_active() == UVM_ACTIVE) begin
       virtual_sequencer.uart_sequencer_h = m_uart_agent.sequencer;
     end
   endfunction

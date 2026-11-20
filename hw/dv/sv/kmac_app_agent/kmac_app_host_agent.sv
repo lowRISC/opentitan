@@ -26,5 +26,5 @@ function void kmac_app_host_agent::build_phase(uvm_phase phase);
   end
 
   // Configure the interface to match the agent.
-  cfg.vif.if_mode = cfg.is_active ? Host : Monitor;
+  cfg.vif.if_mode = cfg.if_mode;
 endfunction

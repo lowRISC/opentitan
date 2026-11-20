@@ -41,8 +41,9 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
 
   extern function new (string name, uvm_component parent);
 
-  extern function void build_phase(uvm_phase phase);
-  extern function void connect_phase(uvm_phase phase);
+  extern virtual function void build_phase(uvm_phase phase);
+  extern virtual function void connect_phase(uvm_phase phase);
+  extern virtual function uvm_active_passive_enum get_is_active();
 endclass
 
 function dv_base_agent::new (string name, uvm_component parent);
@@ -66,7 +67,7 @@ function void dv_base_agent::build_phase(uvm_phase phase);
   monitor.cfg = cfg;
   monitor.cov = cov;
 
-  if (cfg.is_active) begin
+  if (get_is_active() == UVM_ACTIVE) begin
     sequencer = SEQUENCER_T::type_id::create("sequencer", this);
     sequencer.cfg = cfg;
 
@@ -80,7 +81,13 @@ endfunction
 
 function void dv_base_agent::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
-  if (cfg.is_active && cfg.has_driver) begin
+  if ((get_is_active() == UVM_ACTIVE) && cfg.has_driver) begin
     driver.seq_item_port.connect(sequencer.seq_item_export);
   end
+endfunction
+
+function uvm_active_passive_enum dv_base_agent::get_is_active();
+  if (cfg == null) `uvm_fatal("no_cfg", "Cannot check if agent is active: cfg is null.")
+
+  return cfg.get_is_active();
 endfunction

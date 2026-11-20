@@ -61,13 +61,13 @@ class alert_handler_env extends cip_base_env #(
     end
     if (cfg.is_active) begin
       foreach (alert_host_agent[i]) begin
-        if (cfg.alert_host_cfg[i].is_active) begin
+        if (alert_host_agent[i].get_is_active() == UVM_ACTIVE) begin
           virtual_sequencer.alert_host_seqr_h[i] = alert_host_agent[i].sequencer;
         end
       end
     end
     foreach (esc_device_agent[i]) begin
-      if (cfg.esc_device_cfg[i].is_active) begin
+      if (esc_device_agent[i].get_is_active() == UVM_ACTIVE) begin
         virtual_sequencer.esc_device_seqr_h[i] = esc_device_agent[i].sequencer;
       end
     end
