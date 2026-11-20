@@ -9,7 +9,6 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
-#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -117,33 +116,18 @@ TEST(Keyblob, ShareNumWordsHuge) {
 }
 
 TEST(Keyblob, KeyblobNumWordsSimpleTest) {
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  EXPECT_EQ(keyblob_num_words(kConfigCtr128),
-            keyblob_share_num_words(kConfigCtr128));
-#else
   EXPECT_EQ(keyblob_num_words(kConfigCtr128),
             2 * keyblob_share_num_words(kConfigCtr128));
-#endif
 }
 
 TEST(Keyblob, KeyblobNumWordsOdd) {
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  EXPECT_EQ(keyblob_num_words(kConfigOddBytes),
-            keyblob_share_num_words(kConfigOddBytes));
-#else
   EXPECT_EQ(keyblob_num_words(kConfigOddBytes),
             2 * keyblob_share_num_words(kConfigOddBytes));
-#endif
 }
 
 TEST(Keyblob, KeyblobNumWordsHuge) {
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  EXPECT_EQ(keyblob_num_words(kConfigHuge),
-            keyblob_share_num_words(kConfigHuge));
-#else
   EXPECT_EQ(keyblob_num_words(kConfigHuge),
             2 * keyblob_share_num_words(kConfigHuge));
-#endif
 }
 
 TEST(Keyblob, FromSharesSimpleTest) {
@@ -164,11 +148,6 @@ TEST(Keyblob, FromSharesSimpleTest) {
                                      kConfigCtr128, keyblob.data());
   EXPECT_EQ(err.value, OTCRYPTO_OK.value);
 
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  for (size_t i = 0; i < test_share0.size(); i++) {
-    EXPECT_EQ(keyblob[i], test_share0[i] ^ test_share1[i]);
-  }
-#else
   // Check that keyblob is both shares concatenated.
   for (size_t i = 0; i < test_share0.size(); i++) {
     EXPECT_EQ(keyblob[i], test_share0[i]);
@@ -176,7 +155,6 @@ TEST(Keyblob, FromSharesSimpleTest) {
   for (size_t i = 0; i < test_share1.size(); i++) {
     EXPECT_EQ(keyblob[test_share0.size() + i], test_share1[i]);
   }
-#endif
 }
 
 TEST(Keyblob, FromToSharesNoop) {
@@ -210,11 +188,6 @@ TEST(Keyblob, FromToSharesNoop) {
   uint32_t *share1;
   EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  for (size_t i = 0; i < test_share0.size(); i++) {
-    EXPECT_EQ(share0[i] ^ share1[i], test_share0[i] ^ test_share1[i]);
-  }
-#else
   // Check share values match original data.
   for (size_t i = 0; i < test_share0.size(); i++) {
     EXPECT_EQ(share0[i], test_share0[i]);
@@ -222,7 +195,6 @@ TEST(Keyblob, FromToSharesNoop) {
   for (size_t i = 0; i < test_share1.size(); i++) {
     EXPECT_EQ(share1[i], test_share1[i]);
   }
-#endif
 }
 
 TEST(Keyblob, ToSharesFailsForHwBackedKey) {
@@ -270,18 +242,12 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
 
   // Unmask the key and check that it matches the original.
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  for (size_t i = 0; i < test_key.size(); i++) {
-    EXPECT_EQ(share0[i] ^ share1[i], test_key[i]);
-  }
-#else
   for (size_t i = 0; i < test_key.size(); i++) {
     uint32_t share0 = keyblob[i];
     uint32_t share1 = keyblob[test_key.size() + i];
     EXPECT_EQ(share1, test_mask[i]);
     EXPECT_EQ(share0 ^ share1, test_key[i]);
   }
-#endif
 }
 
 TEST(Keyblob, ToKeymgrDiversificationSimple) {
@@ -415,20 +381,16 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
       .checksum = 0,
   };
 
-#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   // Copy the keyblob for later comparison.
   std::vector<uint32_t> keyblob_copy = keyblob;
-#endif
 
   // Remask the key.
   EXPECT_OK(keyblob_remask(&key));
 
-#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   // Check that every word of the keyblob changed.
   for (size_t i = 0; i < keyblob.size(); i++) {
     EXPECT_NE(keyblob[i], keyblob_copy[i]);
   }
-#endif
 
   // Unmask the key and check that it matches the original.
   uint32_t unmasked_key[test_key.size()];
@@ -489,18 +451,6 @@ TEST(Keyblob, KeyblobNumWordsRsa) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  // RSA private keyblobs store d, n, and a 32-bit checksum.
-  EXPECT_EQ(keyblob_num_words(kConfigRsa2048),
-            2 * (256 / sizeof(uint32_t)) + 1);
-  EXPECT_EQ(keyblob_num_words(kConfigRsa2048) * sizeof(uint32_t), 516);
-  EXPECT_EQ(keyblob_num_words(kConfigRsa3072),
-            2 * (384 / sizeof(uint32_t)) + 1);
-  EXPECT_EQ(keyblob_num_words(kConfigRsa3072) * sizeof(uint32_t), 772);
-  EXPECT_EQ(keyblob_num_words(kConfigRsa4096),
-            2 * (512 / sizeof(uint32_t)) + 1);
-  EXPECT_EQ(keyblob_num_words(kConfigRsa4096) * sizeof(uint32_t), 1028);
-#else
   // RSA private keyblobs store d0, d1, n, and a 32-bit checksum.
   EXPECT_EQ(keyblob_num_words(kConfigRsa2048),
             3 * (256 / sizeof(uint32_t)) + 1);
@@ -511,107 +461,6 @@ TEST(Keyblob, KeyblobNumWordsRsa) {
   EXPECT_EQ(keyblob_num_words(kConfigRsa4096),
             3 * (512 / sizeof(uint32_t)) + 1);
   EXPECT_EQ(keyblob_num_words(kConfigRsa4096) * sizeof(uint32_t), 1540);
-#endif
-}
-
-TEST(Keyblob, KeyblobNumWordsEcc) {
-  const otcrypto_key_config_t kConfigEd25519 = {
-      .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = 32,
-      .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
-  };
-  const otcrypto_key_config_t kConfigX25519 = {
-      .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeX25519,
-      .key_length = 32,
-      .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
-  };
-
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  EXPECT_EQ(keyblob_num_words(kConfigEcdsaP256),
-            keyblob_share_num_words(kConfigEcdsaP256));
-  EXPECT_EQ(keyblob_num_words(kConfigEd25519),
-            keyblob_share_num_words(kConfigEd25519));
-  EXPECT_EQ(keyblob_num_words(kConfigX25519),
-            keyblob_share_num_words(kConfigX25519));
-#else
-  EXPECT_EQ(keyblob_num_words(kConfigEcdsaP256),
-            2 * keyblob_share_num_words(kConfigEcdsaP256));
-  EXPECT_EQ(keyblob_num_words(kConfigEd25519),
-            2 * keyblob_share_num_words(kConfigEd25519));
-  EXPECT_EQ(keyblob_num_words(kConfigX25519),
-            2 * keyblob_share_num_words(kConfigX25519));
-#endif
-}
-
-TEST(Keyblob, ToFromSharesEcc) {
-  static const uint32_t kP256Order[10] = {
-      0xfc632551, 0xf3b9cac2, 0xa7179e84, 0xbce6faad, 0xffffffff,
-      0xffffffff, 0x00000000, 0xffffffff, 0x00000000, 0x00000000};
-  std::array<uint32_t, 10> in_share0 = {
-      0x11111111, 0x22222222, 0x33333333, 0x44444444, 0x55555555,
-      0x66666666, 0x77777777, 0x88888888, 0x00000001, 0x00000000};
-  std::array<uint32_t, 10> in_share1 = {
-      0x01020304, 0x05060708, 0x090a0b0c, 0x0d0e0f10, 0x11121314,
-      0x15161718, 0x191a1b1c, 0x1d1e1f20, 0x00000002, 0x00000000};
-
-  size_t keyblob_words = keyblob_num_words(kConfigEcdsaP256);
-  std::vector<uint32_t> keyblob(keyblob_words, 0);
-  EXPECT_OK(keyblob_from_shares(in_share0.data(), in_share1.data(),
-                                kConfigEcdsaP256, keyblob.data()));
-
-  otcrypto_blinded_key_t key = {
-      .config = kConfigEcdsaP256,
-      .keyblob_length = static_cast<uint32_t>(keyblob_words * sizeof(uint32_t)),
-      .keyblob = keyblob.data(),
-      .checksum = 0,
-  };
-  uint32_t *out_share0 = nullptr;
-  uint32_t *out_share1 = nullptr;
-  EXPECT_OK(keyblob_to_shares(&key, &out_share0, &out_share1));
-
-  uint32_t in_red0[10], in_red1[10], expected_d[10];
-  uint32_t out_red0[10], out_red1[10], actual_d[10];
-  EXPECT_OK(hardened_mod_reduce(in_share0.data(), kP256Order, 10, in_red0));
-  EXPECT_OK(hardened_mod_reduce(in_share1.data(), kP256Order, 10, in_red1));
-  EXPECT_OK(hardened_add_mod(in_red0, in_red1, kP256Order, 10, expected_d));
-
-  EXPECT_OK(hardened_mod_reduce(out_share0, kP256Order, 10, out_red0));
-  EXPECT_OK(hardened_mod_reduce(out_share1, kP256Order, 10, out_red1));
-  EXPECT_OK(hardened_add_mod(out_red0, out_red1, kP256Order, 10, actual_d));
-  for (size_t i = 0; i < 10; i++) {
-    EXPECT_EQ(actual_d[i], expected_d[i]);
-  }
-
-  // Curve25519 (Ed25519 / X25519): additive mod 2^256 in lower 8 words,
-  // upper 2 words ignored.
-  const otcrypto_key_config_t kConfigEd25519 = {
-      .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeEd25519,
-      .key_length = 32,
-      .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
-  };
-  size_t ed_words = keyblob_num_words(kConfigEd25519);
-  std::vector<uint32_t> ed_keyblob(ed_words, 0);
-  EXPECT_OK(keyblob_from_shares(in_share0.data(), in_share1.data(),
-                                kConfigEd25519, ed_keyblob.data()));
-  otcrypto_blinded_key_t ed_key = {
-      .config = kConfigEd25519,
-      .keyblob_length = static_cast<uint32_t>(ed_words * sizeof(uint32_t)),
-      .keyblob = ed_keyblob.data(),
-      .checksum = 0,
-  };
-  EXPECT_OK(keyblob_to_shares(&ed_key, &out_share0, &out_share1));
-  uint32_t expected_ed[8], actual_ed[8];
-  EXPECT_OK(hardened_add(in_share0.data(), in_share1.data(), 8, expected_ed));
-  EXPECT_OK(hardened_add(out_share0, out_share1, 8, actual_ed));
-  for (size_t i = 0; i < 8; i++) {
-    EXPECT_EQ(actual_ed[i], expected_ed[i]);
-  }
 }
 
 TEST(Keyblob, ToSharesRsa) {
@@ -627,14 +476,8 @@ TEST(Keyblob, ToSharesRsa) {
   uint32_t *share0 = nullptr;
   uint32_t *share1 = nullptr;
   EXPECT_OK(keyblob_to_shares(&key, &share0, &share1));
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  for (size_t i = 0; i < keyblob_share_num_words(kConfigRsa2048); i++) {
-    EXPECT_EQ(share0[i] ^ share1[i], keyblob[i]);
-  }
-#else
   EXPECT_EQ(share0, keyblob.data());
   EXPECT_EQ(share1, keyblob.data() + keyblob_share_num_words(kConfigRsa2048));
-#endif
 
   // Old wrong keyblob length (2 * key_length = 512 bytes) must be rejected.
   otcrypto_blinded_key_t bad_key = {
@@ -712,8 +555,7 @@ TEST(Keyblob, KeyUnmaskNegative) {
   uint32_t keyblob_buf[8] = {0};
   otcrypto_blinded_key_t key = {
       .config = kConfigCtr128,
-      .keyblob_length = static_cast<uint32_t>(keyblob_num_words(kConfigCtr128) *
-                                              sizeof(uint32_t)),
+      .keyblob_length = sizeof(keyblob_buf),
       .keyblob = keyblob_buf,
       .checksum = 0,
   };
@@ -808,11 +650,7 @@ TEST(Keyblob, EccMismatchedKeyLengthRejected) {
   uint32_t *out0 = nullptr;
   uint32_t *out1 = nullptr;
 
-#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
-  constexpr uint32_t kNumShares = 1;
-#else
   constexpr uint32_t kNumShares = 2;
-#endif
 
   otcrypto_key_config_t bad_p256 = kConfigEcdsaP256;
   bad_p256.key_length = 64;

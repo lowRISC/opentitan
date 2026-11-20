@@ -560,9 +560,8 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
  *     `kOtcryptoKeyModeX25519`.
  *   - `config.key_length` must be 32 bytes.
  *   - `config.hw_backed` must be `kHardenedBoolFalse`.
- *   - `keyblob` must point to a caller-allocated 20-word (80-byte) buffer (or
- *     10-word / 40-byte buffer when `OTCRYPTO_DISABLE_KEYBLOB_MASKING` is
- *     enabled), and `keyblob_length` must match.
+ *   - `keyblob` must point to a caller-allocated 20-word (80-byte) buffer, and
+ *     `keyblob_length` must match.
  *
  * The `checksum` field of the blinded key struct is populated by this
  * function.

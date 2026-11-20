@@ -17,10 +17,6 @@ cryptolib_api_config_header(
         "//sw/device/lib/crypto/configs:disable_buf_integrity_checks": False,
         "//conditions:default": True,
     }),
-    keyblob_masking = select({
-        "//sw/device/lib/crypto/configs:disable_keyblob_masking": False,
-        "//conditions:default": True,
-    }),
 )
 
 cc_library(
