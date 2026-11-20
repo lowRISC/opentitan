@@ -25,7 +25,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return system_memory.size();
   endfunction
 
-  function bit [7:0] read_byte(mem_addr_t addr);
+  virtual function bit [7:0] read_byte(mem_addr_t addr);
     bit [7:0] data;
     if (addr_exists(addr)) begin
       data = system_memory[addr];
@@ -37,7 +37,7 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
     return data;
   endfunction
 
-  function void write_byte(mem_addr_t addr, logic [7:0] data);
+  virtual function void write_byte(mem_addr_t addr, logic [7:0] data);
    `uvm_info(`gfn, $sformatf("Write Mem : Addr[0x%0h], Data[0x%0h]", addr, data), UVM_HIGH)
     system_memory[addr] = data;
   endfunction
@@ -95,5 +95,11 @@ class mem_model #(int AddrWidth = bus_params_pkg::BUS_AW,
 
   function bit addr_exists(mem_addr_t addr);
     return system_memory.exists(addr);
+  endfunction
+
+  // Whether read_byte returns a value for addr without an error. A derived model that gives
+  // unwritten bytes a value overrides this together with read_byte.
+  virtual function bit addr_is_mapped(mem_addr_t addr);
+    return addr_exists(addr);
   endfunction
 endclass
