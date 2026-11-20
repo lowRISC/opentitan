@@ -45,9 +45,9 @@ The global default at reset is `0`, but the default of individual signals can be
 
 `mio_outsel` Value    | Selected Output signal
 ----------------------|-----------------------
-0                     | Constant zero (default)
+0                     | Constant zero
 1                     | Constant one
-2                     | High-Z
+2                     | High-Z (default)
 3 + k                 | Corresponding peripheral output signal at index k
 
 The global default at reset is `2`, but the default of individual signals can be overridden at design time, if needed.
