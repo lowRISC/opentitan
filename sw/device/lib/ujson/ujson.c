@@ -182,7 +182,7 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   if (!(ch >= '0' && ch <= '9')) {
     return NOT_FOUND();
   }
-  status_t s;
+  status_t s = OK_STATUS();
   while (ch >= '0' && ch <= '9') {
     if (value > UINT64_MAX / 10) {
       return OUT_OF_RANGE();
