@@ -248,7 +248,6 @@ When software triggers the hardware initialization of the CHERIoT meta SRAM, its
 Code execution from it is not supported.
 
 All four SRAMs have 7 ECC bits per 32-bit word and are scrambled by their [SRAM controller](../../../ip/sram_ctrl/README.md) with a reduced-round PRINCE cipher.
-For the CHERIoT meta SRAM, address scrambling is currently disabled.
 
 ### Secure boot
 

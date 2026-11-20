@@ -32,7 +32,7 @@ These are not exposed in the `sram_ctrl` IP, but have to be set directly when in
 
 Parameter                   | Default (Max)         | Top Earlgrey | Description
 ----------------------------|-----------------------|--------------|---------------
-`Depth`                     | 512                   | multiple     | SRAM depth. If `NumAddrScrRounds` > 0, this must be divisible by 4096 and ideally is a power of 2 (see [note below](#custom-substitution-permutation-network)).
+`Depth`                     | 16384                 | multiple     | SRAM depth. If `NumAddrScrRounds` > 0, this should be a power of 2; a non-power-of-2 depth must be divisible by 512 and triggers a lint error if it is not divisible by 4096 (see [note below](#custom-substitution-permutation-network)).
 `Width`                     | 32                    | 32           | Effective SRAM width without redundancy.
 `DataBitsPerMask`           | 8                     | 8            | Number of data bits per write mask.
 `EnableParity`              | 1                     | 1            | This parameter enables byte parity.
@@ -130,4 +130,10 @@ Note that if the `Depth` parameter is a power of 2, the S&P network operates on 
 If the `Depth` parameter is NOT a power of 2, the address scrambling works as follows: The address space is internally split into a number of equally sized chunks with a power-of-2 depth `ChunkDepth`.
 The S&P network then scrambles the LSBs of the address, i.e., it non-linearly re-maps the addresses within these chunks.
 The MSBs of the address are linearly re-mapped based on the MSBs of the nonce, i.e., the individual chunks get shifted within the actual memory using a single, random, `ChunkDepth`-sized offset.
-While `ChunkDepth` is determined automatically based on the `Depth` parameter, it is selected as big as possible and values below 4096 trigger SystemVerilog assertions and lint errors.
+This offset is the value of the nonce MSBs modulo the number of chunks.
+Since the number of chunks is odd, the offsets are not uniformly distributed (e.g., with 3 chunks, offset 0 occurs with probability 1/2).
+While `ChunkDepth` is determined automatically based on the `Depth` parameter, it is selected as big as possible.
+Values below 512 trigger SystemVerilog assertions, and values below 4096 trigger lint errors since smaller chunks weaken the address scrambling.
+The minimum of 512 allows memories such as the 38 KiB CHERIoT meta SRAM (9728 words, i.e., 19 chunks of 512 words) to use address scrambling.
+In that case, only the 9 address LSBs pass through the S&P network, keyed by 9 nonce bits, while the 5 address MSBs are only shifted by one of 19 chunk offsets.
+By comparison, a 48 KiB memory (3 chunks of 4096 words) passes 12 of its 14 address bits through the S&P network.

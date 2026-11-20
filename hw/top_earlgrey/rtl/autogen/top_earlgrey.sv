@@ -199,7 +199,7 @@ module top_earlgrey #(
   parameter int SramCtrlMetaNumRamInst = 1,
   parameter bit SramCtrlMetaInstrExec = 0,
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
-  parameter int SramCtrlMetaNumAddrScrRounds = 0,
+  parameter int SramCtrlMetaNumAddrScrRounds = 2,
   parameter bit SramCtrlMetaEccCorrection = 0,
   parameter bit SecSramCtrlMetaZeroInit = 1
 ) (

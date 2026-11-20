@@ -7516,7 +7516,9 @@
           desc:
             '''
             Memory size of the RAM (in bytes).
-            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            If address scrambling is enabled, this must be a power of 2 or a multiple of
+            2 KiB, and non-power-of-2 sizes that are not a multiple of 16 KiB trigger a lint
+            error.
             For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
             '''
           type: int
@@ -10709,7 +10711,9 @@
           desc:
             '''
             Memory size of the RAM (in bytes).
-            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            If address scrambling is enabled, this must be a power of 2 or a multiple of
+            2 KiB, and non-power-of-2 sizes that are not a multiple of 16 KiB trigger a lint
+            error.
             For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
             '''
           type: int
@@ -10996,7 +11000,9 @@
           desc:
             '''
             Memory size of the RAM (in bytes).
-            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            If address scrambling is enabled, this must be a power of 2 or a multiple of
+            2 KiB, and non-power-of-2 sizes that are not a multiple of 16 KiB trigger a lint
+            error.
             For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
             '''
           type: int
@@ -12494,7 +12500,6 @@
       param_decl:
       {
         InstrExec: "0"
-        NumAddrScrRounds: "0"
         NumPrinceRoundsHalf: "2"
         InstSize: "38912"
         SecZeroInit: "1"
@@ -12535,7 +12540,9 @@
           desc:
             '''
             Memory size of the RAM (in bytes).
-            If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+            If address scrambling is enabled, this must be a power of 2 or a multiple of
+            2 KiB, and non-power-of-2 sizes that are not a multiple of 16 KiB trigger a lint
+            error.
             For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
             '''
           type: int
@@ -12582,7 +12589,7 @@
           name: NumAddrScrRounds
           desc: Number of address scrambling rounds. 0 disables address scrambling.
           type: int
-          default: "0"
+          default: "2"
           local: "false"
           expose: "true"
           name_top: SramCtrlMetaNumAddrScrRounds
