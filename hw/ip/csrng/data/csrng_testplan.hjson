@@ -94,6 +94,42 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: halt_save_restore
+      desc: '''
+            Verify halting an instance and saving and restoring its internal state via
+            INT_STATE_VAL.
+
+            **Stimulus**:
+            - Halt a random instance via INT_STATE_HALT while it is idle, while it processes a
+              command, and during a Generate command, including while its final block is
+              waiting to be read. Send further commands to it and to the other instances while
+              it is halted, then resume it.
+            - While halted, read the internal state, write a saved or modified state back and
+              resume the instance. Include states with a Generate command in progress.
+            - Access INT_STATE_VAL with the CTRL and per-instance read and write enables set
+              and cleared, while the instance is not halted, and after writing INT_STATE_NUM
+              part-way through a sequence. Halt an instance with its INT_STATE_HALT_ENABLE bit
+              cleared.
+            - Write INT_STATE_HALT and CTRL.WRITE_INT_STATE with invalid kMultiBitBool values,
+              and the halt and write enables with their REGWENs cleared.
+
+            **Checks**:
+            - Based on what the instance was doing, predict when it halts and check
+              INT_STATE_STS, cs_cmd_req_done, SW_CMD_STS.CMD_RDY and the EDN request handshake
+              against it.
+            - The state read matches the model. After a restore, the instance continues from
+              the restored state, including a Generate command restored mid-sequence, and
+              unread genbits and a pending GEN_ABORT are discarded.
+            - Accesses and halts that are not allowed have no effect: reads return 0, writes
+              are dropped and the word pointer doesn't advance.
+            - Invalid values, and changes to the state during a read sequence, raise the
+              corresponding recoverable alert.
+            - Commands on the other instances complete as normal.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
@@ -205,6 +241,14 @@
       desc: '''
             Covers FIPS/CC bit in genbits_vld register
             genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            '''
+    }
+    {
+      name: csrng_halt_save_restore_cg
+      desc: '''
+            Covers halting and internal state access per instance: what the instance was doing
+            when halted, reads and writes of INT_STATE_VAL against the enables, and restores
+            with and without a Generate command in progress.
             '''
     }
   ]
