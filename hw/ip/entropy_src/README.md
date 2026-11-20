@@ -18,7 +18,7 @@ This module conforms to the [Comportable guideline for peripheral functionality.
 - This revision provides an interface to an external physical random noise generator (also referred to as a physical true random number generator or PTRNG).
 The PTRNG external source is a physical true random noise source.
 A noise source and its relation to an entropy source are defined by [SP 800-90B.](https://csrc.nist.gov/publications/detail/sp/800-90b/final)
-- Configurable noise source bus width, supporting 4-256 bits.
+- Configurable noise source bus width or symbol size, supporting 4-256 bits.
 - Variable noise source rate with a maximum rate of one symbol every second clock cycle.
 - A set of registers is provided for firmware to obtain entropy bits.
 - Interrupts are supported:
@@ -52,7 +52,7 @@ These tests include:
 - Optional Vendor Specific tests, which allow silicon creators to extend the health checks by adding a top-level block external to this IP.
 
 The Repetition Count and Adaptive Proportion test are specifically recommended by SP 800-90B, and are implemented in accordance with those recommendations.
-In FIPS/CC compliant mode, all checks except the Repetition Count test are performed on a fixed window of data of configurable size, by default consisting of 2048 bits each.
+In FIPS/CC compliant mode, all checks except the Repetition Count test are performed on a fixed window of data of configurable size, by default consisting of 512 symbols each.
 Per the definition in SP 800-90B, the Repetition Count test does not operate on a fixed window.
 The Repetition Count Test fails if any sequence of bits continuously asserts the same value for too many samples, as determined by the programmable threshold, regardless of whether that sequence crosses any window boundaries.
 The thresholds for these tests should be chosen to achieve a low false-positive rate (&alpha;) given a conservative estimate of the manufacturing tolerances of the PTRNG noise source.
@@ -61,8 +61,8 @@ The combined choice of threshold and window size then determine the false-negati
 When the IP is disabled by clearing the [`MODULE_ENABLE`](./doc/registers.md#MODULE_ENABLE) register, all health checks are disabled and all counters internal to the health checks are reset.
 
 When operating in FIPS/CC compliant mode, the raw outputs of the PTRNG noise source are passed through a conditioning function based on a suitable secure hash function (SHA-3) which has been vetted by NIST to meet the stringent requirements for a full-entropy source.
-In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 2048 bits of PTRNG noise source to construct each 384 bit conditioned entropy sample by default.
-The effectively used number of bits is equal to the configured health test window size.
+In order to compensate for the fact our tests (like *all* realistic statistical tests) have finite resolution for detecting defects, we conservatively use 512 symbols of the PTRNG noise source to construct each 384-bit conditioned entropy seed by default.
+The effectively used number of bits is equal to the configured health test window size multiplied by the symbol size.
 When passed through the conditioning block, the resultant entropy stream will be full entropy unless the PTRNG noise source has encountered some statistical defect serious enough to reduce the raw min-entropy to a level below 0.375 bits of entropy per output bit.
 We choose this level as our definition of "non-tolerable statistical defects" for the purposes of evaluating this system under AIS31.
 Given this definition of "non-tolerable defects", the health-checks as implemented for this block will almost certainly detect any of the previously mentioned defects in a single iteration of the health checks (i.e. such serious defects will be detected with very low &beta;).
