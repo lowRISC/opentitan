@@ -238,7 +238,18 @@ module gpio
     .intg_err_o (alerts[0])
   );
 
+  // GPIO widths less than 17 are not expected to work.
+  // Additionally, GPIO widths other than 32 have not been verified to work.
+  `ASSERT_INIT(NumIOsGeneral_A, NumIOs >= 17)
+
+  // No valid strap values are to be reported without the strap enable having
+  // been high in the previous cycle.
+  `ASSERT(NoStrapValidWithoutEnable_A, sampled_straps_o.valid |-> $past(strap_en_i))
+
   // Assert Known: Outputs
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(SampledStrapsOKnown_A,  sampled_straps_o)
   `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
   `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
   `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)

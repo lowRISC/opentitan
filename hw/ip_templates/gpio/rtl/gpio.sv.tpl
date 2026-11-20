@@ -148,6 +148,7 @@ module ${module_instance_name}
     assign unused_input_select[i] = ^reg2hw.inp_prd_cnt_ctrl[i].input_select.q[7:IOWidth];
 
     // Flop relevant edges until the prescaler counter reaches its threshold.
+    `ASSERT_KNOWN(RelevantEdgeKnown_A, relevant_edge)
     always_comb begin
       // Hold by default
       relevant_edge_d[i] = relevant_edge_q[i];
@@ -315,10 +316,6 @@ module ${module_instance_name}
 
     assign hw2reg.per_pin_io[i].data_out.d = cio_gpio_q[i];
     assign hw2reg.per_pin_io[i].data_in.d  = data_in_d[i];
-  end
-
-  if (NumIOs != 32) begin : gen_per_pin_view_num_ios_check
-    $error("The per-pin register view requires NumIOs == 32.");
   end
 
   // The interleaved PER_PIN_OE and PER_PIN_INTR_CTRL registers are not multiregs. All fields of a
@@ -534,7 +531,23 @@ module ${module_instance_name}
     .intg_err_o (alerts[0])
   );
 
+% if per_pin_view:
+  // The per-pin register view requires NumIOs == 32
+  `ASSERT_INIT(NumIOsPerPinView_A, NumIOs == 32)
+% else:
+  // GPIO widths < 17 or > 32 are not expected to work without RTL changes.
+  // Additionally, GPIO widths other than 32 have not been verified to work.
+  `ASSERT_INIT(NumIOsGeneral_A, NumIOs >= 17 && NumIOs <= 32)
+% endif
+
+  // No valid strap values are to be reported without the strap enable having
+  // been high in the previous cycle.
+  `ASSERT(NoStrapValidWithoutEnable_A, sampled_straps_o.valid |-> $past(strap_en_i))
+
   // Assert Known: Outputs
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(SampledStrapsOKnown_A,  sampled_straps_o)
   `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
   `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
   `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)
