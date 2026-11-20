@@ -26,10 +26,11 @@ cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
 export BITSTREAM="--offline --list ci_bitstreams"
 
-# We will lose serial access when we reboot, but if tests fail we should reboot
-# in case we've crashed the UART handler on the CW340's SAM3U
-# Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
-trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true' EXIT
+# Make sure that the SAM3x is in a good state.
+# We first power cycle the hub port to make sure that we can talk the device (its USB handler
+# seems to get stuck sometimes), and then gently ask it to reboot.
+./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x --power-cycle || true
+./bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga} fpga reset-sam3x || true
 
 # FIXME: #16543 The following step sometimes has trouble reading the I2C we'll
 # log it better and continue even if it fails (the pll is mostly correctly set
