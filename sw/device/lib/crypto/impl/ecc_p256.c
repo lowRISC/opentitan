@@ -596,8 +596,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
   should_wipe = kHardenedBoolFalse;
 
 #ifdef FIPS_MODE
-  // Perform FIPS Pairwise Consistency Test (PCT).
-  HARDENED_TRY(ecdsa_p256_pct_verify(private_key, public_key));
+  // Perform FIPS Pairwise Consistency Test (PCT) for approved software-backed
+  // keys only; hardware-backed (sealing and DICE) keys are non-approved.
+  if (private_key->config.hw_backed == kHardenedBoolFalse) {
+    HARDENED_TRY(ecdsa_p256_pct_verify(private_key, public_key));
+  }
 #endif
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
