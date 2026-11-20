@@ -782,6 +782,17 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
           adv_sealing_data, adv_attestation_data));
 
+      // Lock the keymgr_dpe load root key (UDS) operation
+      uint32_t keymgr_dpe_load_root_key_lock_en = otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_LOAD_ROOT_KEY_LOCK_EN_OFFSET);
+      if (launder32(keymgr_dpe_load_root_key_lock_en) != kHardenedBoolFalse) {
+        HARDENED_CHECK_NE(keymgr_dpe_load_root_key_lock_en, kHardenedBoolFalse);
+        SEC_MMIO_WRITE_INCREMENT(kScKeymgrDPESecMmioLockUds);
+        sc_keymgr_dpe_lock_uds();
+      } else {
+        HARDENED_CHECK_EQ(keymgr_dpe_load_root_key_lock_en, kHardenedBoolFalse);
+      }
+
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
       // TODO(#30830): Gracefully handle if secret2 is not locked. This option
