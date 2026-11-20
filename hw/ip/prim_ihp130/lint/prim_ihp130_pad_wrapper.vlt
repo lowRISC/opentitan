@@ -1,0 +1,9 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+
+`verilator_config
+
+lint_off -rule UNUSED -file "*/prim_ihp130/rtl/prim_pad_wrapper.sv" -match "Parameter is not used: 'ScanRole'"
+lint_off -rule UNUSED -file "*/prim_ihp130/rtl/prim_pad_wrapper.sv" -match "Parameter is not used: 'PadOrient'"
