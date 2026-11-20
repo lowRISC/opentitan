@@ -28,6 +28,10 @@
     "util",
     "vendor/google_riscv-dv",
 
+    "CREDITS.md",
+    "LICENSE",
+    "NOTICE",
+
     "ibex_configs.yaml",
 
     "ibex_core.core",
