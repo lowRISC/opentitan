@@ -63,7 +63,7 @@ enum {
  */
 #ifdef FIPS_MODE
   kModeX25519KeygenInsCnt = 718617,
-  kModeX25519KeygenSideloadInsCnt = 711347,
+  kModeX25519KeygenSideloadInsCnt = 711343,
 #else
   kModeX25519KeygenInsCnt = 359304,
   kModeX25519KeygenSideloadInsCnt = 355669,
