@@ -258,7 +258,7 @@ def main():
           label_prefix = "@@//sw/device/silicon_creator/rom_ext/e2e/rescue:")
     sched("ROM_EXT (remaining)", "cw340", "cw340_rom_ext", ["cw340_rom_ext"])
 
-    sched("ROM", "cw340", "cw340_rom", ["cw340_rom_with_fake_keys"], split=2)
+    sched("ROM", "cw340", "cw340_rom", ["cw340_rom"], split=2)
     sched("TestROM", "cw340", "cw340_test_rom", ["cw340_test_rom"])
 
     # Check for ID collisions in the scheduled jobs.

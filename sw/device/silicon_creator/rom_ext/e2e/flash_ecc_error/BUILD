@@ -90,7 +90,7 @@ opentitan_binary(
     srcs = ["secret_page_setup.c"],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     deps = [
         "//sw/device/lib/runtime:log",

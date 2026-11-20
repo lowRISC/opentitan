@@ -84,7 +84,7 @@ opentitan_binary(
             ":print_certs_for_assemble": OWNER_SLOTS["a"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw340_rom",
         ],
     )
     for variation in ROM_EXT_VARIATIONS.keys()
@@ -105,7 +105,7 @@ _VARIATION_INTEROP_TEST_CASES = [
     opentitan_test(
         name = "variation_interop_{}_first_test".format(tc["first"]),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -138,7 +138,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["modify_digest.c"],
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     deps = [
         "//hw/top/dt",

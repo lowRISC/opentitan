@@ -51,7 +51,7 @@ strap_combinations_test(
         #
         # We want the mask_rom variant enabled because it tests that the
         # ROM recognizes its two strapping values and no others.
-        "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": "empty.vmem",
+        "//hw/top_earlgrey:sim_verilator_rom": "empty.vmem",
     },
     tags = [
         "verilator",

@@ -132,7 +132,7 @@ class OtDut():
                 host_flags += f" --load-memory RRDA={otp}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
-                target=f"fpga_{self.fpga}_rom_with_fake_keys")
+                target=f"fpga_{self.fpga}_rom")
         else:
             # Set host flags and device binary for Silicon DUT.
             host_flags = host_flags.format(target="teacup",
@@ -236,15 +236,15 @@ class OtDut():
                 base_dir=self._base_dev_dir(),
                 sku=self.sku_config.name,
                 ate_suffix=ate_suffix,
-                target=f"fpga_{self.fpga}_rom_with_fake_keys")
+                target=f"fpga_{self.fpga}_rom")
             perso_bin = perso_bin.format(
                 base_dir=self._base_dev_dir(),
                 sku=self.sku_config.name,
-                target=f"fpga_{self.fpga}_rom_with_fake_keys")
+                target=f"fpga_{self.fpga}_rom")
             fw_bundle_bin = fw_bundle_bin.format(
                 base_dir=self._base_dev_dir(),
                 sku=self.sku_config.name,
-                target=f"fpga_{self.fpga}_rom_with_fake_keys")
+                target=f"fpga_{self.fpga}_rom")
         else:
             # Set host flags and device binaries for Silicon DUT.
             host_flags = host_flags.format(target="teacup",

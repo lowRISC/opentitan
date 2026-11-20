@@ -68,7 +68,7 @@ opentitan_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_default",
@@ -154,7 +154,7 @@ opentitan_test(
         srcs = [":empty_test"],
         ecdsa_key = ecdsa_key_by_name(ECDSA_ONLY_KEY_STRUCTS, key),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
             "//hw/top_darjeeling:sim_dv": None,
@@ -202,7 +202,7 @@ opentitan_test(
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
     for group in [
-        "fpga_cw340_rom_with_fake_keys",
+        "fpga_cw340_rom",
         "sim_dv",
     ]
 ]
@@ -223,7 +223,7 @@ opentitan_test(
     for slot in SLOTS
     for key in SIGVERIFY_LC_KEYS
     for group in [
-        "fpga_cw340_rom_with_fake_keys",
+        "fpga_cw340_rom",
         "sim_dv",
     ]
 ]
@@ -310,8 +310,8 @@ opentitan_test(
     name = "rom_e2e_flash_ctrl_init",
     srcs = ["rom_e2e_flash_ctrl_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
+        "//hw/top_earlgrey:sim_qemu_rom": None,
     },
     # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
     # https://github.com/lowRISC/opentitan/issues/30897
@@ -333,8 +333,8 @@ opentitan_test(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_verilator_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
+        "//hw/top_earlgrey:sim_verilator_rom": None,
     },
     fpga = fpga_params(
         # Note: This test never prints a failure message so it will fail only
@@ -389,7 +389,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     verilator = verilator_params(
@@ -408,7 +408,7 @@ opentitan_test(
     name = "rom_e2e_c_init",
     srcs = ["rom_e2e_c_init_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
@@ -459,7 +459,7 @@ opentitan_test(
         "//sw/device/silicon_creator/rom/keys/unauthorized/ecdsa:ecdsa_keyset": "unauthorized_key_0",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         exit_failure = MSG_PASS,
@@ -480,7 +480,7 @@ opentitan_test(
     name = "rom_ext_upgrade",
     srcs = ["rom_ext_upgrade_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         # Fail if we see version 3, because the test has updated twice, FAIL, version 0 twice, or PASS
@@ -503,7 +503,7 @@ opentitan_test(
     name = "rom_e2e_chip_info",
     srcs = ["chip_info_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:fpga_cw340_test_rom": None,
     },
     deps = [
