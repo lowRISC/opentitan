@@ -497,7 +497,7 @@ status_t otbn_load_app(const otbn_app_t app) {
   // Check whether the state is present and use it if so
   if (has_state) {
     if (launder32(state.imem_cache) ==
-        (uint32_t)(uintptr_t)app.imem_compressed_start) {
+        launder32((uint32_t)(uintptr_t)app.imem_compressed_start)) {
       HARDENED_CHECK_EQ(state.imem_cache,
                         (uint32_t)(uintptr_t)app.imem_compressed_start);
       skip_imem = kHardenedBoolTrue;
@@ -546,7 +546,7 @@ status_t otbn_load_app(const otbn_app_t app) {
     // Ensure that the checksum matches expectations.
     uint32_t checksum =
         abs_mmio_read32(otbn_base() + OTBN_LOAD_CHECKSUM_REG_OFFSET);
-    if (launder32(checksum) != app.checksum) {
+    if (launder32(checksum) != launder32(app.checksum)) {
       // COVERAGE (HW ERR) Checksum mismatch only occurs on hardware fault or
       // memory corruption during IMEM load.
       if (has_state) {

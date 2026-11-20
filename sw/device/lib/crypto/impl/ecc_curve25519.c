@@ -107,7 +107,7 @@ static status_t curve25519_private_key_length_check(
       launder32(otcrypto_integrity_blinded_key_check(private_key)),
       kHardenedBoolTrue);
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     if (expected_mode != kOtcryptoKeyModeX25519) {
       return OTCRYPTO_BAD_ARGS;
     }
@@ -115,8 +115,7 @@ static status_t curve25519_private_key_length_check(
     // keyblob library will catch it before we sideload the key.
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_NE(private_key->config.hw_backed, kHardenedBoolTrue);
 
   // Check the keyblob length.
   if (private_key->keyblob_length !=
@@ -229,7 +228,7 @@ static status_t ed25519_message_prehash(
   // Instantiate variable for an FI check on the sign mode used.
   otcrypto_eddsa_sign_mode_t sign_mode_used = launder32(0);
   // Use SHA2_512 if the sign mode is kOtcryptoEddsaSignModeHashEddsa.
-  if (sign_mode == launder32(kOtcryptoEddsaSignModeHashEddsa)) {
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
     sign_mode_used =
         launder32(sign_mode_used) | kOtcryptoEddsaSignModeHashEddsa;
 
@@ -241,7 +240,7 @@ static status_t ed25519_message_prehash(
     message_ph->len = kCurve25519HashBytes;
 
     // Use the unity function if the sign mode is kOtcryptoEddsaSignModeEddsa.
-  } else if (sign_mode == launder32(kOtcryptoEddsaSignModeEddsa)) {
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
     sign_mode_used = launder32(sign_mode_used) | kOtcryptoEddsaSignModeEddsa;
     *message_ph =
         OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)input_message->data,
@@ -472,7 +471,7 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
                                        kOtcryptoEddsaSignModeEddsa, &sig_const,
                                        &result));
 
-  if (result != kHardenedBoolTrue) {
+  if (launder32(result) != kHardenedBoolTrue) {
     // COVERAGE (FI CM) Pairwise consistency check only fails under fault
     // injection.
     crypto_state_t state;
