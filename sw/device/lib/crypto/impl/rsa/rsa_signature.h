@@ -40,6 +40,17 @@ typedef enum rsa_signature_padding {
 } rsa_signature_padding_t;
 
 /**
+ * Ensures an RSA key mode matches the requested signature padding mode.
+ *
+ * @param key_mode RSA key mode.
+ * @param padding_mode RSA signature padding scheme.
+ * @return Result of the operation (`OTCRYPTO_OK` or `OTCRYPTO_BAD_ARGS`).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_signature_key_mode_padding_check(
+    otcrypto_key_mode_t key_mode, const rsa_signature_padding_t padding_mode);
+
+/**
  * Starts generating an RSA signature; returns immediately.
  *
  * Although RSA signing raises the encoded message to the secret exponent
@@ -65,8 +76,8 @@ typedef enum rsa_signature_padding {
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_signature_generate_start(
-    rsa_size_t size, const uint32_t *d0, const uint32_t *d1, uint32_t e,
-    const uint32_t *n, uint32_t checksum,
+    rsa_size_t size, otcrypto_key_mode_t key_mode, const uint32_t *d0,
+    const uint32_t *d1, uint32_t e, const uint32_t *n, uint32_t checksum,
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode);
 
@@ -96,7 +107,8 @@ status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature);
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_signature_verify_start(rsa_size_t size, uint32_t e,
+status_t rsa_signature_verify_start(rsa_size_t size,
+                                    otcrypto_key_mode_t key_mode, uint32_t e,
                                     const uint32_t *n,
                                     const uint32_t *signature);
 
