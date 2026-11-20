@@ -115,13 +115,12 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_private_key_length_check(
   }
 #endif
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Skip the length check in this case; if the salt is the wrong length, the
     // keyblob library will catch it before we sideload the key.
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
-                    kHardenedBoolTrue);
+  HARDENED_CHECK_NE(private_key->config.hw_backed, kHardenedBoolTrue);
 
   // Check the unmasked length.
   if (launder32(private_key->config.key_length) != kP384ScalarBytes) {
@@ -351,7 +350,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
   HARDENED_TRY(otcrypto_ecdsa_p384_verify(
       public_key, message_digest, &signature_check, &verification_result));
 
-  if (verification_result != kHardenedBoolTrue) {
+  if (launder32(verification_result) != kHardenedBoolTrue) {
     // COVERAGE (FI CM) Verification of a freshly generated signature only
     // fails under fault injection or a mismatched keypair.
     crypto_state_t *state = NULL;
@@ -796,7 +795,7 @@ static otcrypto_status_t ecdh_p384_pct_verify(
   }
   hardened_bool_t result =
       hardened_memeq(public_key->key, check_pk.key, ARRAYSIZE(pk_buf));
-  if (result != kHardenedBoolTrue) {
+  if (launder32(result) != kHardenedBoolTrue) {
     // COVERAGE (FI CM) Pairwise consistency check only fails under fault
     // injection.
     crypto_state_t *state = NULL;

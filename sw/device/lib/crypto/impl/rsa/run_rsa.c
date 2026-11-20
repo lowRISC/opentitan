@@ -204,7 +204,7 @@ status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
 
   // Check that the inferred result size matches expectations.
-  if (launder32(num_words) != num_words_inferred) {
+  if (launderw(num_words) != launderw(num_words_inferred)) {
     // COVERAGE (SW ERR) This is an internal functions only provided with
     // correct inputs.
     return OTCRYPTO_FATAL_ERR;
@@ -554,7 +554,7 @@ status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
 
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
-  if (launder32(act_mode) != mode) {
+  if (launder32(act_mode) != launder32(mode)) {
     return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, mode);
@@ -601,7 +601,7 @@ status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
 
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
-  if (launder32(act_mode) != mode) {
+  if (launder32(act_mode) != launder32(mode)) {
     return OTCRYPTO_RECOV_ERR;
   }
   HARDENED_CHECK_EQ(act_mode, mode);
@@ -662,7 +662,7 @@ status_t rsa_modulus_composite_check(rsa_size_t size, const uint32_t *modulus,
   // that the expected mode ran instead.
   uint32_t act_mode = 0;
   HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
-  if (launder32(act_mode) != mode) {
+  if (launder32(act_mode) != launder32(mode)) {
     // COVERAGE (FI CM) The mode only changes under fault injection.
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_FATAL_ERR;
