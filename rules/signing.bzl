@@ -744,9 +744,13 @@ def _offline_signature_attach(ctx):
     outputs = []
     for f in inputs:
         if inputs[f].get("bin") == None:
+            if ctx.attr.strict:
+                fail("In {}: No pre-signed binary for {}".format(ctx.label, f))
             print("WARNING: No pre-signed binary for", f)
             continue
         if inputs[f].get("rsa_sig") == None and inputs[f].get("ecdsa_sig") == None:
+            if ctx.attr.strict:
+                fail("In {}: No RSA or ECDSA signature file for {}".format(ctx.label, f))
             print("WARNING: No RSA or ECDSA signature file for", f)
             continue
         out = _post_signing_attach(
@@ -767,6 +771,7 @@ offline_signature_attach = rule(
         "ecdsa_signatures": attr.label_list(allow_files = True, doc = "ECDSA signed digest files"),
         "rsa_signatures": attr.label_list(allow_files = True, doc = "RSA signed digest files"),
         "spx_signatures": attr.label_list(allow_files = True, doc = "SPHINCS+ / SLH-DSA signed digest files"),
+        "strict": attr.bool(default = True, doc = "If set, fail on missing signatures or binaries"),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )

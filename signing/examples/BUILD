@@ -60,5 +60,8 @@ offline_signature_attach(
     ecdsa_signatures = [
         "//signing/examples/signatures:ecdsa_signatures",
     ],
+    # Since the signatures are not committed to the repository, building this target
+    # would fail in CI if we strictly enforced that all signatures are present.
+    strict = False,
     tags = ["manual"],
 )
