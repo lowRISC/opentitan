@@ -92,14 +92,14 @@ static status_t spin_until(uint32_t bit) {
  * @return result, OK or error.
  */
 static status_t aes_write_key(aes_key_t key) {
-  if (key.sideload != kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
+  if (launder32(key.sideload) != kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
     HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key),
                       kHardenedBoolTrue);
     // Nothing to be done; key must be separately loaded from keymgr.
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolFalse));
+  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
 
   uintptr_t share0 = kBase + AES_KEY_SHARE0_0_REG_OFFSET;
   uintptr_t share1 = kBase + AES_KEY_SHARE1_0_REG_OFFSET;
@@ -306,8 +306,8 @@ static status_t aes_begin(aes_key_t key, const aes_block_t *iv,
   HARDENED_TRY(aes_write_key(key));
 
   // All modes except ECB need to set an IV.
-  if (key.mode != kAesCipherModeEcb) {
-    HARDENED_CHECK_NE(launder32(key.mode), kAesCipherModeEcb);
+  if (launder32(key.mode) != kAesCipherModeEcb) {
+    HARDENED_CHECK_NE(key.mode, kAesCipherModeEcb);
     uint32_t iv_offset = kBase + AES_IV_0_REG_OFFSET;
     for (size_t i = 0; i < ARRAYSIZE(iv->data); ++i) {
       abs_mmio_write32(iv_offset + i * sizeof(uint32_t), iv->data[i]);

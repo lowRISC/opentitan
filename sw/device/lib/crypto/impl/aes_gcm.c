@@ -242,10 +242,11 @@ status_t aes_gcm_check_tag_length(size_t word_len,
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(tag_len_set), tag_len);
+  bit_len = launderw(bit_len);
   HARDENED_CHECK_GT(bit_len, 0);
   HARDENED_CHECK_EQ(bit_len % 32, 0);
 
-  if (launder32(word_len) != bit_len / 32) {
+  if (launderw(word_len) != launderw(bit_len / 32)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(word_len, bit_len / 32);
@@ -292,7 +293,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   barrier32(hw_cleanup_guard);
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext->len) != plaintext->len) {
+  if (launderw(ciphertext->len) != launderw(plaintext->len)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
@@ -361,7 +362,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   }
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext->len) != plaintext->len) {
+  if (launderw(ciphertext->len) != launderw(plaintext->len)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
