@@ -852,7 +852,7 @@
     },
     "//third_party/qemu:extensions.bzl%qemu": {
       "general": {
-        "bzlTransitiveDigest": "rNe1I5/NHyiy+T45jgPRx3CuK65TXSSR4IhncDy3mRw=",
+        "bzlTransitiveDigest": "btBBtUxq2or9Bnc+b2ntZiSR5fCOqa7jwh1Madi+CP8=",
         "usagesDigest": "le4nFQIsMEytUZA5Dz/GdRTwr0Ri5kyC+VIeW4HnJLI=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -865,7 +865,9 @@
               "build_file": "@@//third_party/qemu:BUILD.qemu_opentitan.bazel",
               "sha256": "85091287ee67dee337968071b7d10d39d44bb582c90991eae3d61f11a13ccf29",
               "patch_cmds": [
-                "touch .this.is.the.archive"
+                "touch .this.is.the.archive",
+                "sed -i 's/(\\[ABCDEFGH\\]\\\\d+|ZRO)/([A-Z]\\\\d+|ZRO|ONE)/' python/qemu/ot/otp/lifecycle.py",
+                "grep -q 'ZRO|ONE' python/qemu/ot/otp/lifecycle.py"
               ]
             }
           },
