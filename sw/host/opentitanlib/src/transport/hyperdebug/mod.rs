@@ -29,7 +29,7 @@ use crate::transport::chip_whisperer::ChipWhisperer;
 use crate::transport::chip_whisperer::board::Board;
 use crate::transport::common::fpga::{ClearBitstream, FpgaProgram};
 use crate::transport::common::uart::flock_serial;
-use crate::transport::common::usb::RusbContext;
+use crate::transport::common::usb::{RusbContext, UsbHub, UsbHubOp};
 use crate::transport::{
     Capabilities, Capability, SetJtagPins, Transport, TransportError, TransportInterfaceType,
     UpdateFirmware,
@@ -61,6 +61,7 @@ pub struct Hyperdebug<T: Flavor> {
     current_firmware_version: Option<String>,
     cmsis_google_capabilities: Cell<Option<u16>>,
     phantom: PhantomData<T>,
+    cw_usb_port_workaround: Option<u8>,
 }
 
 /// Trait allowing slightly different treatment of USB devices that work almost like a
@@ -142,6 +143,7 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_vid: Option<u16>,
         usb_pid: Option<u16>,
         usb_serial: Option<&str>,
+        cw_usb_port_workaround: Option<u8>,
     ) -> Result<Self> {
         let usb_context = RusbContext::new();
         let device = usb_context.device_by_id(
@@ -304,6 +306,7 @@ impl<T: Flavor> Hyperdebug<T> {
             current_firmware_version,
             cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
+            cw_usb_port_workaround,
         };
         Ok(result)
     }
@@ -408,6 +411,28 @@ impl<T: Flavor> Hyperdebug<T> {
             .usb_device
             .release_interface(cmsis_interface.interface)?;
         Ok(capabilities)
+    }
+
+    // Return the parent hub of the hyperdebug device.
+    fn dut_usb_parent_hub(&self) -> Result<UsbHub> {
+        UsbHub::from_parent_device(&*self.inner.usb_device)
+            .context("failed to open the parent hub of the hyperdebug device")
+    }
+
+    fn enable_dut_usb_port(&self, en: bool) -> Result<()> {
+        if let Some(port) = self.cw_usb_port_workaround {
+            let (op, msg) = match en {
+                true => (UsbHubOp::PowerOn, "on"),
+                false => (UsbHubOp::PowerOff, "off"),
+            };
+            let hub = self.dut_usb_parent_hub()?;
+            log::info!("Powering {msg} port {port} on hyperdebug parent hub (CW USB workaround)");
+            hub.op(op, port, std::time::Duration::from_secs(1), true)
+                .context(format!(
+                    "failed to disable port {port} on hyperdebug parent hub (CW USB workaround)"
+                ))?;
+        }
+        Ok(())
     }
 }
 
@@ -803,9 +828,16 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
                 _ => Err(TransportError::UnsupportedOperation.into()),
             }
         } else if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
-            T::load_bitstream(fpga_program).map(|_| None)
+            // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
+            // device and only re-enable it after loading.
+            self.enable_dut_usb_port(false)?;
+            T::load_bitstream(fpga_program)?;
+            self.enable_dut_usb_port(true)?;
+            Ok(None)
         } else if let Some(clear) = action.downcast_ref::<ClearBitstream>() {
-            T::clear_bitstream(clear).map(|_| None)
+            self.enable_dut_usb_port(false)?;
+            T::clear_bitstream(clear)?;
+            Ok(None)
         } else {
             Err(TransportError::UnsupportedOperation.into())
         }
