@@ -99,6 +99,25 @@ static status_t curve25519_private_key_length_check(
   }
   HARDENED_CHECK_EQ(private_key->config.key_mode, expected_mode);
 
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    if (expected_mode != kOtcryptoKeyModeX25519) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    if (private_key->keyblob_length != kKeyblobHwBackedBytes) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  } else {
+    HARDENED_CHECK_NE(private_key->config.hw_backed, kHardenedBoolTrue);
+    if (private_key->config.hw_backed != kHardenedBoolFalse) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    // Check the keyblob length.
+    if (private_key->keyblob_length !=
+        keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  }
+
   // Check the integrity of the key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
@@ -106,22 +125,6 @@ static status_t curve25519_private_key_length_check(
   HARDENED_CHECK_EQ(
       launder32(otcrypto_integrity_blinded_key_check(private_key)),
       kHardenedBoolTrue);
-
-  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
-    if (expected_mode != kOtcryptoKeyModeX25519) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    // Skip the length check in this case; if the salt is the wrong length, the
-    // keyblob library will catch it before we sideload the key.
-    return OTCRYPTO_OK;
-  }
-  HARDENED_CHECK_NE(private_key->config.hw_backed, kHardenedBoolTrue);
-
-  // Check the keyblob length.
-  if (private_key->keyblob_length !=
-      keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   return OTCRYPTO_OK;
 }
