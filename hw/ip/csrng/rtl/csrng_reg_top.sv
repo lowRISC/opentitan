@@ -1490,7 +1490,7 @@ module csrng_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (),
+    .q      (reg2hw.hw_exc_sts.q),
     .ds     (),
 
     // to register interface (read)
