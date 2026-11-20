@@ -9,8 +9,10 @@ set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_resets(_secondary)?(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
+waive -rules RESET_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_intraip_(s2p|p2s)(_i|_o)?\.rst.* is driven by a multiplexer} \
+      -comment "The resets that cross between the partitions of the rstmgr. This is dedicated reset infrastructure, and hence permissible"
 
 # External clock
 waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clk_ast_ext_i' is connected to 'earlgrey_pd_aon' port 'clk_ast_ext_i', and used as a clock} \
@@ -27,6 +29,8 @@ waive -rules {RESET_USE} -location {top_earlgrey.sv} -regexp {'rstmgr_resets..*'
 
 waive -rules {RESET_USE} -location {earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {'rstmgr_resets..*' is connected to 'ast_part_(primary|secondary)' port 'rst_ast_.*_ni', and used as an asynchronous reset or set} \
       -comment "Reset struct distribution inside the power domain."
+waive -rules {RESET_USE} -location {earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {'rstmgr_resets(_secondary)?\..*' is connected to 'clkmgr_part_(primary|secondary)' port 'rst_.*_ni', and used as an asynchronous reset or set} \
+      -comment "Reset struct distribution to the partitions of the clkmgr inside the power domain."
 
 # Clock and reset sense ports of AST
 waive -rules {CLOCK_USE} -location {earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {'ast_sns_clks..*' is connected to 'ast_part_(primary|secondary)' port 'sns_clks_i..*', and used as a clock} \
@@ -38,6 +42,8 @@ waive -rules {RESET_USE} -location {earlgrey_pd_main.sv earlgrey_pd_aon.sv} -reg
 # Clock MUXs
 waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {'ast_intraip_p2s.clk_rst.clk_ast_tlul' is driven by a multiplexer here} \
       -comment "This is an actual clock signal originating from a DFT clock mux"
+waive -rules RESET_MUX -location {top_earlgrey.sv} -regexp {Asynchronous reset 'ast_intraip_p2s.clk_rst.rst_ast_tlul_n' is driven by a multiplexer} \
+      -comment "This is rstmgr_resets.rst_lc_io_div4_n of the Main power domain, waived above as a rstmgr_resets reset. It passes through the primary partition of the AST into ast_intraip_p2s, and AscentLint does not connect the two names."
 
 waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {'ast_clk_src_io.*' reaches a multiplexer here, used as a clock} \
       -comment "This multiplexer is required to generate a divided clock."

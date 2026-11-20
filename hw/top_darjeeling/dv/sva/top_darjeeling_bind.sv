@@ -10,10 +10,10 @@ module top_darjeeling_bind;
     .por_d0_ni(por_n_i[1]),
     .core_clk_en(u_pwrmgr.pwr_ast_o.core_clk_en),
     .core_clk_val(u_pwrmgr.pwr_ast_i.core_clk_val),
-    .clk_core_i(u_clkmgr.clk_main_i),
+    .clk_core_i(u_clkmgr_part_primary.clk_main_i),
     .io_clk_en(u_pwrmgr.pwr_ast_o.io_clk_en),
     .io_clk_val(u_pwrmgr.pwr_ast_i.io_clk_val),
-    .clk_io_i(u_clkmgr.clk_io_i),
+    .clk_io_i(u_clkmgr_part_primary.clk_io_i),
     .main_pd_n(u_pwrmgr.pwr_ast_o.main_pd_n),
     .main_pok(u_pwrmgr.pwr_ast_i.main_pok)
   );
