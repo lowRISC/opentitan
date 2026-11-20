@@ -45,6 +45,12 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
         csr_wr(ral.transition_token[i], token_val[TL_DW-1:0]);
         token_val = token_val >> TL_DW;
       end
+      // The volatile RAW unlock hashes the token in KMAC, like a persistent transition.
+      // Let the KMAC agent return the hashed RAW unlock token.
+      if (`SEC_VOLATILE_RAW_UNLOCK_EN && next_state == DecLcStTestUnlocked0) begin
+        next_lc_state = next_state;
+        set_hashed_token();
+      end
       csr_wr(ral.transition_cmd, 'h01);
 
       if (!`SEC_VOLATILE_RAW_UNLOCK_EN &&
@@ -80,6 +86,8 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   endtask : body
 
+  // A successful volatile unlock can be followed by a persistent transition.
+  // Its token is hashed a second time.
   virtual task transition_to_next_valid_state(bit volatile_raw_unlock_success);
     lc_ctrl_state_pkg::lc_token_t token_val = get_random_token();
     lc_ctrl_pkg::token_idx_e token;

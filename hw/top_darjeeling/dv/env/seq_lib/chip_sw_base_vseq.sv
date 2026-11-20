@@ -990,7 +990,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
 
     begin
-      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      // The volatile RAW unlock hashes the token in KMAC, so it needs the unhashed RAW unlock token.
+      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockToken}}}};
       foreach (token_csr_vals[index]) begin
         jtag_riscv_agent_pkg::jtag_write_csr(
           cfg.get_lc_ctrl_dmi_addr(
