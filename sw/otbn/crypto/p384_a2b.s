@@ -212,7 +212,7 @@ p384_arithmetic_to_boolean:
   bn.xor    w6, w6, w2
 
   /* Loop for k = 1 to K - 1 = 385 - 1 */
-  loopi     384, 14
+  loopi     384, 15
 
     /* [w2,w1] = gamma  <= [w4,w3] & [w19,w18] = T & r
 
