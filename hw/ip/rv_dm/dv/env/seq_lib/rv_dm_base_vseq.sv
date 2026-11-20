@@ -569,4 +569,20 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     mode_seq.start(m_mode_sequencer);
   endtask
 
+
+  // Set sequencers in the child vseq to match the ones used in this virtual sequence
+  //
+  // This extends a function from cip_base_vseq
+  function void configure_child_vseq(uvm_sequence child_vseq);
+    rv_dm_base_vseq rv_dm_child_vseq;
+
+    super.configure_child_vseq(child_vseq);
+
+    if (!$cast(rv_dm_child_vseq, child_vseq)) begin
+      `uvm_fatal(get_full_name(), "Cannot configure child that is not an rv_dm_base_vseq.")
+    end
+
+    rv_dm_child_vseq.m_mode_sequencer = m_mode_sequencer;
+  endfunction
+
 endclass : rv_dm_base_vseq
