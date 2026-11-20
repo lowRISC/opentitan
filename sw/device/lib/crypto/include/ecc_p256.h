@@ -44,7 +44,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen(
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and use the private key handle
- * returned by `otcrypto_hw_backed_attestation_key`.
+ * returned by `otcrypto_hw_backed_key`.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
@@ -312,7 +312,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and use the private key handle
- * returned by `otcrypto_hw_backed_attestation_key`.
+ * returned by `otcrypto_hw_backed_key`.
  *
  * @param private_key Destination structure for key handle.
  * @param attestation_seed The additional per-chip fixed entropy.
@@ -331,7 +331,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and use the private key handle
- * returned by `otcrypto_hw_backed_attestation_key`.
+ * returned by `otcrypto_hw_backed_key`.
  *
  * May block until the operation is complete.
  *
@@ -417,7 +417,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and use the private key handle
- * returned by `otcrypto_hw_backed_attestation_key`.
+ * returned by `otcrypto_hw_backed_key`.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
@@ -441,7 +441,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and use the private key handle
- * returned by `otcrypto_hw_backed_attestation_key`.
+ * returned by `otcrypto_hw_backed_key`.
  *
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of async ECDSA finalize operation. Returns
