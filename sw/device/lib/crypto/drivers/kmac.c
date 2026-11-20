@@ -167,17 +167,29 @@ static void kmac_cmd_write(uint32_t cmd_value) {
  */
 OT_USED static void kmac_wipe_guard(uint32_t *dummy) {
   (void)dummy;
-  uint32_t status_reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
-    kmac_cmd_write(KMAC_CMD_CMD_VALUE_PROCESS);
-    while (
-        !bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT) &&
-        !bitfield_bit32_read(status_reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
-      status_reg = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
+  enum { kKmacWipeMaxAttempts = 1000000 };
+  bool process_sent = false;
+  bool done_sent = false;
+  for (uint32_t i = 0; i < kKmacWipeMaxAttempts; i++) {
+    uint32_t status = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
+    if (bitfield_bit32_read(status, KMAC_STATUS_SHA3_IDLE_BIT) ||
+        bitfield_bit32_read(status, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
+      return;
     }
-  }
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT)) {
-    kmac_cmd_write(KMAC_CMD_CMD_VALUE_DONE);
+    if (!process_sent &&
+        bitfield_bit32_read(status, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+      kmac_cmd_write(KMAC_CMD_CMD_VALUE_PROCESS);
+      process_sent = true;
+    } else if (!done_sent &&
+               bitfield_bit32_read(status, KMAC_STATUS_SHA3_SQUEEZE_BIT)) {
+      // Confirm `SHA3_SQUEEZE` stays high on a second read so a 1-cycle
+      // auto-drain pulse (`StErrorWaitAbsorbed` / `StAppWait`) is skipped.
+      status = abs_mmio_read32(kKmacBaseAddr + KMAC_STATUS_REG_OFFSET);
+      if (bitfield_bit32_read(status, KMAC_STATUS_SHA3_SQUEEZE_BIT)) {
+        kmac_cmd_write(KMAC_CMD_CMD_VALUE_DONE);
+        done_sent = true;
+      }
+    }
   }
 }
 
