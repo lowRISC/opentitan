@@ -112,6 +112,8 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * multiple of 4, some output from the hardware will be discarded. This detail
  * may be important for known-answer tests.
  *
+ * Note: Not claimed to be FI protected.
+ *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
  * @return Result of the DRBG generate operation. Returns
@@ -136,6 +138,8 @@ otcrypto_status_t otcrypto_drbg_generate(
  * The output is generated in 16-byte blocks; if `drbg_output->len` is not a
  * multiple of 4, some output from the hardware will be discarded. This detail
  * may be important for known-answer tests.
+ *
+ * Note: Not claimed to be FI protected.
  *
  * @param additional_input Pointer to the additional data.
  * @param[out] drbg_output Pointer to the generated pseudo random bits.
