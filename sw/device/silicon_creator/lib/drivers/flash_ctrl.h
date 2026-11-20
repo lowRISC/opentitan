@@ -172,6 +172,7 @@ FLASH_CTRL_INFO_PAGES_DEFINE(INFO_PAGE_STRUCT_DECL_);
 enum {
   kFlashCtrlSecMmioCertInfoPageCreatorCfg = 2,
   kFlashCtrlSecMmioCertInfoPageOwnerRestrict = 2,
+  kFlashCtrlSecMmioCertInfoPageRoLockdown = 3,
   kFlashCtrlSecMmioCertInfoPagesOwnerRestrict = 5,
   kFlashCtrlSecMmioCreatorInfoPagesLockdown = 14,
   kFlashCtrlSecMmioDataDefaultCfgSet = 1,
@@ -182,7 +183,7 @@ enum {
   kFlashCtrlSecMmioInfoPermsSet = 1,
   kFlashCtrlSecMmioBankErasePermsSet = 1,
   kFlashCtrlSecMmioInit = 3,
-  kFlashCtrlSecMmioDataRegionProtect = 1,
+  kFlashCtrlSecMmioDataRegionProtect = 2,
   kFlashCtrlSecMmioDataRegionProtectLock = 1,
   kFlashCtrlSecMmioPrimLockdown = 1,
 };
@@ -683,6 +684,21 @@ void flash_ctrl_cert_info_page_creator_cfg(
  * when sec_mmio is being used to check expectations.
  */
 void flash_ctrl_cert_info_page_owner_restrict(
+    const flash_ctrl_info_page_t *info_page);
+
+/**
+ * Configures a certificate flash info page with certificate settings, restricts
+ * access to read-only, and locks its configuration register.
+ *
+ * Unlike calling `flash_ctrl_cert_info_page_creator_cfg()` followed by
+ * `flash_ctrl_cert_info_page_owner_restrict()`, write and erase permissions are
+ * never enabled.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageRoLockdown)`
+ * when sec_mmio is being used to check expectations.
+ */
+void flash_ctrl_cert_info_page_ro_lockdown(
     const flash_ctrl_info_page_t *info_page);
 
 /**

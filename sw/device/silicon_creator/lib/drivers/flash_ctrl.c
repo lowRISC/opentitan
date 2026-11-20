@@ -572,7 +572,7 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
   mp_region_cfg = bitfield_field32_write(
       mp_region_cfg, FLASH_CTRL_MP_REGION_CFG_0_EN_0_FIELD, kMultiBitBool4True);
 
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 1);
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect, 2);
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtectLock, 1);
   sec_mmio_write32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region,
                    mp_region_cfg);
@@ -696,6 +696,13 @@ void flash_ctrl_cert_info_page_owner_restrict(
                                   2);
   flash_ctrl_info_perms_set(info_page, kCertificateInfoPageOwnerAccess);
   sec_mmio_write32(info_page->cfg_wen_addr, 0);
+}
+
+void flash_ctrl_cert_info_page_ro_lockdown(
+    const flash_ctrl_info_page_t *info_page) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageRoLockdown, 3);
+  flash_ctrl_info_cfg_set(info_page, kCertificateInfoPageCfg);
+  flash_ctrl_cert_info_page_owner_restrict(info_page);
 }
 
 rom_error_t flash_ctrl_info_type0_params_build(

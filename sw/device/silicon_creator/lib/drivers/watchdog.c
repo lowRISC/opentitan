@@ -124,7 +124,7 @@ uint32_t watchdog_get(void) {
 }
 
 void watchdog_bite_threshold_set(uint32_t threshold) {
-  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioSetBiteThreshold, 2);
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kWatchdogSecMmioSetBiteThreshold, 1);
   abs_mmio_write32(kBase + AON_TIMER_WDOG_COUNT_REG_OFFSET, 0);
   abs_mmio_write32(kBase + AON_TIMER_WDOG_BARK_THOLD_REG_OFFSET,
                    (9 * threshold) / 8);

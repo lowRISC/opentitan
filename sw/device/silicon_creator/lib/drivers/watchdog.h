@@ -29,7 +29,7 @@ enum {
   kWatchdogSecMmioInit = 4,
   kWatchdogSecMmioConfigure = 4,
   kWatchdogSecMmioDisable = 1,
-  kWatchdogSecMmioSetBiteThreshold = 2,
+  kWatchdogSecMmioSetBiteThreshold = 1,
 };
 
 /**
