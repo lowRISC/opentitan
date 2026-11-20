@@ -81,12 +81,12 @@ Interrupt State Register
 {"reg": [{"name": "dma_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dma_chunk_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "dma_error", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                               |
-|:------:|:------:|:-------:|:---------------|:--------------------------------------------------------------------------|
-|  31:3  |        |         |                | Reserved                                                                  |
-|   2    |   ro   |   0x0   | dma_error      | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
-|   1    |   ro   |   0x0   | dma_chunk_done | Indicates the transfer of a single chunk has been completed.              |
-|   0    |   ro   |   0x0   | dma_done       | DMA operation has been completed.                                         |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                    |
+|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------|
+|  31:3  |        |         |                | Reserved                                                       |
+|   2    |   ro   |   0x0   | dma_error      | DMA error has occurred. ERROR_CODE register shows the details. |
+|   1    |   ro   |   0x0   | dma_chunk_done | Indicates the transfer of a single chunk has been completed.   |
+|   0    |   ro   |   0x0   | dma_done       | DMA operation has been completed.                              |
 
 ## INTR_ENABLE
 Interrupt Enable Register
