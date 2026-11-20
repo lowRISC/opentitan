@@ -4,10 +4,7 @@
 
 // This interface deals with the force paths in CSRNG interrupt and error tests
 
-interface csrng_path_if
-(
-  input csrng_cmd_i
-);
+interface csrng_path_if;
 
   import uvm_pkg::*;
 

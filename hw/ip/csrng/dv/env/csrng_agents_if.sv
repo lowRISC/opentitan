@@ -8,11 +8,11 @@ interface csrng_agents_if;
   logic edn_disable;
   logic entropy_src_disable;
 
-  function automatic drive_edn_disable(bit val);
+  function automatic void drive_edn_disable(bit val);
     edn_disable = val;
   endfunction
 
-  function automatic drive_entropy_src_disable(bit val);
+  function automatic void drive_entropy_src_disable(bit val);
     entropy_src_disable = val;
   endfunction
 
