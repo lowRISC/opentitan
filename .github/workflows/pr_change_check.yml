@@ -29,10 +29,11 @@ jobs:
         run: cat target-branch/BLOCKFILE
 
       - name: Determine changed files
+        # `gh pr diff` is limited to 300 files. Use api directly.
         run: |
-          pr_url="https://github.com/${{ github.repository }}/pull/${{ github.event.number }}"
-          echo $pr_url
-          gh pr diff $pr_url --name-only > $HOME/changed_files
+          pr_files_api="repos/${{ github.repository }}/pulls/${{ github.event.number }}/files"
+          echo $pr_files_api
+          gh api --paginate $pr_files_api -q '.[].filename' > $HOME/changed_files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
