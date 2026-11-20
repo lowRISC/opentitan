@@ -351,7 +351,7 @@ Failing integrity checks on the side synchronous to `clk_i` result in an alert.
 
 - `util/design/gen-rram-img.py`: Generates an OTP image with the integrity syndromes already appended (`--out-otp-vmem`).
   This image can be used to backdoor-load OTP content directly, on the FPGA or in simulation.
-- `hw/ip/rram_ctrl/dv/bkdr/rram_ctrl_otp_bkdr_util.sv`: DV's own backdoor-load/inject-errors utility, which can also append the integrity syndromes itself, and cross-checks its computation against `gen-rram-img.py`'s in `load_mem_from_file()`.
+- `hw/ip/rram_ctrl/dv/uvm/bkdr/rram_ctrl_otp_bkdr_util.sv`: DV's own backdoor-load/inject-errors utility, which can also append the integrity syndromes itself, and cross-checks its computation against `gen-rram-img.py`'s in `load_mem_from_file()`.
 
 ## Memory Protection
 

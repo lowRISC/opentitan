@@ -101,8 +101,8 @@ def _rram_ecc(data: int) -> int:
     """Computes rram_macro's own 16-bit physical ECC for a 128-bit RRAM word: two independent
     Hamming(72,64) codes, one per 64-bit half, matching rram_macro.sv's own encode path (two
     prim_secded_hamming_72_64_enc instances, one per half). See
-    hw/ip/rram_ctrl/dv/bkdr/rram_bkdr_helpers.sv's emul_encode_word(), the DV backdoor equivalent
-    of this function, for the same layout.
+    hw/ip/rram_ctrl/uvm/dv/bkdr/rram_bkdr_helpers.sv's emul_encode_word(), the DV backdoor
+    equivalent of this function, for the same layout.
 
     Returns {ecc_hi[7:0], ecc_lo[7:0]}, to be placed above the 128 data bits.
     """

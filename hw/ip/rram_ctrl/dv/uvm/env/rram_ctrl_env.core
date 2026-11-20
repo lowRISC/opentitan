@@ -33,7 +33,7 @@ generate:
     generator: ralgen
     parameters:
       name: rram_ctrl
-      ip_hjson: ../../data/rram_ctrl.hjson
+      ip_hjson: ../../../data/rram_ctrl.hjson
     position: prepend
 
 targets:
