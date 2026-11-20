@@ -31,6 +31,7 @@
 .equ MODE_X25519_KEYGEN, 0x7A2
 .equ MODE_X25519_SIDELOAD, 0xE7
 .equ MODE_X25519_KEYGEN_SIDELOAD, 0x353
+.equ MODE_POINTONCRV_CHECK, 0x6da
 
 /**
  * Make the mode constants visible to Ibex.
@@ -43,6 +44,7 @@
 .globl MODE_X25519_KEYGEN
 .globl MODE_X25519_SIDELOAD
 .globl MODE_X25519_KEYGEN_SIDELOAD
+.globl MODE_POINTONCRV_CHECK
 
 .section .text.start
 .globl start
@@ -74,6 +76,9 @@ start:
 
   addi  x3, x0, MODE_X25519_KEYGEN_SIDELOAD
   beq   x2, x3, run_x25519_keygen_sideload
+
+  addi  x3, x0, MODE_POINTONCRV_CHECK
+  beq   x2, x3, point_on_curve_check
 
   /* Invalid mode; fail. */
   unimp
@@ -222,6 +227,27 @@ run_ed25519_verify:
 
   /* Generate the signature. */
   jal      x1, ed25519_verify_var
+
+  ecall
+
+/**
+ * Check if an encoded Ed25519 point is on the curve.
+ *
+ * Returns SUCCESS or FAILURE.
+ *
+ * @param[in]  dmem[ed25519_public_key]: encoded point A_, 256 bits
+ * @param[out] dmem[ed25519_verify_result]: SUCCESS or FAILURE
+ *
+ * clobbered registers: x2 to x11, x20, w10 to w12, w19 to w26, w29, w31
+ * clobbered flag groups: FG0
+ */
+point_on_curve_check:
+  /* Zeroize w31 */
+  bn.xor   w31, w31, w31
+
+  /* Check if the encoded point is valid:
+       dmem[ed25519_verify_result] <= isoncurve(A_) */
+  jal      x1, ed25519_check_isoncurve
 
   ecall
 

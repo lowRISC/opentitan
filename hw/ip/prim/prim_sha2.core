@@ -8,6 +8,7 @@ description: "SHA-2 (configurable multi-mode and 256) engine"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:assert
       - lowrisc:prim:sha2_pkg
     files:
       - rtl/prim_sha2_pad.sv

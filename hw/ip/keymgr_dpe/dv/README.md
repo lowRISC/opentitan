@@ -2,98 +2,105 @@
 
 ## Goals
 * **DV**
-  * Verify all KEYMGR_DPE IP features by running dynamic simulations with a SV/UVM based testbench
-  * Develop and run all tests based on the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
+  * Verify all the features in the `keymgr_dpe` specification by simulating a UVM component.
+
+* **Coverage**
+  * **Code Coverage**: Deliver 100% code coverage to ensure all parts of the HW are exercised.
+  * **Functional Coverage**: All `keymgr_dpe` features should be captured in coverage covergroups.
+
 * **FPV**
-  * Verify TileLink device protocol compliance with an SVA based testbench
+  * Verify TLUL device protocol compliance and CSR-related assertions with an SVA-based testbench.
 
 ## Current status
-* [Design & verification stage](../../../README.md)
-  * [HW development stages](../../../../doc/project_governance/development_stages.md)
+* [Design & verification sign-off status](../doc/checklist.md)
 * [Simulation results](https://reports.opentitan.org/integrated/hw/ip/keymgr_dpe/dv/latest/report.html)
 
 ## Design features
-For detailed information on KEYMGR_DPE design features, please see the [KEYMGR_DPE HWIP technical specification](../README.md).
+For detailed information on `keymgr_dpe` design features, see the
+[KEYMGR_DPE HWIP technical specification](../README.md) and the
+[Theory of Operation](../doc/theory_of_operation.md).
 
 ## Testbench architecture
-KEYMGR_DPE testbench has been constructed based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+The `keymgr_dpe` testbench is based on the [CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
 
 ### Block diagram
-![Block diagram](./doc/tb.svg)
+![Block diagram](doc/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/keymgr_dpe/dv/tb/tb.sv`. It instantiates the KEYMGR_DPE DUT module `hw/ip/keymgr_dpe/rtl/keymgr_dpe.sv`.
-In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
-* KEYMGR_DPE IOs (`keymgr_dpe_if`)
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* [Alert interface](../../../dv/sv/alert_agent/README.md))
+The top-level testbench is located at `hw/ip/keymgr_dpe/dv/tb.sv`.
+It instantiates the `keymgr_dpe` DUT module `hw/ip/keymgr_dpe/rtl/keymgr_dpe.sv`.
 
-### Common DV utility components
-The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+`keymgr_dpe` has the following interfaces:
 
-### Compile-time configurations
-[list compile time configurations, if any and what are they used for]
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md#clk_rst_if).
+* [TileLink host interface](../../../dv/sv/tl_agent/README.md) to drive register accesses via TL bus.
+* [KMAC app interface](../../../dv/sv/kmac_app_agent/README.md) computes Key Derivation Function (KDF) in KMAC.
+* [OTBN app interface]() computes HMAC-based Key Derivation Function (HKDF) in SW running on OTBN.
+* [EDN interface](../../../dv/sv/push_pull_agent/README.md) to request a new entropy seed after an interval.
+* [pins_if](../../../dv/sv/common_ifs/README.md) for interrupts.
+* [Alert interface](../../../dv/sv/alert_agent/README.md) to handle alerts from `keymgr_dpe`.
+* HW sideload key interfaces to `AES`, `HMAC`, `KMAC`, and `OTBN`.
+* LC interface to enable / disable `keymgr_dpe`.
+* ROM interface to get digest for the creation of `CreatorRootKey`.
+* Other interfaces are: `Root and Secondary Root Keys`, `Creator seed`, `Owner seed`, and `Device ID`.
+  They will get consumed by the key derivation function to generate HW / SW and child keys.
+* KMAC masking enable input.
+* sensitive_key_o signals OTBN to protect the parent key.
+  This should be contained in [OTBN app interface]().
 
-### Global types & methods
-All common types and methods defined at the package level can be found in
-`keymgr_dpe_env_pkg`. Some of them in use are:
-```systemverilog
-[list a few parameters, types & methods; no need to mention all]
-```
-### TL_agent
-KEYMGR_DPE testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
-which provides the ability to drive and independently monitor random traffic via
-TL host interface into KEYMGR_DPE device.
+### DV Agents
 
-### EDN Agent
-The KEYMGR_DPE testbench instantiates a `push_pull_agent` in `Pull` mode as the agent modelling the [EDN interface](../../../dv/sv/push_pull_agent/README.md) (this is already handled in the CIP base classes).
-This agent will return random data as entropy when the KEYMGR_DPE sends a request.
+#### TL Agent
+The `keymgr_dpe` is a TLUL device so the register accesses happen via the TLUL interface.
+The environment instantiates the [tl_agent](../../../dv/sv/tl_agent/README.md) to drive traffic on the TL interface.
 
-### KMAC_APP Agent
-The KEYMGR_DPE testbench instantiates a [`kmac_app_agent`](../../../dv/sv/kmac_app_agent/README.md) to request a KMAC hash operation on the secret data.
+#### EDN Agent
+Upon `keymgr_dpe` request, EDN agent feeds a new entropy seed via EDN interface.
+This is instantiated with a [push_pull_agent](../../../dv/sv/push_pull_agent/README.md).
 
-### UVM RAL Model
-The KEYMGR_DPE RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
+#### KMAC app Agent
+Upon `keymgr_dpe` request via `kmac_app_o` port, it will respond with a key generated by KDF.
+This is instantiated with a [kmac_app_agent](../../../dv/sv/kmac_app_agent/README.md).
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+#### OTBN app Agent
+Upon `keymgr_dpe` request via `otbn_app_o` port, it will respond with a key generated by HKDF.
+This is instantiated with an [otbn_app_agent]().
 
-### Reference models
-[Describe reference models in use if applicable, example: SHA256/HMAC]
+### Scoreboard
+The scoreboard implements a model that maintains all the instantiated slots.
+The model predicts the working state of the block and the register fields after an operation.
+It checks that outputs are routed correctly to SW CSRs or sideload ports.
+It verifies slot updates after each operation and predicts errors and alerts.
 
-### Stimulus strategy
-#### Test sequences
-All test sequences reside in `hw/ip/keymgr_dpe/dv/env/seq_lib`.
-The `keymgr_dpe_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
-All test sequences are extended from `keymgr_dpe_base_vseq`.
-It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows:
-* keymgr_dpe_operations: This task issues operations as set in the inputs, such as advance operation, generating sw/hw output.
-* wait_op_done: This task polls the `op_status` until it returns success / fail status, as well as checking if the status is expected.
-* keymgr_dpe_rd_clr: This reads `sw_share_output` to allow scoreboard to check the values.
+## Stimulus strategy
+UVM sequences will be used for generating stimulus. The stimulus is categorized as:
+- **The acceptable stimulus to the keymgr_dpe**:
+    This checks that the features promised by `keymgr_dpe` are implemented correctly.
+- The acceptable stimulus but triggering a fault in the middle of the operation / transaction.
+  This helps with checking the error / alert reporting mechanism in the block.
+- **Invalid stimulus**:
+    This helps with checking the invalid / unknown stimulus handling of the block.
+- **Register testing**:
+    This will send register accesses when they are locked or turned back to unlocked.
+    It checks that the registers are behaving correctly during and after an operation.
+- Others are: generic CSR tests, alerts, sec_cm, TLUL accesses, shadow_reg_errors, etc.
+  They are imported from their respective testplans inside keymgr_dpe's [testplan](../data/keymgr_dpe_testplan.hjson).
 
-#### Functional coverage
-To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-The covergroups defined in testplan have been developed to prove that the test intent has been adequately met.
+## Functional coverage
+Functional coverage points are defined as part of the [testplan](../data/keymgr_dpe_testplan.hjson).
 
-### Self-checking strategy
-#### Scoreboard
-The `keymgr_dpe_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* `tl_a_chan_fifo`: An analysis FIFO to hold transactions from TL address channel.
-* `tl_d_chan_fifo`: An analysis FIFO to hold transactions from TL data channel.
-* `m_kmac_txn_imp`: An import that sees KMAC transactions sent to the application interface.
-* `m_kmac_req_imp`: An import that sees the requests that began these transactions.
-* `edn_fifos[0]`: An analysis FIFO to hold transactions coming from the EDN interface.
+### Assertions
 
-#### Assertions
-* TLUL assertions: The `tb/keymgr_dpe_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
-* Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
-* Check(Kmac|Aes|Otbn|Hmac)Key: Check keys on the 4 sideload interfaces.
-* CheckEdn1stReq / CheckEdn2ndReq: Check KEYMGR_DPE sends 2 EDN request periodically based on the CSR `reseed_interval`.
+* **TLUL assertions**:
+  The [TLUL protocol checker](../../tlul/doc/TlulProtocolChecker.md) is bound into the design and connected to the TLUL interface.
+  This ensures TileLink protocol compliance.
+* **Unknown checks on DUT outputs**:
+  This ensures all the outputs are initialized to known values after coming out of reset.
+* Assertions in `keymgr_dpe` and `keymgr_dpe_ctrl` modules.
+  They are related to:
+  - FSM and counter errors,
+  - register integrity,
+  - violations within an operation, etc.
 
 ## Building and running tests
 The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
@@ -102,7 +109,6 @@ Here's how to run a smoke test:
 ```console
 $ dvsim $REPO_TOP/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson -i keymgr_dpe_smoke
 ```
-With the configurations `keymgr_dpe_earlgrey_sim_cfg.hjson` / `keymgr_dpe_darjeeling_sim_cfg.hjson` it is possible to test the top dependent default configurations.
 
 ## Testplan
 [Testplan](../data/keymgr_dpe_testplan.hjson)

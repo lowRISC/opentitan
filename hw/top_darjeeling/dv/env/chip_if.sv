@@ -51,7 +51,7 @@ interface chip_if;
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
 `define CSRNG_HIER          `PD_MAIN_HIER.u_csrng
 `define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
-`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define GPIO_HIER           `PD_MAIN_HIER.u_gpio0
 `define HMAC_HIER           `PD_MAIN_HIER.u_hmac
 `define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
@@ -216,7 +216,7 @@ interface chip_if;
       dios[top_darjeeling_pkg::DioPadSpiHostClk] : 1'bz;
 
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {'1, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-1){1'b1}}, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);

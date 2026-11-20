@@ -34,11 +34,12 @@ package(default_visibility = ["//visibility:public"])
 
 device_id_header(
     name = "cp_device_id",
+    testonly = True,
     headers = ["cp_device_id.h"],
     mode = "cp",
     # All SKUs have the same CP device ID for a given product version so we just
     # use the emulation SKU configuration here.
-    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation",
     template = ":cp_device_id.c.tpl",
 )
 
@@ -145,6 +146,7 @@ opentitan_test(
 [
     device_id_header(
         name = "ft_device_id_{}".format(sku),
+        testonly = True,
         headers = ["ft_device_id.h"],
         mode = "ft",
         sku_config = config["orchestrator_cfg"],

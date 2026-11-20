@@ -143,6 +143,8 @@ static void entropy_conditioner_stop(const dif_entropy_src_t *entropy_src) {
 }
 
 status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
+  TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
+
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear registered local alerts in alert handler.
@@ -151,12 +153,12 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
-
   // Setup fips grade entropy that can be read by firmware.
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
       .route_to_firmware = true,
+      .bypass_conditioner = false,
+      .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = false, /*default*/
       .health_test_window_size = 0x0200,    /*default*/
@@ -189,6 +191,8 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   reg_loc_alerts = pentest_get_triggered_loc_alerts();
   // Get fatal and recoverable AST alerts from sensor controller.
   pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
 
   // Read ERR_STATUS register from Ibex.
   dif_rv_core_ibex_error_status_t err_ibx;
@@ -280,6 +284,9 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 }
 
 status_t handle_rng_fi_edn_bias(ujson_t *uj) {
+  // Disable the entropy complex before clearing alerts.
+  TRY(entropy_testutils_stop_all());
+
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear registered local alerts in alert handler.
@@ -288,27 +295,18 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Clear the AST recoverable alerts.
   pentest_clear_sensor_recov_alerts();
 
-  TRY(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   TRY(dif_csrng_init(mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR),
                      &csrng));
   TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
-  TRY(dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
   TRY(dif_rv_core_ibex_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
       &rv_core_ibex));
 
-  dif_edn_auto_params_t edn_params =
-      edn_testutils_auto_params_build(true, /*res_itval=*/0, /*glen_val=*/0);
-  // Disable the entropy complex.
-  TRY(entropy_testutils_stop_all());
-  // Enable ENTROPY_SRC in FIPS mode.
-  TRY(entropy_testutils_entropy_src_init());
-  // Enable CSRNG.
+  // Enable CSRNG and EDN0 in deterministic KAT auto request mode without
+  // enabling ENTROPY_SRC or EDN1, which are unused by Ibex RND_DATA and would
+  // otherwise pop a single startup seed per iteration and trigger
+  // es_bus_cmp_alert across FPGA AST RNG resets.
   TRY(dif_csrng_configure(&csrng));
-  // Enable EDN1 in auto request mode.
-  TRY(dif_edn_set_auto_mode(&edn1, edn_params));
-  // Enable EDN0 in auto request mode.
   TRY(dif_edn_set_auto_mode(&edn0, kat_auto_params_build()));
 
   rng_fi_edn_t uj_output;
@@ -345,6 +343,8 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
 }
 
 status_t handle_rng_fi_edn_resp_ack(ujson_t *uj) {
+  // Disable the entropy complex before clearing alerts.
+  TRY(entropy_testutils_stop_all());
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
   // Clear registered local alerts in alert handler.

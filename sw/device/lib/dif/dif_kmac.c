@@ -174,53 +174,11 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
     return kDifBadArg;
   }
 
-  // Entropy mode.
-  uint32_t entropy_mode_value;
-  bool entropy_ready = false;
-  switch (config.entropy_mode) {
-    case kDifKmacEntropyModeIdle:
-      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_IDLE_MODE;
-      break;
-    case kDifKmacEntropyModeEdn:
-      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE;
-      entropy_ready = true;
-      break;
-    case kDifKmacEntropyModeSoftware:
-      entropy_mode_value = KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_SW_MODE;
-      entropy_ready = true;
-      break;
-    default:
-      return kDifBadArg;
-  }
-
-  // Check that the hardware is in an idle state.
-  if (!is_state_idle(kmac)) {
+  bool locked;
+  DIF_RETURN_IF_ERROR(dif_kmac_config_is_locked(kmac, &locked));
+  if (locked) {
     return kDifLocked;
   }
-
-  // Write entropy period register.
-  uint32_t entropy_period_reg = 0;
-  entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD,
-      config.entropy_wait_timer);
-  entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD,
-      config.entropy_prescaler);
-
-  mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                      entropy_period_reg);
-
-  // Write threshold register.
-  uint32_t entropy_threshold_reg =
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
-  entropy_threshold_reg = bitfield_field32_write(
-      entropy_threshold_reg,
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD,
-      config.entropy_hash_threshold);
-
-  mmio_region_write32_shadowed(
-      kmac->base_addr, KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
-      entropy_threshold_reg);
 
   // Write configuration register.
   uint32_t cfg_reg = 0;
@@ -229,26 +187,73 @@ dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config) {
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT,
                            config.output_big_endian);
-  cfg_reg = bitfield_field32_write(
-      cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD, entropy_mode_value);
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT,
                            config.entropy_fast_process);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
                                  config.sideload);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT,
-                                 entropy_ready);
-
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
                                  config.msg_mask);
 
   mmio_region_write32_shadowed(kmac->base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
                                cfg_reg);
 
-  // Write entropy seed registers.
-  for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
-    mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_SEED_REG_OFFSET,
-                        config.entropy_seed[i]);
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_configure_entropy(dif_kmac_t *kmac,
+                                        dif_kmac_entropy_config_t config) {
+  if (kmac == NULL) {
+    return kDifBadArg;
+  }
+
+  bool locked;
+  DIF_RETURN_IF_ERROR(dif_kmac_entropy_config_is_locked(kmac, &locked));
+  if (locked) {
+    return kDifLocked;
+  }
+
+  // Read the entropy configuration register to know if this is the first time
+  // after reset we configure it based on the Entropy Boot Mode bit.
+  bool first_after_reset;
+  uint32_t entropy_cfg_reg =
+      mmio_region_read32(kmac->base_addr, KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET);
+  first_after_reset = bitfield_bit32_read(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_BOOT_MODE_BIT);
+
+  // Write entropy configuration register. The Entropy Boot Mode bit is RW0C, we
+  // only ever clear it.
+  entropy_cfg_reg = bitfield_bit32_write(
+      0, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_BOOT_MODE_BIT, 0);
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_MODE_BIT,
+      config.entropy_mode);
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_IGNORE_CMD_ENTROPY_REQ_BIT,
+      config.ignore_cmd_entropy_req);
+  entropy_cfg_reg = bitfield_field32_write(
+      entropy_cfg_reg,
+      KMAC_ENTROPY_CFG_SHADOWED_EDN_MODE_REFRESH_THRESHOLD_FIELD,
+      config.edn_mode_refresh_threshold);
+
+  mmio_region_write32_shadowed(
+      kmac->base_addr, KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET, entropy_cfg_reg);
+
+  // If the register is written the first time after a reset, a reseed operation
+  // will be triggered automatically. Otherwise trigger one now to complete a
+  // potential Entropy Mode switch.
+  if (!first_after_reset) {
+    uint32_t cmd_reg = bitfield_bit32_write(0, KMAC_CMD_ENTROPY_REQ_BIT, 1);
+    mmio_region_write32(kmac->base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  }
+
+  // In Software Mode, the PRNG is now waiting for a new seed to be provided via
+  // the entropy seed register.
+  if (config.entropy_mode == kDifKmacEntropyModeSoftware) {
+    for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
+      mmio_region_write32(kmac->base_addr, KMAC_ENTROPY_SEED_REG_OFFSET,
+                          config.sw_mode_entropy_seed[i]);
+    }
   }
 
   return kDifOk;
@@ -925,9 +930,18 @@ dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac,
     return kDifBadArg;
   }
 
-  uint32_t reg =
-      mmio_region_read32(kmac->base_addr, KMAC_CFG_REGWEN_REG_OFFSET);
-  *is_locked = !bitfield_bit32_read(reg, KMAC_CFG_REGWEN_EN_BIT);
+  *is_locked = !mmio_region_read32(kmac->base_addr, KMAC_CFG_REGWEN_REG_OFFSET);
+  return kDifOk;
+}
+
+dif_result_t dif_kmac_entropy_config_is_locked(const dif_kmac_t *kmac,
+                                               bool *is_locked) {
+  if (kmac == NULL || is_locked == NULL) {
+    return kDifBadArg;
+  }
+
+  *is_locked =
+      !mmio_region_read32(kmac->base_addr, KMAC_ENTROPY_CFG_REGWEN_REG_OFFSET);
   return kDifOk;
 }
 

@@ -710,8 +710,8 @@ module rram_ctrl
     .fatal_err_o     (otp_err),
     .intg_err_o      (otp_intg_err),
     .rram_init_done_i(phy_init_done),
-    .rram_wr_busy_i  (phy_wr_busy)
-
+    .rram_wr_busy_i  (phy_wr_busy),
+    .disable_i       (rram_disable[OtpDisableIdx])
   );
 
   ///////////////////////
@@ -909,6 +909,7 @@ module rram_ctrl
 
   // SEC_CM: HOST.BUS.INTEGRITY
   // SEC_CM: MEM.ADDR_INFECTION
+  // SEC_CM: TLUL_FIFO.MEM.REDUN
   tlul_adapter_sram #(
     .SramAw(BusAddrW),
     .SramDw(BusWidth),
@@ -920,7 +921,7 @@ module rram_ctrl
     .EnableRspIntgGen(1),
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1),
-    .SecFifoPtr(1),
+    .SecFifo(1),
     .DataXorAddr(1)
   ) u_tl_adapter_host (
     .clk_i,
@@ -977,6 +978,10 @@ module rram_ctrl
     .rst_ni,
     .rram_disable_i     (rram_disable[MpDisableIdx]),
     .sw_disable_i       (rram_sw_disable[SwDisMpIdx]),
+    // Rewrite disables
+    .dis_all_rewrite_i  (mubi4_t'(reg2hw.dis.dis_all_rewrite.q)),
+    .dis_otp_rewrite_i  (mubi4_t'(reg2hw.dis.dis_otp_rewrite.q)),
+    .dis_info_rewrite_i (mubi4_t'(reg2hw.dis.dis_info_rewrite.q)),
     // Interface selection
     .if_sel_i           (if_sel),
     // Memory protection configuration
@@ -1409,28 +1414,31 @@ module rram_ctrl
 
   // assertions associated with alert_tx_o[1]
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
-                                               u_to_rd_fifo.u_rspfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdSramReqFifo,
-                                               u_to_rd_fifo.u_sramreqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_sramreqfifo.u_sramreqfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdReqFifo,
-                                               u_to_rd_fifo.u_reqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_reqfifo.u_reqfifo,
                                                alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostRspFifo,
-                                              u_tl_adapter_host.u_rspfifo,
-                                              alert_tx_o[1])
+  // The host adapter's fifos are duplicated (SecFifo). Each fifo raises err_o if the main and
+  // shadow copies disagree.
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostRspFifo,
+                                               u_tl_adapter_host.gen_sec_u_rspfifo.u_rspfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostSramReqFifo,
-                                              u_tl_adapter_host.u_sramreqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostSramReqFifo,
+                                               u_tl_adapter_host.gen_sec_u_sramreqfifo
+                                                 .u_sramreqfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(HostReqFifo,
-                                              u_tl_adapter_host.u_reqfifo,
-                                              alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(HostReqFifo,
+                                               u_tl_adapter_host.gen_sec_u_reqfifo.u_reqfifo,
+                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(CtrlWrFifo,
                                               u_wr_fifo, alert_tx_o[1])

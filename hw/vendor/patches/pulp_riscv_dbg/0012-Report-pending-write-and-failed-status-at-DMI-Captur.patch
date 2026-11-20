@@ -1,0 +1,57 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: ZhaoWenyao <109258098+lionelZhaowy@users.noreply.github.com>
+Date: Sat, 7 Nov 2026 16:24:53 +0000
+Subject: [PATCH 12/12] Report pending write and failed status at DMI Capture
+
+A scan during a write captured a successful status, but its Update-DR
+set the sticky busy error and the DTM dropped the request.
+While the sticky status was failed, Capture-DR did not load the shift
+register, so a scan returned the bits shifted in by the previous scan.
+If an error response arrived in the cycle of Capture-DR, the scan
+reported busy while the DTM stored failed.
+Report busy at Capture-DR also while a write is in progress, and
+capture the status that the DTM stores.
+
+This is the RTL change from pulp-platform/riscv-dbg#214 (commit
+7d278248e9), without its testbench.
+
+Signed-off-by: Michael Gautschi <mgautschi@lowrisc.org>
+---
+ src/dmi_jtag.sv | 14 ++++----------
+ 1 file changed, 4 insertions(+), 10 deletions(-)
+
+diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
+index 17d0060..c23d8b6 100644
+--- a/src/dmi_jtag.sv
++++ b/src/dmi_jtag.sv
+@@ -235,10 +235,9 @@ module dmi_jtag #(
+         error_dmi_busy = 1'b1;
+       end
+ 
+-      // if capture goes high while we are in the read state
+-      // or in the corresponding wait state we are not giving back a valid word
+-      // -> throw an error
+-      if (capture && state_q inside {Read, WaitReadValid}) begin
++      // A pending read or write cannot return a valid result at Capture.
++      // Report a sticky busy status for either operation.
++      if (capture && state_q inside {Read, WaitReadValid, Write, WaitWriteValid}) begin
+         error_dmi_busy = 1'b1;
+       end
+ 
+@@ -267,12 +266,7 @@ module dmi_jtag #(
+     end else begin
+       if (capture) begin
+         if (dmi_select) begin
+-          if (error_q == DMINoError && !error_dmi_busy) begin
+-            dr_d = {address_q, data_q, DMINoError};
+-            // DMI was busy, report an error
+-          end else if (error_q == DMIBusy || error_dmi_busy) begin
+-            dr_d = {address_q, data_q, DMIBusy};
+-          end
++          dr_d = {address_q, data_q, error_d};
+         end
+       end
+ 
+-- 
+2.43.7
+

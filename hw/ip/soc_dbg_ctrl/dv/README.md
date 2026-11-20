@@ -61,7 +61,7 @@ The alert_agents provide the ability to drive and independently monitor alert ha
 ### UVM RAL Model
 The `soc_dbg_ctrl` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md).
 
 #### Sequence cfg
 An efficient way to develop test sequences is by providing some random variables that are used to configure the DUT / drive stimulus.

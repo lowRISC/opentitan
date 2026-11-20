@@ -29,11 +29,11 @@
 %>\
   // ${m["name"]}
   % for p_in in inputs + inouts:
-  logic ${lib.bitarray(p_in.bits.width(), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_in.name}_p2d;
+  logic ${lib.bitarray(p_in.width(m.get("param_decl")), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_in.name}_p2d;
   % endfor
   % for p_out in outputs + inouts:
-  logic ${lib.bitarray(p_out.bits.width(), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_out.name}_d2p;
-  logic ${lib.bitarray(p_out.bits.width(), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_out.name}_en_d2p;
+  logic ${lib.bitarray(p_out.width(m.get("param_decl")), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_out.name}_d2p;
+  logic ${lib.bitarray(p_out.width(m.get("param_decl")), cio_info["max_sigwidth"])} cio_${m["name"]}_${p_out.name}_en_d2p;
   % endfor
 % endfor
 % endif

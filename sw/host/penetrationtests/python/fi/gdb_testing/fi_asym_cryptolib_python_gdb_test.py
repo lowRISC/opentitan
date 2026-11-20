@@ -268,6 +268,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        sign_output = [None, None]
                         # Search for collisions in outputs between the sign instances
                         for i in range(2):
                             print("-" * 80)
@@ -2038,10 +2039,8 @@ class AsymCryptolibFiSim(unittest.TestCase):
         )
         private_key_array1 = list(private_key_bytes1)
 
-        # Create a second set of inputs with a single bit flipped to check for collisions
-        private_key_array2 = private_key_array1.copy()
-        # Flipping a more significant bit to not flip a clamped bit
-        private_key_array2[2] ^= 1
+        # Create a second set of inputs with bits flipped to check for collisions
+        private_key_array2 = [x ^ 0xFF for x in private_key_array1]
         private_key_array = [private_key_array1, private_key_array2]
 
         # Bob's Public Key
@@ -2348,38 +2347,38 @@ class AsymCryptolibFiSim(unittest.TestCase):
             0,
         ]
         r = [
-            179,
-            233,
-            109,
-            11,
-            158,
-            166,
-            221,
-            245,
-            31,
-            170,
-            150,
-            231,
-            193,
-            167,
-            36,
-            93,
-            15,
-            224,
-            39,
-            117,
-            62,
-            182,
-            19,
-            173,
-            252,
-            159,
-            107,
-            165,
-            211,
-            94,
-            217,
             145,
+            217,
+            94,
+            211,
+            165,
+            107,
+            159,
+            252,
+            173,
+            19,
+            182,
+            62,
+            117,
+            39,
+            224,
+            15,
+            93,
+            36,
+            167,
+            193,
+            231,
+            150,
+            170,
+            31,
+            245,
+            221,
+            166,
+            158,
+            11,
+            109,
+            233,
+            179,
             0,
             0,
             0,

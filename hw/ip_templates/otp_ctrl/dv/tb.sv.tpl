@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+<%
+item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
+has_field_entropy = "FIELD_ENTROPY" in item_names
+%>\
 module tb;
   // dep packages
   import uvm_pkg::*;
@@ -144,6 +148,9 @@ module tb;
     .keymgr_creator_root_key_o  (otp_ctrl_if.keymgr_creator_root_key_o),
     .keymgr_creator_seed_o      (otp_ctrl_if.keymgr_creator_seed_o),
     .keymgr_owner_seed_o        (otp_ctrl_if.keymgr_owner_seed_o),
+  % if has_field_entropy:
+    .keymgr_field_entropy_o     (otp_ctrl_if.keymgr_field_entropy_o),
+  % endif
   % if enable_nvm_key:
     // nvm
     .nvm_otp_key_i              (nvm_req),

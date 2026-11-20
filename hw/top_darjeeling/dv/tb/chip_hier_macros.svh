@@ -13,7 +13,7 @@
 `define CPU_HIER              `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER         `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
-`define GPIO_HIER             `PD_MAIN_HIER.u_gpio
+`define GPIO_HIER             `PD_MAIN_HIER.u_gpio0
 `define KEYMGR_DPE_HIER       `PD_MAIN_HIER.u_keymgr_dpe
 `define LC_CTRL_HIER          `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER         `PD_MAIN_HIER.u_otp_ctrl

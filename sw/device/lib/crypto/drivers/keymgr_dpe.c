@@ -23,12 +23,14 @@ static inline uint32_t keymgr_dpe_base(void) {
 
 static_assert(kKeymgrDPESaltNumWords == KEYMGR_DPE_SALT_MULTIREG_COUNT,
               "Number of salt registers does not match.");
-static_assert(kKeymgrDPEOutputShareNumWords ==
+// The cryptolib only reads the first `kKeymgrDPEOutputShareNumWords` words of
+// the (potentially wider) software output.
+static_assert(kKeymgrDPEOutputShareNumWords <=
                   KEYMGR_DPE_SW_SHARE0_OUTPUT_MULTIREG_COUNT,
-              "Number of output share 0 registers does not match.");
-static_assert(kKeymgrDPEOutputShareNumWords ==
+              "Not enough output share 0 registers.");
+static_assert(kKeymgrDPEOutputShareNumWords <=
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT,
-              "Number of output share 1 registers does not match.");
+              "Not enough output share 1 registers.");
 static_assert(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT ==
                   KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
               "Number of metadata low registers does not match.");
@@ -47,8 +49,12 @@ static status_t keymgr_dpe_is_idle(void) {
       abs_mmio_read32(keymgr_dpe_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
   uint32_t status =
       bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
-  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
+  uint32_t err_code =
+      abs_mmio_read32(keymgr_dpe_base() + KEYMGR_DPE_ERR_CODE_REG_OFFSET);
+  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
+      launder32(err_code) == 0) {
     HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+    HARDENED_CHECK_EQ(err_code, 0);
     return OTCRYPTO_OK;
   }
   return OTCRYPTO_RECOV_ERR;
@@ -115,7 +121,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       HARDENED_CHECK_EQ(launder32(status),
                         KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-      return OTCRYPTO_OK;
+      return keymgr_dpe_is_idle();
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR: {
       // Clear the ERR_CODE register before returning.
       uint32_t err_code =
@@ -137,7 +143,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
  * Set the control register of the keymgr dpe.
  *
  * It is not supported to use additional hw binding (used by the Creator /
- * OwnerInt / Owner Key generation).
+ * CreatorInt / OwnerInt / Owner Key generation).
  *
  * @param dest (NONE, AES, OTBN, KMAC or HMAC)
  * @param operation (GENERATE_SW or GENERATE_HW)
@@ -208,14 +214,14 @@ status_t keymgr_dpe_generate_key_sw(
   // Collect the output. To avoid side-channel leakage, first randomize the
   // destination buffers using memshred. Then copy the key using a hardened
   // memcpy.
-  uint32_t share0 =
+  uintptr_t share0 =
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET;
-  uint32_t share1 =
+  uintptr_t share1 =
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET;
-  HARDENED_TRY(hardened_memshred(key->share0, kKeymgrDPEOutputShareNumWords));
+  hardened_memshred(key->share0, kKeymgrDPEOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share0, (uint32_t *)share0,
                                kKeymgrDPEOutputShareNumWords));
-  HARDENED_TRY(hardened_memshred(key->share1, kKeymgrDPEOutputShareNumWords));
+  hardened_memshred(key->share1, kKeymgrDPEOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share1, (uint32_t *)share1,
                                kKeymgrDPEOutputShareNumWords));
 

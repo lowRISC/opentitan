@@ -124,6 +124,14 @@ interface csrng_cov_if (
     genbits_depth_cross: cross cp_hw0_genbits_depth, cp_hw1_genbits_depth, cp_sw_genbits_depth;
   endgroup : csrng_sfifo_depth_cross_cg
 
+  covergroup csrng_sw_cmd_drop_cg @(posedge clk_i);
+    option.name         = "csrng_sw_cmd_drop_cg";
+    option.per_instance = 1;
+
+    cp_sw_cmd_dropped: coverpoint u_csrng_core.cmd_stage_word_dropped[SwAppIdx] {
+      bins dropped = { 1'b1 };
+    }
+  endgroup : csrng_sw_cmd_drop_cg
 
   covergroup csrng_cfg_cg with function sample(bit [3:0] lc_hw_debug_en,
                                                mubi4_t   sw_app_enable,
@@ -521,6 +529,7 @@ interface csrng_cov_if (
     `DV_FCOV_INSTANTIATE_CG(csrng_sfifo_depth_cross_cg, en_full_cov)
   end
 
+  `DV_FCOV_INSTANTIATE_CG(csrng_sw_cmd_drop_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cfg_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_cmds_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)

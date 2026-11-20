@@ -4,7 +4,7 @@
 '''Code representing an IP block for reggen'''
 
 import logging as log
-from typing import Any, Optional, Sequence
+from typing import Any, Mapping, Optional, Sequence
 from dataclasses import dataclass
 
 import hjson  # type: ignore
@@ -424,13 +424,14 @@ class IpBlock:
             for (name, desc) in rd.get('memory', {}).items()  # type: ignore
         }
 
-        xputs = (Signal.from_raw_list('available_inout_list for block ' + name,
-                                      rd.get('available_inout_list', [])),
-                 Signal.from_raw_list('available_input_list for block ' + name,
-                                      rd.get('available_input_list', [])),
-                 Signal.from_raw_list(
+        # The width of a chip IO may be set by an exposed parameter.
+        xputs = (Signal.io_list_from_raw('available_inout_list for block ' + name,
+                                         rd.get('available_inout_list', []), params),
+                 Signal.io_list_from_raw('available_input_list for block ' + name,
+                                         rd.get('available_input_list', []), params),
+                 Signal.io_list_from_raw(
                      'available_output_list for block ' + name,
-                     rd.get('available_output_list', [])))
+                     rd.get('available_output_list', []), params))
         wakeups = Signal.from_raw_list('wakeup_list for block ' + name,
                                        rd.get('wakeup_list', []))
         rst_reqs = Signal.from_raw_list('reset_request_list for block ' + name,
@@ -734,17 +735,25 @@ class IpBlock:
             ret = ret.union(set(rb.name_to_offset.keys()))
         return ret
 
-    def get_signals_as_list_of_dicts(self) -> list[dict[str, object]]:
-        '''Look up and return signal by name'''
+    def get_signals_as_list_of_dicts(
+        self, param_values: Optional[Mapping[str, object]] = None
+    ) -> list[dict[str, object]]:
+        '''Return all chip IO signals
+
+        param_values (e.g. the param_decl field of a top-level instance) resolves
+        parameter-dependent signal widths.
+        '''
         result = []
         for iodir, xput in zip(('inout', 'input', 'output'), self.xputs):
             for sig in xput:
-                result.append(sig.as_nwt_dict(iodir))
+                result.append(sig.as_nwt_dict(iodir, param_values))
         return result
 
-    def get_signal_by_name_as_dict(self, name: str) -> dict[str, object]:
+    def get_signal_by_name_as_dict(
+        self, name: str, param_values: Optional[Mapping[str, object]] = None
+    ) -> dict[str, object]:
         '''Look up and return signal by name'''
-        sig_list = self.get_signals_as_list_of_dicts()
+        sig_list = self.get_signals_as_list_of_dicts(param_values)
         for sig in sig_list:
             if sig['name'] == name:
                 return sig

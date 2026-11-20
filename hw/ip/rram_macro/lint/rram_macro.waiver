@@ -13,3 +13,9 @@ waive -rules {RESET_USE} -location {rram_macro.sv} \
 waive -rules {INOUT_AS_IN} -location {rram_macro.sv} \
       -msg {Inout port 'rram_test_analog_io' has no driver in module 'rram_macro'} \
       -comment "This signal is not driven in the open-source emulation model."
+
+waive -rules CLOCK_MUX -location {dmi_jtag_tap.sv} -regexp {Clock '.*tck_n' is driven by a multiplexer here, used as a clock at dmi_jtag_tap.sv} \
+      -comment "Scan mode bypass of the TCK inverter inside dmi_jtag_tap."
+
+waive -rules {CLOCK_DRIVER} -location {rram_macro.sv} -regexp {'tap_tck' is driven by instance 'u_tck_and' of module 'prim_and2', and used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "TCK of the RRAM TAP, gated with lc_nvm_debug_en like in the closed-source macro."

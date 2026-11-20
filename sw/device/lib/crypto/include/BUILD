@@ -7,13 +7,6 @@ package(default_visibility = ["//visibility:public"])
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//sw/device/lib/crypto/include:api_config.bzl", "cryptolib_api_config_header")
 
-config_setting(
-    name = "disable_buf_integrity_checks",
-    define_values = {
-        "disable_buf_integrity_checks": "true",
-    },
-)
-
 # Export all headers.
 exports_files(glob(["*.h"]))
 
@@ -21,7 +14,7 @@ exports_files(glob(["*.h"]))
 cryptolib_api_config_header(
     name = "api_config.h",
     buffer_integrity_checks = select({
-        ":disable_buf_integrity_checks": False,
+        "//sw/device/lib/crypto/configs:disable_buf_integrity_checks": False,
         "//conditions:default": True,
     }),
 )
@@ -49,6 +42,7 @@ cc_library(
         "aes.h",
         "aes_gcm.h",
         "cmac.h",
+        "cmac_kdf.h",
         "cmvp.h",
         "config.h",
         "cryptolib_build_info.h",
@@ -60,6 +54,7 @@ cc_library(
         "entropy_src.h",
         "hkdf.h",
         "hmac.h",
+        "hmac_drbg.h",
         "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
@@ -70,8 +65,10 @@ cc_library(
         "otcrypto.h",
         "rsa.h",
         "self_integrity.h",
+        "sha1.h",
         "sha2.h",
         "sha3.h",
+        "tdes.h",
     ],
     defines = ["OTCRYPTO_IN_REPO=1"],
     includes = ["."],
@@ -90,6 +87,7 @@ cc_library(
         "aes.h",
         "aes_gcm.h",
         "cmac.h",
+        "cmac_kdf.h",
         "cmvp.h",
         "config.h",
         "cryptolib_build_info.h",
@@ -101,6 +99,7 @@ cc_library(
         "entropy_src.h",
         "hkdf.h",
         "hmac.h",
+        "hmac_drbg.h",
         "integrity.h",
         "kdf_ctr.h",
         "key_transport.h",
@@ -110,8 +109,10 @@ cc_library(
         "otcrypto.h",
         "rsa.h",
         "self_integrity.h",
+        "sha1.h",
         "sha2.h",
         "sha3.h",
+        "tdes.h",
         ":api_config.h",
         "//sw/device/lib/crypto/include/freestanding:absl_status.h",
         "//sw/device/lib/crypto/include/freestanding:defs.h",

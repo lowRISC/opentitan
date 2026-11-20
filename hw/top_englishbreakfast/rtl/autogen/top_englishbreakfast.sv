@@ -12,9 +12,9 @@
 // This wrapper hosts all power domain wrappers and the connections between them for englishbreakfast.
 module top_englishbreakfast #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 1'b1,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 1'b1,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for usbdev
@@ -187,8 +187,8 @@ module top_englishbreakfast #(
   ///////////////////////////
   englishbreakfast_pd_main #(
   // Auto-inferred parameters
-  .GpioGpioAsyncOn(GpioGpioAsyncOn),
-  .GpioGpioAsHwStrapsEn(GpioGpioAsHwStrapsEn),
+  .Gpio0GpioAsyncOn(Gpio0GpioAsyncOn),
+  .Gpio0GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn),
   .SpiDeviceSramType(SpiDeviceSramType),
   .UsbdevStub(UsbdevStub),
   .UsbdevRcvrWakeTimeUs(UsbdevRcvrWakeTimeUs),

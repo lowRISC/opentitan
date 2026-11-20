@@ -116,28 +116,28 @@
   doc: |
     This WSR transfers share 0 of the first input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in0_s1
   address: 13
   doc: |
     This WSR transfers share 1 of the first input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in1_s0
   address: 14
   doc: |
     This WSR transfers share 0 of the second input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: mai_in1_s1
   address: 15
   doc: |
     This WSR transfers share 1 of the second input secrets towards the MAI.
     The inputs are considered as eight 32-bit values.
-    Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+    Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
 
 - name: urnd_state
   address: 16
@@ -158,3 +158,27 @@
 
     There is no immediate state validation when restoring a state.
     If an invalid state (e.g., all-zero) is provided the URND PRNG will raise a fatal error on the next state update.
+
+- name: keymgr_msg_s0_l
+  address: 17
+  doc: |
+    This register is used to receive message beats from the keymgr interface as well as to send a response back.
+    When receiving the message beats, bits [63:0] contain the data when KEYMGR_STATUS.MSG_VALID is 1.
+    The other bits are not updated when a beat is received.
+
+    When sending a response, this register defines the bits [255:0] of share 0 of the response.
+
+- name: keymgr_msg_s0_h
+  address: 18
+  doc: |
+    Bits [511:256] of share 0 when sending a keymgr interface response.
+
+- name: keymgr_msg_s1_l
+  address: 19
+  doc: |
+    Bits [255:0] of share 1 when sending a keymgr interface response.
+
+- name: keymgr_msg_s1_h
+  address: 20
+  doc: |
+    Bits [511:256] of share 1 when sending a keymgr interface response.

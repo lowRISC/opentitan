@@ -65,7 +65,7 @@ static const pinmux_output_t kOutputUart0 = {
 #define PINMUX_ASSERT_EQ_(a, b) \
   static_assert((a) == (b), "Unexpected software strap configuration.")
 
-PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio22);
+PINMUX_ASSERT_EQ_(SW_STRAP_0_PERIPH, kTopEarlgreyPinmuxPeripheralInGpio0Gpio22);
 PINMUX_ASSERT_EQ_(SW_STRAP_0_INSEL, kTopEarlgreyPinmuxInselIoc0);
 PINMUX_ASSERT_EQ_(SW_STRAP_0_PAD, kTopEarlgreyMuxedPadsIoc0);
 static const pinmux_input_t kInputSwStrap0 = {
@@ -74,7 +74,7 @@ static const pinmux_input_t kInputSwStrap0 = {
     .pad = SW_STRAP_0_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio23);
+PINMUX_ASSERT_EQ_(SW_STRAP_1_PERIPH, kTopEarlgreyPinmuxPeripheralInGpio0Gpio23);
 PINMUX_ASSERT_EQ_(SW_STRAP_1_INSEL, kTopEarlgreyPinmuxInselIoc1);
 PINMUX_ASSERT_EQ_(SW_STRAP_1_PAD, kTopEarlgreyMuxedPadsIoc1);
 static const pinmux_input_t kInputSwStrap1 = {
@@ -83,7 +83,7 @@ static const pinmux_input_t kInputSwStrap1 = {
     .pad = SW_STRAP_1_PAD,
 };
 
-PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpioGpio24);
+PINMUX_ASSERT_EQ_(SW_STRAP_2_PERIPH, kTopEarlgreyPinmuxPeripheralInGpio0Gpio24);
 PINMUX_ASSERT_EQ_(SW_STRAP_2_INSEL, kTopEarlgreyPinmuxInselIoc2);
 PINMUX_ASSERT_EQ_(SW_STRAP_2_PAD, kTopEarlgreyMuxedPadsIoc2);
 static const pinmux_input_t kInputSwStrap2 = {
@@ -155,7 +155,7 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
   pinmux_enable_pull(input.pad, false, false);
   pinmux_prop_delay();
   uint32_t val =
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+      abs_mmio_read32(TOP_EARLGREY_GPIO0_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   uint32_t state = bitfield_bit32_read(val, input.periph);
   uint32_t res = state ? 2 : 0;
 
@@ -165,7 +165,7 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
   pinmux_enable_pull(input.pad, true, !state);
   pinmux_prop_delay();
 
-  val = abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+  val = abs_mmio_read32(TOP_EARLGREY_GPIO0_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   state = bitfield_bit32_read(val, input.periph);
   res += state ? 1 : 0;
   return res;
@@ -224,6 +224,6 @@ uint32_t pinmux_read_straps(void) {
 
 bool pinmux_read_gpio(uint32_t gpio) {
   uint32_t val =
-      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+      abs_mmio_read32(TOP_EARLGREY_GPIO0_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
   return bitfield_bit32_read(val, gpio);
 }

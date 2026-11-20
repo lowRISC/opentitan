@@ -40,12 +40,12 @@ void configure_pinmux(void) {
   pinmux_testutils_init(&pinmux);
   // Hook up some LEDs.
   for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
+    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpio0Gpio0 + i;
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
   }
   // Hook up DIP switches.
   for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpioGpio8 + i;
+    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpio0Gpio8 + i;
     CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
   }
 }
@@ -72,8 +72,8 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   // Enable GPIO: 0-3 is output; 8-11 is input.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0xF));
 

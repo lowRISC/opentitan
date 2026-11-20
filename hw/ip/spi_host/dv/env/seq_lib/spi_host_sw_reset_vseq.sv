@@ -55,8 +55,7 @@ class spi_host_sw_reset_vseq extends spi_host_tx_rx_vseq;
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(edges_until_sw_rst,
                 edges_until_sw_rst inside { [40 : 120] };) // TODO(#18886) Examine txn len for range
               while (edges_until_sw_rst > 0) begin
-                // TODO(#18886) The below statement assumes CSB[0], future work may break this.
-                cfg.m_spi_agent_cfg.wait_sck_edge(DrivingEdge, 2'b00);
+                cfg.m_spi_agent_cfg.wait_sck_edge(DrivingEdge, cfg.m_spi_agent_cfg.csid);
                 edges_until_sw_rst--;
               end
               csr_utils_pkg::wait_no_outstanding_access();

@@ -13,6 +13,8 @@
 // TODO: Add backpressure logic, if output is not ready
 // TODO: Add check what to do, if data_in_valid_bytes_i is greater than blocksize
 
+`include "prim_assert.sv"
+
 module prim_ascon_duplex
   import prim_ascon_pkg::*;
  (

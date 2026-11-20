@@ -7,6 +7,11 @@
 <%
   import math
   from topgen.lib import Name
+
+  # Map each item name to the camel-case name of the partition holding it.
+  item_part = {item["name"]: Name.to_camel_case(part["name"])
+               for part in otp_mmap["partitions"] for item in part["items"]}
+  has_field_entropy = "FIELD_ENTROPY" in item_part
 %>
 `include "prim_assert.sv"
 
@@ -81,6 +86,9 @@ module otp_ctrl
   output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o,
   output keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o,
   output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o,
+% if has_field_entropy:
+  output keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o,
+% endif
   // Scrambling key requests
 % if enable_nvm_key:
   input  nvm_otp_key_req_t                           nvm_otp_key_i,
@@ -307,19 +315,22 @@ module otp_ctrl
   `ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
 
   logic [NumPartWidth-1:0] tlul_part_idx;
+  // Some tools reject assignment patterns in port connections.
+  logic [31:0] tlul_part_sel_data [NumPart]; // prim_arbiter_fixed's default DW
+  assign tlul_part_sel_data = '{default: '0};
   prim_arbiter_fixed #(
     .N(NumPart),
     .EnDataPort(0)
   ) u_part_sel_idx (
     .clk_i,
     .rst_ni,
-    .req_i   ( tlul_part_sel_oh  ),
-    .data_i  ( '{default: '0}    ),
-    .gnt_o   (                   ), // unused
-    .idx_o   ( tlul_part_idx     ),
-    .valid_o (                   ), // unused
-    .data_o  (                   ), // unused
-    .ready_i ( 1'b0              )
+    .req_i   ( tlul_part_sel_oh   ),
+    .data_i  ( tlul_part_sel_data ),
+    .gnt_o   (                    ), // unused
+    .idx_o   ( tlul_part_idx      ),
+    .valid_o (                    ), // unused
+    .data_o  (                    ), // unused
+    .ready_i ( 1'b0               )
   );
 
   logic tlul_oob_err_d, tlul_oob_err_q;
@@ -796,6 +807,9 @@ end
   // hence they can share the same EDN interface.
   logic edn_req, edn_ack;
   logic key_edn_req, key_edn_ack;
+  // Some tools reject assignment patterns in port connections.
+  logic [31:0] edn_arb_data [2]; // prim_arbiter_tree's default DW
+  assign edn_arb_data = '{default: '0};
   prim_arbiter_tree #(
     .N(2),
     .EnDataPort(0)
@@ -804,7 +818,7 @@ end
     .rst_ni,
     .req_chk_i ( ~lc_escalate_en_any         ),
     .req_i     ( {lfsr_edn_req, key_edn_req} ),
-    .data_i    ( '{default: '0}              ),
+    .data_i    ( edn_arb_data                ),
     .gnt_o     ( {lfsr_edn_ack, key_edn_ack} ),
     .idx_o     (                             ), // unused
     .valid_o   ( edn_req                     ),
@@ -1497,6 +1511,39 @@ end
     $rose(owner_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
+% if has_field_entropy:
+
+  // Like the SECRET1 partition, SW access to the partition holding FIELD_ENTROPY is only
+  // restricted by the partition's own digest lock. The FIELD_ENTROPY is only output if the
+  // life cycle controller allows HW to consume the seeds.
+
+  // Set the valid signal only if the secret is provisioned (digest is nonzero), the partition
+  // has been successfully initialized, and the FIELD_ENTROPY is not all-zero.
+  logic field_entropy_valid_d, field_entropy_valid_q;
+  assign field_entropy_valid_d = part_init_done[${item_part["FIELD_ENTROPY"]}Idx] &&
+                                 (part_digest[${item_part["FIELD_ENTROPY"]}Idx] != '0) &&
+                                 (part_buf_data[FieldEntropyOffset +: FieldEntropySize] != '0);
+
+  prim_flop #(
+    .Width(1)
+  ) u_field_entropy_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i (field_entropy_valid_d),
+    .q_o (field_entropy_valid_q)
+  );
+
+  assign keymgr_field_entropy_o.secret_valid = field_entropy_valid_q;
+  assign keymgr_field_entropy_o.secret =
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+      part_buf_data[FieldEntropyOffset +: FieldEntropySize] :
+      RndCnstPartInvDefault[FieldEntropyOffset*8 +: FieldEntropySize*8];
+
+  `ASSERT(LcSeedHwRdEnStable4_A,
+    $rose(field_entropy_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+% endif
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
@@ -1576,9 +1623,21 @@ end
   ////////////////
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare1Size * 8)
+% for part in otp_mmap["partitions"]:
+  % for item in part["items"]:
+    % if item["name"] in ("CREATOR_SEED", "OWNER_SEED"):
+  `ASSERT_INIT(${Name.to_camel_case(item["name"])}Size_A,
+               keymgr_dpe_pkg::SeedWidth == ${Name.to_camel_case(item["name"])}Size * 8)
+    % endif
+  % endfor
+% endfor
+% if has_field_entropy:
+  `ASSERT_INIT(FieldEntropySize_A,
+               keymgr_dpe_pkg::SeedWidth == FieldEntropySize * 8)
+% endif
 % if enable_nvm_key:
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
@@ -1601,6 +1660,9 @@ end
   `ASSERT_KNOWN(KeymgrCreatorRootKey_A,      keymgr_creator_root_key_o)
   `ASSERT_KNOWN(KeymgrCreatorSeed_A,         keymgr_creator_seed_o)
   `ASSERT_KNOWN(KeymgrOwnerSeed_A,           keymgr_owner_seed_o)
+% if has_field_entropy:
+  `ASSERT_KNOWN(KeymgrFieldEntropy_A,        keymgr_field_entropy_o)
+% endif
 % if enable_nvm_key:
   `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
 % endif

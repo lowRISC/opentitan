@@ -11,6 +11,7 @@ This implies that unlike the life cycle definition diagram, there is a one-time 
 Note during OTP sensing, the life cycle controller does not perform any redundant checks upon the value it reads; instead that responsibility is allocated to the OTP controller.
 
 Once the state values are correctly sensed, the life cycle controller performs checks on state consistency and dependencies, and if correct, broadcasts both the raw state value as well as the decoded functional outputs to the rest of the device.
+At the same time, it asserts [INIT_DONE](#init_done) to indicate that these broadcast signals are now valid.
 
 Once the broadcast is complete and signals stable, the pinmux straps are sampled and the ROM check is started.
 Note this point is also when it is safe for DFT to commence operations, as DFT functions may be blocked until life cycle completes its broadcast.
@@ -69,6 +70,7 @@ The employed one way function is a 128bit cSHAKE hash with the function name "" 
 ### Post Transition Handling
 
 After a transition request, whether it was unconditional or conditional, the life cycle controller always disables all of its decoded outputs and puts the system in an inert state.
+It also asserts [HW_DEBUG_CLR](#hw_debug_clr) so that modules clear any stored copy of HW_DEBUG_EN.
 The device is then expected to reboot before returning to a functional state.
 
 Note this happens for either successful or unsuccessful transitions.
@@ -83,6 +85,7 @@ Upon assertion of any of the two escalation actions, the life cycle state is **T
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
 This causes [all decoded outputs](#life-cycle-decoded-outputs-and-controls) to be disabled until the next power cycle.
 In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
+The life cycle controller also asserts the [HW_DEBUG_CLR](#hw_debug_clr) life cycle signal.
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the alert handler for more details.
 
@@ -94,7 +97,7 @@ The core function of life cycle is how various functions of the design are modul
 The signals have been split into two summary tables in the sections below.
 The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the flash and OTP memories.
 
-All life cycle control signals are 4-bits, with only `4'b1010` as a valid enable value, and all others meaning "disable".
+All life cycle control signals are 4-bit multibit values of type `lc_tx_t`, where `4'b0101` means ON and `4'b1010` means OFF; any other value is invalid.
 A `"Y"` mark means the function is directly enabled by hardware during that
 state.
 A `"grey"` box means a particular function is not available during that
@@ -145,6 +148,39 @@ If HW_DEBUG_EN is set to OFF, errors should return silently.
 
 Similar to DFT_EN, HW_DEBUG_EN is also used to isolate the processor TAP.
 When HW_DEBUG_EN is OFF, the TAP should not be able to perform its normal debug access, thus preventing an external entity from hijacking the processor.
+
+HW_DEBUG_EN is OFF while the life cycle controller is in reset.
+This includes non-debug-module (NDM) resets, which reset the life cycle controller.
+In order to keep a debug session alive during an NDM reset, modules can store HW_DEBUG_EN in a flop that is not reset by an NDM reset.
+Such a flop must be cleared as described in [HW_DEBUG_CLR](#hw_debug_clr).
+
+#### HW_DEBUG_CLR
+
+HW_DEBUG_CLR instructs modules that store HW_DEBUG_EN in a flop (see [HW_DEBUG_EN](#hw_debug_en)) to clear that flop.
+This is necessary because such a flop keeps its value when HW_DEBUG_EN turns OFF.
+A module must clear the flop whenever HW_DEBUG_CLR is not OFF.
+For example, see the [`pinmux`](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#non-debug-module-reset) and [`rv_dm`](../../rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support) documentation.
+
+HW_DEBUG_CLR is asserted in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states.
+HW_DEBUG_EN is OFF in all of these states.
+Once the life cycle controller has entered one of these states, it remains in one of them until it is reset, so HW_DEBUG_CLR remains asserted until then.
+
+HW_DEBUG_CLR is asserted in all states in which ESCALATE_EN is asserted by the life cycle controller.
+In addition, HW_DEBUG_CLR is asserted in the POST_TRANSITION state, in which ESCALATE_EN is not asserted.
+Note that the life cycle controller enters the POST_TRANSITION state after both successful and unsuccessful transitions (see [Post Transition Handling](#post-transition-handling)).
+
+#### INIT_DONE
+
+INIT_DONE (the `lc_init_done_o` output) indicates that the life cycle controller has completed initialization and that its other broadcast signals are valid, i.e., they are based on the life cycle state read from OTP.
+
+INIT_DONE is OFF while the life cycle controller is in reset and until it has read a valid life cycle state from OTP (see [Power Up Sequence](#power-up-sequence)).
+Once ON, INIT_DONE stays ON until the life cycle controller is reset, including in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states.
+If the life cycle controller escalates or detects an error before it has read a valid life cycle state, INIT_DONE stays OFF until reset, while ESCALATE_EN and [HW_DEBUG_CLR](#hw_debug_clr) are ON.
+
+Modules that keep a copy of a life cycle signal while the life cycle controller is in reset can use INIT_DONE to decide when to discard that copy and follow the live signal again.
+For example, the debug module latches HW_DEBUG_EN when it requests a non-debug-module (NDM) reset, which also resets the life cycle controller, and clears that latch once INIT_DONE is ON (see the [`rv_dm` documentation](../../rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support)).
+
+INIT_DONE is distinct from the `lc_done` response to the power manager and the `STATUS.INITIALIZED` CSR field, which are single-bit indications for the power-up handshake and software.
 
 #### CPU_EN
 
@@ -418,7 +454,7 @@ Note that this first escalation action does not affect the life cycle state.
 
 When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
-Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` life cycle signal to be asserted.
+Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals to be asserted.
 
 #### FSM Glitch Countermeasures
 

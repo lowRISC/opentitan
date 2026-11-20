@@ -284,6 +284,7 @@ status_t enable_realistic_entropy_src_fips_mode(
       .fips_flag = true,
       .rng_fips = true,
       .bypass_conditioner = false,
+      .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = true,
       .health_test_window_size = health_test_window_size,

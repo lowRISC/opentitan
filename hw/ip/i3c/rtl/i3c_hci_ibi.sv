@@ -23,6 +23,8 @@ module i3c_hci_ibi
   input  [31:0] rdata_i  // DWORD just read.
 );
 
+  import i3c_hci_pkg::*;
+
   // - HCI-side of the IBI Status handling, reading from the two queues.
   // - Switches between the reading of IBI Status Descriptors and their associated data DWORDs,
   //   by counting DWORDs on the read side.

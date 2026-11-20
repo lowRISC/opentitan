@@ -10,8 +10,6 @@
 // is still a single lane. So an upstream attack can defeat this module.  The
 // duplication merely protects against attacks directly on the arbiter.
 
-`include "prim_assert.sv"
-
 module prim_arbiter_tree_dup #(
   parameter int N   = 8,
   parameter int DW  = 32,

@@ -119,7 +119,11 @@ module otbn_core
 
   // KMAC application interface
   output kmac_pkg::app_req_t kmac_app_req_o,
-  input  kmac_pkg::app_rsp_t kmac_app_rsp_i
+  input  kmac_pkg::app_rsp_t kmac_app_rsp_i,
+
+  // Keymgr application interface
+  input  kmac_pkg::app_req_t keymgr_app_i,
+  output kmac_pkg::app_rsp_t keymgr_app_o
 );
   import prim_mubi_pkg::*;
 
@@ -295,6 +299,23 @@ module otbn_core
   logic [ExtWLEN-1:0] ispr_kmac_data_s1_rdata;
   logic               ispr_kmac_data_s1_rd;
 
+  logic               ispr_keymgr_ctrl_wr;
+  logic [31:0]        ispr_keymgr_ctrl_wdata;
+  logic [31:0]        ispr_keymgr_status_rdata;
+  logic               ispr_keymgr_msg_s0_l_wr;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s0_l_wdata;
+  logic               ispr_keymgr_msg_s0_h_wr;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s0_h_wdata;
+  logic               ispr_keymgr_msg_s1_l_wr;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s1_l_wdata;
+  logic               ispr_keymgr_msg_s1_h_wr;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s1_h_wdata;
+  logic               ispr_keymgr_msg_s0_l_rd;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s0_l_rdata;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s0_h_rdata;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s1_l_rdata;
+  logic [ExtWLEN-1:0] ispr_keymgr_msg_s1_h_rdata;
+
   logic                            ispr_urnd_ctrl_wr;
   logic [31:0]                     ispr_urnd_ctrl_wdata;
   logic [31:0]                     ispr_urnd_status_rdata;
@@ -349,6 +370,11 @@ module otbn_core
   logic sec_wipe_kmac_data_s0_urnd;
   logic sec_wipe_kmac_data_s1_urnd;
 
+  logic sec_wipe_keymgr_msg_s0_l_urnd;
+  logic sec_wipe_keymgr_msg_s0_h_urnd;
+  logic sec_wipe_keymgr_msg_s1_l_urnd;
+  logic sec_wipe_keymgr_msg_s1_h_urnd;
+
   logic zero_flags;
 
   logic                     prefetch_en;
@@ -379,6 +405,10 @@ module otbn_core
   logic kmac_sec_wipe_err;
   logic kmac_reg_intg_violation_err;
   logic kmac_state_err_d, kmac_state_err;
+
+  logic keymgr_sec_wipe_err;
+  logic keymgr_reg_intg_violation_err;
+  logic keymgr_state_err_d, keymgr_state_err;
 
   logic req_sec_wipe_urnd_keys_q;
 
@@ -427,6 +457,11 @@ module otbn_core
 
     .sec_wipe_kmac_data_s0_urnd_o(sec_wipe_kmac_data_s0_urnd),
     .sec_wipe_kmac_data_s1_urnd_o(sec_wipe_kmac_data_s1_urnd),
+
+    .sec_wipe_keymgr_msg_s0_l_urnd_o(sec_wipe_keymgr_msg_s0_l_urnd),
+    .sec_wipe_keymgr_msg_s0_h_urnd_o(sec_wipe_keymgr_msg_s0_h_urnd),
+    .sec_wipe_keymgr_msg_s1_l_urnd_o(sec_wipe_keymgr_msg_s1_l_urnd),
+    .sec_wipe_keymgr_msg_s1_h_urnd_o(sec_wipe_keymgr_msg_s1_h_urnd),
 
     .ispr_init_o         (ispr_init),
     .state_reset_o       (state_reset),
@@ -542,7 +577,8 @@ module otbn_core
                           rf_bignum_wr_sec_wipe_err,
                           alu_bignum_sec_wipe_err,
                           mac_bignum_sec_wipe_err,
-                          kmac_sec_wipe_err};
+                          kmac_sec_wipe_err,
+                          keymgr_sec_wipe_err};
 
   // Controller: coordinate between functional units, prepare their inputs (e.g. by muxing between
   // operand sources), and post-process their outputs as needed.
@@ -716,7 +752,7 @@ module otbn_core
   logic non_controller_reg_intg_violation_d, non_controller_reg_intg_violation;
   assign non_controller_reg_intg_violation_d =
       |{alu_bignum_reg_intg_violation_err, mac_bignum_reg_intg_violation_err, rf_base_intg_err_d,
-        mai_reg_intg_violation_err, kmac_reg_intg_violation_err};
+        mai_reg_intg_violation_err, kmac_reg_intg_violation_err, keymgr_reg_intg_violation_err};
 
   ////////////////////////////////////////////////////////////////
   // Register local escalation signals for timinig optimization //
@@ -757,6 +793,7 @@ module otbn_core
       mac_bignum_state_error            <= '0;
       mai_state_err                     <= '0;
       kmac_state_err                    <= '0;
+      keymgr_state_err                  <= '0;
     end else begin
       urnd_all_zero                     <= urnd_all_zero_d;
       predec_error                      <= predec_error_d;
@@ -767,6 +804,7 @@ module otbn_core
       mac_bignum_state_error            <= mac_bignum_state_error_d;
       mai_state_err                     <= mai_state_err_d;
       kmac_state_err                    <= kmac_state_err_d;
+      keymgr_state_err                  <= keymgr_state_err_d;
     end
   end
 
@@ -782,7 +820,8 @@ module otbn_core
                            mac_bignum_state_error,
                            mubi_err,
                            mai_state_err,
-                           kmac_state_err},
+                           kmac_state_err,
+                           keymgr_state_err},
     reg_intg_violation:  |{controller_err_bits.reg_intg_violation,
                            non_controller_reg_intg_violation},
     dmem_intg_violation: lsu_rdata_err,
@@ -821,7 +860,7 @@ module otbn_core
                                        rf_base_spurious_we_err, lsu_rdata_err,
                                        insn_fetch_err, non_controller_reg_intg_violation,
                                        insn_addr_err, mac_bignum_state_error, mai_state_err,
-                                       kmac_state_err}));
+                                       kmac_state_err, keymgr_state_err}));
 
   assign controller_recov_escalate_en =
       mubi4_bool_to_mubi(|{rnd_rep_err, rnd_fips_err});
@@ -833,7 +872,7 @@ module otbn_core
                                        predec_error, lsu_rdata_err, insn_fetch_err,
                                        mac_bignum_state_error,
                                        controller_fatal_err, insn_addr_err, mai_state_err,
-                                       kmac_state_err}));
+                                       kmac_state_err, keymgr_state_err}));
 
   // Signal error if MuBi input signals take on invalid values as this means something bad is
   // happening. The explicit error detection is required as the mubi4_or_hi operations above
@@ -1077,6 +1116,23 @@ module otbn_core
     .ispr_kmac_data_s0_rd_o   (ispr_kmac_data_s0_rd),
     .ispr_kmac_data_s1_rd_o   (ispr_kmac_data_s1_rd),
 
+    .ispr_keymgr_ctrl_wr_o       (ispr_keymgr_ctrl_wr),
+    .ispr_keymgr_ctrl_wdata_o    (ispr_keymgr_ctrl_wdata),
+    .ispr_keymgr_status_rdata_i  (ispr_keymgr_status_rdata),
+    .ispr_keymgr_msg_s0_l_wr_o   (ispr_keymgr_msg_s0_l_wr),
+    .ispr_keymgr_msg_s0_l_wdata_o(ispr_keymgr_msg_s0_l_wdata),
+    .ispr_keymgr_msg_s0_h_wr_o   (ispr_keymgr_msg_s0_h_wr),
+    .ispr_keymgr_msg_s0_h_wdata_o(ispr_keymgr_msg_s0_h_wdata),
+    .ispr_keymgr_msg_s1_l_wr_o   (ispr_keymgr_msg_s1_l_wr),
+    .ispr_keymgr_msg_s1_l_wdata_o(ispr_keymgr_msg_s1_l_wdata),
+    .ispr_keymgr_msg_s1_h_wr_o   (ispr_keymgr_msg_s1_h_wr),
+    .ispr_keymgr_msg_s1_h_wdata_o(ispr_keymgr_msg_s1_h_wdata),
+    .ispr_keymgr_msg_s0_l_rd_o   (ispr_keymgr_msg_s0_l_rd),
+    .ispr_keymgr_msg_s0_l_rdata_i(ispr_keymgr_msg_s0_l_rdata),
+    .ispr_keymgr_msg_s0_h_rdata_i(ispr_keymgr_msg_s0_h_rdata),
+    .ispr_keymgr_msg_s1_l_rdata_i(ispr_keymgr_msg_s1_l_rdata),
+    .ispr_keymgr_msg_s1_h_rdata_i(ispr_keymgr_msg_s1_h_rdata),
+
     .ispr_urnd_ctrl_wr_o     (ispr_urnd_ctrl_wr),
     .ispr_urnd_ctrl_wdata_o  (ispr_urnd_ctrl_wdata),
     .ispr_urnd_status_rdata_i(ispr_urnd_status_rdata),
@@ -1252,6 +1308,45 @@ module otbn_core
     .sec_wipe_err_o          (kmac_sec_wipe_err),
     .reg_intg_violation_err_o(kmac_reg_intg_violation_err),
     .state_err_o             (kmac_state_err_d)
+  );
+
+  otbn_keymgr_if u_otbn_keymgr_if (
+    .clk_i,
+    .rst_ni,
+
+    .keymgr_app_i,
+    .keymgr_app_o,
+
+    .ispr_keymgr_ctrl_wr_i   (ispr_keymgr_ctrl_wr),
+    .ispr_keymgr_ctrl_wdata_i(ispr_keymgr_ctrl_wdata),
+
+    .ispr_keymgr_status_rdata_o(ispr_keymgr_status_rdata),
+
+    .ispr_keymgr_msg_s0_l_wr_i   (ispr_keymgr_msg_s0_l_wr),
+    .ispr_keymgr_msg_s0_l_wdata_i(ispr_keymgr_msg_s0_l_wdata),
+    .ispr_keymgr_msg_s0_h_wr_i   (ispr_keymgr_msg_s0_h_wr),
+    .ispr_keymgr_msg_s0_h_wdata_i(ispr_keymgr_msg_s0_h_wdata),
+    .ispr_keymgr_msg_s1_l_wr_i   (ispr_keymgr_msg_s1_l_wr),
+    .ispr_keymgr_msg_s1_l_wdata_i(ispr_keymgr_msg_s1_l_wdata),
+    .ispr_keymgr_msg_s1_h_wr_i   (ispr_keymgr_msg_s1_h_wr),
+    .ispr_keymgr_msg_s1_h_wdata_i(ispr_keymgr_msg_s1_h_wdata),
+
+    .ispr_keymgr_msg_s0_l_rd_i   (ispr_keymgr_msg_s0_l_rd),
+    .ispr_keymgr_msg_s0_l_rdata_o(ispr_keymgr_msg_s0_l_rdata),
+    .ispr_keymgr_msg_s0_h_rdata_o(ispr_keymgr_msg_s0_h_rdata),
+    .ispr_keymgr_msg_s1_l_rdata_o(ispr_keymgr_msg_s1_l_rdata),
+    .ispr_keymgr_msg_s1_h_rdata_o(ispr_keymgr_msg_s1_h_rdata),
+
+    .sec_wipe_running_i             (secure_wipe_running_o),
+    .sec_wipe_ispr_keymgr_msg_s0_l_i(sec_wipe_keymgr_msg_s0_l_urnd),
+    .sec_wipe_ispr_keymgr_msg_s0_h_i(sec_wipe_keymgr_msg_s0_h_urnd),
+    .sec_wipe_ispr_keymgr_msg_s1_l_i(sec_wipe_keymgr_msg_s1_l_urnd),
+    .sec_wipe_ispr_keymgr_msg_s1_h_i(sec_wipe_keymgr_msg_s1_h_urnd),
+    .urnd_data_i                    (urnd_data),
+
+    .sec_wipe_err_o          (keymgr_sec_wipe_err),
+    .reg_intg_violation_err_o(keymgr_reg_intg_violation_err),
+    .state_err_o             (keymgr_state_err_d)
   );
 
   otbn_rnd #(

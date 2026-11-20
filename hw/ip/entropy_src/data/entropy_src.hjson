@@ -507,6 +507,18 @@
                 '''
           resval: false
         },
+        { bits: "11:8",
+          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED",
+          mubi: true,
+          desc: '''
+                When this field is `kMultiBitBool4True`, the esfinal FIFO is cleared while the ENTROPY_SRC block is disabled.
+                Any previously produced seeds are lost.
+                If the field is set to `kMultiBitBool4False`, previously produced seeds remain in the esfinal FIFO and keep getting served to the block hardware interface even while the ENTROPY_SRC block is disabled.
+                This allows extending the period during which the ENTROPY_SRC block is disabled while downstream entropy consumers remain active thereby improving energy efficiency and reducing aging of the PTRNG.
+                If needed, firmware can manually clear the esfinal FIFO while ENTROPY_SRC is disabled (e.g. when switching to a different configuration) by setting this field to `kMultiBitBool4True` and then back to `kMultiBitBool4False`.
+                '''
+          resval: true
+        },
       ]
     },
     { name: "ENTROPY_DATA",
@@ -590,6 +602,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -610,6 +624,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Symbol Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -630,6 +646,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -650,6 +668,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
+                   The test fails if the count is less than or equal to this value.
+                   A value of 0 disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
@@ -670,6 +690,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Symbol Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -690,6 +712,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the bucket health test.
+                   The test fails if any bucket count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -710,6 +734,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -730,6 +756,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
+                   The test fails if the count is less than or equal to this value.
+                   A value of 0 disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
@@ -1514,6 +1542,13 @@
           name: "RNG_FIPS_FIELD_ALERT",
           desc: '''
                 This bit is set when the RNG_FIPS field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "19",
+          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }

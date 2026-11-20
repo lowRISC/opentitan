@@ -11,6 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:assert
       - lowrisc:ip:edn_pkg
+      - lowrisc:prim:alert
     files:
       - rtl/prim_edn_req.sv
     file_type: systemVerilogSource

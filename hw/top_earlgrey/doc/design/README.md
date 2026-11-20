@@ -39,7 +39,7 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 These clocks are then divided down and distributed to the rest of the system.
 See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
 
-In the low-speed external clock mode and during the life cycle clock bypass, the `io` clock drops to 48 MHz, while the clock manager steps down its dividers so that `io_div2` and `io_div4` keep their nominal frequencies (see [clock manager](../../ip_autogen/clkmgr/doc/theory_of_operation.md#clock-frequency-summary)).
+In the low-speed external clock mode and during the life cycle clock bypass, the `io` clock drops to 48 MHz, while the clock manager steps down its dividers so that `io_div4` keeps its nominal frequency (see [clock manager](../../ip_autogen/clkmgr/doc/theory_of_operation.md#clock-frequency-summary)).
 Peripherals on `io`, such as SPI_HOST0 and SPI_HOST1, therefore run at half their nominal frequency in these modes, and software must account for this when it configures their clock dividers.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
@@ -187,7 +187,7 @@ The [memory map](../memory_map.md) gives their base addresses.
 |-------------------|---------|-----------------------------------------------------|--------------|-----------------------------------------------|
 | ROM               | 192 KiB | [`rom_ctrl`](../../../ip/rom_ctrl/README.md)        | `Main`       | Boot code                                     |
 | RRAM              | 2 MiB   | [`rram_ctrl`](../../../ip/rram_ctrl/README.md)      | `Main`       | Non-volatile code and data storage            |
-| OTP               | 2 KiB   | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
+| OTP               | 2096 B  | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
 | Main SRAM         | 128 KiB | [`sram_ctrl_main`](../../../ip/sram_ctrl/README.md) | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Secondary SRAM    | 64 KiB  | [`sram_ctrl_sec`](../../../ip/sram_ctrl/README.md)  | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Retention SRAM    | 8 KiB   | [`sram_ctrl_ret`](../../../ip/sram_ctrl/README.md)  | `Aon`        | Data that must be retained during deep sleep  |
@@ -223,7 +223,7 @@ See those specifications for more details.
 #### OTP
 
 Earl Grey has no OTP macro.
-Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2 KiB of one-time programmable memory (1032 words of 16 bit) in the OTP region of the RRAM.
+Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2144 bytes of one-time programmable memory (1072 words of 16 bit) in the OTP region of the RRAM.
 The RRAM controller implements OTP semantics on that region: bits can only be set, never cleared.
 
 #### SRAMs
@@ -304,8 +304,8 @@ See the [UART specification](../../../ip/uart/README.md) for more details on thi
 
 ##### GPIO
 
-The chip contains one GPIO peripheral that creates 32 bits of bidirectional communication with the outside world via the pinmux.
-Via pinmux any of the 32 pins of GPIO can be connected to any of the 32 MIO chip pins, in any direction.
+The chip contains two GPIO peripherals (`gpio0` and `gpio1`) that each create 32 bits of bidirectional communication with the outside world via the pinmux.
+Via pinmux any of the 32 pins of either GPIO can be connected to any of the 47 MIO chip pins, in any direction.
 See the [GPIO specification](../../ip_autogen/gpio/README.md) for more details on this peripheral.
 See the [pinmux specification](../../ip_autogen/pinmux/README.md) for how to connect peripheral IO to chip IO.
 
@@ -368,7 +368,7 @@ Both peripherals have the same configuration:
 | Message buffer                 | 4 KiB                                                   |
 | Device Address Table           | 32 entries                                              |
 | Device Characteristics Table   | 32 entries                                              |
-| Other clocks                   | `clk_aon_i`: `aon` clock; `scan_clk_i`: `io_div2` clock |
+| Other clocks                   | `clk_aon_i`: `aon` clock; `scan_clk_i`: `io_div4` clock |
 
 Each I3C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
 
@@ -488,6 +488,8 @@ Software can derive a child slot from any valid slot; per-slot policies constrai
 
 The key manager DPE uses KMAC as its key derivation function.
 Its inputs include the creator root key from the OTP controller, the creator and owner seeds from the RRAM controller, the ROM digest from the ROM controller, and a diversification value from the life cycle controller.
+It optionally also consumes the field entropy from the `SECRET3` OTP partition.
+If the field entropy has not been provisioned, the key manager DPE uses a netlist constant instead.
 It can generate keys for software or sideload them into AES, HMAC, KMAC and OTBN.
 
 See the [key manager DPE specification](../../../ip/keymgr_dpe/README.md) for more details.
@@ -509,7 +511,7 @@ See the [life cycle controller specification](../../../ip/lc_ctrl/README.md) for
 The OTP controller provides one-time programmable storage that is logically divided into partitions.
 Partitions can be locked, integrity checked with digests, and scrambled.
 The OTP controller checks the partitions periodically in the background.
-It provides keys and seeds to other blocks over dedicated hardware interfaces, including the scrambling keys of the SRAMs, the instruction cache, OTBN and the RRAM, the creator root key of the key manager DPE, and the life cycle state.
+It provides keys and seeds to other blocks over dedicated hardware interfaces, including the scrambling keys of the SRAMs, the instruction cache, OTBN and the RRAM, the creator root key and the optional field entropy of the key manager DPE, and the life cycle state.
 
 Earl Grey has no OTP macro.
 The OTP controller stores its data in the OTP region of the RRAM through the RRAM controller (see [OTP](#otp)).
@@ -633,24 +635,25 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 <!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
 | ID   | Name          | Bank   | Type         | Connection Type   | Description                                |
 |:-----|:--------------|:-------|:-------------|:------------------|:-------------------------------------------|
-| 0    | POR_N         | VCC    | InputStd     | manual            | System reset                               |
-| 1    | USB_P         | VCC    | DualBidirTol | manual            | USB P signal                               |
-| 2    | USB_N         | VCC    | DualBidirTol | manual            | USB N signal                               |
-| 3    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                                |
-| 4    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                                |
-| 5    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
-| 6    | SPI_HOST_D0   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 7    | SPI_HOST_D1   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 8    | SPI_HOST_D2   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 9    | SPI_HOST_D3   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 10   | SPI_HOST_CLK  | VIOA   | BidirStd     | direct            | SPI host clock                             |
-| 11   | SPI_HOST_CS_L | VIOA   | BidirStd     | direct            | SPI host chip select                       |
-| 12   | SPI_DEV_D0    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 13   | SPI_DEV_D1    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 14   | SPI_DEV_D2    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 15   | SPI_DEV_D3    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 16   | SPI_DEV_CLK   | VIOA   | InputStd     | direct            | SPI device clock                           |
-| 17   | SPI_DEV_CS_L  | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 0    | POR_N         | VCC    | InputStd     | manual            | System reset based on VCC                  |
+| 1    | PORA_N        | VIOA   | InputStd     | manual            | System reset based on VIOA                 |
+| 2    | USB_P         | VCC    | DualBidirTol | manual            | USB P signal                               |
+| 3    | USB_N         | VCC    | DualBidirTol | manual            | USB N signal                               |
+| 4    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                                |
+| 5    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                                |
+| 6    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
+| 7    | SPI_HOST_D0   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 8    | SPI_HOST_D1   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 9    | SPI_HOST_D2   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 10   | SPI_HOST_D3   | VIOA   | BidirStd     | direct            | SPI host data                              |
+| 11   | SPI_HOST_CLK  | VIOA   | BidirStd     | direct            | SPI host clock                             |
+| 12   | SPI_HOST_CS_L | VIOA   | BidirStd     | direct            | SPI host chip select                       |
+| 13   | SPI_DEV_D0    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 14   | SPI_DEV_D1    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 15   | SPI_DEV_D2    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 16   | SPI_DEV_D3    | VIOA   | BidirStd     | direct            | SPI device data                            |
+| 17   | SPI_DEV_CLK   | VIOA   | InputStd     | direct            | SPI device clock                           |
+| 18   | SPI_DEV_CS_L  | VIOA   | InputStd     | direct            | SPI device chip select                     |
 | 0    | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 1    | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 2    | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
@@ -694,8 +697,8 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 40   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 41   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 42   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 18   | IOR8          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 19   | IOR9          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 19   | IOR8          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 20   | IOR9          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
 | 43   | IOR10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 44   | IOR11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
 | 45   | IOR12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |

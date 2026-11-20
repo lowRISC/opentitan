@@ -12,8 +12,7 @@ from reggen.signal import Signal
 
 def name_width(x: Signal) -> str:
     '''Returns the name of the given signal followed by it's width.'''
-    return ('{}[{}:0]'.format(x.name, x.bits.msb)
-            if x.bits.width() != 1 else x.name)
+    return x.name_width()
 
 
 def coderef(s: str) -> str:

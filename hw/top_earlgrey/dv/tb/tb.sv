@@ -57,7 +57,7 @@ module tb;
     .rst_n(passive_rst_n)
   );
   // Reset driver for pad tests.
-  assign passive_rst_n = dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN];
+  assign passive_rst_n = dut.chip_if.chip_por_n;
 
   // The interface only drives the clock.
   initial passive_clk_rst_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
@@ -119,6 +119,7 @@ module tb;
 `endif
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
+    .PORA_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPoraN]),
     .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
     .USB_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN]),
 `ifdef ANALOGSIM
@@ -826,7 +827,8 @@ module tb;
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
@@ -842,7 +844,8 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_usbdev);
         end else begin
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);

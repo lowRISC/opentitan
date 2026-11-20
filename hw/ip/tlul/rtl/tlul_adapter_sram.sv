@@ -10,6 +10,46 @@
  * - Intentionally omitted BaseAddr in case of multiple memory maps are used in a SoC,
  *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
+ *
+ * - To prevent long timing paths through the TL-UL interface, there is no combinational path
+ *   between the A channel input signals (incl. a_valid) and a_ready within this module. Similarly,
+ *   integrators are advised to avoid combinationally factoring in any of the request signals
+ *   of the SRAM interface into the gnt_i signal. In case of SRAMs, the gnt_i signal is meant to
+ *   statically indicate the readiness of the memory primitive (e.g. if the scrambling key is
+ *   ready in case of scrambled memory primitives).
+ *
+ * - If the underlying SRAM-like memory primitive is not ready (gnt_i low), this module can still
+ *   signal D channel error responses without forwarding the request to the memory primitive, e.g.,
+ *   in the case of protocol or integrity errors. To avoid combinational paths between the
+ *   A channel input signals and a_ready, the error condition is then registered and a_ready is set
+ *   in the following clock cycle. In any case, a D channel response is only sent after observing
+ *   an A channel handshake.
+ *
+ * - Since the TileLink specification allows hosts to change A channel signals (including a_valid)
+ *   independent of a_ready in the previous clock cycle, this leads to the following interesting
+ *   scenarios:
+ *
+ *   Cycle 0:  a_valid,  error_internal, !gnt_i, !a_ready -> no handshake, set    missed_err_gnt_q
+ *   Cycle 1
+ *     a)      a_valid,  error_internal, !gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     b)      a_valid,  error_internal,  gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     c)      a_valid, !error_internal, !gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     d)      a_valid, !error_internal,  gnt_i,  a_ready ->    handshake, drop   missed_err_gnt_q
+ *     e)     !a_valid,                           a_ready -> no handshake, drop   missed_err_gnt_q
+ *
+ *   In Scenarios a) and b), an error response is returned. Whether the A channel signals or the
+ *   exact error condition between Cycles 0 and 1 have changed doesn't matter.
+ *
+ *   In Scenario c), the original error condition has resolved but the memory is still not ready.
+ *   The previously registered error is returned. The host should interpret this as the device
+ *   not being ready.
+ *
+ *   In Scenario d), the original error condition has resolved and the memory is now ready. The
+ *   current request gets forwarded to the memory and the previously registered error is dropped.
+ *
+ *   In Scenario e), a_valid is lowered and no handshake happens. The previously registered error
+ *   is dropped.
+ *
  * - At most one of EnableDataIntgGen / EnableDataIntgPt can be enabled. However it
  *   possible for both to be disabled.
  *   A module can neither generate an integrity response nor pass through any pre-existing
@@ -37,6 +77,7 @@ module tlul_adapter_sram
   parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
   parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
+  parameter bit SecFifo           = 0,  // 1: Duplicated fifos
   parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
   parameter bit DataXorAddr       = 0,  // 1: XOR data and address for address protection
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
@@ -56,7 +97,8 @@ module tlul_adapter_sram
   // SRAM interface
   output logic                 req_o,
   output mubi4_t               req_type_o,
-  input                        gnt_i,
+  input                        gnt_i, // To prevent long timing paths through the TL-UL interface,
+                                      // this should be independent of the request output signals.
   output logic                 we_o,
   output logic [SramAw-1:0]    addr_o,
   output logic [DataOutW-1:0]  wdata_o,
@@ -475,10 +517,21 @@ module tlul_adapter_sram
   assign wmask_o = wmask_combined;
   assign wdata_o = wdata_combined;
 
-  assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
+  // The TileLink spec allows hosts to change A channel signals (including the valid signal)
+  // independent of the ready signal in the previous clock cycle. See Section 4.1:
+  // "Note that a sender may raise valid and then lower it on the following cycle, even if the
+  // message was not accepted on the previous cycle."
+  // As a consequence, we only signal an error back to the host in case of a missed grant for a
+  // request triggering an error if:
+  // - The error condition still persists, this is the case if the host did not change its A
+  //   channel signals, or
+  // - the grant signal is still low, meaning even if the host changed its A channel signals, we
+  //   wouldn't be able to accept the request.
+  assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted,
+                                  // either due to gnt_i or due to missed_err_gnt_q.
   assign reqfifo_wdata  = '{
     is_read: tl_i_int.a_opcode == Get,
-    error:  error_internal,
+    error:  error_internal | (~gnt_i & missed_err_gnt_q),
     instr_type: tl_i_int.a_user.instr_type,
     size:   tl_i_int.a_size,
     source: tl_i_int.a_source
@@ -563,52 +616,97 @@ module tlul_adapter_sram
   //    responses), storing the request is necessary. And if the read entry
   //    is write op, it is safe to return the response right away. If it is
   //    read request, then D response is waiting until read data arrives.
-  prim_fifo_sync #(
-    .Width       (ReqFifoWidth),
-    .Pass        (1'b0),
-    .Depth       (Outstanding),
-    .NeverClears (1'b1),
-    .Secure      (SecFifoPtr)
-  ) u_reqfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(reqfifo_wvalid),
-    .wready_o(reqfifo_wready),
-    .wdata_i (reqfifo_wdata),
-    .rvalid_o(reqfifo_rvalid),
-    .rready_i(reqfifo_rready),
-    .rdata_o (reqfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (reqfifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_reqfifo
+    prim_fifo_sync_redundant #(
+      .Width       (ReqFifoWidth),
+      .Pass        (1'b0),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1)
+    ) u_reqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(reqfifo_wvalid),
+      .wready_o(reqfifo_wready),
+      .wdata_i (reqfifo_wdata),
+      .rvalid_o(reqfifo_rvalid),
+      .rready_i(reqfifo_rready),
+      .rdata_o (reqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (reqfifo_error)
+    );
+  end else begin: gen_no_sec_u_reqfifo
+    prim_fifo_sync #(
+      .Width       (ReqFifoWidth),
+      .Pass        (1'b0),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_reqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(reqfifo_wvalid),
+      .wready_o(reqfifo_wready),
+      .wdata_i (reqfifo_wdata),
+      .rvalid_o(reqfifo_rvalid),
+      .rready_i(reqfifo_rready),
+      .rdata_o (reqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (reqfifo_error)
+    );
+  end
 
   // sramreqfifo:
   //    While the ReqFIFO holds the request until it is sent back via TL-UL, the
   //    sramreqfifo only needs to hold the mask and word offset until the read
   //    data returns from memory.
-  prim_fifo_sync #(
-    .Width             (SramReqFifoWidth),
-    .Pass              (1'b0),
-    .Depth             (Outstanding),
-    .NeverClears       (1'b1),
-    .Secure            (SecFifoPtr),
-    .OutputZeroIfEmpty (1)
-  ) u_sramreqfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(sramreqfifo_wvalid),
-    .wready_o(sramreqfifo_wready),
-    .wdata_i (sramreqfifo_wdata),
-    .rvalid_o(),
-    .rready_i(sramreqfifo_rready),
-    .rdata_o (sramreqfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (sramreqfifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_sramreqfifo
+    prim_fifo_sync_redundant #(
+      .Width             (SramReqFifoWidth),
+      .Pass              (1'b0),
+      .Depth             (Outstanding),
+      .NeverClears       (1'b1),
+      .OutputZeroIfEmpty (1)
+    ) u_sramreqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(sramreqfifo_wvalid),
+      .wready_o(sramreqfifo_wready),
+      .wdata_i (sramreqfifo_wdata),
+      .rvalid_o(),
+      .rready_i(sramreqfifo_rready),
+      .rdata_o (sramreqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (sramreqfifo_error)
+    );
+  end else begin : gen_no_sec_u_sramreqfifo
+    prim_fifo_sync #(
+      .Width             (SramReqFifoWidth),
+      .Pass              (1'b0),
+      .Depth             (Outstanding),
+      .NeverClears       (1'b1),
+      .Secure            (SecFifoPtr),
+      .OutputZeroIfEmpty (1)
+    ) u_sramreqfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(sramreqfifo_wvalid),
+      .wready_o(sramreqfifo_wready),
+      .wdata_i (sramreqfifo_wdata),
+      .rvalid_o(),
+      .rready_i(sramreqfifo_rready),
+      .rdata_o (sramreqfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (sramreqfifo_error)
+    );
+  end
 
   if (!DataXorAddr) begin : gen_no_data_xor_addr_fifo
     // If u_sramreqfifo doesn't contain any address data, nothing will be reading sram_addr_wdata or
@@ -623,26 +721,48 @@ module tlul_adapter_sram
   //    back pressured, the response FIFO should store the returned data not to
   //    lose the data from the SRAM interface. Remember, SRAM interface doesn't
   //    have back-pressure signal such as read_ready.
-  prim_fifo_sync #(
-    .Width       (RspFifoWidth),
-    .Pass        (1'b1),
-    .Depth       (Outstanding),
-    .NeverClears (1'b1),
-    .Secure      (SecFifoPtr)
-  ) u_rspfifo (
-    .clk_i,
-    .rst_ni,
-    .clr_i   (1'b0),
-    .wvalid_i(rspfifo_wvalid),
-    .wready_o(rspfifo_wready),
-    .wdata_i (rspfifo_wdata),
-    .rvalid_o(rspfifo_rvalid),
-    .rready_i(rspfifo_rready),
-    .rdata_o (rspfifo_rdata),
-    .full_o  (),
-    .depth_o (),
-    .err_o   (rsp_fifo_error)
-  );
+  if (SecFifo) begin : gen_sec_u_rspfifo
+    prim_fifo_sync_redundant #(
+      .Width       (RspFifoWidth),
+      .Pass        (1'b1),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1)
+    ) u_rspfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(rspfifo_wvalid),
+      .wready_o(rspfifo_wready),
+      .wdata_i (rspfifo_wdata),
+      .rvalid_o(rspfifo_rvalid),
+      .rready_i(rspfifo_rready),
+      .rdata_o (rspfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (rsp_fifo_error)
+    );
+  end else begin : gen_no_sec_u_rspfifo
+    prim_fifo_sync #(
+      .Width       (RspFifoWidth),
+      .Pass        (1'b1),
+      .Depth       (Outstanding),
+      .NeverClears (1'b1),
+      .Secure      (SecFifoPtr)
+    ) u_rspfifo (
+      .clk_i,
+      .rst_ni,
+      .clr_i   (1'b0),
+      .wvalid_i(rspfifo_wvalid),
+      .wready_o(rspfifo_wready),
+      .wdata_i (rspfifo_wdata),
+      .rvalid_o(rspfifo_rvalid),
+      .rready_i(rspfifo_rready),
+      .rdata_o (rspfifo_rdata),
+      .full_o  (),
+      .depth_o (),
+      .err_o   (rsp_fifo_error)
+    );
+  end
 
   // below assertion fails when SRAM rvalid is asserted even though ReqFifo is empty
   `ASSERT(rvalidHighReqFifoEmpty, rvalid_i |-> reqfifo_rvalid)

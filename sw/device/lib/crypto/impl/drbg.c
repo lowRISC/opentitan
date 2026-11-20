@@ -33,7 +33,12 @@
 static status_t seed_material_construct(
     const otcrypto_const_byte_buf_t *value,
     entropy_seed_material_t *seed_material) {
-  if (value == NULL || value->len == 0) {
+  if (value == NULL) {
+    seed_material->len = 0;
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(value));
+  if (value->len == 0) {
     seed_material->len = 0;
     return OTCRYPTO_OK;
   }
@@ -87,11 +92,11 @@ static status_t seed_material_construct(
 static otcrypto_status_t seed_material_xor(
     const otcrypto_const_byte_buf_t *value,
     entropy_seed_material_t *seed_material) {
+  if (value == NULL || value->len == 0) {
+    return OTCRYPTO_OK;
+  }
   if (value->len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
-  }
-  if (value->len == 0) {
-    return OTCRYPTO_OK;
   }
 
   // Copy into a word-aligned buffer. This allows us to use a XOR that is more
@@ -125,8 +130,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 #endif
 
   entropy_seed_material_t seed_material;
-  HARDENED_TRY(
-      hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
 
   return otcrypto_eval_exit(entropy_csrng_instantiate(
@@ -146,8 +150,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
 #endif
 
   entropy_seed_material_t seed_material;
-  HARDENED_TRY(
-      hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
 
   return otcrypto_eval_exit(entropy_csrng_reseed(
@@ -161,10 +164,11 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
-  if (perso_string->len != 0 && perso_string->data == NULL) {
+  if (perso_string == NULL ||
+      (perso_string->len != 0 && perso_string->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy->data == NULL) {
+  if (entropy == NULL || entropy->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -223,14 +227,20 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Buffer for output
  * @return Result status; OK or error
  */
+OT_ALWAYS_INLINE
 static otcrypto_status_t generate(
     hardened_bool_t fips_check,
     const otcrypto_const_byte_buf_t *additional_input,
     otcrypto_word32_buf_t *drbg_output) {
-  entropy_seed_material_t seed_material;
-  HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
-  HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output->data,
-                                      drbg_output->len, fips_check));
+  if (launder32(drbg_output->len) != 0) {
+    entropy_seed_material_t seed_material;
+    HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
+    HARDENED_TRY(entropy_csrng_generate(&seed_material, drbg_output->data,
+                                        drbg_output->len, fips_check));
+  } else {
+    HARDENED_CHECK_EQ(drbg_output->len, 0);
+  }
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(drbg_output));
 
   return OTCRYPTO_OK;
 }
@@ -247,14 +257,9 @@ otcrypto_status_t otcrypto_drbg_generate(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (launder32(drbg_output->len) == 0) {
-    HARDENED_CHECK_EQ(drbg_output->len, 0);
-    // Nothing to do.
-    return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
 
   // Randomize destination buffer.
-  HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
+  hardened_memshred(drbg_output->data, drbg_output->len);
 
   return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolTrue,
                                      additional_input, drbg_output));
@@ -272,17 +277,13 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (launder32(drbg_output->len) == 0) {
-    HARDENED_CHECK_EQ(drbg_output->len, 0);
-    // Nothing to do.
-    return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
 
   return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolFalse,
                                      additional_input, drbg_output));
 }
 
 otcrypto_status_t otcrypto_drbg_uninstantiate(void) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_UNINSTANTIATE);
   OTCRYPTO_LOCKED_STATE_CHECK();
   return otcrypto_eval_exit(entropy_csrng_uninstantiate());
 }

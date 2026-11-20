@@ -27,21 +27,33 @@ typedef struct aes_gcm_context {
    */
   hardened_bool_t is_encrypt;
   /**
-   * Underlying AES-CTR key.
+   * Underlying AES cipher mode (always CTR for AES-GCM).
    */
-  aes_key_t key;
+  aes_cipher_mode_t key_mode;
   /**
-   * Pointer to the blinded key for updating its checksum on remasking.
+   * Whether the AES key is sideloaded from keymgr.
    */
-  otcrypto_blinded_key_t *blinded_key;
+  hardened_bool_t sideload;
+  /**
+   * Keymgr DPE slot index for sideloaded keys.
+   */
+  uint32_t keymgr_dpe_slot_idx;
+  /**
+   * Length of the AES key in 32-bit words.
+   */
+  uint32_t key_len;
+  /**
+   * Key shares owned by value so the streaming context contains no pointers.
+   */
+  uint32_t key_shares[2][8];
+  /**
+   * Checksum of the underlying AES key.
+   */
+  uint32_t key_checksum;
   /**
    * Security level of the underlying AES-CTR key.
    */
   otcrypto_key_security_level_t security_level;
-  /**
-   * Initial counter block (J0 in the spec).
-   */
-  aes_block_t initial_counter_block;
   /**
    * Current counter block for the main GCTR operation over the plaintext.
    */
@@ -49,11 +61,11 @@ typedef struct aes_gcm_context {
   /**
    * Length of the associated data received so far, in bytes.
    */
-  size_t aad_len;
+  uint32_t aad_len;
   /**
    * Length of the input so far, in bytes.
    */
-  size_t input_len;
+  uint32_t input_len;
   /**
    * Partial GHASH block.
    *
@@ -75,6 +87,24 @@ typedef struct aes_gcm_context {
    */
   ghash_context_t ghash_ctx;
 } __attribute__((aligned(sizeof(uint32_t)))) aes_gcm_context_t;
+
+/**
+ * Reconstruct an ephemeral `aes_key_t` view from the by-value key shares stored
+ * inside an `aes_gcm_context_t`.
+ *
+ * @param ctx AES-GCM context object.
+ * @return Constructed `aes_key_t` referencing `ctx->key_shares`.
+ */
+static inline aes_key_t aes_gcm_context_key(const aes_gcm_context_t *ctx) {
+  return (aes_key_t){
+      .mode = ctx->key_mode,
+      .sideload = ctx->sideload,
+      .keymgr_dpe_slot_idx = ctx->keymgr_dpe_slot_idx,
+      .key_len = ctx->key_len,
+      .key_shares = {ctx->key_shares[0], ctx->key_shares[1]},
+      .checksum = ctx->key_checksum,
+  };
+}
 
 /**
  * AES-GCM authenticated encryption as defined in NIST SP800-38D, algorithm 4.

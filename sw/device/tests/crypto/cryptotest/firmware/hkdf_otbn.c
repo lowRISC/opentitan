@@ -80,7 +80,7 @@ status_t handle_hkdf(ujson_t *uj) {
 
   otcrypto_key_config_t okm_config = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = uj_data.okm_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,

@@ -122,7 +122,6 @@ module ast (
   // pad mux/pad related
   input [ast_pkg::Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
-  output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   // analog test outputs
 `ifdef ANALOGSIM
@@ -218,7 +217,6 @@ ast_aon u_ast_aon (
   .obs_ctrl_o              ( obs_ctrl_o ),
   .padmux2ast_i            ( padmux2ast_i ),
   .ast2padmux_o            ( ast2padmux_o ),
-  .mux_iob_sel_o           ( mux_iob_sel_o ),
   .ast2pad_t0_ao           ( ast2pad_t0_ao ),
   .ast2pad_t1_ao           ( ast2pad_t1_ao ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),

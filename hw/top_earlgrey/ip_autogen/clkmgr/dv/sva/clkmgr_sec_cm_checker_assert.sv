@@ -4,7 +4,9 @@
 
 // Assertion checker for external clock bypass
 // sec cm test
-module clkmgr_sec_cm_checker_assert (
+module clkmgr_sec_cm_checker_assert #(
+  parameter int NumDivClks = 2
+) (
   input clk_i,
   input rst_ni,
   input prim_mubi_pkg::mubi4_t all_clk_byp_req_o,
@@ -13,7 +15,7 @@ module clkmgr_sec_cm_checker_assert (
   input lc_ctrl_pkg::lc_tx_t lc_clk_byp_ack_o,
   input prim_mubi_pkg::mubi4_t io_clk_byp_req_o,
   input prim_mubi_pkg::mubi4_t io_clk_byp_ack,
-  input logic [1:0] step_down_acks_sync,
+  input logic [NumDivClks-1:0] step_down_acks_sync,
   input prim_mubi_pkg::mubi4_t extclk_ctrl_sel
 );
 
@@ -42,7 +44,7 @@ module clkmgr_sec_cm_checker_assert (
 
   // sec_cm_clk_handshake_intersig_mubi, sec_cm_div_intersig_mubi
   `ASSERT(LcClkBypAckTrue_A,
-          step_down_acks_sync == 2'b11 && io_clk_byp_ack == prim_mubi_pkg::MuBi4True |=> ($past(
+          &step_down_acks_sync && io_clk_byp_ack == prim_mubi_pkg::MuBi4True |=> ($past(
               lc_clk_byp_req_i, 3
           ) == lc_clk_byp_ack_o) || ($past(
               lc_clk_byp_req_i, 4
@@ -51,7 +53,7 @@ module clkmgr_sec_cm_checker_assert (
           )),
           clk_i, reset_or_disable)
   `ASSERT(LcClkBypAckFalse_A,
-          step_down_acks_sync != 2'b11 ||
+          !(&step_down_acks_sync) ||
           io_clk_byp_ack != prim_mubi_pkg::MuBi4True |=>
           lc_clk_byp_ack_o == lc_ctrl_pkg::Off,
           clk_i, reset_or_disable)

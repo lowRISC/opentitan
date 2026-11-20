@@ -231,7 +231,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
 % if target["name"] != "verilator":
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [${len(dedicated_pads)-1}:0] dio_in_raw;
 
@@ -390,7 +389,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_scan_i(ast_base_clks.clk_sys),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -960,11 +958,6 @@ module chip_${top["name"]}_${target["name"]} #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-% if target["name"] != "verilator":
-    .mux_iob_sel_o         ( mux_iob_sel ),
-% else:
-    .mux_iob_sel_o         (  ),
-% endif
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
@@ -1336,7 +1329,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
+    unique case ({mio_out[MioOutGpio0Gpio11], mio_out[MioOutGpio0Gpio10]})
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1351,10 +1344,10 @@ module chip_${top["name"]}_${target["name"]} #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

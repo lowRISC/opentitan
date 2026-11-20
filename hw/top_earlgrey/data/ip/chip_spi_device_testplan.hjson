@@ -42,6 +42,7 @@
             - Verify that only the payloads that are not filtered show up on the SPI host interface
               at chip IOs.
             - Verify spi_host1 doesn't send out any data from spi_device.
+            - Verify the chip select lines of spi_host0 other than CSB[0] stay inactive.
             - Run with min (6MHz), typical (24Mhz) and max (30MHz) SPI clk frequencies.
             - Run with single, dual and quad SPI modes.
             - Testbench should test the following commands:

@@ -52,7 +52,7 @@ case_to_alert_list_map = [
     37,  # Case 15 maps to alert_list index 37 ("flash_ctrl_fatal_err")
     38,  # Case 16 maps to alert_list index 38 ("flash_ctrl_fatal_prim_flash_alert")
     39,  # Case 17 maps to alert_list index 39 ("flash_ctrl_recov_prim_flash_alert")
-    4,  # Case 18 maps to alert_list index 4 ("gpio_fatal_fault")
+    4,  # Case 18 maps to alert_list index 4 ("gpio0_fatal_fault")
     44,  # Case 19 maps to alert_list index 44 ("hmac_fatal_fault")
     6,  # Case 20 maps to alert_list index 6 ("i2c0_fatal_fault")
     7,  # Case 21 maps to alert_list index 7 ("i2c1_fatal_fault")

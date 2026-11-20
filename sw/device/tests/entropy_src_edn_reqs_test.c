@@ -85,16 +85,21 @@ static void aes_test(const dif_aes_t *aes) {
 }
 
 /**
- * Configure the kmac to use entropy from edn to request entropy.
+ * Configure the kmac to use entropy from edn.
  */
 static void kmac_test(dif_kmac_t *kmac) {
   LOG_INFO("%s", __func__);
 
   dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_fast_process = kDifToggleDisabled,
   };
   CHECK_DIF_OK(dif_kmac_configure(kmac, config));
+  dif_kmac_entropy_config_t entropy_config = (dif_kmac_entropy_config_t){
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .ignore_cmd_entropy_req = false,
+      .edn_mode_refresh_threshold = 1,
+  };
+  CHECK_DIF_OK(dif_kmac_configure_entropy(kmac, entropy_config));
 }
 
 /**
@@ -156,17 +161,17 @@ static void keymgr_dpe_test(const dif_keymgr_dpe_t *keymgr_dpe) {
       CHECK_STATUS_OK(keymgr_dpe_testutils_advance_state(
           keymgr_dpe, &kCreatorRootKeyParams));
       // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
+      // hold keys with boot stage set to BootStageCreatorInt (1). (Note:
       // Current bootstage + 1)
     } else {
       LOG_INFO(
           "ROM identified - keymgr_dpe is in `kDifKeymgrDpeStateAvailable `"
-          "and has derived the `OwnerIntKey`");
+          "and has derived the `CreatorRootKey`");
       // Verify the keymgr dpe is in the reset state
       CHECK_STATUS_OK(keymgr_dpe_testutils_check_state(
           keymgr_dpe, kDifKeymgrDpeStateAvailable));
       // TODO(#30759): Verify the kCreatorRootKeyParams.slot_dst_sel
-      // hold keys with boot stage set to BootStageOwner (2). (Note:
+      // hold keys with boot stage set to BootStageCreatorInt (1). (Note:
       // Current bootstage + 1)
     }
 

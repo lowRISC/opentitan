@@ -29,7 +29,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     '{"csrng", "", TopDarjeelingAlertIdCsrngFatalAlert},
     '{"edn0", "", TopDarjeelingAlertIdEdn0FatalAlert},
     '{"edn1", "", TopDarjeelingAlertIdEdn1FatalAlert},
-    '{"gpio", "", TopDarjeelingAlertIdGpioFatalFault},
+    '{"gpio0", "", TopDarjeelingAlertIdGpio0FatalFault},
     '{"hmac", "", TopDarjeelingAlertIdHmacFatalFault},
     '{"i2c0", "", TopDarjeelingAlertIdI2c0FatalFault},
     '{"keymgr_dpe", "", TopDarjeelingAlertIdKeymgrDpeFatalFaultErr},

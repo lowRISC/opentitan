@@ -104,9 +104,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
@@ -131,9 +131,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
@@ -168,9 +168,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
@@ -259,15 +259,18 @@ class csrng_intr_vseq extends csrng_base_vseq;
             force_path_err(aes_fsm_path, value3, ral.intr_state.cs_fatal_err, 1'b1);
           end
           ctrl_sparse: begin
-            // We force one rail of one of the mux control signals to another valid encoding.
-            value3 = {3'b000, {aes_pkg::ADD_RK_INIT}};
+            // We force one rail of one of the mux control signals to another valid encoding. The
+            // AES cipher core is idle here and already drives ADD_RK_INIT, so pick an encoding
+            // that differs from the current value of the rail.
             if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
               path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "p");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
             end else begin
               path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "n");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
             end
+            `DV_CHECK(uvm_hdl_read(path, value3))
+            value3 = (value3 == {3'b000, {aes_pkg::ADD_RK_INIT}}) ?
+                     {3'b000, {aes_pkg::ADD_RK_ROUND}} : {3'b000, {aes_pkg::ADD_RK_INIT}};
+            force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
           end
           ctr_redun: begin
             value4 = 4'hf;
@@ -285,7 +288,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
       ctr_error: begin
-        path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.m_num_hw_apps);
+        path = (cfg.which_cnt == ctr_drbg_cnt) ? cfg.csrng_path_vif.ctr_drbg_ctr_err_path() :
+                                                 cfg.csrng_path_vif.state_db_reg_ptr_err_path();
         force_path_err(path, 8'h01, ral.intr_state.cs_fatal_err, 1'b1);
       end
       fifo_write_error, fifo_read_error, fifo_state_error: begin
@@ -346,7 +350,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_off();
-    `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
     // Test cs_fatal_err interrupt
     test_cs_fatal_err();
@@ -381,7 +384,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
     $asserton(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_on();
-    `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 1)
     `undef CMD_STAGE_0
     `undef CMD_STAGE_1
     `undef CMD_STAGE_2

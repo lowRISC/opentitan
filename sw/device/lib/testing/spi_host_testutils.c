@@ -9,7 +9,8 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
-  // Set fast slew rate and strong drive strengh for SPI host0 pads.
+  // Set fast slew rate and strong drive strength for the dedicated SPI host0
+  // pads.
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {
       .slew_rate = 1,
@@ -21,6 +22,10 @@ status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
   for (uint32_t i = 0; i < kDtSpiHostPeriphIoCount; ++i) {
     dt_periph_io_t periph_io =
         dt_spi_host_periph_io(kDtSpiHost0, (dt_spi_host_periph_io_t)i);
+    // Some chip select lines of SPI host0 may be muxed instead of dedicated.
+    if (dt_periph_io_type(periph_io) != kDtPeriphIoTypeDio) {
+      continue;
+    }
     dt_pad_t pad = dt_periph_io_dio_pad(periph_io);
     res = dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr);
     if (res == kDifError) {
@@ -113,7 +118,7 @@ status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
 
   // CSB.
   dt_periph_io_t csb =
-      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoCsb);
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoCsb0);
   TRY(dif_pinmux_mio_select_output(pinmux, csb_outsel, csb));
   // SCK.
   dt_periph_io_t sck =

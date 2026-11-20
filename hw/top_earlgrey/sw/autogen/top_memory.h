@@ -165,29 +165,46 @@
  */
 #define TOP_UART3_SIZE_BYTES 0x40
 /**
- * Peripheral base address for gpio in top earlgrey.
+ * Peripheral base address for gpio0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_GPIO_BASE_ADDR 0x40040000
+#define TOP_GPIO0_BASE_ADDR 0x40040000
 
 /**
- * Peripheral size for gpio in top earlgrey.
+ * Peripheral size for gpio0 in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_GPIO_BASE_ADDR and
- * `TOP_GPIO_BASE_ADDR + TOP_GPIO_SIZE_BYTES`.
+ * address between #TOP_GPIO0_BASE_ADDR and
+ * `TOP_GPIO0_BASE_ADDR + TOP_GPIO0_SIZE_BYTES`.
  */
-#define TOP_GPIO_SIZE_BYTES 0x400
+#define TOP_GPIO0_SIZE_BYTES 0x400
+/**
+ * Peripheral base address for gpio1 in top earlgrey.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_GPIO1_BASE_ADDR 0x40050000
+
+/**
+ * Peripheral size for gpio1 in top earlgrey.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_GPIO1_BASE_ADDR and
+ * `TOP_GPIO1_BASE_ADDR + TOP_GPIO1_SIZE_BYTES`.
+ */
+#define TOP_GPIO1_SIZE_BYTES 0x400
 /**
  * Peripheral base address for spi_device in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_SPI_DEVICE_BASE_ADDR 0x40050000
+#define TOP_SPI_DEVICE_BASE_ADDR 0x40060000
 
 /**
  * Peripheral size for spi_device in top earlgrey.
@@ -758,7 +775,7 @@
  * address between #TOP_CSRNG_BASE_ADDR and
  * `TOP_CSRNG_BASE_ADDR + TOP_CSRNG_SIZE_BYTES`.
  */
-#define TOP_CSRNG_SIZE_BYTES 0x80
+#define TOP_CSRNG_SIZE_BYTES 0x100
 /**
  * Peripheral base address for entropy_src in top earlgrey.
  *

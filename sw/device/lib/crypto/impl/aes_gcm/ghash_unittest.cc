@@ -148,7 +148,6 @@ TEST(Ghash, Mul1) {
   EXPECT_CALL(crc32_, Finish(testing::NotNull()))
       .Times(kExpectedCrc32Cycles)
       .WillRepeatedly(testing::Return(0));
-  constexpr int kExpectedCrc32AddCycles = 5;
 
   EXPECT_OK(
       ghash_handle_enc_initial_counter_block(Zero.data(), Zero.data(), &ctx));

@@ -15,8 +15,13 @@ module csrng_cmd_stage import csrng_pkg::*; (
   input logic [InstIdWidth-1:0]      cmd_stage_shid_i,
   input logic [CmdBusWidth-1:0]      cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
-  // Command checking interface.
+  // Command checking and state db interface.
   input logic                        reseed_cnt_reached_i,
+  input logic                        instantiated_i,
+  input logic [GenBitsCtrWidth-1:0]  cmd_gen_cnt_i,
+  input logic                        cmd_gen_flag_i,
+  output logic                       cmd_gen_flag_o,
+  input logic                        restore_i,
   output logic                       reseed_cnt_alert_o,
   output logic                       invalid_cmd_seq_alert_o,
   output logic                       invalid_acmd_alert_o,
@@ -24,6 +29,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Generate abort request signals.
   input logic                        gen_abort_req_i,
   output logic                       gen_abort_invalid_o,
+  // Halt control.
+  input logic                        halt_i,
+  output logic                       halted_o,
   // Command to arbiter.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
@@ -49,7 +57,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Error indication.
   output logic [2:0]                 cmd_stage_sfifo_cmd_err_o,
   output logic [2:0]                 cmd_stage_sfifo_genbits_err_o,
-  output logic                       cmd_gen_cnt_err_o,
   output logic                       cmd_stage_sm_err_o
 );
 
@@ -82,7 +89,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic                        cmd_fifo_zero;
   logic                        cmd_fifo_pop;
   logic                        cmd_len_dec;
-  logic                        cmd_gen_cnt_dec;
   logic                        cmd_gen_1st_req;
   logic                        cmd_gen_inc_req;
   logic                        cmd_gen_cnt_last;
@@ -90,46 +96,37 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic                        cmd_err_ack;
   logic                        cmd_gen_abort_req;
   logic                        cmd_gen_abort_ack;
-  logic  [GenBitsCtrWidth-1:0] cmd_gen_cnt;
   csrng_cmd_sts_e              err_sts;
   logic                        reseed_cnt_exceeded;
   logic                        invalid_cmd_seq;
   logic                        invalid_acmd;
   logic                        invalid_gen_cmd;
   logic                  [2:0] acmd;
-  logic                        local_escalate;
 
   // Flops.
   logic           cmd_ack_q, cmd_ack_d;
   csrng_cmd_sts_e cmd_ack_sts_q, cmd_ack_sts_d;
   logic     [3:0] cmd_len_q, cmd_len_d;
-  logic           cmd_gen_flag_q, cmd_gen_flag_d;
-  logic           instantiated_d, instantiated_q;
   logic           gen_ongoing_q, gen_ongoing_d;
   logic           gen_abort_pending_q, gen_abort_pending_d;
-  logic           gen_abort_inflight_q, gen_abort_inflight_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      cmd_ack_q            <= '0;
-      cmd_ack_sts_q        <= CMD_STS_SUCCESS;
-      cmd_len_q            <= '0;
-      cmd_gen_flag_q       <= '0;
-      instantiated_q       <= '0;
-      gen_ongoing_q        <= '0;
-      gen_abort_pending_q  <= '0;
-      gen_abort_inflight_q <= '0;
+      cmd_ack_q           <= '0;
+      cmd_ack_sts_q       <= CMD_STS_SUCCESS;
+      cmd_len_q           <= '0;
+      gen_abort_pending_q <= '0;
     end else begin
-      cmd_ack_q            <= cmd_ack_d;
-      cmd_ack_sts_q        <= cmd_ack_sts_d;
-      cmd_len_q            <= cmd_len_d;
-      cmd_gen_flag_q       <= cmd_gen_flag_d;
-      instantiated_q       <= instantiated_d;
-      gen_ongoing_q        <= gen_ongoing_d;
-      gen_abort_pending_q  <= gen_abort_pending_d;
-      gen_abort_inflight_q <= gen_abort_inflight_d;
+      cmd_ack_q           <= cmd_ack_d;
+      cmd_ack_sts_q       <= cmd_ack_sts_d;
+      cmd_len_q           <= cmd_len_d;
+      gen_abort_pending_q <= gen_abort_pending_d;
     end
   end
+
+  // The GEN flag is stored in the state db such that it can be saved and restored.
+  assign gen_ongoing_q = cmd_gen_flag_i;
+  assign cmd_gen_flag_o = gen_ongoing_d;
 
   assign cmd_stage_sfifo_cmd_err_o = sfifo_cmd_err;
   assign cmd_stage_sfifo_genbits_err_o = sfifo_genbits_err;
@@ -165,14 +162,13 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign sfifo_cmd_rrdy = cs_enable_i && cmd_fifo_pop;
 
   assign cmd_arb_bus_o =
-        // pad,glast,id,f,clen,cmd
+        // pad,gfirst,glen,glast,id,f,clen,cmd
         cmd_gen_abort_req ? {15'b0,1'b0,cmd_stage_shid_i,12'(UNI)} :
         cmd_gen_inc_req   ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,12'(GEN)} :
-        cmd_gen_1st_req   ? {15'b0,cmd_gen_cnt_last,cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :
+        cmd_gen_1st_req   ? {2'b0,1'b1,sfifo_cmd_rdata[12 +: GenBitsCtrWidth],cmd_gen_cnt_last,
+                             cmd_stage_shid_i,sfifo_cmd_rdata[11:0]} :
         cmd_arb_mop_o     ? sfifo_cmd_rdata :
         '0;
-
-  assign cmd_stage_rdy_o = sfifo_cmd_wrdy;
 
   assign sfifo_cmd_err =
          {( sfifo_cmd_wvld && !sfifo_cmd_wrdy),
@@ -193,34 +189,6 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   // Capture the application command type.
   assign acmd = sfifo_cmd_rdata[2:0];
-
-  // For gen commands, capture information from the original command for use later.
-  assign cmd_gen_flag_d =
-         (!cs_enable_i) ? '0 :
-         cmd_gen_1st_req ? (acmd == GEN) :
-         cmd_gen_flag_q;
-
-  // SEC_CM: GEN_CMD.CTR.REDUN
-  prim_count #(
-    .Width(GenBitsCtrWidth),
-    .ResetValue({GenBitsCtrWidth{1'b1}})
-  ) u_prim_count_cmd_gen_cntr (
-    .clk_i,
-    .rst_ni,
-    .clr_i(!cs_enable_i),
-    .set_i(cmd_gen_1st_req),
-    .set_cnt_i(sfifo_cmd_rdata[12 +: GenBitsCtrWidth]),
-    .incr_en_i(1'b0),
-    .decr_en_i(cmd_gen_cnt_dec), // Count down.
-    .step_i(GenBitsCtrWidth'(1)),
-    .commit_i(1'b1),
-    .cnt_o(cmd_gen_cnt),
-    .cnt_after_commit_o(),
-    .err_o(cmd_gen_cnt_err_o)
-  );
-
-  // For naming consistency.
-  assign local_escalate = cmd_gen_cnt_err_o;
 
   //---------------------------------------------------------
   // state machine to process command
@@ -253,11 +221,11 @@ module csrng_cmd_stage import csrng_pkg::*; (
     ArbGnt    = 8'b00011100, // general arbiter request
     SendSOP   = 8'b00000001, // send sop (start of packet)
     SendMOP   = 8'b01010110, // send mop (middle of packet)
-    GenCmdChk = 8'b10001101, // gen cmd check
-    CmdAck    = 8'b11000000, // wait for command ack
-    GenReq    = 8'b10010011, // process gen requests
-    GenArbGnt = 8'b11101110, // generate subsequent arb request
-    GenSOP    = 8'b10111010, // generate subsequent request
+    CmdAck    = 8'b10001101, // wait for command ack
+    GenReq    = 8'b11000000, // process gen requests
+    GenArbGnt = 8'b10010011, // generate subsequent arb request
+    GenSOP    = 8'b11101110, // generate subsequent request
+    AbortAck  = 8'b10111010, // wait for gen abort ack
     Error     = 8'b01100111  // illegal state reached and hang
   } state_e;
 
@@ -265,39 +233,26 @@ module csrng_cmd_stage import csrng_pkg::*; (
   state_e state_d, state_q;
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, Idle)
 
-  // Tracks if there is an ongoing GEN command.
-  // While gen_ongoing_d is high GEN commands can be aborted, otherwise they are invalid.
-  assign gen_ongoing_d =
-         (!cs_enable_i)   ? 1'b0 :
-         (state_q == GenSOP && cmd_gen_abort_req) ? 1'b0 :
-         (cmd_gen_1st_req && (acmd == GEN)) ? 1'b1 :
-         cmd_gen_cnt_last ? 1'b0 :
-         gen_ongoing_q;
-
   // Latch an accepted GEN abort request until it is dispatched.
   // To avoid race conditions we latch the abort request until it is safe to send an UNI command.
   assign gen_abort_pending_d =
-         (!cs_enable_i) ? 1'b0 :
-         (state_q == GenSOP && cmd_gen_abort_req) ? 1'b0 :
+         (!cs_enable_i || restore_i) ? 1'b0 :
+         cmd_gen_abort_req ? 1'b0 :
          (gen_abort_req_i && gen_ongoing_d) ? 1'b1 :
          gen_abort_pending_q;
 
-  // Mark the request that carries the abort, from dispatch until its ack is consumed.
-  assign gen_abort_inflight_d =
-         (!cs_enable_i) ? 1'b0 :
-         (state_q == CmdAck && cmd_ack_i && gen_abort_inflight_q) ? 1'b0 :
-         (state_q == GenSOP && cmd_gen_abort_req) ? 1'b1 :
-         gen_abort_inflight_q;
-
   // An abort request is only meaningful while a GEN command is ongoing for this app,
   // otherwise trigger an alert.
-  assign gen_abort_invalid_o = cs_enable_i && gen_abort_req_i && !gen_ongoing_d;
+  assign gen_abort_invalid_o = gen_abort_req_i && !gen_ongoing_d;
+
+  // The command stage doesn't accept any further requests when halted.
+  assign halted_o = halt_i && (state_q == Idle) && cmd_fifo_zero;
 
   always_comb begin
     state_d = state_q;
+    cmd_stage_rdy_o = 1'b0;
     cmd_fifo_pop = 1'b0;
     cmd_len_dec = 1'b0;
-    cmd_gen_cnt_dec = 1'b0;
     cmd_gen_1st_req = 1'b0;
     cmd_gen_inc_req = 1'b0;
     cmd_gen_abort_req = 1'b0;
@@ -314,46 +269,49 @@ module csrng_cmd_stage import csrng_pkg::*; (
     invalid_cmd_seq = 1'b0;
     invalid_acmd = 1'b0;
     invalid_gen_cmd = 1'b0;
-    instantiated_d = instantiated_q;
+
+    // Tracks if there is an ongoing GEN command.
+    // While gen_ongoing_d is high GEN commands can be aborted, otherwise they are invalid.
+    gen_ongoing_d = cs_enable_i && gen_ongoing_q;
 
     if (state_q == Error) begin
-      // In case we are in the Error state we must ignore the local escalate and enable signals.
+      // In case we are in the Error state we must ignore the enable signal.
       cmd_stage_sm_err_o = 1'b1;
-    end else if (local_escalate) begin
-      // In case local escalate is high we must transition to the error state.
-      state_d = Error;
-    end else if (!cs_enable_i && state_q inside {Idle, Flush, ArbGnt, SendSOP, SendMOP, GenCmdChk,
-                                                 CmdAck, GenReq, GenArbGnt, GenSOP}) begin
+    end else if (!cs_enable_i && state_q inside {Idle, Flush, ArbGnt, SendSOP, SendMOP, CmdAck,
+                                                 GenReq, GenArbGnt, GenSOP, AbortAck}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = Idle;
-      instantiated_d = 1'b0;
     end else begin
       // Otherwise do the state machine as normal.
       unique case (state_q)
         Idle: begin
           // Because of the if statement above we won't leave idle if enable is low.
-          if (!cmd_fifo_zero) begin
+          if (gen_ongoing_q) begin
+            // Resume a halted Generate command.
+            if (!halt_i) begin
+              state_d = GenReq;
+            end
+          end else if (!cmd_fifo_zero) begin
             if (acmd == INS) begin
-              if (!instantiated_q) begin
+              if (!instantiated_i) begin
                 state_d = ArbGnt;
-                instantiated_d = 1'b1;
               end
-              if (instantiated_q) begin
+              if (instantiated_i) begin
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
               end
             end else if (acmd == RES) begin
-              if (instantiated_q) begin
+              if (instantiated_i) begin
                 state_d = ArbGnt;
               end
-              if (!instantiated_q) begin
+              if (!instantiated_i) begin
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
               end
             end else if (acmd == GEN) begin
-              if (instantiated_q) begin
+              if (instantiated_i) begin
                 if (sfifo_cmd_rdata[12 +: GenBitsCtrWidth] == '0) begin
                   // A GEN command must request at least one block.
                   cmd_err_ack = 1'b1;
@@ -369,23 +327,21 @@ module csrng_cmd_stage import csrng_pkg::*; (
                   state_d = ArbGnt;
                 end
               end
-              if (!instantiated_q) begin
+              if (!instantiated_i) begin
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
               end
             end else if (acmd == UPD) begin
-              if (instantiated_q) begin
+              if (instantiated_i) begin
                 state_d = ArbGnt;
               end
-              if (!instantiated_q) begin
+              if (!instantiated_i) begin
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
               end
             end else if (acmd == UNI) begin
-              // Set the instantiation to zero.
-              instantiated_d = 1'b0;
               state_d = ArbGnt;
             end else begin
               // Command was not supported.
@@ -399,6 +355,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
               cmd_fifo_pop = 1'b1;
               state_d = Flush;
             end
+          end else begin
+            // The previous command has been acknowledged, accept a new one unless halted.
+            cmd_stage_rdy_o = !halt_i && sfifo_cmd_wrdy;
           end
         end
         Flush: begin
@@ -406,6 +365,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
           // The decision whether a command is invalid is taken based on the command header but
           // EDN might continue and send additional data belonging to the same command. We have
           // to absorb the full invalid command before we can continue.
+          cmd_stage_rdy_o = sfifo_cmd_wrdy;
           cmd_fifo_pop = sfifo_cmd_rvld;
           if (!sfifo_cmd_rvld && !cmd_stage_vld_i) begin
             state_d = Idle;
@@ -419,6 +379,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
         end
         SendSOP: begin
           cmd_gen_1st_req = 1'b1;
+          if (acmd == GEN) begin
+            gen_ongoing_d = 1'b1;
+          end
           cmd_arb_sop_o = 1'b1;
           cmd_fifo_pop = 1'b1;
           if (sfifo_cmd_rdata[12 +: GenBitsCtrWidth] == GenBitsCtrWidth'(1)) begin
@@ -426,65 +389,61 @@ module csrng_cmd_stage import csrng_pkg::*; (
           end
           if (cmd_len == '0) begin
             cmd_arb_eop_o = 1'b1;
-            state_d = GenCmdChk;
+            state_d = CmdAck;
           end else begin
             state_d = SendMOP;
           end
         end
         SendMOP: begin
+          // Accept the remaining data words of the current command.
+          cmd_stage_rdy_o = sfifo_cmd_wrdy;
           if (!cmd_fifo_zero) begin
             cmd_fifo_pop = 1'b1;
             cmd_len_dec = 1'b1;
             if (cmd_len_q == 4'h1) begin
+              cmd_stage_rdy_o = 1'b0;
               cmd_arb_mop_o = 1'b1;
               cmd_arb_eop_o = 1'b1;
-              state_d = GenCmdChk;
+              state_d = CmdAck;
             end else begin
               cmd_arb_mop_o = 1'b1;
             end
           end
-        end
-        GenCmdChk: begin
-          if (cmd_gen_flag_q) begin
-            cmd_gen_cnt_dec = 1'b1;
-          end
-          state_d = CmdAck;
         end
         CmdAck: begin
           if (cmd_ack_i) begin
             // The state database has successfully been updated.
             // In case of Generate commands, we get the generated bits one clock cycle before
             // receiving the ACK from the state database (from csrng_ctr_drbg_gen).
-            if (gen_abort_inflight_q) begin
-              // Acknowledge the aborted GEN command.
-              instantiated_d = 1'b0;
-              cmd_gen_abort_ack = 1'b1;
-              state_d = Idle;
-            end else begin
+            if (gen_ongoing_q) begin
               state_d = GenReq;
+            end else begin
+              // Ack for the non-gen request case.
+              cmd_final_ack = 1'b1;
+              state_d = Idle;
             end
           end
         end
         GenReq: begin
-          // Flag set if a gen request.
-          if (cmd_gen_flag_q) begin
-            if (gen_abort_pending_q) begin
-              // GEN abort doesn't produce genbits so no need to wait for sfifo_genbits_wrdy.
-              state_d = GenArbGnt;
-            end else if (sfifo_genbits_wrdy) begin
-              // Must stall if genbits fifo is not clear.
-              if (cmd_gen_cnt == '0) begin
-                cmd_final_ack = 1'b1;
-                state_d = Idle;
-              end else begin
-                // Issue a subsequent gen request.
-                state_d = GenArbGnt;
-              end
+          if (gen_abort_pending_q) begin
+            // GEN abort doesn't produce genbits so no need to wait for sfifo_genbits_wrdy.
+            state_d = GenArbGnt;
+          end else if (cmd_gen_cnt_i == '0) begin
+            if (!sfifo_genbits_rvld) begin
+              // Final genbits block has been read out. Ack the completed command.
+              cmd_final_ack = 1'b1;
+              gen_ongoing_d = 1'b0;
+              state_d = Idle;
+            end else if (halt_i) begin
+              // The final block is already sitting in sfifo_genbits. Leave without acking.
+              state_d = Idle;
             end
-          end else begin
-            // Ack for the non-gen request case.
-            cmd_final_ack = 1'b1;
+          end else if (halt_i) begin
+            // More genbit blocks remain. This is a safe point to honor a halt request.
             state_d = Idle;
+          end else if (sfifo_genbits_wrdy) begin
+            // Issue a subsequent gen request.
+            state_d = GenArbGnt;
           end
         end
         GenArbGnt: begin
@@ -496,16 +455,25 @@ module csrng_cmd_stage import csrng_pkg::*; (
         GenSOP: begin
           cmd_arb_sop_o = 1'b1;
           cmd_arb_eop_o = 1'b1;
-          state_d = GenCmdChk;
           if (gen_abort_pending_q) begin
             // Abort this instance instead of requesting another block.
             cmd_gen_abort_req = 1'b1;
+            gen_ongoing_d = 1'b0;
+            state_d = AbortAck;
           end else begin
             cmd_gen_inc_req = 1'b1;
             // Check for final genbits beat.
-            if (cmd_gen_cnt == GenBitsCtrWidth'(1)) begin
+            if (cmd_gen_cnt_i == GenBitsCtrWidth'(1)) begin
               cmd_gen_cnt_last = 1'b1;
             end
+            state_d = CmdAck;
+          end
+        end
+        AbortAck: begin
+          if (cmd_ack_i) begin
+            // Acknowledge the aborted GEN command.
+            cmd_gen_abort_ack = 1'b1;
+            state_d = Idle;
           end
         end
         // Error: The error state is now covered by the if statement above.
@@ -537,12 +505,12 @@ module csrng_cmd_stage import csrng_pkg::*; (
     .rready_i(sfifo_genbits_rrdy),
     .rdata_o (sfifo_genbits_rdata),
     .full_o  (),
-    .depth_o (), // sfifo_genbits_depth)
+    .depth_o (),
     .err_o   ()
   );
 
-  // Clear u_prim_fifo_genbits when CSRNG is disabled or on a GEN abort.
-  assign sfifo_genbits_clr = !cs_enable_i || cmd_gen_abort_ack;
+  // Clear u_prim_fifo_genbits when CSRNG is disabled, on a GEN abort or on a restore.
+  assign sfifo_genbits_clr = !cs_enable_i || cmd_gen_abort_ack || restore_i;
 
   assign sfifo_genbits_wdata = {genbits_fips_i,genbits_bus_i};
 
@@ -574,10 +542,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
   `ASSERT(CsrngCmdStageGenbitsFifoFull_A,
       (state_q == GenSOP) && !gen_abort_pending_q |-> sfifo_genbits_wrdy)
 
-  // Pushes to the genbits FIFO outside of the GenCmdChk and CmdAck states or while handling a
-  // command other than Generate are not allowed.
-  `ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A,
-      sfifo_genbits_wvld |-> state_q inside {GenCmdChk, CmdAck} && cmd_gen_flag_q)
+  // Pushes to the genbits FIFO outside of the CmdAck state are not allowed.
+  `ASSERT(CsrngCmdStageGenbitsFifoPushExpected_A, sfifo_genbits_wvld |-> state_q == CmdAck)
 
   //---------------------------------------------------------
   // Ack logic.
@@ -613,5 +579,16 @@ module csrng_cmd_stage import csrng_pkg::*; (
   `ASSERT(CsrngCmdStageErrorStStable_A, state_q == Error |=> $stable(state_q))
   // If in error state, the error output must be high.
   `ASSERT(CsrngCmdStageErrorOutput_A,   state_q == Error |-> cmd_stage_sm_err_o)
+
+  //---------------------------------------------------------
+  // Halt assertions.
+  //---------------------------------------------------------
+
+  // halted_o is only ever asserted in the Idle state.
+  `ASSERT(CsrngCmdStageHaltedState_A, halted_o |-> state_q == Idle)
+  // Whenever halted, there must be no outstanding request against the shared arbiter.
+  `ASSERT(CsrngCmdStageHaltedNoArbReq_A, halted_o |-> !cmd_arb_req_o)
+  // While halted, the command FIFO is empty and nothing is pushed into it.
+  `ASSERT(CsrngCmdStageHaltedFifoEmpty_A, halted_o |-> cmd_fifo_zero && !sfifo_cmd_wvld)
 
 endmodule

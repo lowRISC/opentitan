@@ -78,6 +78,36 @@ opentitan_binary(
 )
 
 opentitan_test(
+    name = "tdes_functest",
+    srcs = ["tdes_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        ":tdes_testvectors",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:tdes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "tdes_testvectors",
+    srcs = ["tdes_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:tdes",
+    ],
+)
+
+opentitan_test(
     name = "aes_functest",
     srcs = ["aes_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -125,6 +155,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl/aes_kwp",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -425,6 +456,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/impl:cmac",
+        "//sw/device/lib/crypto/impl:cmac_kdf",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/runtime:log",
@@ -448,6 +480,24 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:randomness_quality",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "ecc_ed25519_point_on_curve_check_functest",
+    srcs = ["ecc_ed25519_point_on_curve_check_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -1437,6 +1487,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha1",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",
@@ -1695,6 +1746,49 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "hmac_drbg_functest",
+    srcs = ["hmac_drbg_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:hmac_drbg",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "hmac_sha1_functest",
+    srcs = ["hmac_sha1_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:cryptolib_build_info",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha1",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1776,6 +1870,25 @@ py_binary(
         "//util/design/lib:common",
         requirement("hjson"),
         requirement("mako"),
+    ],
+)
+
+opentitan_test(
+    name = "sha1_functest",
+    srcs = ["sha1_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:sha1",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -1889,6 +2002,7 @@ test_suite(
         ":cmac_functest",
         ":config_functest",
         ":drbg_functest",
+        ":ecc_ed25519_point_on_curve_check_functest",
         ":ecc_p256_arith_share_private_key_functest",
         ":ecc_p256_base_point_mult_functest",
         ":ecc_p256_dice_functest",
@@ -1910,8 +2024,10 @@ test_suite(
         ":ed25519_functest",
         ":entropy_src_functest",
         ":hkdf_functest",
+        ":hmac_drbg_functest",
         ":hmac_functest",
         ":hmac_multistream_functest",
+        ":hmac_sha1_functest",
         ":hmac_sha256_functest",
         ":hmac_sha384_functest",
         ":hmac_sha512_functest",
@@ -1932,11 +2048,13 @@ test_suite(
         ":rsa_4096_encryption_functest",
         ":rsa_4096_key_from_cofactor_functest",
         ":rsa_4096_signature_functest",
+        ":sha1_functest",
         ":sha256_functest",
         ":sha384_functest",
         ":sha512_functest",
         ":status_functest",
         ":symmetric_keygen_functest",
+        ":tdes_functest",
         ":x25519_functest",
         ":x25519_sideload_functest",
     ],

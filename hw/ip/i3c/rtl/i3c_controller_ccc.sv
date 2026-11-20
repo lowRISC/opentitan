@@ -86,7 +86,7 @@ module i3c_controller_ccc
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               ccc_rsp_o.done       = 1'b1;
-              ccc_rsp_o.err_status = ErrStatus_OK;
+              ccc_rsp_o.err_status = ErrStatus_SUCCESS;
             end
             default: begin
               // We can receive 4 bytes from the transceiver at a time; transfer the 8 bytes of
@@ -108,7 +108,7 @@ module i3c_controller_ccc
               // We must send Sr at this point, the command is continuing.
               // return.
               ccc_rsp_o.done       = 1'b1;
-              ccc_rsp_o.err_status = ErrStatus_OK;
+              ccc_rsp_o.err_status = ErrStatus_SUCCESS;
             end
             default: begin
               // TODO(#31304): Sending the Static and Dynamic Addresses with Open Drain signaling.
@@ -146,7 +146,7 @@ module i3c_controller_ccc
                 ccc_rsp_o.txd_req = 1'b1;
               end else begin
                 ccc_rsp_o.done       = 1'b1;
-                ccc_rsp_o.err_status = ErrStatus_OK;
+                ccc_rsp_o.err_status = ErrStatus_SUCCESS;
               end
             //
             default: begin
@@ -165,8 +165,8 @@ module i3c_controller_ccc
   // Signals that the logic does not use (yet).
   logic unused_ccc_inputs;
   assign unused_ccc_inputs = ^{enable_i, r_i[CtrlCR_Status][7:2], r_i[CtrlCR_Scratch],
-                               cmd_state_i.available, cmd_state_i.dev_index, cmd_state_i.reps_left,
-                               cmd_state_i.retry_cnt, cmd_state_i.rst_csect, cmd_state_i.started,
+                               cmd_state_i.dev_index, cmd_state_i.reps_left,
+                               cmd_state_i.retry_cnt, cmd_state_i.started,
                                ccc_req_i.cmd_raw, ccc_req_i.dat_entry.autocmd_hdr_code,
                                ccc_req_i.dat_entry.autocmd_mask, ccc_req_i.dat_entry.autocmd_mode,
                                ccc_req_i.dat_entry.autocmd_value, ccc_req_i.dat_entry.crr_reject,

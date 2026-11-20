@@ -88,10 +88,6 @@ static const char *measure_clock_name(const dif_clkmgr_t *clkmgr,
     case kDtClockIo:
       return "io_clk";
 #endif
-#ifdef OPENTITAN_CLKMGR_HAS_MEAS_CTRL_IO_DIV2
-    case kDtClockIoDiv2:
-      return "io_div2_clk";
-#endif
 #ifdef OPENTITAN_CLKMGR_HAS_MEAS_CTRL_IO_DIV4
     case kDtClockIoDiv4:
       return "io_div4_clk";
@@ -211,16 +207,16 @@ status_t clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
             "this clock is not measurable!");
       count_info = &kNoJitterCountInfos[dt_clk_to_meas_clk[dt_actual_clk]];
       // If software requests a low speed external clock, internal dividers are
-      // stepped down so that divide-by-2 and divide-by-4 remain at their
-      // nominal frequencies. On the other hand, the divide-by-1 (i.e. the IO
-      // clock) becomes equal to divide-by-2. The divide-by-2 clock is not
-      // measured, so derive its expected count from the nominal IO count.
+      // stepped down so that divide-by-4 remains at its nominal frequency. On
+      // the other hand, the divide-by-1 (i.e. the IO clock) runs at half its
+      // nominal frequency, so derive its expected count from the nominal IO
+      // count.
       if (low_speed && dt_actual_clk == kDtClockIo) {
-        uint32_t io_div2_count = (count_info->count + 1) / 2;
+        uint32_t io_half_count = (count_info->count + 1) / 2;
         low_speed_io_count_info =
-            (expected_count_info_t){.count = io_div2_count - 1,
+            (expected_count_info_t){.count = io_half_count - 1,
                                     .variability = get_count_variability(
-                                        io_div2_count, kVariabilityPercentage)};
+                                        io_half_count, kVariabilityPercentage)};
         count_info = &low_speed_io_count_info;
       }
 #elif defined(OPENTITAN_IS_DARJEELING)

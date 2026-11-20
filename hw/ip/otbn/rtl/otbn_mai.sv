@@ -183,11 +183,13 @@ module otbn_mai
   ispr_mai_ctrl_t   ispr_mai_ctrl_r;
   ispr_mai_ctrl_t   ispr_mai_ctrl_w;
   ispr_mai_status_t ispr_mai_status;
+  logic             ma_ctrl_wr;
   logic             ma_start;
   mask_op_e         ma_mask_op_q, ma_mask_op_d;
   ispr_mai_sw_err_t ispr_mai_sw_err;
 
   // WSRs
+  logic                 ma_wsr_wr_en;
   otbn_wide_intg_word_t ispr_mai_in0_s0_d, ispr_mai_in0_s0_q;
   otbn_wide_intg_word_t ispr_mai_in0_s1_d, ispr_mai_in0_s1_q;
   otbn_wide_intg_word_t ispr_mai_in1_s0_d, ispr_mai_in1_s0_q;
@@ -425,9 +427,12 @@ module otbn_mai
   // CSR Bus Access //
   ////////////////////
 
-  // Control write
+  // Control write. A write that causes a software error has no effect.
   assign ispr_mai_ctrl_w = ispr_mai_ctrl_wdata_i;
-  assign ma_start        = ispr_mai_ctrl_wr_i & ispr_mai_ctrl_w.start;
+  assign ma_ctrl_wr      = ispr_mai_ctrl_wr_i & ~(ispr_mai_sw_err.busy_start |
+                                                  ispr_mai_sw_err.rsvd_csr_write |
+                                                  ispr_mai_sw_err.invalid_op);
+  assign ma_start        = ma_ctrl_wr & ispr_mai_ctrl_w.start;
 
   // Status read
   assign ispr_mai_status.rsvd        = '0;
@@ -454,9 +459,10 @@ module otbn_mai
                                           |{ispr_mai_in0_s0_wr_i, ispr_mai_in0_s1_wr_i,
                                             ispr_mai_in1_s0_wr_i, ispr_mai_in1_s1_wr_i};
   assign ispr_mai_sw_err.rsvd_csr_write = ispr_mai_ctrl_wr_i & (|ispr_mai_ctrl_w.rsvd);
-  // The configuration latched when an execution starts must be valid.
-  assign ispr_mai_sw_err.invalid_op     = !(ma_mask_op_d inside
-                                          {SecAdd, SecAddMod, ArithToBool, BoolToArith}) & ma_start;
+  // Every write must carry a valid operation, so the stored operation is always valid.
+  assign ispr_mai_sw_err.invalid_op     = !(ispr_mai_ctrl_w.op inside
+                                          {SecAdd, SecAddMod, ArithToBool, BoolToArith}) &
+                                          ispr_mai_ctrl_wr_i;
 
   // Valid control
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_valid_control_state
@@ -484,7 +490,7 @@ module otbn_mai
   end
 
   // Store the operation of the mask accelerator.
-  assign ma_mask_op_d = ispr_mai_ctrl_wr_i ? ispr_mai_ctrl_w.op : ma_mask_op_q;
+  assign ma_mask_op_d = ma_ctrl_wr ? ispr_mai_ctrl_w.op : ma_mask_op_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_ma_op_store
     if (!rst_ni) begin
@@ -503,21 +509,24 @@ module otbn_mai
   // WSR Bus Access //
   ////////////////////
 
-  // WSR bus write access. Wiping takes priority over writing
-  assign ispr_mai_in0_s0_d = sec_wipe_ispr_mai_in0_s0_i ? mai_ispr_urnd.urnd      :
-                             ispr_mai_in0_s0_wr_i       ? ispr_mai_in0_s0_wdata_i :
+  // WSR bus write access. Wiping takes priority over writing. An input WSR write while the inputs
+  // are dispatched causes a software error and has no effect.
+  assign ma_wsr_wr_en = ispr_mai_status.input_ready;
+
+  assign ispr_mai_in0_s0_d = sec_wipe_ispr_mai_in0_s0_i          ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in0_s0_wr_i & ma_wsr_wr_en ? ispr_mai_in0_s0_wdata_i :
                              ispr_mai_in0_s0_q;
 
-  assign ispr_mai_in0_s1_d = sec_wipe_ispr_mai_in0_s1_i ? mai_ispr_urnd.urnd      :
-                             ispr_mai_in0_s1_wr_i       ? ispr_mai_in0_s1_wdata_i :
+  assign ispr_mai_in0_s1_d = sec_wipe_ispr_mai_in0_s1_i          ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in0_s1_wr_i & ma_wsr_wr_en ? ispr_mai_in0_s1_wdata_i :
                              ispr_mai_in0_s1_q;
 
-  assign ispr_mai_in1_s0_d = sec_wipe_ispr_mai_in1_s0_i ? mai_ispr_urnd.urnd      :
-                             ispr_mai_in1_s0_wr_i       ? ispr_mai_in1_s0_wdata_i :
+  assign ispr_mai_in1_s0_d = sec_wipe_ispr_mai_in1_s0_i          ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in1_s0_wr_i & ma_wsr_wr_en ? ispr_mai_in1_s0_wdata_i :
                              ispr_mai_in1_s0_q;
 
-  assign ispr_mai_in1_s1_d = sec_wipe_ispr_mai_in1_s1_i ? mai_ispr_urnd.urnd      :
-                             ispr_mai_in1_s1_wr_i       ? ispr_mai_in1_s1_wdata_i :
+  assign ispr_mai_in1_s1_d = sec_wipe_ispr_mai_in1_s1_i          ? mai_ispr_urnd.urnd      :
+                             ispr_mai_in1_s1_wr_i & ma_wsr_wr_en ? ispr_mai_in1_s1_wdata_i :
                              ispr_mai_in1_s1_q;
 
   always_comb begin : proc_res_s0_next

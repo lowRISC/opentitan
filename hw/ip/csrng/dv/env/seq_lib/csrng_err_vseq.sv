@@ -31,6 +31,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
     bit [31:0]    backdoor_err_code_val;
+    bit [31:0]    dropped_word;
 
     super.body();
 
@@ -65,7 +66,6 @@ class csrng_err_vseq extends csrng_base_vseq;
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
     cfg.csrng_assert_vif.assert_off();
-    `DV_ASSERT_CTRL_REQ("CmdStageFifoAsserts", 0)
 
     cs_item = csrng_item::type_id::create("cs_item");
 
@@ -81,10 +81,10 @@ class csrng_err_vseq extends csrng_base_vseq;
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
-    cs_item.glen  = 'h1000;
+    cs_item.glen  = 'hfff;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     // Not waiting for response so the error happens in the middle of the generate command.
-    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0), .await_genbits(1'b0));
 
     reg_name = "err_code";
     csr = ral.get_reg_by_name(reg_name);
@@ -109,8 +109,19 @@ class csrng_err_vseq extends csrng_base_vseq;
         `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
                   UVM_MEDIUM)
 
-        force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld, 1'b1,
-                            cfg.which_fifo_err);
+        if (cfg.which_err_code == sfifo_cmd_err && cfg.which_fifo_err == fifo_write &&
+            cfg.which_app_err_alert == cfg.m_sw_app_idx && cfg.drop_sw_cmd_word) begin
+          // The generate command is stalled, so a word written to CMD_REQ now is dropped.
+          csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_rdy), .compare_value(1'b0));
+          `DV_CHECK_STD_RANDOMIZE_FATAL(dropped_word)
+          csr_wr(.ptr(ral.cmd_req), .value(dropped_word));
+          csr_spinwait(.ptr(fld), .exp_data(1'b1));
+          csr_rd_check(.ptr(ral.err_code.fifo_write_err), .compare_value(1'b1));
+        end else begin
+          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld, 1'b1,
+                              cfg.which_fifo_err);
+        end
+
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
@@ -177,18 +188,14 @@ class csrng_err_vseq extends csrng_base_vseq;
       ctr_err: begin
         logic [csrng_pkg::MainSmStateWidth-1:0] sm_state;
         string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
-        case(cfg.which_cnt) inside
-          cmd_gen_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
-            force_cnt_err(path, fld, 1'b1, csrng_pkg::GenBitsCtrWidth);
-          end
-          ctr_drbg_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
-            force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
-          end
-        endcase
+        fld = csr.get_field_by_name(fld_name);
+        if (cfg.which_cnt == ctr_drbg_cnt) begin
+          path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
+        end else begin
+          path = cfg.csrng_path_vif.state_db_reg_ptr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::StateDbRegPtrWidth);
+        end
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
         // Check that the `csrng_main_sm` FSM, which observes the errors of the faulted counter, has

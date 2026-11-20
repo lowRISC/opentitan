@@ -1373,6 +1373,14 @@ module otbn_controller
         ispr_addr_base      = IsprInsnCnt;
         ispr_word_addr_base = '0;
       end
+      CsrKeymgrStatus: begin
+        ispr_addr_base      = IsprKeymgrStatus;
+        ispr_word_addr_base = '0;
+      end
+      CsrKeymgrCtrl: begin
+        ispr_addr_base      = IsprKeymgrCtrl;
+        ispr_word_addr_base = '0;
+      end
       default: csr_illegal_addr = 1'b1;
     endcase
   end
@@ -1520,15 +1528,19 @@ module otbn_controller
         ispr_addr_bignum = IsprKeyS1H;
         key_invalid = ~sideload_key_shares_valid_i[1];
       end
-      WsrMaiResS0:   ispr_addr_bignum = IsprMaiResS0;
-      WsrMaiResS1:   ispr_addr_bignum = IsprMaiResS1;
-      WsrMaiIn0S0:   ispr_addr_bignum = IsprMaiIn0S0;
-      WsrMaiIn0S1:   ispr_addr_bignum = IsprMaiIn0S1;
-      WsrMaiIn1S0:   ispr_addr_bignum = IsprMaiIn1S0;
-      WsrMaiIn1S1:   ispr_addr_bignum = IsprMaiIn1S1;
-      WsrKmacDataS0: ispr_addr_bignum = IsprKmacDataS0;
-      WsrKmacDataS1: ispr_addr_bignum = IsprKmacDataS1;
-      WsrUrndState:  ispr_addr_bignum = IsprUrndState;
+      WsrMaiResS0:     ispr_addr_bignum = IsprMaiResS0;
+      WsrMaiResS1:     ispr_addr_bignum = IsprMaiResS1;
+      WsrMaiIn0S0:     ispr_addr_bignum = IsprMaiIn0S0;
+      WsrMaiIn0S1:     ispr_addr_bignum = IsprMaiIn0S1;
+      WsrMaiIn1S0:     ispr_addr_bignum = IsprMaiIn1S0;
+      WsrMaiIn1S1:     ispr_addr_bignum = IsprMaiIn1S1;
+      WsrKmacDataS0:   ispr_addr_bignum = IsprKmacDataS0;
+      WsrKmacDataS1:   ispr_addr_bignum = IsprKmacDataS1;
+      WsrUrndState:    ispr_addr_bignum = IsprUrndState;
+      WsrKeymgrMsgS0L: ispr_addr_bignum = IsprKeymgrMsgS0L;
+      WsrKeymgrMsgS0H: ispr_addr_bignum = IsprKeymgrMsgS0H;
+      WsrKeymgrMsgS1L: ispr_addr_bignum = IsprKeymgrMsgS1L;
+      WsrKeymgrMsgS1H: ispr_addr_bignum = IsprKeymgrMsgS1H;
       default: wsr_illegal_addr = 1'b1;
     endcase
 

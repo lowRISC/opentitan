@@ -55,6 +55,9 @@ struct Opts {
     )]
     config_version: u32,
 
+    #[arg(long, help = "Use zero nonce for detached signature")]
+    use_zero_nonce: bool,
+
     #[arg(
         long,
         help = "Lock the owner config to the device identification number"
@@ -84,11 +87,17 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     rescue.enter(transport, EntryMode::Reset)?;
     let (data, devid) = transfer_lib::get_device_info(transport, &rescue)?;
 
+    let nonce = if opts.use_zero_nonce {
+        0
+    } else {
+        data.rom_ext_nonce
+    };
+
     log::info!("###### Upload Owner Block ######");
     transfer_lib::create_owner(
         transport,
         &rescue,
-        data.rom_ext_nonce,
+        nonce,
         opts.next_key_alg,
         HybridPair::load(
             opts.next_owner_key.as_deref(),
@@ -121,13 +130,29 @@ fn newversion_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     log::info!("###### Boot After Update Complete ######");
     transport.reset_with_delay(UartRx::Clear, Duration::from_millis(50))?;
-    let capture = UartConsole::wait_for_bytes(
+    let mut capture = UartConsole::wait_for_bytes(
         &*uart,
         r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
     if capture[0].starts_with("BFV") {
-        return RomError(u32::from_str_radix(&capture[1], 16)?).into();
+        let err = u32::from_str_radix(&capture[1], 16)?;
+        if err == 0 {
+            log::info!(
+                "Detected expected write-and-reboot (BFV:00000000). Waiting for next boot..."
+            );
+            // Wait again for the actual boot to PASS!
+            capture = UartConsole::wait_for_bytes(
+                &*uart,
+                r"(?msR)Running.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+                opts.timeout,
+            )?;
+            if capture[0].starts_with("BFV") {
+                return RomError(u32::from_str_radix(&capture[1], 16)?).into();
+            }
+        } else {
+            return RomError(err).into();
+        }
     }
 
     for exp in opts.expect.iter() {

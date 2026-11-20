@@ -20,9 +20,9 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
   //
   // The DUT controls its own pull-ups and high-keepers on the bus. If a test disables all of them
   // whilst no device drives the bus (e.g. by writing random values to PHY_CONFIG), SDA and SCL
-  // float, which is a software misconfiguration on real hardware. Tests that are not about I/O
-  // correctness may enable these pull-ups to keep the bus at a defined level.
-  bit en_board_pullup = 1'b0;
+  // float, which is a software misconfiguration on real hardware. These pull-ups keep the bus at a
+  // defined level; a test about I/O correctness disables them with `+en_board_pullup=0`.
+  bit en_board_pullup = 1'b1;
 
   `uvm_object_utils_begin(i3c_env_cfg)
     `uvm_field_int(en_board_pullup, UVM_DEFAULT)
@@ -131,9 +131,10 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
     end
   endfunction
 
-  // `TARG_STATUS.NUM_TARGETS` reports the `NumTargets` parameter of the DUT.
+  // `TARG_STATUS.TARGETS` reports the `NumTargets` parameter of the DUT minus 1.
   protected virtual function void set_num_targets_reset(i3c_reg_block i3c_ral);
-    i3c_ral.targ_status.num_targets.set_reset(NumTargets);
+    `DV_CHECK_FATAL(NumTargets > 0, "DUT does not presently support zero Targets")
+    i3c_ral.targ_status.targets.set_reset(NumTargets - 1);
   endfunction
 
 endclass

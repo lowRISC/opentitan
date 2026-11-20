@@ -103,7 +103,8 @@ A typical programming sequence for the wakeup detectors looks as follows:
 5. If the wakeup request was due to a pin wakeup pattern detector, SW should inspect the [`WKUP_CAUSE`](registers.md#wkup_cause) registers in order to determine the exact cause.
 
 6. SW should in any case disable the wakeup detectors and clear the [`WKUP_CAUSE`](registers.md#wkup_cause) registers once it is safe to do so (in order to not miss any events).
-   Note that the [`WKUP_CAUSE`](registers.md#wkup_cause) registers reside in the slow AON clock domain, and hence clearing them takes a few uS to take effect.
+   Note that the wakeup detector registers, except WKUP_DETECTOR_PADSEL, live in the slow always-on (AON) clock domain.
+   Clearing them requires a write to cross into that domain, so the clear takes a few μs to take effect.
    If needed, a SW readback can be performed to ensure that the clear operation has completed successfully.
 
 ## Pinout and Pinmux Mapping

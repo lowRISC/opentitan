@@ -22,10 +22,6 @@ use rand::RngCore;
 use rand::SeedableRng;
 use rand_chacha::ChaCha8Rng;
 
-// The R component of an Ed25519 signature occupies the first 32 bytes and must
-// be byte-reversed when crossing the ACVP (big-endian) / device (little-endian)
-// boundary.
-const ED25519_SIGNATURE_R_BYTES: usize = 32;
 const ED25519_PRIVATE_KEY_BYTES: usize = 32;
 
 // sigVer test case - all three payload fields are required.
@@ -160,13 +156,7 @@ fn run_eddsa_verify_case(
 ) -> Result<EddsaResultCase> {
     let msg = Vec::<u8>::from_hex(&tc.message)?;
     let q = Vec::<u8>::from_hex(&tc.q)?;
-
-    // ACVP encodes the signature in big-endian hex. The device expects the R
-    // component (first 32 bytes) in little-endian byte order.
-    let mut sig = Vec::<u8>::from_hex(&tc.signature)?;
-    if sig.len() >= ED25519_SIGNATURE_R_BYTES {
-        sig[..ED25519_SIGNATURE_R_BYTES].reverse();
-    }
+    let sig = Vec::<u8>::from_hex(&tc.signature)?;
 
     CryptotestCommand::Ed25519.send(spi_console)?;
     CryptotestEd25519Operation::Verify.send(spi_console)?;
@@ -450,11 +440,7 @@ fn run_eddsa_sign_case(
     let resp = CryptotestEd25519SignResp::recv(spi_console, timeout, false, false)?;
 
     let sig_len = resp.signature_len;
-    let mut sig_bytes = resp.signature.as_slice()[..sig_len].to_vec();
-    // Device stores R in little-endian; reverse it to produce ACVP big-endian hex.
-    if sig_bytes.len() >= ED25519_SIGNATURE_R_BYTES {
-        sig_bytes[..ED25519_SIGNATURE_R_BYTES].reverse();
-    }
+    let sig_bytes = resp.signature.as_slice()[..sig_len].to_vec();
 
     let pk_len = resp.public_key_len;
     let pk_bytes = resp.public_key.as_slice()[..pk_len].to_vec();

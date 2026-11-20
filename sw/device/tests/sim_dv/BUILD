@@ -144,6 +144,7 @@ opentitan_test(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
 

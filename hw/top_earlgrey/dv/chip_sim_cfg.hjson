@@ -808,9 +808,17 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_gpio
+      name: chip_sw_gpio0
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["//sw/device/tests/sim_dv:gpio_test:1:new_rules"]
+      run_opts: ["+gpio_idx=0"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_gpio1
+      uvm_test_seq: chip_sw_gpio_vseq
+      sw_images: ["//sw/device/tests/sim_dv:gpio_test:1:new_rules"]
+      run_opts: ["+gpio_idx=1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -822,9 +830,9 @@
       run_timeout_mins: 200
     }
     {
-      name: chip_sw_kmac_entropy
+      name: chip_sw_kmac_entropy_error_conditions_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:kmac_entropy_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:kmac_entropy_error_conditions_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1284,6 +1292,27 @@
                  "+bypass_alert_ready_to_end_check=1"]
     }
     {
+      name: chip_sw_otbn_kmac
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_kmac_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+rng_srate_value=30"]
+    }
+    {
+      name: chip_sw_otbn_mai
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_mai_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+rng_srate_value=30"]
+    }
+    {
+      name: chip_sw_otbn_wfi
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_wfi_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+rng_srate_value=30"]
+    }
+    {
       name: chip_sw_rv_core_ibex_rnd
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests:rv_core_ibex_rnd_test:1:new_rules"]
@@ -1601,6 +1630,13 @@
       name: chip_sw_keymgr_dpe_sideload_hmac
       uvm_test_seq: chip_sw_keymgr_dpe_sideload_hmac_vseq
       sw_images: ["//sw/device/tests:keymgr_dpe_sideload_hmac_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    }
+    {
+      name: chip_sw_keymgr_dpe_otbn_hkdf
+      uvm_test_seq: chip_sw_keymgr_dpe_otbn_hkdf_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_otbn_hkdf_smoketest:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
     }

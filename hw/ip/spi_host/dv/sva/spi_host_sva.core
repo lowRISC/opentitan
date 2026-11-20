@@ -10,7 +10,6 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:ip:spi_host
-      - lowrisc:dv:spi_host_env_cfg_pkg
     files:
       - spi_host_data_stable_sva.sv
       - spi_host_bind.sv

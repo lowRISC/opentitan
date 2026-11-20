@@ -1,0 +1,65 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "CodeQL Static Analysis"
+
+on:
+  pull_request:
+    paths:
+      - "sw/device/lib/crypto/**"
+      - "quality/codeql/**"
+      - ".github/workflows/codeql.yml"
+  push:
+    branches-ignore:
+      - "backport-*"
+    tags:
+      - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  analyze:
+    name: CodeQL C/C++ Security Scan
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v6
+
+    - name: Prepare environment
+      uses: ./.github/actions/prepare-env
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v4
+      with:
+        languages: cpp
+        # The 'security-and-quality' suite provides comprehensive static analysis
+        # for general C/C++ vulnerabilities (e.g. out-of-bounds access, UAF, uninitialized variables).
+        # We also include custom OpenTitan queries to analyze project-specific structs and memory helpers.
+        queries: security-and-quality, ./quality/codeql
+
+    - name: Build Target Modules
+      env:
+        # CodeQL must be explicitly configured to intercept the OpenTitan cross-compiler.
+        CODEQL_EXTRACTOR_CPP_COMPILER_MATCH: '.*riscv32-unknown-elf-clang.*'
+      run: |
+        # Compile target library with CppCompile running locally.
+        # Marking CppCompile with +no-cache ensures C/C++ compile actions are never skipped
+        # by the Bazel remote cache (so the CodeQL tracer observes every C/C++ file),
+        # while host tools still benefit from remote caching.
+        ./bazelisk.sh build //sw/device/lib/crypto:otcrypto \
+          --strategy=CppCompile=local \
+          --nouse_action_cache \
+          --modify_execution_info=CppCompile=+no-cache
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v4
+      with:
+        category: "/language:cpp"

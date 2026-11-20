@@ -313,7 +313,7 @@ state.
   </tr>
   <tr>
     <td style="text-align:left">TEST_UNLOCKED</td>
-    <td>Y</td><td>Y</td><td>Y</td><td>Y</td>
+    <td>Y</td><td>Y*</td><td>Y</td><td>Y</td>
   </tr>
   <tr>
     <td style="text-align:left">DEV</td>
@@ -340,6 +340,9 @@ state.
     <td colspan="5" style="background:#dadce0"> </td>
   </tr>
 </table>
+
+`Y*`: NVM_DEBUG_EN is disabled in TEST_UNLOCKED7, the last test unlocked state, so that the isolated flash partition can be populated without exposing its contents through the NVM backdoor interface.
+See the [life cycle controller documentation](../../../../hw/ip/lc_ctrl/doc/theory_of_operation.md#nvm_debug_en).
 
 The following table shows the allowed state transitions in each state. INVALID
 state is not an explicit transition destination, therefore it is not listed as

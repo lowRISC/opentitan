@@ -9,7 +9,7 @@
   // Import the keymgr_dpe sim_cfg file
   import_cfgs: ["{proj_root}/hw/ip/keymgr_dpe/dv/keymgr_dpe_sim_cfg.hjson"]
 
-  build_opts:  ["+define+DEF_DV_BOOT_STAGES=3",
+  build_opts:  ["+define+DEF_DV_BOOT_STAGES=4",
                 "+define+DEF_DV_DPE_NUM_SLOT=4",
                 "+define+DEF_DV_NUM_ROM_DIGEST=1"]
 }

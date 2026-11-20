@@ -3,16 +3,25 @@
 ## Parameters
 
 The following table lists the instantiation parameters of the CHERIoT memory subsystem.
-[Theory of Operation](theory_of_operation.md#meta-sram-address-map).
+The layout of the meta SRAM is derived from the address-map parameters, see [Meta SRAM Address Map](theory_of_operation.md#meta-sram-address-map).
 
 Parameter          | Default        | Top Earlgrey   | Description
 -------------------|----------------|----------------|---------------
-`addr_t`           | `logic [top_pkg::TL_AW-1:0]` | `logic [31:0]` | TL-UL address type.
 `MainSramBaseAddr` | `0x1000_0000`  | `0x1000_0000`  | Base address of the main SRAM region, inclusive.
 `MainSramTopAddr`  | `0x1003_0000`  | `0x1003_0000`  | Top address of the main SRAM region, exclusive.
 `NvmBaseAddr`      | `0x3000_0000`  | `0x3000_0000`  | Base address of the NVM region, inclusive.
 `NvmTopAddr`       | `0x3020_0000`  | `0x3020_0000`  | Top address of the NVM region, exclusive.
 `MetaSramBaseAddr` | `0x1100_0000`  | `0x1100_0000`  | Base address of the unified meta SRAM.
+`MemSizeRevbm`     | `3072`         | `3072`         | Size of the `revbm` window in bytes, set by topgen. Must equal the size of the main SRAM revocation bitmap, which an assertion in the RTL checks.
+`AlertAsyncOn`     | `1'b1`         | `1'b1`         | Adds synchronizers to the alert sender for an alert handler on another clock, set by topgen.
+`AlertSkewCycles`  | `1`            | `1`            | Cycles of skew tolerated on the differential alert signals, set by topgen.
+
+## Supported Parameter Sets
+
+Only the parameter set that Earl Grey instantiates, listed in the Top Earlgrey column above, is verified and signed off.
+The defaults equal the Earl Grey values, so the block-level testbench, which instantiates the design with its defaults, verifies the same set.
+Earl Grey derives the address-map parameters from its memory map, so a change to that map is a new parameter set for which D3 and V3 need to be re-assessed.
+The meta SRAM connected to `meta_sram_tl` must hold the whole meta SRAM address map, `0x9800` bytes for Earl Grey.
 
 ## Signals
 

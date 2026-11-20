@@ -23,10 +23,9 @@ module csrng_main_sm import csrng_pkg::*; (
   output logic                        cmd_entropy_req_o,
   input  logic                        cmd_entropy_avail_i,
 
-  output logic                        cmd_vld_o,
-  input  logic                        cmd_rdy_i,
+  output logic                        cmd_req_o,
+  input  logic                        cmd_ack_i,
   output logic                        clr_adata_packer_o,
-  input  logic                        cmd_complete_i,
 
   input  logic                        local_escalate_i,
 
@@ -44,7 +43,7 @@ module csrng_main_sm import csrng_pkg::*; (
     state_d            = state_q;
     acmd_accept_o      = 1'b0;
     cmd_entropy_req_o  = 1'b0;
-    cmd_vld_o          = 1'b0;
+    cmd_req_o          = 1'b0;
     clr_adata_packer_o = 1'b0;
     main_sm_err_o      = 1'b0;
 
@@ -55,8 +54,7 @@ module csrng_main_sm import csrng_pkg::*; (
       // In case local escalate is high we must transition to the error state.
       state_d = MainSmError;
     end else if (!enable_i && state_q inside {MainSmIdle, MainSmParseCmd, MainSmEntropyReq,
-                                              MainSmCmdPrep, MainSmCmdVld,
-                                              MainSmClrAData, MainSmCmdCompWait}) begin
+                                              MainSmCmdPrep, MainSmCmdReq}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = MainSmIdle;
     end else begin
@@ -81,40 +79,23 @@ module csrng_main_sm import csrng_pkg::*; (
         MainSmEntropyReq: begin
           if (flag0_i) begin
             // With flag0 set, no entropy is required.
-            state_d = MainSmCmdVld;
+            state_d = MainSmCmdReq;
           end else begin
             // Delay one clock to fix timing issue.
             cmd_entropy_req_o = 1'b1;
             if (cmd_entropy_avail_i) begin
-              state_d = MainSmCmdVld;
+              state_d = MainSmCmdReq;
             end
           end
         end
         MainSmCmdPrep: begin
           // Assumes all adata is present now.
-          state_d = MainSmCmdVld;
+          state_d = MainSmCmdReq;
         end
-        MainSmCmdVld: begin
-          cmd_vld_o = 1'b1;
-          if (cmd_rdy_i) begin
-            if (cmd_complete_i) begin
-              clr_adata_packer_o = 1'b1;
-              state_d = MainSmIdle;
-            end else begin
-              state_d = MainSmClrAData;
-            end
-          end
-        end
-        MainSmClrAData: begin
-          clr_adata_packer_o = 1'b1;
-          if (cmd_complete_i) begin
-            state_d = MainSmIdle;
-          end else begin
-            state_d = MainSmCmdCompWait;
-          end
-        end
-        MainSmCmdCompWait: begin
-          if (cmd_complete_i) begin
+        MainSmCmdReq: begin
+          cmd_req_o = 1'b1;
+          if (cmd_ack_i) begin
+            clr_adata_packer_o = 1'b1;
             state_d = MainSmIdle;
           end
         end

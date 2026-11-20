@@ -11,7 +11,6 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:assert
       - lowrisc:prim:pad_wrapper_pkg
     files:
       - rtl/prim_pad_attr.sv

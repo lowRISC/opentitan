@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub use hardened;
+pub use ownership_datatypes;
 pub use sram_program;
 pub use status;
 pub use test_status;

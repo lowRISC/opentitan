@@ -38,7 +38,7 @@ module i3c_controller_state
   output                    enabled_o,
 
   // Register state.
-  output hc_control_t hc_control_o
+  output hc_control_t       hc_control_o
 );
 
   // Control inputs from the driver; single-cycle assertions causing state changes.
@@ -52,7 +52,7 @@ module i3c_controller_state
   i3c_ctrl_gstate_e gstate_q, gstate_d;
   always_comb begin
     // Disabling takes precedence over all else; note that we must still transition via `Disabling`
-    // rather than jumping straight to the `Disabled` in case the FSM needs to stop any I3C traffic
+    // rather than jumping straight to `Disabled`, in case the FSM needs to stop any I3C traffic
     // cleanly and avoid bus errors.
     if (disable_now) gstate_d = GState_Disabling;
     else begin

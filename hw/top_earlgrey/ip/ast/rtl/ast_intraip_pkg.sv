@@ -20,16 +20,13 @@ package ast_intraip_pkg;
   // Clock and reset signals for secondary to primary partition communication
   typedef struct packed {
     logic clk_aon;
+  } clk_rst_s2p_t;
+
+  // Clock and reset signals for primary to secondary partition communication
+  typedef struct packed {
     logic clk_ast_tlul;
     logic rst_ast_tlul_n;
-    logic clk_ast_rng;
-    logic rst_ast_rng_n;
-    logic clk_ast_es;
-    logic rst_ast_es_n;
-    logic rst_sys_clk_n;
-    logic rst_io_clk_n;
-    logic rst_usb_clk_n;
-  } clk_rst_s2p_t;
+  } clk_rst_p2s_t;
 
   // Clock bypass interface: primary to secondary partition
   typedef struct packed {
@@ -47,8 +44,6 @@ package ast_intraip_pkg;
   // Oscillator control: secondary to primary partition
   typedef struct packed {
     logic deep_sleep;
-    logic usb_ref_pulse;
-    logic usb_ref_val;
   } clk_osc_s2p_t;
 
   typedef struct packed {
@@ -96,6 +91,9 @@ package ast_intraip_pkg;
   typedef struct packed {
     // Clock bypass interface
     clks_byp_p2s_t clks_byp;
+
+    // Clock and reset signals
+    clk_rst_p2s_t clk_rst;
 
     // Alert source from main (TLUL integrity error)
     ast_dif_t ot0_alert_src;

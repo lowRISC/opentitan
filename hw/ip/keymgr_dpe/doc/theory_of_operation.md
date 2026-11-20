@@ -5,12 +5,16 @@ The following diagram gives an example on how keymgr DPE handles multiple DICE c
 ![Key Manager Functional Model](../doc/keymgr_dpe_diagram.svg)
 
 This example diagram describes a sequence of advance operations on multiple keymgr slots, assuming that keymgr_dpe is instantiated with 4 key slots.
+It shows the four-stage configuration (`NumBootStages = 4`); see [Advance](#advance) for how the two-stage configuration differs.
 Blue rounded rectangles represent empty key slots and green color is used to denote when they become active. Each slot stores a secret key as well as context data for its key.
 Purple rectangles denote key derivation function (KDF) calls that are used to compute slot keys.
 
-In OpenTitan, the KDF is instantiated as [KMAC](../../kmac/README.md).
-Each valid operation involves a KMAC invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
-The concatenated components of the message is dependent on the context of the source slot as well as further inputs provided from HW / SW.
+Each valid operation involves a KDF invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
+The concatenated components of the message are dependent on the context of the source slot as well as further inputs provided from HW / SW.
+
+In OpenTitan, the KDF is instantiated either as [KMAC](../../kmac/README.md) or as an HKDF implemented in software running on [OTBN](../../otbn/README.md).
+At elaboration time, one can decide if one or both derivation functions are available, see [KDF Engine Selection](#kdf-engine-selection).
+Unless stated otherwise, the descriptions in this document assumes KMAC as the KDF engine.
 
 In theory, KMAC can generate outputs of arbitrary length, however this design uses a specific variant with 256-bit security strength, 512-bit digest size, and 256-bit key input.
 
@@ -30,7 +34,19 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 +Keymgr_dpe consists of `NumInstHwSlot` slots, which is a top-level parameter (instantiated up to `NumMaxHwSlot`).
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
-The secret key size is fixed to 256-bit.
+The secret key size is fixed to 384-bit.
+However, the KDF engine does not necessarily consume all 384 bits:
+
+* If KMAC is the KDF engine, only the lower 256 bits of the secret key are used as the KMAC key.
+  The remaining upper 128 bits are stored but do not influence the derived keys.
+* If OTBN is the KDF engine, the full 384 bits of the secret key are consumed.
+
+If the `KdfEngineSel` parameter is set to `KdfEngineBoth`, software selects the KDF engine through [`KDF_ENGINE_SHADOWED`](registers.md#kdf_engine_shadowed).
+In that configuration the same secret key can be consumed by both engines (the lower 256 bits by KMAC, all 384 bits by OTBN), i.e. the same secret is used as key for two different kdf.
+The kdf_engine must be selected before the first derivation.
+If desired, the selection can be locked with [`KDF_ENGINE_REGWEN`](registers.md#kdf_engine_regwen).
+
+The sideload keys are derived from the KDF digest and have a different size than the secret key: the keys for AES and KMAC use the lower 256 bits of the digest, the keys for OTBN and HMAC use the full 512-bit digest.
 
 Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
@@ -61,10 +77,13 @@ Otherwise all advance requests are rejected that specify this slot as its source
 Otherwise, after the derivation of a child slot, the DPE context of the parent slot is removed automatically.
 *  If `allow_keygen` is set to `true`/`1`, then key generation operations (both SW and sideload outputs) can be requested from this slot (assuming there are no other invalidating preconditions).
 
-The slot holding the UDS is an exception, as its `key_policy` is not taken from `SLOT_POLICY` but fixed by HW to `allow_child = 1`, `exportable = 0`, `retain_parent = 0` and `allow_keygen = 0`.
-Hence, no key can be generated directly from the UDS, and SW must advance the UDS slot at least once before it can generate keys.
+A slot populated with a root key is an exception, as neither its `key_policy` nor its `max_key_version` is taken from the corresponding CSR.
+Instead, both are fixed by HW to their defaults: `key_policy` is set to `DEFAULT_UDS_POLICY` (`allow_child = 1`, `exportable = 0`, `retain_parent = 0` and `allow_keygen = 0`) and `max_key_version` is set to `DEFAULT_UDS_MAX_KEY_VERSION` (`0`).
+Since `allow_keygen = 0`, no key can be generated directly from such a slot, and SW must advance it at least once before it can generate keys.
+Hence, the value of `max_key_version` is irrelevant for these slots.
 
-With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields at any time through the `METADATA_LOW` and `METADATA_HIGH` registers.
+With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields through the `METADATA_LOW` and `METADATA_HIGH` registers until `METADATA_READ_LOCK` is set.
+Once `METADATA_READ_LOCK` is set, both registers read as zero for all slots until the next reset.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
 `METADATA_LOW.MAX_KEY_VERSION` reports `max_key_version`, while `METADATA_HIGH` reports `valid`, `boot_stage` and `key_policy` subfields respectively.
 
@@ -88,6 +107,7 @@ Until the initial advance is invoked and keymgr_DPE reaches to `Available` state
 During `Available`, keymgr_DPE accepts further advance and key generation requests.
 When transitioning from `Reset` to `Available`, as a SCA counter-measure, random values obtained from the entropy source are used to populate the key slot first in a manner that both shares have the same random mask.
 Then the root key is XORed on top of this randomness, in order to have fresh randomness for UDS at every power cycle.
+In the same cycle in which the root key is latched, all sideload key slots (AES, KMAC, OTBN and HMAC) are cleared: they are invalidated and their contents are overwritten with entropy.
 During these transitions, keymgr_DPE's working state will be reported as `Reset`, until the latching is done and keymgr_DPE is ready to accept further commands.
 
 ### Disabled
@@ -125,15 +145,18 @@ During each state, there are 6 valid commands software can issue:
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
 If a command is valid during the current working state, it is processed and acknowledged when complete.
 If a command is invalid, the requested operation is rejected and the values in key slots remain unmodified.
+An encoding of `CONTROL_SHADOWED.OPERATION` that does not map to any command is invalid in every working state.
+Such a request completes immediately with `OP_STATUS` set to `DONE_FAIL` and `ERR_CODE.INVALID_OP` set.
 More details about command interactions can be found in Programmers Guide.
 
 ### Advance
 
 Advancing a keymgr_dpe slot (also referred to as _deriving a child_) uses multiple inputs.
-In particular, since there are multiple slots inside keymgr_dpe, source and destination parameters need to be passed to advance calls.
+Since there are multiple slots inside keymgr_dpe, source and destination parameters need to be passed to advance calls.
 
 The very first advance call only latches the OTP creator root key (UDS), therefore most of these registers are ignored during the first call.
-The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `MAX_KEY_VER_SHADOWED`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
+The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
+The fields `MAX_KEY_VER_SHADOWED` and `SLOT_POLICY` are not consumed, as the UDS slot receives the fixed defaults described in [Key Manager Slots](#key-manager-slots).
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
@@ -143,30 +166,32 @@ If the OTP creator root key is not valid during the latching cycle, keymgr_dpe m
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
 `child_key = KDF(parent_key, message)`, where the message input takes different forms depending on the parent slot's `boot_stage` value.
-Which HW binding values are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated intermediate owner stage (three-stage configuration).
+Which HW binding values are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated `OwnerInt` stage, with the `field_entropy` consumed by a dedicated `CreatorInt` stage (four-stage configuration).
 See [KDF Details](#kdf-details) for more details on HW binding values.
 
-With `NumBootStages = 3`, the `creator_seed` is consumed by a dedicated `OwnerInt` (owner intermediate) stage:
+With `NumBootStages = 4`, the `field_entropy` and the `creator_seed` are consumed by the dedicated `CreatorInt` (creator intermediate) and `OwnerInt` (owner intermediate) stages, respectively:
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || device_identifier || health_st_measurement || rom_descriptors || hw_revision_seed`.
-* If `boot_stage = 1` (OwnerInt) for the parent, then `message = SW_CDI_INPUT || creator_seed`.
-* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
-* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+* If `boot_stage = 1` (CreatorInt) for the parent, then `message = SW_CDI_INPUT || field_entropy`.
+* If `boot_stage = 2` (OwnerInt) for the parent, then `message = SW_CDI_INPUT || creator_seed`.
+* If `boot_stage = 3` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 3` for the parent, then `message = SW_CDI_INPUT`.
 
-With `NumBootStages = 2`, the `OwnerInt` stage is omitted; the `creator_seed` is consumed together with the other creator inputs, and an advance from `Creator` increments `boot_stage` directly to `Owner` (i.e. `boot_stage = 1` is not used):
+With `NumBootStages = 2`, the `CreatorInt` and `OwnerInt` stages are omitted; the `field_entropy` is not consumed, the `creator_seed` is consumed together with the other creator inputs, and an advance from `Creator` increments `boot_stage` directly to `Owner` (i.e. `boot_stage = 1` and `boot_stage = 2` are not used):
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`.
-* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
-* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+* If `boot_stage = 3` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 3` for the parent, then `message = SW_CDI_INPUT`.
 
 Regardless of `boot_stage`, software can force an advance call to use only `message = SW_CDI_INPUT` (dropping HW binding values) by setting `CONTROL_SHADOWED.SW_BINDING_ONLY`.
 To prevent a later `boot_stage` from clearing this option to maliciously reconstruct earlier keys, the `ENFORCE_SW_BINDING` register locks this behavior.
-Once set, every subsequent advance call from a parent with `boot_stage <= 2` (i.e. a stage that would consume HW binding values) must use `SW_BINDING_ONLY`, permanently blocking access to HW binding values until the next reset.
-Advance calls from parents with `boot_stage > 2` are not affected, as their message is `SW_CDI_INPUT` regardless of `SW_BINDING_ONLY`.
+Once set, every subsequent advance call from a parent with `boot_stage <= 3` (i.e. a stage that would consume HW binding values) must use `SW_BINDING_ONLY`, permanently blocking access to HW binding values until the next reset.
+Advance calls from parents with `boot_stage > 3` are not affected, as their message is `SW_CDI_INPUT` regardless of `SW_BINDING_ONLY`.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by `SLOT_DST_SEL`:
 * `valid` bit is set to 1.
 * `key_policy` is updated with `SLOT_POLICY`.
 * `max_key_version` is updated with `MAX_KEY_VERSION`.
-* `boot_stage` is set to the parent’s `boot_stage + 1`, except for the initial `Advance` call that initializes the UDS slot `boot_stage` value to `0`.
+* `boot_stage` is set to the parent’s next boot stage (i.e. `boot_stage + 1`, skipping the omitted stages in the two-stage configuration), except for the initial `Advance` call that initializes the UDS slot `boot_stage` value to `0`.
+  Once `boot_stage` reaches `Runtime`, it saturates and there is no limit on the number of further advance calls.
 * `key` is updated from the key received from KMAC.
 
 Whether the same slot can be chosen both as the source and the destination during advance call depends on `retain_parent` policy bit.
@@ -176,17 +201,19 @@ In other words, `retain_parent = false` forces SW to request in-place update, wh
 
 When there is no fault and the enable signal is active by life cycle controller, the validity of an advance operation is defined as follows:
 
-* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if:
+* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if all of the following conditions are satisfied (AND clause):
+  * `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
   * The OTP creator root key is valid during the clock cycle keymgr_DPE tries to latch it.
 * If keymgr_dpe is in `Available` state, then an advance operation is valid if all of the following conditions are satisfied (AND clause):
   * Keymgr_DPE is in `Available` state.
+  * `CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` are both below `NumInstHwSlot`.
   * `valid = true` for the source slot.
   * `allow_child = true` for the source slot.
   * If `retain_parent = true`, then the source and the destination slots are different.
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
-  * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < NumBootStages`).
-  * If `ENFORCE_SW_BINDING.ENFORCE` is set and the source slot has `boot_stage <= 2`, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
+  * If `ENFORCE_SW_BINDING.ENFORCE` is set and the source slot has `boot_stage <= 3`, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
+  * `KDF_ENGINE_SHADOWED.SEL` holds a valid multibit encoding (`kMultiBitBool4True` or `kMultiBitBool4False`), see [KDF Engine Selection](#kdf-engine-selection).
 
 
 ### Versioned Key Generation
@@ -200,29 +227,33 @@ A versioned key generation operation uses the following registers:
 During the generate operation, a versioned key is generated from the secret of the source slot selected by `SLOT_SRC_SEL`.
 After a successful key generation operation, if the generated key is requested for HW use, then the generated key is loaded into the sideload slot that drives the specified target peripheral port (`DST_SEL` being either one of {`AES`, `KMAC`, `OTBN`, `HMAC`}).
 In the case of SW key, the generated key is loaded into a CSR (see `SW_SHARE0_OUTPUT` and `SW_SHARE1_OUTPUT` registers).
+The SW output is the lower 384 bits (`NumOutReg` 32-bit registers per share) of the 512-bit KDF digest.
 
 The key is generated with a KDF call, where the secret key is read from source slot.
 Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 
-KDF used for key generation calls is the same KMAC instance used in advance calls.
+KDF used for key generation calls is the same KDF engine used in advance calls.
 The only difference is that the input messages are 0-padded to another length parameter, `GenDataWidth`.
 
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
+* The selected source slot is below `NumInstHwSlot`.
 * The selected source slot is valid.
 * `allow_keygen = true` for the source slot.
 * `KEY_VERSION` is less than or equal to `max_key_version` of the source slot.
 * `DEST_SEL` contains one of the five valid sideload destinations (None, AES, KMAC, OTBN, HMAC).
+* `KDF_ENGINE_SHADOWED.SEL` holds a valid multibit encoding, see [KDF Engine Selection](#kdf-engine-selection).
 
 ### Erase slot
 
-Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
+Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.SLOT_DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
 
 Note that the slots with `retain_parent = false` policy do not require explicit erase calls, as they are automatically erased when advanced.
 However, HW does not specifically block such an erase request.
 Meanwhile, the slots with `retain_parent = true` can only be destroyed with explicit erase calls, as advance calls will reject overwriting these slots.
 
 Erase request is valid if the following conditions are satisfied:
+* `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
 * The destination slot is valid (i.e. not empty).
 * keymgr_dpe FSM's working state is `Available`.
 
@@ -244,14 +275,15 @@ They do not involve a KMAC transaction and complete within a single cycle.
 At the end of a successful load operation, the following updates are made for the destination slot:
 * `valid` bit is set to 1.
 * `boot_stage` is initialized to `0` (Creator).
-* `max_key_version` is updated with `MAX_KEY_VERSION`.
-* `key_policy` is set to the fixed default UDS policy (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`), independent of `SLOT_POLICY`.
+* `max_key_version` is set to the default `DEFAULT_UDS_MAX_KEY_VERSION`, independent of `MAX_KEY_VER_SHADOWED`.
+* `key_policy` is set to the default `DEFAULT_UDS_POLICY` (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`), independent of `SLOT_POLICY`.
 * `key` is updated with the root key: each share of the root key is XORed on top of the corresponding share of the slot's `key` field.
 
 All fields other than `key` are overwritten, i.e. none of the previous DPE context information is retained.
 
 A load request is valid if all of the following conditions are satisfied:
 * keymgr_dpe FSM's working state is `Available`.
+* `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
 * The destination slot is not valid.
 * The respective root key is marked valid by its source.
 * The operation is not locked through `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
@@ -270,22 +302,74 @@ Disable operation simply moves the keymgr_DPE's FSM into `Disabled` state. This 
 
 ### Root Keys
 
-keymgr_dpe receives two 256-bit root secrets, each provided in two shares with a valid bit per share:
+keymgr_dpe receives two 384-bit root secrets, each provided in two shares with a valid bit per share:
 * `creator_root_key` is the creator root key received from OTP.
 * `secondary_root_key` is the (optional) secondary root key.
   Its source depends on the integration, for example OTP on Earl Grey.
 
+Each root key share is 384 bits wide, matching the size of the slot secret key.
+When KMAC is the KDF engine, only the lower 256 bits of the root key are effectively used as the KMAC key in the first derivation, even though the OTP provides 384 bits per share.
+Only OTBN as KDF engine consumes all 384 bits.
+
 The valid bits of both root keys are synchronized into the keymgr_dpe clock domain before use.
+
+### KDF Engine Selection
+
+keymgr_dpe supports two KDF engines:
+* [KMAC](../../kmac/README.md), which computes the KDF in hardware.
+* [OTBN](../../otbn/README.md), which computes an HKDF in software running on OTBN.
+
+Which engines are present is selected at design time with the `KdfEngineSel` parameter (type `keymgr_dpe_pkg::kdf_engine_sel_e`):
+
+| `KdfEngineSel`  | Behavior                                                                                                    |
+|:----------------|:------------------------------------------------------------------------------------------------------------|
+| `KdfEngineKmac` | KMAC is the only KDF engine. This is the default, existing integrations are unaffected.                     |
+| `KdfEngineOtbn` | OTBN is the only KDF engine.                                                                                |
+| `KdfEngineBoth` | Software selects the engine at run time with [`KDF_ENGINE_SHADOWED`](registers.md#kdf_engine_shadowed).     |
+
+With `KdfEngineBoth`, `KDF_ENGINE_SHADOWED.SEL` selects the engine: `kMultiBitBool4False` (reset value) selects KMAC and `kMultiBitBool4True` selects OTBN.
+With `KdfEngineKmac` or `KdfEngineOtbn` the engine is hard-wired and the register value is ignored, although values other than `kMultiBitBool4False` or `kMultiBitBool4True` will raise `ERR_CODE.INVALID_OP`.
+Writes to `KDF_ENGINE_SHADOWED` can be locked until the next reset by clearing `KDF_ENGINE_REGWEN.EN`.
+
+The selection that is in use is latched internally and only follows `KDF_ENGINE_SHADOWED` while no operation is ongoing.
+A write that happens during an operation therefore only takes effect once the operation has finished, and the engine can never change in the middle of an operation.
+
+#### Application interfaces
+
+keymgr_dpe has one application interface per engine: `kmac_app` towards KMAC and `otbn_app` towards OTBN.
+Both use the static variant of the [KMAC application interface](../../kmac/doc/theory_of_operation.md#application-interfaces) protocol (`kmac_pkg::app_req_t` / `kmac_pkg::app_rsp_t`).
+Internally, keymgr_dpe's KDF controller has a single application interface that is multiplexed between the two engines according to the latched selection.
+
+#### Internal key routing
+
+The key of the KDF is the internal key of the source slot.
+It is forwarded to the selected engine only:
+* If KMAC is selected, the internal key drives `kmac_key_o` while it is valid.
+* If OTBN is selected, the internal key drives `otbn_key_o` while it is valid.
+  OTBN expects a 512-bit key on its sideload interface while the internal key is 384 bits wide, so the key is zero-extended to the OTBN key width.
+While the internal key is valid (meaning either a derivation or generation is ongoing), it takes precedence over the applied sideload key, i.e. a previously generated sideload key is not visible during the operation.
+
+#### Sensitive key indicator
+
+When OTBN is the KDF engine the internal key, which must never be visible to software, is handed to OTBN.
+To protect it, keymgr_dpe asserts `sensitive_key_o` (`mubi4`, `kMultiBitBool4True`) while both of the following hold:
+* OTBN is the selected KDF engine.
+* The internal key is valid, i.e. it is being forwarded to the KDF engine.
+
+OTBN receives this signal as `keymgr_sensitive_key` and is required to ensure this key is never exposed to the host SW.
+If KMAC is the only engine (`KdfEngineKmac`), `sensitive_key_o` is constantly `kMultiBitBool4False`.
 
 ### KDF Details
 
-KDF used for advance calls is the KMAC instance with (keylen=256, digest_len=512, sec_lvl = 256) parameters. The input messages to KDF are always 0-padded to the fixed length specified below.
+The KDF used for advance calls is, depending on the [KDF engine selection](#kdf-engine-selection), either the KMAC instance with (keylen=256, digest_len=512, sec_lvl = 256) parameters or an HKDF running on OTBN.
+The input messages to KDF are always 0-padded to the fixed length specified below.
 
 During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depending on the boot stage, KDF message input also receives the following inputs:
 * `hw_revision_seed` is a 256-bit netlist constant.
 * `device_identifier` is a 256-bit non-secret device identifier. This value is received from peripheral OTP port.
 * `health_st_measurement` is a 128-bit domain separator (i.e. diversification constant) that depends on the life cycle stage. This value is received from peripheral LC port.
 * `rom_descriptors` are `NumRomDigestInputs` hash values received from the respective ROM controller(s). Each digest is 256-bits.
+* `field_entropy` is a 256-bit secret received from the `field_entropy` port. If the secret is not marked as valid, the 256-bit netlist constant `RndCnstFieldEntropySeed` is used instead.
 * `creator_seed` is 256-bit creator secret received from the `SECRET2` OTP partition..
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 

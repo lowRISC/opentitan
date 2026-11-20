@@ -24,7 +24,7 @@ SPI_HOST testbench has been constructed based on the
 ![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/spi_host/dv/tb/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip/spi_host/rtl/spi_host.sv`.
+Top level testbench is located at `hw/ip/spi_host/dv/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip/spi_host/rtl/spi_host.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
@@ -41,10 +41,11 @@ The following utilities provide generic helper tasks and functions to perform ac
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 ```systemverilog
-  // sets the number of spi devices
-  parameter int NumCS = 1;
+  // The number of chip select lines of the DUT (spi_host_env_cfg_pkg)
+  parameter integer unsigned SPI_HOST_NUM_CS = `SPI_HOST_NUM_CS;
 ```
-Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
+`SPI_HOST_NUM_CS` defaults to 1.
+The `spi_host_3cs` sim cfg variant (`spi_host_3cs_sim_cfg.hjson`) sets it to 3 and runs all tests with three chip select lines.
 Endianness implemented and verified is only Little Endian with ByteOrder set to 1
 
 ### Global types & methods
@@ -197,6 +198,9 @@ and the incoming device transactions where it will capture the response items an
 The SPI_HOST RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+```console
+$ util/regtool.py -s -t <output-dir> hw/ip/spi_host/data/spi_host.hjson
+```
 
 ### Stimulus strategy
 #### Test sequences
@@ -255,7 +259,7 @@ This way both outgoing and incoming transactions are validated independently of 
 
 
 #### Assertions
-* TLUL assertions: The `tb/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `dv/sva/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 

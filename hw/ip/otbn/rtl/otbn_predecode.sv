@@ -799,27 +799,33 @@ module otbn_predecode
         CsrMaiCtrl:                         ispr_addr = IsprMaiCtrl;
         CsrMaiStatus:                       ispr_addr = IsprMaiStatus;
         CsrInsnCnt:                         ispr_addr = IsprInsnCnt;
+        CsrKeymgrStatus:                    ispr_addr = IsprKeymgrStatus;
+        CsrKeymgrCtrl:                      ispr_addr = IsprKeymgrCtrl;
         default: ;
       endcase
     end else if (!wsr_addr_high) begin
       unique case (wsr_addr)
-        WsrMod:        ispr_addr = IsprMod;
-        WsrRnd:        ispr_addr = IsprRnd;
-        WsrUrnd:       ispr_addr = IsprUrnd;
-        WsrAcc:        ispr_addr = IsprAcc;
-        WsrKeyS0L:     ispr_addr = IsprKeyS0L;
-        WsrKeyS0H:     ispr_addr = IsprKeyS0H;
-        WsrKeyS1L:     ispr_addr = IsprKeyS1L;
-        WsrKeyS1H:     ispr_addr = IsprKeyS1H;
-        WsrKmacDataS0: ispr_addr = IsprKmacDataS0;
-        WsrKmacDataS1: ispr_addr = IsprKmacDataS1;
-        WsrMaiResS0:   ispr_addr = IsprMaiResS0;
-        WsrMaiResS1:   ispr_addr = IsprMaiResS1;
-        WsrMaiIn0S0:   ispr_addr = IsprMaiIn0S0;
-        WsrMaiIn0S1:   ispr_addr = IsprMaiIn0S1;
-        WsrMaiIn1S0:   ispr_addr = IsprMaiIn1S0;
-        WsrMaiIn1S1:   ispr_addr = IsprMaiIn1S1;
-        WsrUrndState:  ispr_addr = IsprUrndState;
+        WsrMod:          ispr_addr = IsprMod;
+        WsrRnd:          ispr_addr = IsprRnd;
+        WsrUrnd:         ispr_addr = IsprUrnd;
+        WsrAcc:          ispr_addr = IsprAcc;
+        WsrKeyS0L:       ispr_addr = IsprKeyS0L;
+        WsrKeyS0H:       ispr_addr = IsprKeyS0H;
+        WsrKeyS1L:       ispr_addr = IsprKeyS1L;
+        WsrKeyS1H:       ispr_addr = IsprKeyS1H;
+        WsrKmacDataS0:   ispr_addr = IsprKmacDataS0;
+        WsrKmacDataS1:   ispr_addr = IsprKmacDataS1;
+        WsrMaiResS0:     ispr_addr = IsprMaiResS0;
+        WsrMaiResS1:     ispr_addr = IsprMaiResS1;
+        WsrMaiIn0S0:     ispr_addr = IsprMaiIn0S0;
+        WsrMaiIn0S1:     ispr_addr = IsprMaiIn0S1;
+        WsrMaiIn1S0:     ispr_addr = IsprMaiIn1S0;
+        WsrMaiIn1S1:     ispr_addr = IsprMaiIn1S1;
+        WsrUrndState:    ispr_addr = IsprUrndState;
+        WsrKeymgrMsgS0L: ispr_addr = IsprKeymgrMsgS0L;
+        WsrKeymgrMsgS0H: ispr_addr = IsprKeymgrMsgS0H;
+        WsrKeymgrMsgS1L: ispr_addr = IsprKeymgrMsgS1L;
+        WsrKeymgrMsgS1H: ispr_addr = IsprKeymgrMsgS1H;
         default: ;
       endcase
     end

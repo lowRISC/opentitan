@@ -12,17 +12,15 @@
 module cheriot_mem_sys
   import cheriot_mem_sys_reg_pkg::*;
 #(
-  // TL-UL address type
-  parameter type   addr_t           = logic [top_pkg::TL_AW-1:0],
   // Top-level address map parameters
-  parameter addr_t                MainSramBaseAddr = 'h1000_0000,
-  parameter addr_t                MainSramTopAddr  = 'h1003_0000,
-  parameter addr_t                NvmBaseAddr      = 'h3000_0000,
-  parameter addr_t                NvmTopAddr       = 'h3020_0000,
-  parameter addr_t                MetaSramBaseAddr = 'h1100_0000,
-  parameter int unsigned          MemSizeRevbm     = 3072,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
-  parameter int unsigned          AlertSkewCycles  = 1
+  parameter logic [top_pkg::TL_AW-1:0] MainSramBaseAddr = 'h1000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MainSramTopAddr  = 'h1003_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmBaseAddr      = 'h3000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmTopAddr       = 'h3020_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MetaSramBaseAddr = 'h1100_0000,
+  parameter int unsigned               MemSizeRevbm     = 3072,
+  parameter logic [NumAlerts-1:0]      AlertAsyncOn     = {NumAlerts{1'b1}},
+  parameter int unsigned               AlertSkewCycles  = 1
 ) (
 
   input  logic clk_i,
@@ -68,6 +66,13 @@ module cheriot_mem_sys
   output tlul_pkg::tl_h2d_t meta_sram_tl_o,
   input  tlul_pkg::tl_d2h_t meta_sram_tl_i
 );
+
+  ///////////
+  // Types //
+  ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   /////////////////
   // Address map //
@@ -232,7 +237,6 @@ module cheriot_mem_sys
   ////////////
 
   cheriot_access_check #(
-    .addr_t(addr_t),
     .CheriotBaseAddr(MetaRevBmBase),
     .CheriotTopAddr(MetaNvmTagBase)
   ) u_cheriot_access_check_trvk (
@@ -247,7 +251,6 @@ module cheriot_mem_sys
 
   cheriot_tag_filter #(
     .NumOutstanding(CoreOutstanding),
-    .addr_t(addr_t),
     .MainSramBaseAddr(MainSramBaseAddr),
     .MainSramTopAddr(MainSramTopAddr),
     .NvmBaseAddr(NvmBaseAddr),
@@ -436,9 +439,7 @@ module cheriot_mem_sys
   ////////////////
 
   // SEC_CM: BUS.INTEGRITY
-  cheriot_rmw_filter #(
-    .addr_t(addr_t)
-  ) u_cheriot_rmw_filter (
+  cheriot_rmw_filter u_cheriot_rmw_filter (
     .clk_i,
     .rst_ni,
     .tl_h_i           (rmw_tl_h2d),
@@ -462,7 +463,6 @@ module cheriot_mem_sys
   ///////////////////
 
   cheriot_access_check #(
-    .addr_t(addr_t),
     .CheriotBaseAddr(MetaNvmTagBase),
     .CheriotTopAddr(MetaTop)
   ) u_cheriot_access_check_tags (
@@ -476,7 +476,6 @@ module cheriot_mem_sys
   );
 
   cheriot_access_check #(
-    .addr_t(addr_t),
     .CheriotBaseAddr(MetaRevBmBase),
     .CheriotTopAddr(MetaNvmTagBase)
   ) u_cheriot_access_check_sys (
@@ -490,7 +489,6 @@ module cheriot_mem_sys
   );
 
   cheriot_access_check #(
-    .addr_t(addr_t),
     .CheriotBaseAddr(MetaRevBmBase),
     .CheriotTopAddr(MetaNvmTagBase)
   ) u_cheriot_access_check_tbre (
@@ -642,7 +640,6 @@ module cheriot_mem_sys
 
   // SEC_CM: BUS.INTEGRITY
   cheriot_tbre #(
-    .addr_t             (addr_t),
     .MainSramBaseAddr   (MainSramBaseAddr),
     .MainSramTopAddr    (MainSramTopAddr),
     .NvmBaseAddr        (NvmBaseAddr),

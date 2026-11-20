@@ -9,11 +9,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Peripheral Pins for Chip IO
 
-| Pin name   | Direction   | Description                                                                    |
-|:-----------|:------------|:-------------------------------------------------------------------------------|
-| sck        | output      | SPI Clock                                                                      |
-| csb        | output      | Chip Select# (One hot, active low).  The size of this port should match NumCS. |
-| sd[3:0]    | inout       | SPI data bus                                                                   |
+| Pin name       | Direction   | Description                                                             |
+|:---------------|:------------|:------------------------------------------------------------------------|
+| sck            | output      | SPI Clock                                                               |
+| csb[NumCS-1:0] | output      | Chip Select# (One hot, active low).  There is one line per chip select. |
+| sd[3:0]        | inout       | SPI data bus                                                            |
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 

@@ -84,7 +84,29 @@ rom_error_t dice_chain_attestation_creator(
     const manifest_t *rom_manifest);
 
 /**
- * Check the CDI_0 certificate and regenerate if invalid.
+ * Static sealing and attestation binding values used to derive the
+ * CreatorIntKeys.
+ *
+ * Shared with the personalization firmware, such that both derive the same
+ * CreatorIntKeys.
+ */
+extern const keymgr_dpe_binding_value_t kDiceChainCreatorIntSealBindingValue;
+extern const keymgr_dpe_binding_value_t kDiceChainCreatorIntAttestBindingValue;
+
+/**
+ * Derive the creator int keys for the dice chain. Check the UDS_1 certificate
+ * and regenerate if invalid.
+ *
+ * @param rom_ext_manifest Pointer to the current rom_ext manifest.
+ * @return errors encountered during the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_chain_attestation_creator_int(
+    const manifest_t *rom_ext_manifest);
+
+/**
+ * Derive the owner int keys for the dice chain. Check the CDI_0 certificate and
+ * regenerate if invalid.
  *
  * @param rom_ext_measurement Pointer to the measurements to attest.
  * @param rom_ext_manifest Pointer to the current rom_ext manifest.

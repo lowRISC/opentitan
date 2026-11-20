@@ -30,7 +30,7 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     },
-    { name:      "gpio",
+    { name:      "gpio0",
       type:      "device",
       clock:     "clk_peri_i",
       reset:     "rst_peri_ni",
@@ -140,7 +140,7 @@
     // peripherals.
     main:  [
       "uart0", "i2c0"
-      "gpio", "spi_host0", "spi_device", "rv_timer",
+      "gpio0", "spi_host0", "spi_device", "rv_timer",
       "pwrmgr", "rstmgr", "clkmgr", "pinmux",
       "otp_ctrl.core", "otp_macro.prim", "lc_ctrl.regs",
       "alert_handler", "ast", "sram_ctrl_ret.ram", "sram_ctrl_ret.regs",

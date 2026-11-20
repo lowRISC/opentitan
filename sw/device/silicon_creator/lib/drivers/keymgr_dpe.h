@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 
@@ -48,8 +49,8 @@ typedef enum sc_keymgr_dpe_state {
 
 /**
  * Option to exclude the hw bindings values when deriving a DPE context
- * (only applicable when deriving either a first, second or third generation
- * DPE context in respect to the UDS).
+ * (only applicable when deriving either a first, second, third or fourth
+ * generation DPE context in respect to the UDS).
  */
 typedef enum sc_keymgr_dpe_sw_binding {
   kScKeymgrDPEUseAdditionalHwBinding = 0,
@@ -105,9 +106,9 @@ enum {
    */
   kScKeymgrDPESaltNumWords = 8,
   /**
-   * Number of 32-bit words for the key.
+   * Number of 32-bit words for each share of the SW output key.
    */
-  kScKeymgrDPEKeyNumWords = 8,
+  kScKeymgrDPEKeyNumWords = 12,
 };
 
 /**
@@ -160,9 +161,10 @@ typedef struct sc_keymgr_dpe_advance_data {
  */
 typedef enum sc_keymgr_dpe_boot_stage {
   kScKeymgrDPEBootStageCreator = 0,
-  kScKeymgrDPEBootStageOwnerInt = 1,
-  kScKeymgrDPEBootStageOwner = 2,
-  kScKeymgrDPEBootStageRuntime = 3,
+  kScKeymgrDPEBootStageCreatorInt = 1,
+  kScKeymgrDPEBootStageOwnerInt = 2,
+  kScKeymgrDPEBootStageOwner = 3,
+  kScKeymgrDPEBootStageRuntime = 4,
 } sc_keymgr_dpe_boot_stage_t;
 
 /**
@@ -199,6 +201,17 @@ typedef enum sc_keymgr_dpe_dest {
 } sc_keymgr_dpe_dest_t;
 
 /**
+ * Engine used by the keymgr dpe for key derivation.
+ *
+ * The values match the multi-bit encoding of the `KDF_ENGINE_SHADOWED`
+ * register.
+ */
+typedef enum sc_keymgr_dpe_kdf_engine {
+  kScKeymgrDPEKdfEngineKmac = kMultiBitBool4False,
+  kScKeymgrDPEKdfEngineOtbn = kMultiBitBool4True,
+} sc_keymgr_dpe_kdf_engine_t;
+
+/**
  * The following constants represent the expected number of sec_mmio register
  * writes performed by functions provided in this module. See
  * `SEC_MMIO_WRITE_INCREMENT()` for more details.
@@ -214,6 +227,8 @@ enum {
   kScKeymgrDPESecMmioSwBindingSet = 8,
   kScKeymgrDPESecMmioMaxVerSet = 1,
   kScKeymgrDPESecMmioSlotPolicy = 1,
+  kScKeymgrDPESecMmioKdfEngineSet = 1,
+  kScKeymgrDPESecMmioKdfEngineLock = 1,
 };
 
 /**
@@ -267,7 +282,8 @@ rom_error_t sc_keymgr_dpe_wait_until_done(void);
  *
  * @param exl_sw_binding Should additional hw bindings be used during the
  * next advance call. Only impact DPE context generation if either the
- * creator root key / owner int key / owner key is being generated.
+ * creator root key / creator int key / owner int key / owner key is being
+ * generated.
  * @param ops The type of operation to execute next.
  * @param sel_src_slot Source slot when either advancing a DPE context inside
  * the slot or if an HW / SW key is being generated.
@@ -292,6 +308,24 @@ void sc_keymgr_dpe_start_operation(void);
  * entropy is reseeded.
  */
 void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval);
+
+/**
+ * Selects the engine used by the key manager dpe for key derivation.
+ *
+ * The selection only has an effect if the hardware is instantiated with
+ * `KdfEngineSel = KdfEngineBoth`, otherwise the selection is ignored.
+ *
+ * The hardware only takes over the new selection while no operation is
+ * ongoing. The write has no effect if the selection is locked.
+ *
+ * @param engine KDF engine to be used.
+ */
+void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine);
+
+/**
+ * Locks the KDF engine selection until the next reset.
+ */
+void sc_keymgr_dpe_kdf_engine_lock(void);
 
 /**
  * Sets the key manager dpe software binding input.
@@ -403,7 +437,7 @@ rom_error_t sc_keymgr_dpe_clear_key(sc_keymgr_dpe_dest_t destination);
  * Advances the DPE context of one slot inside the keymgr_dpe.
  *
  * This function can only be called if the targeted key_slot has already
- * advanced three times. If the function is called sooner it will generate
+ * advanced four times. If the function is called sooner it will generate
  * invalid keys and the boot process will be corrupted. The function stalls at
  * the start if the keymgr dpe is not idle.
  *
@@ -428,13 +462,32 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void);
 
 /**
+ * Enforces the software binding as the only advance input until the next reset.
+ *
+ * Once called, every advance call from a parent slot that consumes hw binding
+ * values must set `kScKeymgrDPEUseExclusiveSwBinding`, otherwise the
+ * keymgr_dpe raises an `invalid_op` error and leaves the destination slot
+ * untouched. Advance calls from later boot stages are not affected. This lock
+ * can only be released by resetting the device.
+ *
+ * @return `kErrorOk` if the lock reads back as `kMultiBitBool4True`,
+ * `kErrorKeymgrInternal` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_dpe_enforce_sw_binding(void);
+
+/**
  * Load the UDS into an empty hw slot.
  *
- * Load the UDS into the selected hw slot. If the selected hw slot is not
- * empty then the keymgr_dpe will throw an error.
+ * Verifies that the selected hw slot is empty (not valid) before the load
+ * operation. After the UDS is loaded the slot metadata is read back and
+ * compared against the boot stage `kScKeymgrDPEBootStageCreator`, the default
+ * UDS max key version (all-ones) and the default UDS policy.
  *
  * @param sel_dst_slot empty destination slot for the UDS.
- * @return `kErrorOk`
+ * @return `kErrorOk` on success. `kErrorKeymgrInternal` if the destination slot
+ * is not empty, the load operation failed or the resulting slot metadata does
+ * not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
@@ -443,10 +496,16 @@ rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
  * Executes the first advance call to load the UDS in the selected slot and
  * sets the keymgr_dpe FSM to available.
  *
+ * After the advance the destination slot is verified: it must hold a valid
+ * DPE context with boot stage `kScKeymgrDPEBootStageCreator`, the default UDS
+ * max key version (all-ones) and the default UDS policy (allow child, no
+ * export, erase parent, no keygen).
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateReset`
  *
- * @param sel_dst_slot DPE context slot for the UDS.
- * @return The result of the advance call.
+ * @param sel_dst_slot_uds DPE context slot for the UDS.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds);
@@ -461,13 +520,18 @@ rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds);
  * the creator keys existing beyond its designated boot stage. This
  * function blocks until the advance operation was successfully.
  *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageCreatorInt`.
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data to advance the UDS to the
  * sealing owner key.
  * @param adv_data_attestation All required data to advance the UDS to the
  * attestation owner key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_creator(
@@ -476,18 +540,49 @@ rom_error_t sc_keymgr_dpe_advance_creator(
 
 /**
  * Sets the binding registers / key version registers and advances the
- * creator keys to the owner int keys (sealing and attestation).
+ * creator keys to the creator int keys (sealing and attestation).
  *
- * The retain parent policy bit must be cleared to avoid leaving the owner int
- * keys existing beyond its designated boot stage. Due to the retain parent
+ * The retain parent policy bit must be cleared to avoid leaving the creator
+ * int keys existing beyond its designated boot stage. Due to the retain parent
  * policy on the creator keys the source and destination slot have to be equal.
  * This function blocks until the advance operation was successfully.
+ *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageOwnerInt`.
  *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data for the sealing key.
  * @param adv_data_attestation All required data for the attestation key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_dpe_advance_creator_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation);
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator int keys to the owner int keys (sealing and attestation).
+ *
+ * The retain parent policy bit must be cleared to avoid leaving the owner int
+ * keys existing beyond its designated boot stage. Due to the retain parent
+ * policy on the creator int keys the source and destination slot have to be
+ * equal.
+ * This function blocks until the advance operation was successfully.
+ *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageOwner`.
+ *
+ * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
+ *
+ * @param adv_data_sealing All required data for the sealing key.
+ * @param adv_data_attestation All required data for the attestation key.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_owner_int(
@@ -502,11 +597,16 @@ rom_error_t sc_keymgr_dpe_advance_owner_int(
  * destination slot have to be equal. This function is blocking until the
  * advance operation was successfully.
  *
+ * After the advance the destination slots are verified: they must hold valid
+ * DPE contexts with the requested max key version, policy and boot stage
+ * `kScKeymgrDPEBootStageRuntime`.
+ *
  * Precondition: keymgr_dpe has to be in the state `kScKeymgrDPEStateAvailable`
  *
  * @param adv_data_sealing All required data for the sealing key.
  * @param adv_data_attestation All required data for the attestation key.
- * @return The result of the advance call.
+ * @return The result of the advance call. `kErrorKeymgrInternal` if the
+ * resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_advance_owner(
@@ -516,10 +616,12 @@ rom_error_t sc_keymgr_dpe_advance_owner(
 /**
  * Erase the DPE context of any slot
  *
- * This function blocks until the advance operation was successfully.
+ * This function blocks until the erase operation has finished and then reads
+ * back the slot metadata to verify the `valid` bit is cleared.
  *
  * @param sel_dst_slot selected DPE context to erase.
- * @return The result of the erase call.
+ * @return The result of the erase call. `kErrorKeymgrInternal` if the
+ * operation failed, `sel_dst_slot` is out of range or the slot is still valid.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot);

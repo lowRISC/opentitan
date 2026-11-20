@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:rom
+      - lowrisc:prim:rom_pkg
     files:
       - rtl/prim_rom_adv.sv
     file_type: systemVerilogSource

@@ -43,6 +43,8 @@ enum RootCommandHierarchy {
     Image(command::image::Image),
     #[command(subcommand)]
     LifeCycle(command::lc::LcCommand),
+    #[command(subcommand)]
+    Mldsa(command::mldsa::Mldsa),
     NoOp(command::NoOp),
     #[command(subcommand)]
     Otp(command::otp::Otp),

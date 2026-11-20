@@ -37,22 +37,23 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Countermeasures
 
-| Countermeasure ID                 | Description                                                                                            |
-|:----------------------------------|:-------------------------------------------------------------------------------------------------------|
-| KMAC.BUS.INTEGRITY                | End-to-end bus integrity scheme.                                                                       |
-| KMAC.LC_ESCALATE_EN.INTERSIG.MUBI | The global escalation input signal from the life cycle is multibit encoded                             |
-| KMAC.SW_KEY.KEY.MASKING           | Data storage and secret key are two share to guard against 1st order attack.                           |
-| KMAC.KEY.SIDELOAD                 | Key from KeyMgr is sideloaded.                                                                         |
-| KMAC.CFG_SHADOWED.CONFIG.SHADOW   | Shadowed CFG register.                                                                                 |
-| KMAC.FSM.SPARSE                   | FSMs in KMAC are sparsely encoded.                                                                     |
-| KMAC.CTR.REDUN                    | Round counter, key index counter, sentmsg counter and hash counter use prim_count for redundancy       |
-| KMAC.PACKER.CTR.REDUN             | Packer Position counter uses prim_count for redundancy                                                 |
-| KMAC.CFG_SHADOWED.CONFIG.REGWEN   | CFG_SHADOWED is protected by REGWEN                                                                    |
-| KMAC.FSM.GLOBAL_ESC               | Escalation moves all sparse FSMs into an invalid state.                                                |
-| KMAC.FSM.LOCAL_ESC                | Local fatal faults move all sparse FSMs into an invalid state.                                         |
-| KMAC.LOGIC.INTEGRITY              | The reset net for the internal state register and critical nets around the output register are buried. |
-| KMAC.ABSORBED.CTRL.MUBI           | `absorbed` signal is mubi4_t type to protect against FI attacks.                                       |
-| KMAC.SW_CMD.CTRL.SPARSE           | `sw_cmd` and related signals are sparse encoded to protect against FI attacks.                         |
+| Countermeasure ID                       | Description                                                                                            |
+|:----------------------------------------|:-------------------------------------------------------------------------------------------------------|
+| KMAC.BUS.INTEGRITY                      | End-to-end bus integrity scheme.                                                                       |
+| KMAC.LC_ESCALATE_EN.INTERSIG.MUBI       | The global escalation input signal from the life cycle is multibit encoded                             |
+| KMAC.SW_KEY.KEY.MASKING                 | Data storage and secret key are two share to guard against 1st order attack.                           |
+| KMAC.KEY.SIDELOAD                       | Key from KeyMgr is sideloaded.                                                                         |
+| KMAC.CFG_SHADOWED.CONFIG.SHADOW         | Shadowed CFG and ENTROPY_CFG registers.                                                                |
+| KMAC.FSM.SPARSE                         | FSMs in KMAC are sparsely encoded.                                                                     |
+| KMAC.CTR.REDUN                          | Round counter, key index counter, sentmsg counter and hash counter use prim_count for redundancy       |
+| KMAC.PACKER.CTR.REDUN                   | Packer Position counter uses prim_count for redundancy                                                 |
+| KMAC.CFG_SHADOWED.CONFIG.REGWEN         | CFG_SHADOWED is protected by REGWEN                                                                    |
+| KMAC.ENTROPY_CFG_SHADOWED.CONFIG.REGWEN | ENTROPY_CFG_SHADOWED is protected by REGWEN and can further be locked down until the next reset        |
+| KMAC.FSM.GLOBAL_ESC                     | Escalation moves all sparse FSMs into an invalid state.                                                |
+| KMAC.FSM.LOCAL_ESC                      | Local fatal faults move all sparse FSMs into an invalid state.                                         |
+| KMAC.LOGIC.INTEGRITY                    | The reset net for the internal state register and critical nets around the output register are buried. |
+| KMAC.ABSORBED.CTRL.MUBI                 | `absorbed` signal is mubi4_t type to protect against FI attacks.                                       |
+| KMAC.SW_CMD.CTRL.SPARSE                 | `sw_cmd` and related signals are sparse encoded to protect against FI attacks.                         |
 
 
 <!-- END CMDGEN -->

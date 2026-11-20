@@ -8,6 +8,7 @@ package i3c_ctrl_ccc_pkg;
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_pkg::*;
+  import i3c_hci_pkg::*;
 
   // These are bit indexes within the `CtrlCR_Status` register.
   typedef enum {

@@ -334,31 +334,31 @@ module pinmux_strap_sampling
   // combinational function of the 2-bit tap_strap register. tap_strap_q's two bits are separate
   // flops that are not guaranteed to switch at exactly the same instant post-synthesis, which
   // could otherwise glitch the JTAG request lines through an unintended TAP selection for a cycle.
-  logic lc_tap_en_d,  lc_tap_en_q;
-  logic rv_tap_en_d,  rv_tap_en_q;
-  logic dft_tap_en_d, dft_tap_en_q;
+  logic lc_tap_en_d,   lc_tap_en_q;
+  logic rv_tap_en_d,   rv_tap_en_q;
+  logic dft_tap_en_d,  dft_tap_en_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tap_sel_reg
     if (!rst_ni) begin
-      lc_tap_en_q  <= 1'b0;
-      rv_tap_en_q  <= 1'b0;
-      dft_tap_en_q <= 1'b0;
+      lc_tap_en_q   <= 1'b0;
+      rv_tap_en_q   <= 1'b0;
+      dft_tap_en_q  <= 1'b0;
     end else begin
-      lc_tap_en_q  <= lc_tap_en_d;
-      rv_tap_en_q  <= rv_tap_en_d;
-      dft_tap_en_q <= dft_tap_en_d;
+      lc_tap_en_q   <= lc_tap_en_d;
+      rv_tap_en_q   <= rv_tap_en_d;
+      dft_tap_en_q  <= dft_tap_en_d;
     end
   end
 
   // TCK and TRSTN are shared, ungated wires here: the actual gating with the registered,
   // single-bit tap enables happens inside pinmux_jtag_buf below (en_i), which holds each TAP's
   // clock off and reset asserted when it is not selected.
-  assign lc_jtag_req.tck     = jtag_req.tck;
-  assign lc_jtag_req.trst_n  = jtag_req.trst_n;
-  assign rv_jtag_req.tck     = jtag_req.tck;
-  assign rv_jtag_req.trst_n  = jtag_req.trst_n;
-  assign dft_jtag_req.tck    = jtag_req.tck;
-  assign dft_jtag_req.trst_n = jtag_req.trst_n;
+  assign lc_jtag_req.tck      = jtag_req.tck;
+  assign lc_jtag_req.trst_n   = jtag_req.trst_n;
+  assign rv_jtag_req.tck      = jtag_req.tck;
+  assign rv_jtag_req.trst_n   = jtag_req.trst_n;
+  assign dft_jtag_req.tck     = jtag_req.tck;
+  assign dft_jtag_req.trst_n  = jtag_req.trst_n;
 
   // Drives the immediate (unregistered) jtag_rsp/jtag_en response mux used for the TDO override
   // and pad tie-offs further below, and in the same case statement decodes the per-TAP request
@@ -370,15 +370,15 @@ module pinmux_strap_sampling
     // This activates the TDO override further below.
     jtag_en  = 1'b0;
 
-    lc_tap_en_d      = 1'b0;
-    rv_tap_en_d      = 1'b0;
-    dft_tap_en_d     = 1'b0;
-    lc_jtag_req.tms  = 1'b0;
-    lc_jtag_req.tdi  = 1'b0;
-    rv_jtag_req.tms  = 1'b0;
-    rv_jtag_req.tdi  = 1'b0;
-    dft_jtag_req.tms = 1'b0;
-    dft_jtag_req.tdi = 1'b0;
+    lc_tap_en_d       = 1'b0;
+    rv_tap_en_d       = 1'b0;
+    dft_tap_en_d      = 1'b0;
+    lc_jtag_req.tms   = 1'b0;
+    lc_jtag_req.tdi   = 1'b0;
+    rv_jtag_req.tms   = 1'b0;
+    rv_jtag_req.tdi   = 1'b0;
+    dft_jtag_req.tms  = 1'b0;
+    dft_jtag_req.tdi  = 1'b0;
 
     unique case (tap_strap)
       LcTapSel: begin

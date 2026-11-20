@@ -38,21 +38,6 @@
     }
     derived_clks:
     {
-      io_div2:
-      {
-        name: io_div2
-        aon: false
-        freq: 48000000
-        ref: false
-        div: 2
-        src:
-        {
-          name: io
-          aon: no
-          freq: "96000000"
-          ref: false
-        }
-      }
       io_div4:
       {
         name: io_div4
@@ -121,11 +106,6 @@
           src_name: usb
           endpoint_ip: rstmgr
         }
-        clk_io_div2_powerup:
-        {
-          src_name: io_div2
-          endpoint_ip: rstmgr
-        }
         clk_aon_secure:
         {
           src_name: aon
@@ -187,11 +167,6 @@
           src_name: io_div4
           endpoint_ip: uart0
         }
-        clk_io_div2_peri:
-        {
-          src_name: io_div2
-          endpoint_ip: spi_device
-        }
         clk_io_peri:
         {
           src_name: io
@@ -225,7 +200,6 @@
       io:
       [
         io
-        io_div2
         io_div4
       ]
       usb:

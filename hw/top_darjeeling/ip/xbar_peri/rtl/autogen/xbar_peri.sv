@@ -10,7 +10,7 @@
 //   -> s1n_20
 //     -> uart0
 //     -> i2c0
-//     -> gpio
+//     -> gpio0
 //     -> spi_host0
 //     -> spi_device
 //     -> rv_timer
@@ -41,8 +41,8 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_uart0_i,
   output tlul_pkg::tl_h2d_t tl_i2c0_o,
   input  tlul_pkg::tl_d2h_t tl_i2c0_i,
-  output tlul_pkg::tl_h2d_t tl_gpio_o,
-  input  tlul_pkg::tl_d2h_t tl_gpio_i,
+  output tlul_pkg::tl_h2d_t tl_gpio0_o,
+  input  tlul_pkg::tl_d2h_t tl_gpio0_i,
   output tlul_pkg::tl_h2d_t tl_spi_host0_o,
   input  tlul_pkg::tl_d2h_t tl_spi_host0_i,
   output tlul_pkg::tl_h2d_t tl_spi_device_o,
@@ -105,8 +105,8 @@ module xbar_peri (
   assign tl_i2c0_o = tl_s1n_20_ds_h2d[1];
   assign tl_s1n_20_ds_d2h[1] = tl_i2c0_i;
 
-  assign tl_gpio_o = tl_s1n_20_ds_h2d[2];
-  assign tl_s1n_20_ds_d2h[2] = tl_gpio_i;
+  assign tl_gpio0_o = tl_s1n_20_ds_h2d[2];
+  assign tl_s1n_20_ds_d2h[2] = tl_gpio0_i;
 
   assign tl_spi_host0_o = tl_s1n_20_ds_h2d[3];
   assign tl_s1n_20_ds_d2h[3] = tl_spi_host0_i;
@@ -171,7 +171,7 @@ module xbar_peri (
       dev_sel_s1n_20 = 5'd1;
 
     end else if ((tl_s1n_20_us_h2d.a_address &
-                  ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
+                  ~(ADDR_MASK_GPIO0)) == ADDR_SPACE_GPIO0) begin
       dev_sel_s1n_20 = 5'd2;
 
     end else if ((tl_s1n_20_us_h2d.a_address &

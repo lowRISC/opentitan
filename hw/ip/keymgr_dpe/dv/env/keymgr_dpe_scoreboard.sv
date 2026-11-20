@@ -17,59 +17,65 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // if boot_stage == 0 with creator seed
   typedef struct packed {
     // SW_CDI_INPUT
-    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
+    bit [NumSwBindingReg-1:0][TL_DW-1:0]          SoftwareBinding;
     // HW_REVISION_SEED
-    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     HardwareRevisionSecret;
+    bit [SeedWidth-1:0]                           HardwareRevisionSecret;
     // DEVICE_IDENTIFIER
-    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]                                DeviceIdentifier;
+    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]       DeviceIdentifier;
     // HEALTH_ST_MEASUREMENT
-    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]                                HealthMeasurement;
+    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]       HealthMeasurement;
     // ROM_DESCRIPTORS
-    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
+    bit [DvNumRomDigestInputs-1:0][SeedWidth-1:0] RomDigests;
     // CREATOR_SEED
-    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     CreatorRootSecret;
+    bit [SeedWidth-1:0]                           CreatorRootSecret;
   } adv_creator_data_with_creator_seed_t;
 
   // if boot_stage == 0 without creator seed
   typedef struct packed {
     // SW_CDI_INPUT
-    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0]               SoftwareBinding;
+    bit [NumSwBindingReg-1:0][TL_DW-1:0]          SoftwareBinding;
     // DEVICE_IDENTIFIER
-    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]                                DeviceIdentifier;
+    bit [keymgr_dpe_pkg::DeviceIdWidth-1:0]       DeviceIdentifier;
     // HEALTH_ST_MEASUREMENT
-    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]                                HealthMeasurement;
+    bit [lc_ctrl_pkg::LcKeymgrDivWidth-1:0]       HealthMeasurement;
     // ROM_DESCRIPTORS
-    bit [keymgr_dpe_env_pkg::DvNumRomDigestInputs-1:0][keymgr_dpe_pkg::KeyWidth-1:0] RomDigests;
+    bit [DvNumRomDigestInputs-1:0][SeedWidth-1:0] RomDigests;
     // HW_REVISION_SEED
-    bit [keymgr_dpe_pkg::KeyWidth-1:0]                                     HardwareRevisionSecret;
+    bit [SeedWidth-1:0]                           HardwareRevisionSecret;
   } adv_creator_data_without_creator_seed_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::KeyWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
-        unused;
+    bit [(DvDpeAdvDataWidth-SeedWidth-SwBindingWidth)-1:0] unused;
     // SW_CDI_INPUT
-    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    // FIELD_ENTROPY
+    bit [SeedWidth-1:0] FieldEntropy;
+  } adv_creator_int_data_t;
+
+  typedef struct packed {
+    // some portions are unused, which are 0s
+    bit [(DvDpeAdvDataWidth-SeedWidth-SwBindingWidth)-1:0] unused;
+    // SW_CDI_INPUT
+    bit [NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     // CREATOR_SEED
-    bit [keymgr_dpe_pkg::KeyWidth-1:0] CreatorRootSecret;
+    bit [SeedWidth-1:0] CreatorRootSecret;
   } adv_owner_int_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::KeyWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
-        unused;
+    bit [(DvDpeAdvDataWidth-SeedWidth-SwBindingWidth)-1:0] unused;
     // SW_CDI_INPUT
-    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     // OWNER SEED
-    bit [keymgr_dpe_pkg::KeyWidth-1:0] OwnerRootSecret;
+    bit [SeedWidth-1:0] OwnerRootSecret;
   } adv_owner_data_t;
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-keymgr_dpe_pkg::SwBindingWidth-1:0]
-        unused;
+    bit [(DvDpeAdvDataWidth-SwBindingWidth)-1:0] unused;
     // SW_CDI_INPUT
-    bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
+    bit [NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
   } adv_runtime_data_t;
 
   typedef struct packed {
@@ -106,7 +112,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   // HW internal key, used for OP in current state
   keymgr_dpe_env_pkg::keymgr_dpe_key_slot_t current_key_slot;
   keymgr_dpe_pkg::keymgr_dpe_slot_t current_internal_key[keymgr_dpe_env_pkg::DvNumInstHwSlot];
-  bit [keymgr_dpe_pkg::KeyWidth-1:0] old_key;
+  internal_key_shares_t old_key;
   // bit used to flag a comparison of key slot is required
   // it's set by the process_kmac_data_rsp() function, during an
   // internal key update
@@ -129,7 +135,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
-  bit [keymgr_dpe_env_pkg::DvDpeAdvDataWidth-1:0] adv_data_a_array[
+  bit [DvDpeAdvDataWidth-1:0] adv_data_a_array[
     keymgr_dpe_env_pkg::DvNumInstHwSlot][
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
   bit [keymgr_dpe_pkg::IdDataWidth-1:0]  id_data_a_array[
@@ -229,23 +235,33 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 .exp_match(!is_err),
                 .byte_data_q(req_bytes)
               );
-            end else if (boot_stage == keymgr_dpe_pkg::BootStageOwnerInt) begin
+            end else if (boot_stage == keymgr_dpe_pkg::BootStageCreatorInt) begin
               `uvm_info(`gfn,
                         $sformatf({"process_kmac_data_req: boot_stage %0d ",
                                    "is_err %0d compare_boot_stage_1_data"},
                                    boot_stage, is_err),
                         UVM_LOW)
-               compare_boot_stage_1_data(
+              compare_boot_stage_1_data(
                 .exp_match(!is_err),
                 .byte_data_q(req_bytes)
-               );
-            end else if (boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
+              );
+            end else if (boot_stage == keymgr_dpe_pkg::BootStageOwnerInt) begin
               `uvm_info(`gfn,
                         $sformatf({"process_kmac_data_req: boot_stage %0d ",
                                    "is_err %0d compare_boot_stage_2_data"},
                                    boot_stage, is_err),
                         UVM_LOW)
                compare_boot_stage_2_data(
+                .exp_match(!is_err),
+                .byte_data_q(req_bytes)
+               );
+            end else if (boot_stage == keymgr_dpe_pkg::BootStageOwner) begin
+              `uvm_info(`gfn,
+                        $sformatf({"process_kmac_data_req: boot_stage %0d ",
+                                   "is_err %0d compare_boot_stage_3_data"},
+                                   boot_stage, is_err),
+                        UVM_LOW)
+               compare_boot_stage_3_data(
                 .exp_match(!is_err),
                 .byte_data_q(req_bytes)
                );
@@ -321,13 +337,15 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       UpdateInternalKey: begin
         // flag a key slot comparison
         compare_internal_key_slot = 1;
-        // digest is 512 bits wide while internal key is only 256, need to truncate it
+        // digest is 512 bits wide while internal key is only 384, need to truncate it
         current_internal_key[current_key_slot.dst_slot].key =
-          {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
-           txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
+          {txn.m_rsp.m_digest_s1[InternalKeyWidth-1:0],
+           txn.m_rsp.m_digest_s0[InternalKeyWidth-1:0]};
 
-        // Boot stage should increment if we are in the creator or owner stage. If we are in the
-        // runtime stage, we do not increment the boot stage.
+        // Boot stage advances to the next stage, which depends on the number of boot stages
+        // - 4 stage configuration: Creator -> CreatorInt -> OwnerInt -> Owner -> Runtime
+        // - 2 stage configuration: Creator -> Owner -> Runtime
+        // If we are in the runtime stage, we do not increment the boot stage.
         case(current_internal_key[current_key_slot.src_slot].boot_stage)
           keymgr_dpe_pkg::BootStageCreator: begin
             if (DvBootStages == 2) begin
@@ -335,8 +353,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 keymgr_dpe_pkg::BootStageOwner;
             end else begin
               current_internal_key[current_key_slot.dst_slot].boot_stage =
-                keymgr_dpe_pkg::BootStageOwnerInt;
+                keymgr_dpe_pkg::BootStageCreatorInt;
             end
+          end
+          keymgr_dpe_pkg::BootStageCreatorInt: begin
+            current_internal_key[current_key_slot.dst_slot].boot_stage =
+              keymgr_dpe_pkg::BootStageOwnerInt;
           end
           keymgr_dpe_pkg::BootStageOwnerInt: begin
             current_internal_key[current_key_slot.dst_slot].boot_stage =
@@ -379,10 +401,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       // Should occur when a valid OpDpeGenSwOut is issued in the StWorkDpeAvailable state
       UpdateSwOut: begin
         if (!get_fault_err && !get_invalid_op()) begin
-          bit [keymgr_dpe_pkg::Shares-1:0][DIGEST_SHARE_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
-          // digest is 512 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {txn.m_rsp.m_digest_s1[keymgr_dpe_pkg::KeyWidth-1:0],
-                             txn.m_rsp.m_digest_s0[keymgr_dpe_pkg::KeyWidth-1:0]};
+          bit [keymgr_dpe_pkg::Shares-1:0][SW_OUTPUT_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
+          // digest is 512 bits wide while SW output is only 384, need to truncate it
+          sw_share_output = {txn.m_rsp.m_digest_s1[SW_OUTPUT_WIDTH-1:0],
+                             txn.m_rsp.m_digest_s0[SW_OUTPUT_WIDTH-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);
@@ -666,7 +688,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                       cfg.keymgr_dpe_vif.hmac_key))
             end
 
-            if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
+            // The DUT drives the internal key on kmac_key during each KMAC operation, then falls
+            // back to the KMAC sideload slot. keymgr_dpe_if mirrors this, but with no sideload key
+            // loaded it only clears kmac_key_exp.valid, so the key bits are stale. Compare them
+            // only while valid.
+            if (cfg.keymgr_dpe_vif.kmac_key_exp.valid != cfg.keymgr_dpe_vif.kmac_key.valid ||
+                (cfg.keymgr_dpe_vif.kmac_key_exp.valid &&
+                 cfg.keymgr_dpe_vif.kmac_key_exp.key != cfg.keymgr_dpe_vif.kmac_key.key)) begin
                 `uvm_error(`gfn,
                            $sformatf({"After a disable kmac sideload key was not preserved ",
                                       "exp 'h%0h vs. act 'h%0h"},
@@ -885,7 +913,19 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                     post_disable_compare_key_slots = 1;
                   end
-                  default: ;
+                  // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+                  default: begin
+                    // An unknown operation is rejected without touching the key slots
+                    current_op_status = keymgr_dpe_pkg::OpDoneFail;
+                    // No KDF issued, done interrupt/alert is triggered in next cycle
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        process_error_n_alert();
+                      end
+                    join_none
+                  end
                 endcase
               end
               keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
@@ -1061,7 +1101,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endtask
 
   virtual function void latch_otp_key();
-    key_shares_t otp_key;
+    internal_key_shares_t otp_key;
     if (cfg.keymgr_dpe_vif.creator_root_key.share0_valid &&
         cfg.keymgr_dpe_vif.creator_root_key.share1_valid) begin
       otp_key = {cfg.keymgr_dpe_vif.creator_root_key.share1,
@@ -1072,7 +1112,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
     current_internal_key[current_key_slot.dst_slot].valid = 1;
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
-    current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+    current_internal_key[current_key_slot.dst_slot].max_key_version =
+        keymgr_dpe_pkg::DEFAULT_UDS_MAX_KEY_VERSION;
     // This call loads the "true" UDS without the randomness present in the
     // HW slot. The problem is that when this function is invoked (when writing into the start
     // register for the first time) the randomness in the HW slot is not yet generated.
@@ -1263,7 +1304,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               return 1;
             return 0;
           end
+          keymgr_dpe_pkg::OpDpeDisable: begin
+            return 0;
+          end
+          keymgr_dpe_pkg::OpDpeLoadRootKey,
+          keymgr_dpe_pkg::OpDpeLoadSecondaryRootKey: begin
+            // TODO(#31746): Support `OpDpeLoad(Secondary)RootKey` in blocklevel dv
+            return 1;
+          end
           default: begin
+            return 1;
           end
         endcase
       end
@@ -1334,7 +1384,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, "HW invalid input on otp_device_id", UVM_LOW)
       end
 
-      for (int i = 0; i < keymgr_dpe_env_pkg::DvNumRomDigestInputs; ++i) begin
+      for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
         if (cfg.keymgr_dpe_vif.rom_digests[i].data inside {0, '1}) begin
           invalid_hw_input_type = RomDigestInvalid;
           void'(ral.debug.invalid_digest.predict(1));
@@ -1367,7 +1417,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable) begin
       // need to check invalidOp as well as InvalidIn, because either would result
-      // in needing to check invalid data on the kmac_data_o
+      // in needing to check invalid data on the kmac_app_o
       return !(get_fault_err() |
                err_code[keymgr_dpe_pkg::ErrInvalidIn]  |
                err_code[keymgr_dpe_pkg::ErrInvalidOp]  |
@@ -1391,7 +1441,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
     if (exp_match) begin
-      `DV_CHECK_EQ(byte_data_q.size, keymgr_dpe_env_pkg::DvDpeAdvDataWidth / 8)
+      `DV_CHECK_EQ(byte_data_q.size, DvDpeAdvDataWidth / 8)
     end
 
     if (DvBootStages == 2) begin
@@ -1407,7 +1457,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       act = {<<8{byte_data_q}};
 
       exp.CreatorRootSecret = cfg.keymgr_dpe_vif.creator_seed.seed;
-      for (int i = 0; i < keymgr_dpe_env_pkg::DvNumRomDigestInputs; ++i) begin
+      for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
         exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
       end
       exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
@@ -1418,13 +1468,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
       // The order of the string creation must match the design
       `CREATE_CMP_STR(CreatorRootSecret)
-      for (int i = 0; i < keymgr_dpe_env_pkg::DvNumRomDigestInputs; ++i) begin
+      for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
         `CREATE_CMP_STR(RomDigests[i])
       end
       `CREATE_CMP_STR(HealthMeasurement)
       `CREATE_CMP_STR(DeviceIdentifier)
       `CREATE_CMP_STR(HardwareRevisionSecret)
-      for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+      for (int i = 0; i < NumSwBindingReg; i++) begin
         `CREATE_CMP_STR(SoftwareBinding[i])
       end
 
@@ -1447,7 +1497,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
       act = {<<8{byte_data_q}};
 
-      for (int i = 0; i < keymgr_dpe_env_pkg::DvNumRomDigestInputs; ++i) begin
+      for (int i = 0; i < DvNumRomDigestInputs; ++i) begin
         exp.RomDigests[i] = cfg.keymgr_dpe_vif.rom_digests[i].data;
       end
       exp.HealthMeasurement  = cfg.keymgr_dpe_vif.keymgr_dpe_div;
@@ -1461,7 +1511,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       `CREATE_CMP_STR(RomDigests)
       `CREATE_CMP_STR(HealthMeasurement)
       `CREATE_CMP_STR(DeviceIdentifier)
-      for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+      for (int i = 0; i < NumSwBindingReg; i++) begin
         `CREATE_CMP_STR(SoftwareBinding[i])
       end
 
@@ -1479,7 +1529,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       bit exp_match,
       const ref byte unsigned byte_data_q[$]
     );
-    adv_owner_int_data_t exp, act;
+    adv_creator_int_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
     `uvm_info(`gfn,
@@ -1489,12 +1539,17 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               UVM_HIGH)
 
     act = {<<8{byte_data_q}};
-    exp.CreatorRootSecret = cfg.keymgr_dpe_vif.creator_seed.seed;
+    // If the field entropy is provisioned the design uses the secret directly,
+    // otherwise the netlist constant RndCnstFieldEntropySeed is used.
+    exp.FieldEntropy = keymgr_dpe_pkg::RndCnstFieldEntropySeedDefault;
+    if (cfg.keymgr_dpe_vif.field_entropy.secret_valid) begin
+      exp.FieldEntropy = cfg.keymgr_dpe_vif.field_entropy.secret;
+    end
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(CreatorRootSecret)
-    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    `CREATE_CMP_STR(FieldEntropy)
+    for (int i = 0; i < NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
@@ -1511,7 +1566,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       bit exp_match,
       const ref byte unsigned byte_data_q[$]
     );
-    adv_owner_data_t exp, act;
+    adv_owner_int_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
     `uvm_info(`gfn,
@@ -1521,12 +1576,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               UVM_HIGH)
 
     act = {<<8{byte_data_q}};
-    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.owner_seed.seed;
+    exp.CreatorRootSecret = cfg.keymgr_dpe_vif.creator_seed.seed;
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
-    `CREATE_CMP_STR(OwnerRootSecret)
-    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    `CREATE_CMP_STR(CreatorRootSecret)
+    for (int i = 0; i < NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
@@ -1539,7 +1594,39 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (exp_match) adv_data_a_array[current_key_slot.src_slot][current_state] = act;
   endfunction
 
-  // For boot stages >= 2, we expect the same key material format
+  virtual function void compare_boot_stage_3_data(
+      bit exp_match,
+      const ref byte unsigned byte_data_q[$]
+    );
+    adv_owner_data_t exp, act;
+    string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
+
+    `uvm_info(`gfn,
+              $sformatf("compare_boot_stage_3_data src_slot %0d src_slot_val %p",
+                        current_key_slot.src_slot,
+                        current_internal_key[current_key_slot.src_slot]),
+              UVM_HIGH)
+
+    act = {<<8{byte_data_q}};
+    exp.OwnerRootSecret = cfg.keymgr_dpe_vif.owner_seed.seed;
+    get_sw_binding_mirrored_value(exp.SoftwareBinding);
+
+    `CREATE_CMP_STR(unused)
+    `CREATE_CMP_STR(OwnerRootSecret)
+    for (int i = 0; i < NumSwBindingReg; i++) begin
+      `CREATE_CMP_STR(SoftwareBinding[i])
+    end
+
+    if (exp_match) begin
+      `DV_CHECK_EQ(act, exp, str)
+    end else begin
+      `DV_CHECK_NE(act, exp, str)
+    end
+
+    if (exp_match) adv_data_a_array[current_key_slot.src_slot][current_state] = act;
+  endfunction
+
+  // For boot stages >= 4, we expect the same key material format
   // being sent out to the kmac engine
   virtual function void compare_boot_stage_runtime_data(
      bit exp_match,
@@ -1559,7 +1646,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     get_sw_binding_mirrored_value(exp.SoftwareBinding);
 
     `CREATE_CMP_STR(unused)
-    for (int i=0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i=0; i < NumSwBindingReg; i++) begin
       `CREATE_CMP_STR(SoftwareBinding[i])
     end
 
@@ -1646,21 +1733,18 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   endfunction
 
   virtual function void get_sw_binding_mirrored_value(
-        output bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] sw_binding
+        output bit [NumSwBindingReg-1:0][TL_DW-1:0] sw_binding
       );
 
-    for (int i = 0; i < keymgr_dpe_reg_pkg::NumSwBindingReg; i++) begin
+    for (int i = 0; i < NumSwBindingReg; i++) begin
       sw_binding[i] = `gmv(ral.sw_binding[i]);
     end
   endfunction
 
-  // if it's not defined operation, treat as OpDpeDisable
+  // Use a static cast so that unknown encodings are preserved, they are rejected by the DUT as
+  // invalid operations.
   virtual function keymgr_dpe_pkg::keymgr_dpe_ops_e get_operation();
-    keymgr_dpe_pkg::keymgr_dpe_ops_e op;
-    int op_int_val = `gmv(ral.control_shadowed.operation);
-
-    if (!$cast(op, op_int_val)) op = keymgr_dpe_pkg::OpDpeDisable;
-    return op;
+    return keymgr_dpe_pkg::keymgr_dpe_ops_e'(`gmv(ral.control_shadowed.operation));
   endfunction
 
   virtual function void get_key_slots();

@@ -26,3 +26,7 @@ waive -rules {TAG_OVERLAP} -location {kmac_app.sv} \
 waive -rules {INTEGER} -location {kmac_entropy.sv} \
     -regexp {'i' of type int used as a non-constant value} \
     -comment "int i is compared with the storage_idx"
+
+waive -rules {ONE_BIT_MEM_WIDTH} -location {kmac_app.sv} \
+    -regexp {Memory 'arb_data' has word width which is single bit wide} \
+    -comment "Tie-off of the arbiter's unused, one bit wide data port."

@@ -506,7 +506,6 @@ module chip_englishbreakfast_verilator (
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .mux_iob_sel_o         (  ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),

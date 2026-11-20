@@ -46,7 +46,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // This scoreboard is not capable of anticipating with single-cycle accuracy whether the observe
   // and entropy data FIFOs are empty.  However, we can note when they have been explicitly cleared
   // and use that to anticipate any alerts that may come about background disable events
-  bit fifos_cleared = 1;
+  bit observe_fifo_cleared = 1;
+  bit esfinal_fifo_cleared = 1;
+
+  // This scoreboard separates the HT and the seed verification: Independend ot the HT status,
+  // seeds are pushed into the entropy_data_q and fips_csrng_q queues whereas the DUT only pushes
+  // seeds into the esfinal FIFO if the HTs pass.
+  // When observing a seed on the hardware interface, all seeds in fips_csrng_q are thus compared
+  // against this seed. In contrast, when reading the entropy_data CSR, we must not try to match
+  // the received data against entropy_data_q if the esfinal FIFO is actually empty.
+  int esfinal_fifo_depth = 0;
+  int esfinal_fifo_depth_prev = 0;
+  bit esfinal_fifo_empty = 1'b0;
 
   // Queue of RNG data for health testing
   queue_of_rng_val_t               health_test_data_q;
@@ -641,27 +652,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     uvm_reg_field threshold_field;
 
     int        threshold_val;
-    bit        continuous_test;
     bit        failure;
     bit        low_test;
     string     fmt, msg;
 
     validate_test_name(test);
-    low_test             = is_low_test(test);
-    continuous_test      = (test == "repcnt") || (test == "repcnts");
+    low_test = is_low_test(test);
 
     threshold_reg_name  = $sformatf("%s_threshold", test);
     threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
     threshold_val = threshold_reg.get_mirrored_value();
 
-    // Continuous tests are more rigorous about holding to the '>=' specified in NIST
-    // 800-90B. Meanwhile the windowed tests use "<" or ">" as this allows these tests
-    // to be temporarily disabled at boot, by choosing the maximal window size.
-    // TODO: Document this
-    if (continuous_test) begin
-      failure = (low_test && value <= threshold_val) || (!low_test && value >= threshold_val);
+    // A high threshold of all ones or a low threshold of zero disables the test.
+    if (low_test) begin
+      failure = (threshold_val != 0) && (value <= threshold_val);
     end else begin
-      failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
+      failure = (threshold_val != 16'hFFFF) && (value >= threshold_val);
     end
 
     fmt = "Threshold for \"%s\" test: %04h";
@@ -1123,13 +1129,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit               match_found;
     bit entropy_data_reg_enable;
     bit module_enabled;
+    bit esfinal_clr_while_dsbld;
     entropy_data_reg_enable = ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True;
-
-    module_enabled = (ral.module_enable.module_enable.get_mirrored_value() == MuBi4True);
+    module_enabled = ral.module_enable.module_enable.get_mirrored_value() == MuBi4True;
+    esfinal_clr_while_dsbld =
+        ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value() == MuBi4True;
     match_found = 0;
 
-    if(!entropy_data_reg_enable || !module_enabled) begin
-      // ignore the contents of the entropy_data fifo.
+    if (!entropy_data_reg_enable || (!module_enabled && esfinal_clr_while_dsbld)) begin
+      // Ignore the contents of the entropy_data_q queue.
       `DV_CHECK_FATAL(csr.predict(.value({TL_DW{1'b0}}), .kind(UVM_PREDICT_READ)))
       match_found = 1;
     end else begin
@@ -1155,6 +1163,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             `uvm_error(`gfn, "testbench error: too many segments read from candidate seed")
           end
           cov_vif.cg_seed_output_csr_sample(
+              mubi4_t'(ral.module_enable.get_mirrored_value()),
               mubi4_t'(ral.conf.fips_enable.get_mirrored_value()),
               mubi4_t'(ral.conf.fips_flag.get_mirrored_value()),
               mubi4_t'(ral.conf.rng_fips.get_mirrored_value()),
@@ -1163,6 +1172,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               ral.conf.rng_bit_sel.get_mirrored_value(),
               mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
               mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
+              mubi4_t'(ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value()),
               mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
               mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
               mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()),
@@ -1230,7 +1240,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // Internal CSRNG stores and scoreboard state is cleared on Disable and HardReset events.
     if( rst_type == Disable || rst_type == HardReset ) begin
-      fips_csrng_q.delete();
+      if (rst_type == HardReset ||
+          ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value()
+          == MuBi4True) begin
+        fips_csrng_q.delete();
+      end
       overflow_condition = 0;
       `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict('b0))
       // fw_ov_wr_fifo_full goes high when the module is disabled.
@@ -1295,7 +1309,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     if ((rst_type == FIFOClr) || (rst_type == Enable)) begin
       observe_fifo_q.delete();
-      entropy_data_q.delete();
+      if (ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value()
+          == MuBi4True) begin
+        entropy_data_q.delete();
+      end
       // The overflow condition for the observe FIFO is cleared whenever the observe FIFO
       // gets cleared.
       observe_fifo_overflow = 0;
@@ -1329,13 +1346,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     for (int i = 0; i < `RNG_BUS_WIDTH; i++) begin
       `uvm_info(`gfn, "Set REPCNTS cntr", UVM_DEBUG)
-      repcnt[i] = (rst_type == HardReset) ? 0 :
-                  (rst_type == Enable) ? 1 :
-                  repcnt[i];
+      repcnt[i] = (rst_type inside {HardReset, Enable}) ? 0 : repcnt[i];
     end
-    repcnt_symbol     = 1;
 
-    prev_rng_val      = '0;
+    repcnt_symbol = 0;
+    prev_rng_val = '0;
 
     // Clear records of repcnt/repnts failures
     continuous_fail_count     = 0;
@@ -1542,6 +1557,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "intr_test": begin
       end
+      "alert_test": begin
+      end
       "sw_regupd": begin
       end
       "regwen": begin
@@ -1559,9 +1576,20 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         locked_reg_access = dut_reg_locked;
       end
       "entropy_data": begin
+        if (!write && channel == AddrChannel) begin
+          // We need to know whether the esfinal FIFO is actually empty. If is empty, it will
+          // return 0 and we must not try to match this against the entropy_data_q queue.
+          // predictions.
+          esfinal_fifo_depth_prev = esfinal_fifo_depth;
+          esfinal_fifo_depth = int'(csr_peek(ral.debug_status.entropy_fifo_depth));
+          // In case this is the last read, the esfinal FIFO got already popped at this point.
+          esfinal_fifo_empty = !(esfinal_fifo_depth || esfinal_fifo_depth_prev);
+        end
       end
       "health_test_windows": begin
         locked_reg_access = dut_reg_locked;
+      end
+      "threshold_oneway": begin
       end
       "repcnt_threshold": begin
         locked_reg_access   = dut_reg_locked;
@@ -1599,6 +1627,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         threshold_increases = 0;
       end
       "markov_lo_threshold": begin
+        locked_reg_access = dut_reg_locked;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
+        threshold_increases = 1;
+      end
+      "extht_hi_threshold": begin
+        locked_reg_access = dut_reg_locked;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
+        threshold_increases = 0;
+      end
+      "extht_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
         one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
@@ -1794,7 +1832,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 if (do_enable && !dut_pipeline_enabled) begin
                   dut_pipeline_enabled = 1;
                   handle_disable_reset(Enable);
-                  fifos_cleared = 0;
+                  observe_fifo_cleared = 0;
+                  esfinal_fifo_cleared = 0;
                   collect_entropy();
                   // The DUT internals could take as long as three clocks to clear.
                   cfg.clk_rst_vif.wait_clks(3);
@@ -1852,7 +1891,13 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                   begin
                     cfg.clk_rst_vif.wait_clks(cfg.tlul_to_fifo_clr_delay);
                     handle_disable_reset(FIFOClr);
-                    fifos_cleared = 1;
+                    observe_fifo_cleared = 1;
+                    esfinal_fifo_cleared =
+                        `gmv(ral.entropy_control.esfinal_fifo_clear_while_disabled) == MuBi4True;
+                    if (esfinal_fifo_cleared) begin
+                      esfinal_fifo_depth = 0;
+                      esfinal_fifo_depth_prev = 0;
+                    end
                   end
                 join_none : background_process
               end
@@ -1877,6 +1922,18 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_es_route);
               check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
                                    invalid_es_type);
+              check_redundancy_val("entropy_control", "esfinal_fifo_clear_while_disabled",
+                                   "esfinal_fifo_clear_while_disabled_field_alert",
+                                   invalid_esfinal_clr_while_dsbld);
+              // Upon writing MuBi4True to this field, the esfinal FIFO is cleared.
+              void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE)));
+              if (`gmv(ral.entropy_control.esfinal_fifo_clear_while_disabled) == MuBi4True) begin
+                fips_csrng_q.delete();
+                entropy_data_q.delete();
+                esfinal_fifo_cleared = 1;
+                esfinal_fifo_depth = 0;
+                esfinal_fifo_depth_prev = 0;
+              end
             end
             "threshold_oneway": begin
               check_redundancy_val("threshold_oneway", "threshold_oneway",
@@ -2122,7 +2179,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // internal state of the entropy_data and observe FIFOs.  At this point however
           // the environment can run satisfactorily by checking whether the FIFOs have
           // been cleared in a disable event.
-          if (fifos_cleared) begin
+          if (esfinal_fifo_cleared || esfinal_fifo_empty) begin
             `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
           end else begin
             process_entropy_data_csr_access(item, csr);
@@ -2138,7 +2195,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           item.d_data -= observe_push_busy_addr_phase;
         end
         "fw_ov_rd_data": begin
-          if (fifos_cleared) begin
+          if (observe_fifo_cleared) begin
             `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
           end else begin
             // The read check already happens in process_observe_fifo_csr_access().
@@ -2888,24 +2945,17 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   function void package_and_release_entropy();
     bit [FIPS_CSRNG_BUS_WIDTH - 1:0] fips_csrng;
     bit [CSRNG_BUS_WIDTH - 1:0] csrng_seed;
-    bit entropy_data_reg_enable;
-
-    entropy_data_reg_enable = ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True;
 
     `uvm_info(`gfn, $sformatf("raw_process_q.size(): %01d", raw_process_q.size()), UVM_FULL)
     `uvm_info(`gfn, $sformatf("sha_process_q.size(): %01d", sha_process_q.size()), UVM_FULL)
+
+    // Independently of `entropy_data_reg_enable`, we push the seed into both the HW interface
+    // queue and the SW queue. Whether reading from that inteface is actually permitted is checked
+    // during the actual read operation via illegal coverage bins (see cp_es_route coverpoints).
     fips_csrng = predict_fips_csrng();
-
-    // package data for routing to SW and to CSRNG:
-    csrng_seed = get_csrng_seed(fips_csrng);
-
-    // Only inject entropy data if entropy data is enabled
-    if (entropy_data_reg_enable) begin
-      entropy_data_q.push_back(csrng_seed);
-    end
-
     fips_csrng_q.push_back(fips_csrng);
-
+    csrng_seed = get_csrng_seed(fips_csrng);
+    entropy_data_q.push_back(csrng_seed);
   endfunction
 
   virtual task process_csrng();

@@ -93,53 +93,14 @@ otcrypto_status_t otcrypto_kmac_kdf(
   // The set of supported key sizes is {128, 192, 256, 384, 512}.
   HARDENED_TRY(kmac_key_length_check(key_derivation_key->config.key_length));
 
-  kmac_blinded_key_t kmac_key = {
-      .share0 = NULL,
-      .share1 = NULL,
-      .hw_backed = key_derivation_key->config.hw_backed,
-      .len = key_derivation_key->config.key_length,
-  };
-
-  // Validate key length of `key_derivation_key`.
-  if (key_derivation_key->config.hw_backed == kHardenedBoolTrue) {
-    // Check that 1) key size matches sideload port size, 2) keyblob length
-    // matches diversification length.
-    if (keyblob_share_num_words(key_derivation_key->config) *
-            sizeof(uint32_t) !=
-        kKmacSideloadKeyLength / 8) {
-      // COVERAGE (MISSING) Invalid sideloaded key length in KMAC KDF is not
-      // covered.
-      return OTCRYPTO_BAD_ARGS;
-    }
-
-    is_sideloaded = kHardenedBoolTrue;
-
-    // Configure keymgr dpe with diversification input and then generate the
-    // sideload key.
-    keymgr_dpe_diversification_t diversification;
-    // Diversification call also checks that
-    // `key_derivation_key->keyblob_length` is 8 words long.
-    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key_derivation_key,
-                                                       &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
-  } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
-    // Remask the key.
-    HARDENED_TRY(keyblob_remask(key_derivation_key));
-
-    if (key_derivation_key->keyblob_length !=
-        keyblob_num_words(key_derivation_key->config) * sizeof(uint32_t)) {
-      // COVERAGE (FI CM) Redundant check; keyblob_remask already validates
-      // keyblob_length.
-      return OTCRYPTO_BAD_ARGS;
-    }
-    HARDENED_TRY(keyblob_to_shares(key_derivation_key, &kmac_key.share0,
-                                   &kmac_key.share1));
-    // Set the checksum of the key.
-    kmac_key.checksum = kmac_key_integrity_checksum(&kmac_key);
-  } else {
-    // COVERAGE (MISSING) Invalid hw_backed value in KMAC KDF is not covered.
+  // Check non-zero length for output_key_material.
+  if (output_key_material->config.key_length == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Ensure that the derived key is a symmetric key masked with XOR and is not
+  // supposed to be hardware-backed.
+  HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
 
   // Output key cannot be hardware-backed.
   if (output_key_material->config.hw_backed != kHardenedBoolFalse) {
@@ -155,10 +116,57 @@ otcrypto_status_t otcrypto_kmac_kdf(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  kmac_blinded_key_t kmac_key = {
+      .share0 = NULL,
+      .share1 = NULL,
+      .hw_backed = key_derivation_key->config.hw_backed,
+      .len = key_derivation_key->config.key_length,
+  };
+
+  // Validate key length of `key_derivation_key`.
+  if (key_derivation_key->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    // Check that 1) key size matches sideload port size, 2) keyblob length
+    // matches diversification length.
+    if (key_derivation_key->config.key_length != kKmacSideloadKeyLength / 8) {
+      // COVERAGE (MISSING) Invalid sideloaded key length in KMAC KDF is not
+      // covered.
+      return OTCRYPTO_BAD_ARGS;
+    }
+
+    is_sideloaded = kHardenedBoolTrue;
+
+    // Configure keymgr dpe with diversification input and then generate the
+    // sideload key.
+    keymgr_dpe_diversification_t diversification;
+    // Diversification call also checks that
+    // `key_derivation_key->keyblob_length` is 8 words long.
+    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key_derivation_key,
+                                                       &diversification));
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
+    HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
+  } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
+    if (key_derivation_key->keyblob_length !=
+        keyblob_num_words(key_derivation_key->config) * sizeof(uint32_t)) {
+      // COVERAGE (FI CM) Redundant check; keyblob_remask already validates
+      // keyblob_length.
+      return OTCRYPTO_BAD_ARGS;
+    }
+
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key_derivation_key));
+    HARDENED_TRY(keyblob_to_shares(key_derivation_key, &kmac_key.share0,
+                                   &kmac_key.share1));
+    // Set the checksum of the key.
+    kmac_key.checksum = kmac_key_integrity_checksum(&kmac_key);
+  } else {
+    // COVERAGE (MISSING) Invalid hw_backed value in KMAC KDF is not covered.
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Randomize the keyblob memory.
-  HARDENED_TRY(
-      hardened_memshred(output_key_material->keyblob,
-                        keyblob_num_words(output_key_material->config)));
+  hardened_memshred(output_key_material->keyblob,
+                    keyblob_num_words(output_key_material->config));
 
   otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key_derivation_key->config.key_mode)) {
@@ -194,6 +202,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used),
                     key_derivation_key->config.key_mode);
+
+  if (is_sideloaded == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
+  }
 
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);

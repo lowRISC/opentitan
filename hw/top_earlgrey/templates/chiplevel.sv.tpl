@@ -229,7 +229,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
 % if target["name"] != "verilator":
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [${len(dedicated_pads)-1}:0] dio_in_raw;
 
@@ -407,7 +406,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -665,7 +663,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
 % if has_srst:
     .srst_ni(manual_in_por_button_n),
 % endif
@@ -724,15 +722,6 @@ module chip_${top["name"]}_${target["name"]} #(
 % endif
   };
 
-  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
-  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
-  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
-  // as topgen does not support conditional port generation.
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
-  assign clk_osc_byp_pd_main = clks_osc_byp;
-  assign clk_osc_byp_pd_aon  = clks_osc_byp;
-
 % if target["name"] == "asic":
   // Unused AST power states
   logic unused_ast_pwst_h;
@@ -756,6 +745,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
+  assign manual_out_pora_n = 1'b0;
+  assign manual_oe_pora_n = 1'b0;
 
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
@@ -765,8 +756,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
-  // Enable schmitt trigger on POR for better signal integrity.
-  assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  // Enable schmitt trigger on the POR pads for better signal integrity.
+  assign manual_attr_por_n  = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  assign manual_attr_pora_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
 
   // These pad attributes are controlled through sensor_ctrl.  Update the description of
   // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
@@ -1086,7 +1078,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
+    unique case ({mio_out[MioOutGpio0Gpio11], mio_out[MioOutGpio0Gpio10]})
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1101,17 +1093,17 @@ module chip_${top["name"]}_${target["name"]} #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
     .Width ($bits(clk_trans_idle) + 4)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .d_i   ({clk_trans_idle,
              clk_io_div4_trigger_hw_en,
              clk_io_div4_trigger_hw_oe,

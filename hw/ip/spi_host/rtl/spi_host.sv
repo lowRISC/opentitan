@@ -139,60 +139,37 @@ module spi_host
 
   assign sd_en     = output_en ? sd_en_core : 4'h0;
 
-  if (NumCS == 1) begin : gen_passthrough_implementation
-    logic passthrough_en;
-    assign passthrough_en  = passthrough_i.passthrough_en;
+  logic passthrough_en;
+  assign passthrough_en  = passthrough_i.passthrough_en;
 
-    logic        pt_sck;
-    logic        pt_sck_en;
-    logic [0:0]  pt_csb;
-    logic [0:0]  pt_csb_en;
-    logic [3:0]  pt_sd_out;
-    logic [3:0]  pt_sd_en;
+  logic             pt_sck;
+  logic             pt_sck_en;
+  logic [NumCS-1:0] pt_csb;
+  logic [NumCS-1:0] pt_csb_en;
+  logic [3:0]       pt_sd_out;
+  logic [3:0]       pt_sd_en;
 
-    assign pt_sck       = passthrough_i.sck;
-    assign pt_sck_en    = passthrough_i.sck_en;
-    assign pt_csb[0]    = passthrough_i.csb;
-    assign pt_csb_en[0] = passthrough_i.csb_en;
-    assign pt_sd_out    = passthrough_i.s;
-    assign pt_sd_en     = passthrough_i.s_en;
+  assign pt_sck       = passthrough_i.sck;
+  assign pt_sck_en    = passthrough_i.sck_en;
+  assign pt_sd_out    = passthrough_i.s;
+  assign pt_sd_en     = passthrough_i.s_en;
 
-    assign cio_sck_o    = passthrough_en ? pt_sck    : sck;
-    assign cio_sck_en_o = passthrough_en ? pt_sck_en : output_en;
-    assign cio_csb_o    = passthrough_en ? pt_csb    : csb;
-    assign cio_csb_en_o = passthrough_en ? pt_csb_en : output_en;
-    assign cio_sd_o     = passthrough_en ? pt_sd_out : sd_out;
-    assign cio_sd_en_o  = passthrough_en ? pt_sd_en  : sd_en;
+  // Passthrough uses CSB[0].  All other CSB lines are held inactive so that no other device on the
+  // shared SCK and SD lines is selected.  Their output enables stay under the control of
+  // CONTROL.OUTPUT_EN.
+  always_comb begin
+    pt_csb       = '1;
+    pt_csb[0]    = passthrough_i.csb;
+    pt_csb_en    = {NumCS{output_en}};
+    pt_csb_en[0] = passthrough_i.csb_en;
+  end
 
-  end                   : gen_passthrough_implementation
-  else begin            : gen_passthrough_ignore
-     // Passthrough only supported for instances with one CSb line
-    `ASSERT(PassthroughNumCSCompat_A, !passthrough_i.passthrough_en, clk_i, rst_ni)
-
-    assign cio_sck_o    = sck;
-    assign cio_sck_en_o = output_en;
-    assign cio_csb_o    = csb;
-    assign cio_csb_en_o = {NumCS{output_en}};
-    assign cio_sd_o     = sd_out;
-    assign cio_sd_en_o  = sd_en;
-
-    logic       unused_pt_en;
-    logic       unused_pt_sck;
-    logic       unused_pt_sck_en;
-    logic       unused_pt_csb;
-    logic       unused_pt_csb_en;
-    logic [3:0] unused_pt_sd_out;
-    logic [3:0] unused_pt_sd_en;
-
-    assign unused_pt_en     = passthrough_i.passthrough_en;
-    assign unused_pt_sck    = passthrough_i.sck;
-    assign unused_pt_sck_en = passthrough_i.sck_en;
-    assign unused_pt_csb    = passthrough_i.csb;
-    assign unused_pt_csb_en = passthrough_i.csb_en;
-    assign unused_pt_sd_out = passthrough_i.s;
-    assign unused_pt_sd_en  = passthrough_i.s_en;
-
-  end                   : gen_passthrough_ignore
+  assign cio_sck_o    = passthrough_en ? pt_sck    : sck;
+  assign cio_sck_en_o = passthrough_en ? pt_sck_en : output_en;
+  assign cio_csb_o    = passthrough_en ? pt_csb    : csb;
+  assign cio_csb_en_o = passthrough_en ? pt_csb_en : {NumCS{output_en}};
+  assign cio_sd_o     = passthrough_en ? pt_sd_out : sd_out;
+  assign cio_sd_en_o  = passthrough_en ? pt_sd_en  : sd_en;
 
   assign passthrough_o.s = cio_sd_i;
   assign sd_i            = cio_sd_i;
@@ -655,6 +632,11 @@ module spi_host
   // but the unknown data won't be used based on the SPI protocol.
   // Hence, instead of checking known data, here does a connectivity check.
   `ASSERT(PassthroughConn_A, passthrough_o.s === cio_sd_i)
+
+  // In passthrough mode, all CSB lines except CSB[0] are inactive.
+  if (NumCS > 1) begin : gen_passthrough_csb_assert
+    `ASSERT(PassthroughCsbInactive_A, passthrough_i.passthrough_en |-> &cio_csb_o[NumCS-1:1])
+  end
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])

@@ -1084,14 +1084,21 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
         let usb_vid = usb_vid.unwrap_or_else(Self::get_default_usb_vid);
         let usb_pid = usb_pid.unwrap_or_else(Self::get_default_usb_pid);
         let usb_context = RusbContext::new();
-        // We try to be smart: first look for a ChipWhisperer board
-        // and then try to find a hyperdebug under the same USB hub.
-        // NOTE: when doing this, we reinterpret the `usb_serial` argument
-        // as the serial number of the ChipWhisperer board. This is more
-        // consistent since we usually identify CW+HD combinations by the
-        // CW serial.
-        let cw =
-            Self::open_cw(usb_serial).with_context(|| format!("No {} found", B::BOARD_NAME))?;
+        // We try to be smart: first look for a ChipWhisperer board and then
+        // try to find a HyperDebug under the same USB hub (or with the
+        // explicitly specified serial number).
+        // NOTE: when doing this, we reinterpret the `usb_serial` argument as
+        // either the serial number of the ChipWhisperer board or a
+        // "<cw_serial>:<hd_serial>" pair. This is more consistent since we
+        // usually identify CW+HD combinations by the CW serial.
+        let (cw_serial, hd_serial_arg) = match usb_serial {
+            Some(s) => match s.split_once(':') {
+                Some((cw, hd)) => (Some(cw), Some(hd)),
+                None => (Some(s), None),
+            },
+            None => (None, None),
+        };
+        let cw = Self::open_cw(cw_serial).with_context(|| format!("No {} found", B::BOARD_NAME))?;
         log::debug!("Found ChipWhisperer: {cw:?}");
         let cw_backend = cw.backend();
         let cw_backend_borrow = cw_backend.borrow();
@@ -1103,7 +1110,7 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
         // under the same hub (3.2). Hence, we remove the last port of the list for the comparison
         // below.
         cw_ports.pop();
-        let mut hd_devices = usb_context.scan(Some(usb_vid), Some(usb_pid), None, None)?;
+        let mut hd_devices = usb_context.scan(Some(usb_vid), Some(usb_pid), None, hd_serial_arg)?;
         // If only one HD device was detected, assume that this is the one the user wants.
         if hd_devices.len() == 1 {
             return Ok((hd_devices.remove(0), cw));

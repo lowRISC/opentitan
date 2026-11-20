@@ -30,6 +30,7 @@ interface rv_dm_mode_if(input clk);
   wire         strap_en_override;
   wire mubi8_t otp_dis_rv_dm_late_debug;
   wire mubi4_t scanmode;
+  wire mubi4_t cheriot_ena;
 
   logic [31:0] next_dm_addr_internal;
   lc_tx_t      lc_hw_debug_clr_internal;
@@ -43,6 +44,7 @@ interface rv_dm_mode_if(input clk);
   logic        strap_en_override_internal;
   mubi8_t      otp_dis_rv_dm_late_debug_internal;
   mubi4_t      scanmode_internal;
+  mubi4_t      cheriot_ena_internal;
 
   assign next_dm_addr             = is_active ? next_dm_addr_internal             : 'z;
   assign lc_hw_debug_clr          = is_active ? lc_hw_debug_clr_internal          : lc_tx_t'('z);
@@ -56,6 +58,7 @@ interface rv_dm_mode_if(input clk);
   assign strap_en_override        = is_active ? strap_en_override_internal        : 'z;
   assign otp_dis_rv_dm_late_debug = is_active ? otp_dis_rv_dm_late_debug_internal : mubi8_t'('z);
   assign scanmode                 = is_active ? scanmode_internal                 : mubi4_t'('z);
+  assign cheriot_ena              = is_active ? cheriot_ena_internal              : mubi4_t'('z);
 
   // An active clocking block for all signals that are not expected to be constant and are thus
   // driven/sampled on the clock.

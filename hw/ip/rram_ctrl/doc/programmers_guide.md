@@ -83,8 +83,7 @@ To write RRAM, software must:
 
 1. Wait for any previous operation to complete.
 2. Write the byte address of the first RRAM word to write into [`ADDR`](registers.md#addr).
-   The address must be 16-byte (128-bit) aligned.
-   The controller truncates to the nearest lower 16-byte boundary.
+   The address must be 16-byte (128-bit) aligned, see [Write Alignment](#write-alignment).
 3. Write [`CONTROL`](registers.md#control) with:
    - `OP = Write`
    - `NUM` = (number of bus words to write) - 1.
@@ -112,6 +111,9 @@ Every write operation must:
 - Start at a 16-byte aligned address.
 - Transfer a number of bus words that is a multiple of 4 (i.e. a whole number of RRAM words).
 
+A write that violates either rule is rejected without accessing the RRAM.
+It completes with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
+
 To modify less than a full RRAM word, software must perform a read-modify-write: read the full word, update the desired bytes, and write the word back.
 
 ## Issuing a Rewrite Operation
@@ -125,6 +127,8 @@ To issue a rewrite, software must:
 
 1. Wait for any previous operation to complete.
 2. Write the byte address of the word to rewrite into [`ADDR`](registers.md#addr), typically taken from [`CORR1_ERR_LOC`](registers.md#corr1_err_loc) or [`CORR2_ERR_LOC`](registers.md#corr2_err_loc), matching whichever interrupt fired.
+   The address must be 16-byte (128-bit) aligned.
+   Otherwise the rewrite is rejected without accessing the RRAM, with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
 3. Write [`CONTROL`](registers.md#control) with:
    - `OP = Rewrite`
    - `PARTITION = 0` for the data partition, `1` for the info partition
@@ -135,6 +139,29 @@ To issue a rewrite, software must:
 Internally, the controller reads the addressed RRAM word and immediately writes the same data back, without exposing it to software or the read/write FIFOs.
 When complete, the controller sets [`OP_STATUS.done`](registers.md#op_status) and asserts the `op_done` interrupt, the same as for a Read or Write operation.
 If the internal read or write fails, [`OP_STATUS.err`](registers.md#op_status) is set and the failure is reported through [`ERR_CODE`](registers.md#err_code)/[`ERR_ADDR`](registers.md#err_addr), exactly as for a normal read or write error.
+If the target is disabled by [`DIS.DIS_*_REWRITE`](registers.md#dis), the rewrite is rejected without accessing the RRAM, with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.mp_err`](registers.md#err_code) set (see [Disabling Rewrite Operations](#disabling-rewrite-operations)).
+
+### Disabling Rewrite Operations
+
+A rewrite bypasses the configurable memory protection regions: it can target any page of the data and info partitions, including the OTP region.
+Trusted firmware should therefore restrict rewrites before handing over control to less trusted firmware, using the following `rw1s` mubi fields of [`DIS`](registers.md#dis):
+
+| Field | Rewrites rejected |
+|---|---|
+| [`DIS.DIS_ALL_REWRITE`](registers.md#dis) | All rewrites |
+| [`DIS.DIS_OTP_REWRITE`](registers.md#dis) | Rewrites to the OTP region of the data partition (see [Accessing the OTP Region](#accessing-the-otp-region)) |
+| [`DIS.DIS_INFO_REWRITE`](registers.md#dis) | Rewrites to the info partition |
+
+The OTP region is part of the data partition, so a rewrite to it is only rejected by `DIS_ALL_REWRITE` or `DIS_OTP_REWRITE`.
+The [emulated info pages](#emulated-info-pages) also reside in the data partition, so `DIS_INFO_REWRITE` does not cover them.
+Only `DIS_ALL_REWRITE` rejects rewrites to emulated info pages.
+
+Write `MuBi4True` to set a field.
+Any value other than `MuBi4False` disables, and a set field cannot be cleared until the next reset.
+To leave the other fields of [`DIS`](registers.md#dis) unchanged, write `MuBi4False` to them, not 0.
+
+A rejected rewrite does not modify the RRAM.
+It completes with [`OP_STATUS.err`](registers.md#op_status), [`ERR_CODE.mp_err`](registers.md#err_code) and [`ERR_ADDR`](registers.md#err_addr) set.
 
 ## Accessing the OTP Region
 
@@ -225,8 +252,8 @@ When a controller operation completes with [`OP_STATUS.err`](registers.md#op_sta
 
 | Field | Meaning |
 |---|---|
-| `op_err` | Undefined operation supplied in `CONTROL.OP` (see register description for valid values) |
-| `mp_err` | Memory protection violation |
+| `op_err` | Operation rejected without accessing the RRAM: undefined `CONTROL.OP`, operation started before initialization completed or while software access is disabled for RMA entry, or a write or Rewrite that does not cover whole RRAM words (see [`ERR_CODE.op_err`](registers.md#err_code)) |
+| `mp_err` | Memory protection violation, including a Rewrite rejected by [`DIS.DIS_*_REWRITE`](#disabling-rewrite-operations) |
 | `rd_err` | RRAM read error (ECC or integrity failure) |
 | `wr_err` | RRAM write error |
 

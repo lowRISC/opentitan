@@ -257,10 +257,7 @@ status_t cryptolib_fi_rsa_sign_impl(
   uint32_t sig[kPentestRsaMaxMsgWords] = {0};
   otcrypto_word32_buf_t sig_buf;
   memset(&sig_buf, 0, sizeof(sig_buf));
-  uj_output->cfg = 0;
-  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
+  memset(uj_output, 0, sizeof(*uj_output));
 
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
@@ -395,8 +392,11 @@ status_t cryptolib_fi_rsa_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
-      &private_key, &public_key, hash_mode, &msg_buf, padding_mode, &sig_buf));
+  otcrypto_hash_context_t hash_ctx;
+  HARDENED_TRY(otcrypto_hash_init(&hash_ctx, hash_mode));
+  HARDENED_TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify_final(
+      &private_key, &public_key, &hash_ctx, padding_mode, &sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -606,7 +606,7 @@ status_t cryptolib_fi_p256_ecdh_impl(
   memcpy(unmasked_val, uj_input.private_key, P256_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP256Order,
                           kPentestP256MaskedPrivateKeyWords, share1));
 
@@ -722,7 +722,7 @@ status_t cryptolib_fi_p256_sign_impl(
   memcpy(unmasked_val, uj_input.scalar, P256_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP256Order,
                           kPentestP256MaskedPrivateKeyWords, share1));
 
@@ -925,7 +925,7 @@ status_t cryptolib_fi_p256_base_mul_impl(
   memcpy(unmasked_val, uj_input.scalar, P256_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP256MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP256Order,
                           kPentestP256MaskedPrivateKeyWords, share1));
 
@@ -1015,7 +1015,7 @@ status_t cryptolib_fi_p384_ecdh_impl(
   memcpy(unmasked_val, uj_input.private_key, P384_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP384Order,
                           kPentestP384MaskedPrivateKeyWords, share1));
 
@@ -1136,7 +1136,7 @@ status_t cryptolib_fi_p384_sign_impl(
   memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP384Order,
                           kPentestP384MaskedPrivateKeyWords, share1));
 
@@ -1340,7 +1340,7 @@ status_t cryptolib_fi_p384_base_mul_impl(
   memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords));
+  hardened_memshred(share1_rand, kPentestP384MaskedPrivateKeyWords);
   TRY(hardened_mod_reduce(share1_rand, kP384Order,
                           kPentestP384MaskedPrivateKeyWords, share1));
 
@@ -1400,8 +1400,7 @@ status_t cryptolib_fi_ed25519_sign_impl(
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
   // Generate a random mask for share0
-  HARDENED_TRY(
-      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+  hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords);
 
   // Calculate share1 = key - share0 (implicitly modulo 2^256)
   HARDENED_TRY(
@@ -1541,8 +1540,7 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
   // Generate a random mask for share0
-  HARDENED_TRY(
-      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+  hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords);
 
   // Calculate share1 = key - share0 (implicitly modulo 2^256)
   HARDENED_TRY(
@@ -1605,8 +1603,7 @@ status_t cryptolib_fi_x25519_ecdh_impl(
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
   // Generate a random mask for share0
-  HARDENED_TRY(
-      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+  hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords);
 
   // Calculate share1 = key - share0 (implicitly modulo 2^256)
   HARDENED_TRY(
@@ -1699,8 +1696,7 @@ status_t cryptolib_fi_x25519_point_mul_impl(
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
   // Generate a random mask for share0
-  HARDENED_TRY(
-      hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords));
+  hardened_memshred(private_keyblob, kPentestEd25519MaskedPrivateKeyWords);
 
   // Calculate share1 = key - share0 (implicitly modulo 2^256)
   HARDENED_TRY(

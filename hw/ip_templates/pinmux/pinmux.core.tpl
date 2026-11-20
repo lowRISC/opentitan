@@ -17,6 +17,9 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_or_hardened
+    % if enable_strap_sampling:
+      - lowrisc:prim:mubi
+    % endif
       - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:prim:pad_attr
       - lowrisc:ip:jtag_pkg

@@ -11,7 +11,6 @@
       io_div4: 24000000
       main: 100000000
       io: 96000000
-      io_div2: 48000000
       usb: 48000000
     }
     reqs:
@@ -119,20 +118,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -204,20 +189,6 @@
         path: rst_lc_io_n
         parent: lc_src
         clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: lc_io_div4
@@ -449,20 +420,6 @@
         clock: io
       }
       {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
-      }
-      {
         name: por_io_div4
         gen: true
         type: top
@@ -534,20 +491,6 @@
         path: rst_lc_io_n
         parent: lc_src
         clock: io
-      }
-      {
-        name: lc_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rst_lc_io_div2_n
-        parent: lc_src
-        clock: io_div2
       }
       {
         name: lc_io_div4

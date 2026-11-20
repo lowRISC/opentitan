@@ -9,6 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:ram_1r1w_async_adv
+      - lowrisc:prim:util
+      - lowrisc:prim:ram_1r1w_pkg
     files:
       - rtl/prim_ram_1r1w_adv.sv
     file_type: systemVerilogSource

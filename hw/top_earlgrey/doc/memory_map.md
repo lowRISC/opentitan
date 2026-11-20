@@ -18,8 +18,9 @@ The main address space, shared between the CPU and DM
 | uart1           | default     | `0x40010000`   | `0x40`         | `0x10`         | uart1                          |
 | uart2           | default     | `0x40020000`   | `0x40`         | `0x10`         | uart2                          |
 | uart3           | default     | `0x40030000`   | `0x40`         | `0x10`         | uart3                          |
-| gpio            | default     | `0x40040000`   | `0x400`        | `0x100`        | gpio                           |
-| spi_device      | default     | `0x40050000`   | `0x2000`       | `0x800`        | spi_device                     |
+| gpio0           | default     | `0x40040000`   | `0x400`        | `0x100`        | gpio0                          |
+| gpio1           | default     | `0x40050000`   | `0x400`        | `0x100`        | gpio1                          |
+| spi_device      | default     | `0x40060000`   | `0x2000`       | `0x800`        | spi_device                     |
 | i2c0            | default     | `0x40080000`   | `0x80`         | `0x20`         | i2c0                           |
 | i2c1            | default     | `0x40090000`   | `0x80`         | `0x20`         | i2c1                           |
 | i2c2            | default     | `0x400A0000`   | `0x80`         | `0x20`         | i2c2                           |
@@ -52,7 +53,7 @@ The main address space, shared between the CPU and DM
 | kmac            | default     | `0x41120000`   | `0x1000`       | `0x400`        | kmac                           |
 | otbn            | default     | `0x41130000`   | `0x10000`      | `0x4000`       | otbn                           |
 | keymgr_dpe      | default     | `0x41140000`   | `0x200`        | `0x80`         | keymgr_dpe                     |
-| csrng           | default     | `0x41150000`   | `0x80`         | `0x20`         | csrng                          |
+| csrng           | default     | `0x41150000`   | `0x100`        | `0x40`         | csrng                          |
 | entropy_src     | default     | `0x41160000`   | `0x100`        | `0x40`         | entropy_src                    |
 | edn0            | default     | `0x41170000`   | `0x80`         | `0x20`         | edn0                           |
 | edn1            | default     | `0x41180000`   | `0x80`         | `0x20`         | edn1                           |

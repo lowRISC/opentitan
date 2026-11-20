@@ -9,8 +9,10 @@ package chip_common_pkg;
 
   // Chip composition (number of hardware resources).
   parameter dv_utils_pkg::uint NUM_GPIOS = 32;
+  parameter dv_utils_pkg::uint NUM_GPIO_INSTS = 2;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
+  parameter dv_utils_pkg::uint NUM_SPI_HOST_CSBS = 3;
   parameter dv_utils_pkg::uint NUM_I2CS = 3;
 
   // SW constants - use unmapped address space with at least 32 bytes.
@@ -112,7 +114,7 @@ package chip_common_pkg;
     top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
     top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
     top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
+    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb0 */
   };
 
   typedef struct packed {

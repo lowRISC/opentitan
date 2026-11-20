@@ -336,7 +336,7 @@ The following actions are taken when OTBN detects a fatal error:
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
-   - The current operation is marked as complete by setting [`INTR_STATE.done`](registers.md#intr_state).
+   - The current operation is marked as complete by setting [`INTR_STATE.done`](registers.md#intr_state), except during the initial secure wipe after reset.
 3. The [`STATUS`](registers.md#status) register is set to `LOCKED`.
 4. A [fatal alert](#alerts) is raised.
 
@@ -1008,7 +1008,7 @@ OTBN SW can perform a masking operation by following these steps (see also illus
 - Issue the `MAI_CTRL.START` command by writing a 1 to it.
   - The MAI will then start to push all 8 elements of the input WSRs sequentially into the masking accelerator.
   - As soon as the first result is available, the MAI will begin to overwrite the `MAI_RES_S0` / `MAI_RES_S1` WSRs with the new data.
-  - `MAI_CTRL.OPERATION` and any input data may not be changed as long as `MAI_STATUS.BUSY = 1`.
+  - `MAI_CTRL` may not be written as long as `MAI_STATUS.BUSY = 1`, and the input WSRs may not be written as long as `MAI_STATUS.INPUT_READY = 0`.
     Otherwise a SW error occurs, see below.
 - Poll until `MAI_STATUS.BUSY = 0`.
 - Read back the results from `MAI_RES_S0` / `MAI_RES_S1`.
@@ -1036,7 +1036,8 @@ The overlapping execution software flow is:
 - Repeat the steps starting with "Poll until `MAI_STATUS.INPUT_READY = 1`".
 
 This procedure can be even further optimized for secAdd, secAddMod, and A2B because their latency is deterministic and thus the polling can be replaced with the correct number of other instructions.
-It is only possible to overlap executions of the same type / configuration as `MAI_CTRL.OPERATION` must remain constant as long as `MAI_STATUS.BUSY = 1`.
+`MAI_CTRL.OPERATION` must remain constant as long as `MAI_STATUS.BUSY = 1`.
+A different operation can be selected together with the `MAI_CTRL.START` command of the next execution.
 
 The following image depicts the flow for multiple secAdd executions without any memory operations (to load data from/to WDRs / DMEM).
 A result with “1p” means that this WSR contains partial results (vector elements) / is being overwritten with results from the current conversion (2p for results of the second conversion, etc).
@@ -1052,13 +1053,16 @@ An erroneous use of the MAI will result in a `MAI_SOFTWARE_ERROR`.
 This will trigger an abortion of the OTBN execution with a secure wipe.
 
 The `MAI_SOFTWARE_ERROR` is triggered when:
-- `MAI_CTRL.OPERATION` contains an invalid selection when the `MAI_CTRL.START` bit is set.
-- The `MAI_CTRL.START` bit is set or `MAI_CTRL.OPERATION` is written to whilst `MAI_STATUS.BUSY = 1`.
+- A write to `MAI_CTRL` has an invalid `MAI_CTRL.OPERATION` value, whether or not the `MAI_CTRL.START` bit is set.
+- Any write to `MAI_CTRL` happens whilst `MAI_STATUS.BUSY = 1`.
 - A write to input WSRs is detected whilst `MAI_STATUS.INPUT_READY = 0`.
   - The `MAI_INx_Sy` registers are used as input buffers.
-    Modifying the register content can lead to unexpected results.
-- A write to the reserved section of `MAI_CTRL` is detected.
-  - Note that the MOD WSR must also remain constant but this is not checked for in HW.
+- A write to `MAI_CTRL` sets a reserved bit.
+
+Note that the MOD WSR must also remain constant but this is not checked for in HW.
+
+A write that triggers a `MAI_SOFTWARE_ERROR` has no effect on the MAI.
+It does not start an execution, change `MAI_CTRL.OPERATION` or change an input WSR.
 
 A write to the output WSRs whilst an operation is ongoing is on purpose not handled as an error.
 This allows clearing the output WSRs between two overlapping operations if this would be required for security reasons.
@@ -1076,6 +1080,78 @@ The WSRs are cleared with randomness and the CSRs are reset to their default val
 Letting the MAI end the execution is fine because the highest execution latency is 23 cycles.
 The secure wipe however only clears the WSRs and CSRs after at least 32 cycles (after URND reseeding and clearing GPRs / WDRs).
 Therefore it is ensured that any ongoing execution has a constant configuration and input data.
+
+### Keymgr interface
+The keymgr can use OTBN for HKDFs (HMAC based key derivation function) as an alternative to the KMAC based KDF running on the KMAC HWIP.
+For this OTBN exposes an app interface which is identical to a [static app interface](../../kmac/doc/theory_of_operation.md#application-interfaces) of KMAC HWIP.
+Once OTBN is loaded and started with a HKDF application, the keymgr can send the binding values over this interface.
+OTBN SW then accepts the data, computes the hash and sends it back to the keymgr.
+See the app interface documentation for more details about the protocol.
+
+The secret key required by the HKDF is not part of this interface.
+It must be provided through OTBN's existing key sideload mechanism.
+Note that HKDFs for advancing the keymgr state involve sensitive keys.
+Thus, the sideloading interface imposes special secure wipe behaviour if a sensitive key is provided.
+
+TODO: Document this sideloading.
+
+On the OTBN SW side, this interface is controlled via the following CSRs / WSRs, see also [here](../README.md#Control-and-Status-Registers-(CSRs)).
+- `KEYMGR_STATUS`
+- `KEYMGR_CTRL`
+- The message WSRs `KEYMGR_MSG_S0_L` / `KEYMGR_MSG_S0_H` and `KEYMGR_MSG_S1_L` / `KEYMGR_MSG_S1_H`.
+
+#### Receiving a message
+
+An OTBN SW can receive the HKDF message by:
+- Checking once at the start that any previous session is terminated properly by checking that `KEYMGR_STATUS.RECEIVING` and `KEYMGR_STATUS.SENDING` are 0.
+- Write any value to `KEYMGR_MSG_S0_L` to set a valid integrity.
+  - After a secure wipe, WSRs contain data without valid integrity.
+    SW must always write a value before attempting to read from WSRs (upper bits are not updated when a response arrives).
+- Issue the `KEYMGR_CTRL.START` command.
+- Poll until `KEYMGR_STATUS.MSG_VALID = 1`.
+- Check if `KEYMGR_STATUS.MSG_COMPLETE` is 1. If so:
+  - The message is completely received and no more requests are expected.
+  - Read `KEYMGR_STATUS.STRB` to determine which bytes of the last beat are valid.
+  - The protocol defines that all message beats must carry a full message except the last one.
+    The last one can be partial where `STRB` is contiguous and LSB-aligned.
+  - A strobe of zero on the last word represents an empty message.
+  - SW can now compute the response.
+- Read the current message beat from `KEYMGR_MSG_S0_L`.
+  - This clears `KEYMGR_STATUS.MSG_VALID` and the interface will accept the next beat if message isn't completely received yet.
+  - This must come after checking `KEYMGR_STATUS.MSG_COMPLETE` as it also invalidates `KEYMGR_STATUS.STRB`.
+- Repeat these steps until `KEYMGR_STATUS.MSG_COMPLETE` is 1.
+
+#### Sending a response
+
+A response can be sent once `KEYMGR_STATUS.MSG_COMPLETE = 1`.
+For this, OTBN SW should:
+- Write the response into `KEYMGR_MSG_S0_L` / `KEYMGR_MSG_S0_H` and `KEYMGR_MSG_S1_L` / `KEYMGR_MSG_S1_H`.
+- Issue `KEYMGR_CTRL.SEND`.
+- Wait until `KEYMGR_STATUS.SENDING = 0`.
+
+#### Handling errors and secure wipe behaviour
+
+In case an error occurs during the processing or receiving of the message, it is important that OTBN still terminates the session gracefully.
+This means the full message must be received and an error response must be sent back.
+
+If an error happens which does not crash SW, SW must:
+- If `KEYMGR_STATUS.RECEIVING = 1`, fully receive the message by continuously reading `KEYMGR_MSG_S0_L` until `KEYMGR_STATUS.MSG_COMPLETE = 1`.
+- If / once `KEYMGR_STATUS.MSG_COMPLETE = 1`, send an error response back by issuing `KEYMGR_CTRL.SEND_ERROR`.
+  - SW must write arbitrary data to the `KEYMGR_MSG_xx` WSRs first to set proper integrity for these WSRs.
+    After a secure wipe there is no valid integrity and sending a response would result in a fatal error.
+- Wait until `KEYMGR_STATUS.SENDING = 0`
+
+In case OTBN crashes, a secure wipe will initiate the same process.
+The message WSRs are overwritten with randomness twice like any other WSR.
+Due to this, a wipe that coincides with a pending response can change the response data while its `valid` is asserted.
+This would violate the valid locked-in principle.
+However, this is a rare corner case and is deliberately accepted because in this case the response is anyway discarded.
+In case of a secure wipe during a pending response, the error flag is also immediately asserted.
+
+Terminating the session requires the keymgr to accept the response.
+Thus this termination process could take arbitrarily long and a secure wipe can therefore finish before the session is terminated.
+It would then be possible for system SW to start another OTBN program before the session has been terminated.
+Therefore, any OTBN program must check that no session is ongoing before using the interface.
 
 ## References
 

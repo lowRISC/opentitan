@@ -39,6 +39,7 @@ extern "C" {
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
+                           otcrypto_key_mode_t key_mode,
                            const otcrypto_hash_mode_t hash_mode,
                            const uint8_t *message, size_t message_bytelen,
                            const uint8_t *label, size_t label_bytelen);
@@ -80,9 +81,10 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext);
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, uint32_t e, const uint32_t *n,
-                           const uint32_t *ciphertext, uint32_t checksum);
+status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
+                           const uint32_t *d0, const uint32_t *d1, uint32_t e,
+                           const uint32_t *n, const uint32_t *ciphertext,
+                           uint32_t checksum);
 
 /**
  * Waits for an RSA decryption to complete.
@@ -92,9 +94,8 @@ status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
  * from the OTBN application mode.
  *
  * The only supported padding mode is OAEP (see IETF RFC 8017, section 7.1.2).
- * Only fixed-length hash functions (i.e. the SHA-2 or SHA-3 families) are
- * supported. The mask generation function (MGF) is MGF1 with the hash function
- * indicated by `hash_mode`.
+ * Only SHA-1 and SHA-2 hash functions are supported. The mask generation
+ * function (MGF) is MGF1 with the hash function indicated by `hash_mode`.
  *
  * The caller must ensure that enough space is allocated at `plaintext` to hold
  * the largest possible plaintext, which is (as described in IETF RFC 8017,
@@ -117,7 +118,8 @@ status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
+status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
+                              const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_bytelen);

@@ -146,7 +146,10 @@ class RomFiSim(unittest.TestCase):
                 )
 
                 # We stop tracing when we execute the p256 verify in the otbn
-                trace_end_address = rom_parser.get_function_start_address("sc_otbn_cmd_run")
+                trace_end_address = (
+                    rom_parser.get_function_start_address("sc_otbn_cmd_run") or
+                    rom_parser.get_function_start_address("sc_otbn_execute_finish")
+                )
 
                 print(
                     "Start and stop addresses for the rom for trace 1: ",
@@ -425,9 +428,8 @@ if __name__ == "__main__":
         print(f"Error: Could not read source firmware: {e}")
         sys.exit(1)
 
-    # TODO: Make this adaptable to the shape of the manifest
-    # Currently the corruption can be in any of the 384 bytes after 384 first ones.
-    offset = 387
+    # Corrupt a byte inside manifest_t.ecdsa_signature (bytes 0..63).
+    offset = 3
     data[offset] ^= 0xFF
 
     try:

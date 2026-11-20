@@ -5,6 +5,8 @@
 // Overall flash wrapper
 //
 
+`include "prim_assert.sv"
+
 module prim_flash #(
   parameter int NumBanks       = 2,  // number of banks
   parameter int InfosPerBank   = 1,  // info pages per bank

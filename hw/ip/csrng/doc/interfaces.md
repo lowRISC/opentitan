@@ -21,17 +21,17 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Interrupt Name   | Type   | Description                                                                                                                         |
 |:-----------------|:-------|:------------------------------------------------------------------------------------------------------------------------------------|
-| cs_cmd_req_done  | Event  | Asserted when a command request is completed.                                                                                       |
+| cs_cmd_req_done  | Event  | Asserted when a command request is completed, or when a CSRNG instance halted via INT_STATE_HALT has quiesced.                      |
 | cs_entropy_req   | Event  | Asserted when a request for entropy has been made.                                                                                  |
 | cs_hw_inst_exc   | Event  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                                     |
 | cs_fatal_err     | Event  | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](registers.md#err_code) register to get more information. |
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                               |
-|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| recov_alert  | This alert is triggered when a recoverable alert occurs.  Check the [`RECOV_ALERT_STS`](registers.md#recov_alert_sts) register to get more information.                                   |
-| fatal_alert  | This alert triggers (i) if an illegal state machine state is reached, or (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity failure is detected on the TL-UL bus. |
+| Alert Name   | Description                                                                                                                                                                                                                                           |
+|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| recov_alert  | This alert is triggered when a recoverable alert occurs.  Check the [`RECOV_ALERT_STS`](registers.md#recov_alert_sts) register to get more information.                                                                                               |
+| fatal_alert  | This alert triggers (i) if an illegal state machine state is reached, or (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity failure is detected on the TL-UL bus, or (iv) if a FIFO error is detected while CSRNG is enabled. |
 
 ## Security Countermeasures
 
@@ -42,8 +42,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | CSRNG.CMD_STAGE.FSM.SPARSE          | The CSRNG command stage state machines use a sparse state encoding.                                                                                                                                                                                                 |
 | CSRNG.MAIN_SM.FSM.SPARSE            | The CSRNG main state machine uses a sparse state encoding.                                                                                                                                                                                                          |
 | CSRNG.CTR_DRBG.FSM.SPARSE           | The CTR DRBG state machine uses a sparse state encoding.                                                                                                                                                                                                            |
-| CSRNG.GEN_CMD.CTR.REDUN             | The generate command uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                                                                    |
 | CSRNG.CTR_DRBG.CTR.REDUN            | The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                                                                  |
+| CSRNG.STATE_DB.CTR.REDUN            | The [`INT_STATE_VAL`](registers.md#int_state_val) word pointer uses a counter that is protected by a second counter that counts in the opposite direction.                                                                                                          |
 | CSRNG.CTRL.MUBI                     | Multi-bit field used for selection control.                                                                                                                                                                                                                         |
 | CSRNG.MAIN_SM.CTR.LOCAL_ESC         | A mismatch detected inside any CSRNG counter moves the  main state machine into a terminal error state.                                                                                                                                                             |
 | CSRNG.CONSTANTS.LC_GATED            | Seed diversification based on the lifecycle state.                                                                                                                                                                                                                  |

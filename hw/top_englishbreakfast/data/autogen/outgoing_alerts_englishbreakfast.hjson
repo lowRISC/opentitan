@@ -25,8 +25,8 @@
             lpg_idx: 0
         }
         {
-            name: gpio_fatal_fault
-            module_name: gpio
+            name: gpio0_fatal_fault
+            module_name: gpio0
             index: 2
             type: alert
             async: 1

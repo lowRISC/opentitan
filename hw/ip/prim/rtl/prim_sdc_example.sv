@@ -39,8 +39,6 @@
 // 5. lc_en_i, mubi_i signals can only be connected to variables, or legal mubi/lc values
 // e.g. grep -oE '(\.lc_en_i|\.mubi_i) \([^)]+'  netlist.v
 
-`include "prim_assert.sv"
-
 module prim_sdc_example #(
   localparam int unsigned Width = 8, // these localparams are constant, don't override
   localparam int unsigned NumSender = 4,

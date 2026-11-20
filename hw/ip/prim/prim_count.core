@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:flop
     files:
       - rtl/prim_count_pkg.sv
       - rtl/prim_count.sv

@@ -12,6 +12,7 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:secded
       - lowrisc:prim:ram_2p
+      - lowrisc:prim:ram_2p_pkg
     files:
       - rtl/prim_ram_2p_async_adv.sv
     file_type: systemVerilogSource

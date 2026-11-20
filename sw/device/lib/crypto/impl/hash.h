@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,9 +29,6 @@ typedef struct hash_info {
   const uint8_t *der_oid;
   /// Byte-length of the DER DigestInfo OID prefix.
   size_t der_oid_len;
-  /// One-shot compute function pointer.
-  otcrypto_status_t (*compute)(const otcrypto_const_byte_buf_t *,
-                               otcrypto_hash_digest_t *);
 } hash_info_t;
 
 /**
@@ -44,7 +42,10 @@ OT_WARN_UNUSED_RESULT
 status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info);
 
 /**
- * Computes a digest of a message using the centralized hash dispatch table.
+ * Computes a digest of a message using the streaming hash interface.
+ *
+ * Supports `kOtcryptoHashModeSha1`, `kOtcryptoHashModeSha256`,
+ * `kOtcryptoHashModeSha384`, and `kOtcryptoHashModeSha512`.
  *
  * The caller should allocate space for the digest buffer (`digest_data`) of
  * sufficient size (up to 16 words / 64 bytes) and pass an output `digest`
@@ -62,6 +63,38 @@ OT_WARN_UNUSED_RESULT
 status_t hash_message(otcrypto_hash_mode_t hash_mode,
                       const otcrypto_const_byte_buf_t *message,
                       uint32_t *digest_data, otcrypto_hash_digest_t *digest);
+
+/**
+ * Finalizes a streaming hash context into `digest_data` and `digest`, and
+ * shreds `ctx`.
+ *
+ * @param ctx Initialized streaming hash context (shredded on exit).
+ * @param[out] digest_data Buffer to hold output digest words (at least 16
+ * words).
+ * @param[out] digest Output digest struct.
+ * @return OTCRYPTO_OK or error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
+                            otcrypto_hash_digest_t *digest);
+
+/**
+ * Computes a SHA-2 digest using the hardware HMAC/SHA-2 streaming driver
+ * without invoking outer CMVP/lock state hooks or linking software SHA-1,
+ * while still enforcing the SHA-2 FIPS health check.
+ *
+ * Supports `kOtcryptoHashModeSha256`, `kOtcryptoHashModeSha384`, and
+ * `kOtcryptoHashModeSha512`.
+ *
+ * @param hash_mode SHA-2 algorithm to use.
+ * @param message Input message buffer.
+ * @param[out] digest Output buffer (`digest_wordlen` words for `hash_mode`).
+ * @return OTCRYPTO_OK or error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t sha2_message(otcrypto_hash_mode_t hash_mode,
+                      const otcrypto_const_byte_buf_t *message,
+                      uint32_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -239,7 +239,6 @@ module chip_englishbreakfast_cw305 #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [13:0] dio_in_raw;
 
@@ -422,7 +421,6 @@ module chip_englishbreakfast_cw305 #(
     .clk_scan_i(ast_base_clks.clk_sys),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -832,7 +830,6 @@ module chip_englishbreakfast_cw305 #(
     // pinmux related
     .padmux2ast_i          ( pad2ast    ),
     .ast2padmux_o          ( ast2pinmux ),
-    .mux_iob_sel_o         ( mux_iob_sel ),
     .ext_freq_is_96m_i     ( hi_speed_sel ),
     .all_clk_byp_req_i     ( all_clk_byp_req  ),
     .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
@@ -986,10 +983,10 @@ module chip_englishbreakfast_cw305 #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

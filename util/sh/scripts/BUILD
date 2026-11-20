@@ -9,3 +9,9 @@ exports_files([
     "bin2c.sh",
     "c.hexdump",
 ])
+
+sh_binary(
+    name = "bin2c",
+    srcs = ["bin2c.sh"],
+    data = ["c.hexdump"],
+)

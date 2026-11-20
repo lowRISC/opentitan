@@ -286,11 +286,43 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   assign prio[187] = reg2hw.prio[187].q;
   assign prio[188] = reg2hw.prio[188].q;
   assign prio[189] = reg2hw.prio[189].q;
+  assign prio[190] = reg2hw.prio[190].q;
+  assign prio[191] = reg2hw.prio[191].q;
+  assign prio[192] = reg2hw.prio[192].q;
+  assign prio[193] = reg2hw.prio[193].q;
+  assign prio[194] = reg2hw.prio[194].q;
+  assign prio[195] = reg2hw.prio[195].q;
+  assign prio[196] = reg2hw.prio[196].q;
+  assign prio[197] = reg2hw.prio[197].q;
+  assign prio[198] = reg2hw.prio[198].q;
+  assign prio[199] = reg2hw.prio[199].q;
+  assign prio[200] = reg2hw.prio[200].q;
+  assign prio[201] = reg2hw.prio[201].q;
+  assign prio[202] = reg2hw.prio[202].q;
+  assign prio[203] = reg2hw.prio[203].q;
+  assign prio[204] = reg2hw.prio[204].q;
+  assign prio[205] = reg2hw.prio[205].q;
+  assign prio[206] = reg2hw.prio[206].q;
+  assign prio[207] = reg2hw.prio[207].q;
+  assign prio[208] = reg2hw.prio[208].q;
+  assign prio[209] = reg2hw.prio[209].q;
+  assign prio[210] = reg2hw.prio[210].q;
+  assign prio[211] = reg2hw.prio[211].q;
+  assign prio[212] = reg2hw.prio[212].q;
+  assign prio[213] = reg2hw.prio[213].q;
+  assign prio[214] = reg2hw.prio[214].q;
+  assign prio[215] = reg2hw.prio[215].q;
+  assign prio[216] = reg2hw.prio[216].q;
+  assign prio[217] = reg2hw.prio[217].q;
+  assign prio[218] = reg2hw.prio[218].q;
+  assign prio[219] = reg2hw.prio[219].q;
+  assign prio[220] = reg2hw.prio[220].q;
+  assign prio[221] = reg2hw.prio[221].q;
 
   //////////////////////
   // Interrupt Enable //
   //////////////////////
-  for (genvar s = 0; s < 190; s++) begin : gen_ie0
+  for (genvar s = 0; s < 222; s++) begin : gen_ie0
     assign ie[0][s] = reg2hw.ie0[s].q;
   end
 
@@ -316,7 +348,7 @@ module rv_plic import rv_plic_reg_pkg::*; #(
   ////////
   // IP //
   ////////
-  for (genvar s = 0; s < 190; s++) begin : gen_ip
+  for (genvar s = 0; s < 222; s++) begin : gen_ip
     assign hw2reg.ip[s].de = 1'b1; // Always write
     assign hw2reg.ip[s].d  = ip[s];
   end

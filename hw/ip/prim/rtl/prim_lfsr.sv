@@ -18,7 +18,7 @@
 // the state will be reseeded in the next cycle using the lockup protection mechanism.
 // Note that the external seed input takes precedence over internal state updates.
 //
-// All polynomials up to 34 bit in length have been verified in simulation.
+// All polynomials have been checked to be primitive (i.e. to yield a maximum-length sequence).
 //
 // Refs: [1] https://en.wikipedia.org/wiki/Linear-feedback_shift_register
 //       [2] https://users.ece.cmu.edu/~koopman/lfsr/
@@ -174,7 +174,7 @@ module prim_lfsr #(
        168'h5000000000028000000000000,
        168'h8000000004000000000000000,
        168'h18600000000000000000000000,
-       168'h30000000000000000C00000000,
+       168'h30000000000000000003000000,
        168'h40200000000000000000000000,
        168'hC0300000000000000000000000,
        168'h100010000000000000000000000,

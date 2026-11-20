@@ -35,6 +35,8 @@ class spi_segment_item extends uvm_sequence_item;
   spi_segment_type_e            seg_type           = Data;
   rand spi_host_command_t       command_reg;
   rand bit                [7:0] spi_data      [$];
+  // The value of the CSID register when the scoreboard saw the COMMAND write
+  int unsigned                  csid               = 0;
 
   constraint command_reg_direction_c {
     //make sure the direction matches the segtype /cmd address are always tx/standard
@@ -139,6 +141,7 @@ class spi_segment_item extends uvm_sequence_item;
     command_reg.mode      = rhs_.command_reg.mode;
     command_reg.len       = rhs_.command_reg.len;
     spi_data              = rhs_.spi_data;
+    csid                  = rhs_.csid;
   endfunction
 
 
@@ -159,6 +162,7 @@ class spi_segment_item extends uvm_sequence_item;
     txt = {txt, $sformatf("\n ----| Mode: %s", command_reg.mode.name)};
     txt = {txt, $sformatf("\n ----| CSAAT: %d", command_reg.csaat)};
     txt = {txt, $sformatf("\n ----| Direction: %s", command_reg.direction.name)};
+    txt = {txt, $sformatf("\n ----| CSID: %0d", csid)};
     txt = {txt, $sformatf("\n ----| DATA |----")};
     foreach (spi_data[i]) begin
       txt = {txt, $sformatf("\n ----| [%d] %2h |----", i, spi_data[i])};

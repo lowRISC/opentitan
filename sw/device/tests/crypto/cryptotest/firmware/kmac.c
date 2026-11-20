@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/integrity.h"
@@ -37,6 +38,7 @@ static const uint32_t kTestMask[48] = {
 };
 
 status_t handle_kmac(ujson_t *uj) {
+  TRY(kmac_hwip_default_configure());
   // Declare test arguments
   cryptotest_kmac_mode_t uj_mode;
   cryptotest_kmac_required_tag_length_t uj_required_tag_length;

@@ -227,6 +227,28 @@ package otp_ctrl_mem_bkdr_util_pkg;
     mem_bkdr_util_h.write64(Secret2DigestOffset, digest);
   endfunction
 
+  function automatic void otp_write_secret3_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
+      bit [FieldEntropySize*8-1:0] field_entropy
+  );
+    bit [Secret3DigestSize*8-1:0] digest;
+    bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
+    bit [FieldEntropySize*8-1:0] scrambled_field_entropy;
+
+    for (int i = 0; i < FieldEntropySize; i += 8) begin
+      scrambled_field_entropy[i*8+:64] = scramble_data(
+          field_entropy[i*8+:64], Secret3Idx);
+      mem_bkdr_util_h.write64(i + FieldEntropyOffset,
+                              scrambled_field_entropy[i*8+:64]);
+    end
+
+    partition_data = {<<32{
+      scrambled_field_entropy
+    }};
+    digest = cal_digest(Secret3Idx, partition_data);
+    mem_bkdr_util_h.write64(Secret3DigestOffset, digest);
+  endfunction
+
   // Functions that clear the provisioning state of the buffered partitions.
   // This is useful in tests that make front-door accesses for provisioning purposes.
   function automatic void otp_clear_hw_cfg0_partition(
@@ -266,6 +288,14 @@ package otp_ctrl_mem_bkdr_util_pkg;
   );
     for (int i = 0; i < Secret2Size; i += 4) begin
       mem_bkdr_util_h.write32(i + Secret2Offset, 32'h0);
+    end
+  endfunction
+
+  function automatic void otp_clear_secret3_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
+  );
+    for (int i = 0; i < Secret3Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + Secret3Offset, 32'h0);
     end
   endfunction
 

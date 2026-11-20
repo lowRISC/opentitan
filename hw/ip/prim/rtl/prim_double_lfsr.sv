@@ -6,6 +6,8 @@
 // The state vector of both LFSRs is constantly checked and an error is asserted if the
 // two states are inconsistent.
 
+`include "prim_assert.sv"
+
 module prim_double_lfsr #(
   // prim_lfsr parameters - refer to prim_lfsr for their meaning/
   parameter                    LfsrType     = "GAL_XOR",

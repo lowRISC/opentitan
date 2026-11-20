@@ -73,12 +73,15 @@ interface csrng_if (input clk, input rst_n);
   task automatic wait_cmd_ack_or_rst_n();
     // Immediately return if reset is currently not inactive.
     if (rst_n !== 1'b1) return;
-    // Otherwise wait for cmd_ack or negedge of reset, whichever comes first.
-    fork
-      wait_cmd_ack();
-      do @(clk); while (rst_n === 1'b1); // @(negedge rst_n) does not trigger for some reason
-    join_any
-    disable fork;
+    // Otherwise wait for cmd_ack or negedge of reset, whichever comes first. The isolation fork
+    // makes sure that `disable fork` doesn't kill other processes spawned by the caller.
+    fork begin : isolation_fork
+      fork
+        wait_cmd_ack();
+        do @(clk); while (rst_n === 1'b1); // @(negedge rst_n) does not trigger for some reason
+      join_any
+      disable fork;
+    end join
   endtask
 
 endinterface

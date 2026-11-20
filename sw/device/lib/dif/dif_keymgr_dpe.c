@@ -6,6 +6,7 @@
 
 #include <assert.h>
 
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/dif/dif_base.h"
 
 #include "hw/top/keymgr_dpe_regs.h"  // Generated.
@@ -74,6 +75,18 @@ static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_6_REG_OFFSET ==
 static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_7_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 28,
               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_8_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 32,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_9_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 36,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_10_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 40,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_11_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 44,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
 
 static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_1_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 4,
@@ -96,6 +109,25 @@ static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_6_REG_OFFSET ==
 static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 28,
               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_8_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 32,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_9_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 36,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_10_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 40,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_11_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 44,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+
+static_assert(sizeof(((dif_keymgr_dpe_output_t *)0)->value[0]) ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_MULTIREG_COUNT * sizeof(uint32_t),
+              "dif_keymgr_dpe_output_t share 0 size must match the HW.");
+static_assert(sizeof(((dif_keymgr_dpe_output_t *)0)->value[1]) ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT * sizeof(uint32_t),
+              "dif_keymgr_dpe_output_t share 1 size must match the HW.");
 
 static_assert(KEYMGR_DPE_METADATA_LOW_1_REG_OFFSET ==
                   KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + 4,
@@ -184,10 +216,6 @@ dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
     return kDifLocked;
   }
 
-  // TODO(#30667): Verify if the max key version needs to be written here too!
-  //              When loading the UDS the RTL fetches the max key version from
-  //              the SW register. Verify that the lock is released when the
-  //              version register is locked.
   uint32_t reg_control = bitfield_field32_write(
       KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
       KEYMGR_DPE_CONTROL_SHADOWED_SLOT_DST_SEL_FIELD, slot_dst_sel);
@@ -525,6 +553,53 @@ dif_result_t dif_keymgr_dpe_configure(const dif_keymgr_dpe_t *keymgr_dpe,
   mmio_region_write32_shadowed(keymgr_dpe->base_addr,
                                KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
                                reg_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_set_kdf_engine(const dif_keymgr_dpe_t *keymgr_dpe,
+                                           dif_keymgr_dpe_kdf_engine_t engine) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  multi_bit_bool_t sel;
+  switch (engine) {
+    case kDifKeymgrDpeKdfEngineKmac:
+      sel = kMultiBitBool4False;
+      break;
+    case kDifKeymgrDpeKdfEngineOtbn:
+      sel = kMultiBitBool4True;
+      break;
+    default:
+      return kDifBadArg;
+  }
+
+  // Verify if the register is unlocked
+  uint32_t kdf_engine_regwen = mmio_region_read32(
+      keymgr_dpe->base_addr, KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET);
+  if (!bitfield_bit32_read(kdf_engine_regwen,
+                           KEYMGR_DPE_KDF_ENGINE_REGWEN_EN_BIT)) {
+    return kDifLocked;
+  }
+
+  uint32_t reg_val =
+      bitfield_field32_write(0, KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_FIELD, sel);
+  mmio_region_write32_shadowed(keymgr_dpe->base_addr,
+                               KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+                               reg_val);
+
+  return kDifOk;
+}
+
+dif_result_t dif_keymgr_dpe_lock_kdf_engine(
+    const dif_keymgr_dpe_t *keymgr_dpe) {
+  if (keymgr_dpe == NULL) {
+    return kDifBadArg;
+  }
+
+  mmio_region_write32(keymgr_dpe->base_addr,
+                      KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
 
   return kDifOk;
 }

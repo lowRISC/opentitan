@@ -11,6 +11,8 @@ filesets:
       - rtl/i3c_consts_pkg.sv
       - rtl/i3c_reg_pkg.sv
       - rtl/i3c_pkg.sv
+      - rtl/i3c_hci_pkg.sv
+      - rtl/i3c_tti_pkg.sv
     file_type: systemVerilogSource
 
 targets:

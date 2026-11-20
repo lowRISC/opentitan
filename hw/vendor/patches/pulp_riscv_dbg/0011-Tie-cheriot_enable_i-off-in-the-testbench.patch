@@ -1,0 +1,19 @@
+From 8966697ca9b09ed5a8989c69b7a4854fdfec5b08 Mon Sep 17 00:00:00 2001
+From: Samuel Riedel <sriedel@lowrisc.org>
+Date: Thu, 1 Oct 2026 17:24:41 +0200
+Subject: [PATCH 11/11] Tie cheriot_enable_i off in the testbench
+
+Signed-off-by: Samuel Riedel <sriedel@lowrisc.org>
+
+diff --git a/tb/tb_test_env.sv b/tb/tb_test_env.sv
+index 9ac8f28..dc30ad3 100644
+--- a/tb/tb_test_env.sv
++++ b/tb/tb_test_env.sv
+@@ -246,6 +246,7 @@ module tb_test_env #(
+        .clk_i             ( clk_i             ),
+        .rst_ni            ( rst_ni            ),
+        .next_dm_addr_i    ( '0                ),
++       .cheriot_enable_i  ( prim_mubi_pkg::MuBi4False ),
+        .testmode_i        ( 1'b0              ),
+        .ndmreset_o        ( ndmreset          ),
+        .dmactive_o        (                   ), // active debug session TODO

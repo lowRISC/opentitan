@@ -34,6 +34,7 @@ extern "C" {
 #define CRYPTOLIBFISYM_SUBCOMMAND(_, value) \
     value(_, Aes) \
     value(_, Cmac) \
+    value(_, CmacKdf) \
     value(_, Gcm) \
     value(_, Tdes) \
     value(_, Hmac) \
@@ -91,6 +92,30 @@ UJSON_SERDE_STRUCT(CryptoLibFiSymCmacIn, cryptolib_fi_sym_cmac_in_t, CRYPTOLIBFI
     field(ast_alerts, uint32_t, 2) \
     field(cfg, size_t)
 UJSON_SERDE_STRUCT(CryptoLibFiSymCmacOut, cryptolib_fi_sym_cmac_out_t, CRYPTOLIBFISYM_CMAC_OUT);
+
+#define CRYPTOLIBFISYM_CMAC_KDF_IN(field, string) \
+    field(label, uint8_t, AES_CMD_MAX_MSG_BYTES) \
+    field(label_len, size_t) \
+    field(context, uint8_t, AES_CMD_MAX_MSG_BYTES) \
+    field(context_len, size_t) \
+    field(key, uint8_t, AES_CMD_MAX_KEY_BYTES) \
+    field(key_len, size_t) \
+    field(out_len, size_t) \
+    field(cfg, size_t) \
+    field(trigger, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymCmacKdfIn, cryptolib_fi_sym_cmac_kdf_in_t, CRYPTOLIBFISYM_CMAC_KDF_IN);
+
+#define CRYPTOLIBFISYM_CMAC_KDF_OUT(field, string) \
+    field(magic, uint32_t) \
+    field(data, uint8_t, AES_CMD_MAX_KEY_BYTES) \
+    field(data_len, size_t) \
+    field(status, size_t) \
+    field(alerts, uint32_t, 3) \
+    field(loc_alerts, uint32_t) \
+    field(err_status, uint32_t) \
+    field(ast_alerts, uint32_t, 2) \
+    field(cfg, size_t)
+UJSON_SERDE_STRUCT(CryptoLibFiSymCmacKdfOut, cryptolib_fi_sym_cmac_kdf_out_t, CRYPTOLIBFISYM_CMAC_KDF_OUT);
 
 #define CRYPTOLIBFISYM_GCM_IN(field, string) \
     field(data, uint8_t, AES_CMD_MAX_MSG_BYTES) \

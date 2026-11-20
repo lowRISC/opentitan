@@ -22,7 +22,7 @@
  * @param[in]  w31: all-zero
  * @param[out] dmem[dptr_c..dptr_c+(n*2*32)]: result, LCM(a,b)
  *
- * clobbered registers: x2 to x8, x20 to x25, w20 to w25
+ * clobbered registers: x2 to x8, x20 to x25, x31, w20 to w25
  * clobbered flag groups: FG0
  */
 lcm:
@@ -76,6 +76,7 @@ lcm:
 
   /* dmem[x12..x12+(n*2*32) <= dmem[x10..x10+(n*32)] * dmem[x11..x11+(n*32)]
                              = floor(a / GCD(a,b)) * b = LCM(a,b) */
+  addi     x31, x30, 0
   jal      x1, bignum_mul
 
   ret

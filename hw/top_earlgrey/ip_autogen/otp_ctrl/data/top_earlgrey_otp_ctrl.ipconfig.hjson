@@ -11,8 +11,8 @@
       otp:
       {
         width: 2
-        depth: 1032
-        size: 2064
+        depth: 1072
+        size: 2144
         addr_width: 11
         byte_addr_width: 12
       }
@@ -33,6 +33,10 @@
           }
           {
             name: Secret2Key
+            value: <random>
+          }
+          {
+            name: Secret3Key
             value: <random>
           }
         ]
@@ -59,7 +63,7 @@
             cnst_value: <random>
           }
         ]
-        num_keys: 3
+        num_keys: 4
         num_digests: 4
       }
       partitions:
@@ -2106,7 +2110,7 @@
             {
               name: CREATOR_ROOT_KEY_SHARE0
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
@@ -2117,18 +2121,18 @@
             {
               name: CREATOR_ROOT_KEY_SHARE1
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 1928
+              offset: 1944
             }
             {
               name: SECRET2_DIGEST
               size: 8
-              offset: 1960
+              offset: 1992
               ismubi: false
               isdigest: true
               iszer: false
@@ -2139,7 +2143,7 @@
             {
               name: SECRET2_ZER
               size: 8
-              offset: 1968
+              offset: 2000
               ismubi: false
               isdigest: false
               iszer: true
@@ -2156,8 +2160,69 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
-          size: 96
+          size: 128
           offset: 1880
+        }
+        {
+          name: SECRET3
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          ignore_read_lock_in_rma: true
+          key_sel: Secret3Key
+          integrity: true
+          bkout_type: false
+          skip_sw_header: true
+          zeroizable: true
+          items:
+          [
+            {
+              name: FIELD_ENTROPY
+              inv_default: <random>
+              size: 32
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 2008
+            }
+            {
+              name: SECRET3_DIGEST
+              size: 8
+              offset: 2040
+              ismubi: false
+              isdigest: true
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET3_ZER
+              size: 8
+              offset: 2048
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 3.
+            This contains the field entropy consumed by the keymgr_dpe CreatorInt boot stage.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 48
+          offset: 2008
         }
         {
           name: LIFE_CYCLE
@@ -2183,7 +2248,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1976
+              offset: 2056
             }
             {
               name: LC_STATE
@@ -2194,7 +2259,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 2024
+              offset: 2104
             }
           ]
           desc:
@@ -2214,7 +2279,7 @@
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
           size: 88
-          offset: 1976
+          offset: 2056
         }
       ]
     }

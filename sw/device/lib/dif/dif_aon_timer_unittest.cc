@@ -227,7 +227,7 @@ TEST_F(WatchdogStartTest, SuccessLock) {
                      {AON_TIMER_WDOG_CTRL_ENABLE_BIT, true},
                  });
 
-  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(
       dif_aon_timer_watchdog_start(&aon_, 0xA5A5A5A5, 0x5A5A5A5A, false, true));
@@ -245,7 +245,7 @@ TEST_F(WatchdogStartTest, SuccessPauseInSleepAndLock) {
                      {AON_TIMER_WDOG_CTRL_ENABLE_BIT, true},
                  });
 
-  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(
       dif_aon_timer_watchdog_start(&aon_, 0xA5A5A5A5, 0x5A5A5A5A, true, true));
@@ -336,7 +336,7 @@ TEST_F(WatchdogLockTest, NullArgs) {
 }
 
 TEST_F(WatchdogLockTest, Success) {
-  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 1);
+  EXPECT_WRITE32(AON_TIMER_WDOG_REGWEN_REG_OFFSET, 0);
 
   EXPECT_DIF_OK(dif_aon_timer_watchdog_lock(&aon_));
 }

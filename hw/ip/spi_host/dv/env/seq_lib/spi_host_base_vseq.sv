@@ -483,10 +483,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   // update spi_agent registers
   virtual function void update_spi_agent_regs();
-    cfg.m_spi_agent_cfg.sck_polarity[0] = spi_config_regs.cpol;
-    cfg.m_spi_agent_cfg.sck_phase[0]    = spi_config_regs.cpha;
-    cfg.m_spi_agent_cfg.full_cyc[0]     = spi_config_regs.fullcyc;
-    cfg.m_spi_agent_cfg.csn_lead[0]     = spi_config_regs.csnlead;
+    // CONFIGOPTS applies to all CSB lines.
+    for (int i = 0; i < SPI_HOST_NUM_CS; i++) begin
+      cfg.m_spi_agent_cfg.sck_polarity[i] = spi_config_regs.cpol;
+      cfg.m_spi_agent_cfg.sck_phase[i]    = spi_config_regs.cpha;
+      cfg.m_spi_agent_cfg.full_cyc[i]     = spi_config_regs.fullcyc;
+      cfg.m_spi_agent_cfg.csn_lead[i]     = spi_config_regs.csnlead;
+    end
     cfg.m_spi_agent_cfg.csid            = spi_host_ctrl_reg.csid;
     cfg.m_spi_agent_cfg.spi_mode        = spi_host_command_reg.mode;
     cfg.m_spi_agent_cfg.decode_commands = 1'b1;

@@ -79,9 +79,6 @@ def _reformat_flash_vmem(
         raise Exception(f"Unable to open {flash_vmem_file}")
     flash_vmem_lines = re.findall(r"^@.*$", flash_vmem, flags=re.MULTILINE)
 
-    # Load project SECDED configuration.
-    ecc_configs = secded_gen.load_secded_config()
-
     # Add integrity/reliability ECC, and potentially scramble, each flash word.
     reformatted_vmem_lines = []
     for line in flash_vmem_lines:
@@ -100,8 +97,9 @@ def _reformat_flash_vmem(
             else:
                 data = int(item, 16)
                 # `data_w_intg_ecc` will be in format {ECC bits, data bits}.
+                # Integrity ECC is before XEX scrambling so we expect repeated words.
                 data_w_intg_ecc, _ = secded_gen.ecc_encode(
-                    ecc_configs, "hamming", FLASH_WORD_SIZE, data)
+                    "hamming", FLASH_WORD_SIZE, data, cache=True)
                 # Due to storage constraints the first nibble of ECC is dropped.
                 data_w_intg_ecc &= 0xF_FFFF_FFFF_FFFF_FFFF
                 if scrambling_configs.scrambling_enabled:
@@ -110,12 +108,15 @@ def _reformat_flash_vmem(
                                          scrambling_configs.addr_key,
                                          scrambling_configs.data_key)
                     data_w_intg_ecc = intg_ecc | data
+                # If scrambling is enabled, the address is mixed into the words, so we
+                # don't expect repeat words from e.g. padding/zeroes.
+                expect_repeats = not scrambling_configs.scrambling_enabled
                 # `data_w_full_ecc` will be in format {reliability ECC bits,
                 # integrity ECC bits, data bits}.
                 data_w_full_ecc, _ = secded_gen.ecc_encode(
-                    ecc_configs, "hamming",
+                    "hamming",
                     FLASH_WORD_SIZE + FLASH_INTEGRITY_ECC_SIZE,
-                    data_w_intg_ecc)
+                    data_w_intg_ecc, cache=expect_repeats)
                 reformatted_line += str.format(VMEM_FORMAT_STR,
                                                data_w_full_ecc)
                 address_offset += 1

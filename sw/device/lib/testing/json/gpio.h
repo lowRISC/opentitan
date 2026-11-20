@@ -31,20 +31,30 @@ extern "C" {
 UJSON_SERDE_ENUM(GpioAction, gpio_action_t, ENUM_GPIO_SET_ACTION);
 
 #define STRUCT_GPIO_SET(field, string) \
+    field(instance, uint8_t) \
     field(action, gpio_action_t) \
     field(pin_mask, uint32_t) \
     field(state, uint32_t)
 UJSON_SERDE_STRUCT(GpioSet, gpio_set_t, STRUCT_GPIO_SET);
+
+#define STRUCT_GPIO_GET_REQUEST(field, string) \
+    field(instance, uint8_t)
+UJSON_SERDE_STRUCT(GpioGetRequest, gpio_get_request_t, STRUCT_GPIO_GET_REQUEST);
 
 #define STRUCT_GPIO_GET(field, string) \
     field(state, uint32_t)
 UJSON_SERDE_STRUCT(GpioGet, gpio_get_t, STRUCT_GPIO_GET);
 
 #ifndef RUST_PREPROCESSOR_EMIT
-#include "sw/device/lib/dif/dif_gpio.h"
-
-status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio);
-status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio);
+/**
+ * Applies a `gpio_set_t` command to the GPIO instance selected in the command.
+ */
+status_t gpio_set(ujson_t *uj);
+/**
+ * Reads all pins of the GPIO instance selected in a `gpio_get_request_t` and
+ * responds with a `gpio_get_t`.
+ */
+status_t gpio_get(ujson_t *uj);
 #endif
 
 #undef MODULE_ID

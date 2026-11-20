@@ -39,7 +39,8 @@ class keymgr_dpe_common_vseq extends keymgr_dpe_base_vseq;
   virtual protected task read_and_check_all_csrs_after_reset();
     // need to set keymgr_en to be On, before it can be read back with correct init values
     cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key, do_rand_secondary_root_key,
-                            do_invalid_secondary_root_key);
+                            do_invalid_secondary_root_key, do_rand_field_entropy,
+                            do_unprovisioned_field_entropy);
     delay_after_reset_before_access_csr();
 
     super.read_and_check_all_csrs_after_reset();
@@ -129,16 +130,16 @@ class keymgr_dpe_common_vseq extends keymgr_dpe_base_vseq;
           $asserton(0, "tb.dut.u_ctrl.DataEn_A");
           $asserton(0, "tb.dut.u_ctrl.DataEnDis_A");
           $asserton(0, "tb.dut.u_ctrl.CntZero_A");
+          $asserton(0, "tb.dut.u_ctrl.CntInRange_A");
           $asserton(0, "tb.dut.u_kmac_if.LastStrb_A");
-          $asserton(0, "tb.dut.KmacDataKnownO_A");
         end else begin
           $assertoff(0, "tb.kmac_if");
           $assertoff(0, "tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEn_A");
           $assertoff(0, "tb.dut.u_ctrl.DataEnDis_A");
           $assertoff(0, "tb.dut.u_ctrl.CntZero_A");
+          $assertoff(0, "tb.dut.u_ctrl.CntInRange_A");
           $assertoff(0, "tb.dut.u_kmac_if.LastStrb_A");
-          $assertoff(0, "tb.dut.KmacDataKnownO_A");
         end
       end
       SecCmPrimSparseFsmFlop: begin

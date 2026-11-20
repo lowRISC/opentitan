@@ -12,9 +12,9 @@
 
 module englishbreakfast_pd_main #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 1'b1,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 1'b1,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::DefaultSramType,
   // parameters for usbdev
@@ -177,10 +177,10 @@ module englishbreakfast_pd_main #(
   logic        cio_uart1_rx_p2d;
   logic        cio_uart1_tx_d2p;
   logic        cio_uart1_tx_en_d2p;
-  // gpio
-  logic [31:0] cio_gpio_gpio_p2d;
-  logic [31:0] cio_gpio_gpio_d2p;
-  logic [31:0] cio_gpio_gpio_en_d2p;
+  // gpio0
+  logic [31:0] cio_gpio0_gpio_p2d;
+  logic [31:0] cio_gpio0_gpio_d2p;
+  logic [31:0] cio_gpio0_gpio_en_d2p;
   // spi_device
   logic        cio_spi_device_sck_p2d;
   logic        cio_spi_device_csb_p2d;
@@ -239,7 +239,7 @@ module englishbreakfast_pd_main #(
   logic intr_uart1_rx_timeout;
   logic intr_uart1_rx_parity_err;
   logic intr_uart1_tx_empty;
-  logic [31:0] intr_gpio_gpio;
+  logic [31:0] intr_gpio0_gpio;
   logic intr_spi_device_upload_cmdfifo_not_empty;
   logic intr_spi_device_upload_payload_not_empty;
   logic intr_spi_device_upload_payload_overflow;
@@ -319,8 +319,8 @@ module englishbreakfast_pd_main #(
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
   tlul_pkg::tl_d2h_t       uart1_tl_rsp;
-  tlul_pkg::tl_h2d_t       gpio_tl_req;
-  tlul_pkg::tl_d2h_t       gpio_tl_rsp;
+  tlul_pkg::tl_h2d_t       gpio0_tl_req;
+  tlul_pkg::tl_d2h_t       gpio0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
   tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_host0_tl_req;
@@ -363,30 +363,28 @@ module englishbreakfast_pd_main #(
 // Tie off unused clock- and reset enables
 //VCS coverage off
 // pragma coverage off
-  prim_mubi_pkg::mubi4_t [20:0] unused_cg_en;
-  prim_mubi_pkg::mubi4_t [33:0] unused_rst_en;
+  prim_mubi_pkg::mubi4_t [18:0] unused_cg_en;
+  prim_mubi_pkg::mubi4_t [31:0] unused_rst_en;
 
   assign unused_cg_en[0] = clkmgr_cg_en_i.aon_peri;
   assign unused_cg_en[1] = clkmgr_cg_en_i.aon_powerup;
   assign unused_cg_en[2] = clkmgr_cg_en_i.aon_secure;
   assign unused_cg_en[3] = clkmgr_cg_en_i.aon_timers;
-  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div2_peri;
-  assign unused_cg_en[5] = clkmgr_cg_en_i.io_div2_powerup;
-  assign unused_cg_en[6] = clkmgr_cg_en_i.io_div4_infra;
-  assign unused_cg_en[7] = clkmgr_cg_en_i.io_div4_peri;
-  assign unused_cg_en[8] = clkmgr_cg_en_i.io_div4_powerup;
-  assign unused_cg_en[9] = clkmgr_cg_en_i.io_div4_secure;
-  assign unused_cg_en[10] = clkmgr_cg_en_i.io_div4_timers;
-  assign unused_cg_en[11] = clkmgr_cg_en_i.io_infra;
-  assign unused_cg_en[12] = clkmgr_cg_en_i.io_peri;
-  assign unused_cg_en[13] = clkmgr_cg_en_i.io_powerup;
-  assign unused_cg_en[14] = clkmgr_cg_en_i.main_aes;
-  assign unused_cg_en[15] = clkmgr_cg_en_i.main_infra;
-  assign unused_cg_en[16] = clkmgr_cg_en_i.main_powerup;
-  assign unused_cg_en[17] = clkmgr_cg_en_i.main_secure;
-  assign unused_cg_en[18] = clkmgr_cg_en_i.usb_infra;
-  assign unused_cg_en[19] = clkmgr_cg_en_i.usb_peri;
-  assign unused_cg_en[20] = clkmgr_cg_en_i.usb_powerup;
+  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div4_infra;
+  assign unused_cg_en[5] = clkmgr_cg_en_i.io_div4_peri;
+  assign unused_cg_en[6] = clkmgr_cg_en_i.io_div4_powerup;
+  assign unused_cg_en[7] = clkmgr_cg_en_i.io_div4_secure;
+  assign unused_cg_en[8] = clkmgr_cg_en_i.io_div4_timers;
+  assign unused_cg_en[9] = clkmgr_cg_en_i.io_infra;
+  assign unused_cg_en[10] = clkmgr_cg_en_i.io_peri;
+  assign unused_cg_en[11] = clkmgr_cg_en_i.io_powerup;
+  assign unused_cg_en[12] = clkmgr_cg_en_i.main_aes;
+  assign unused_cg_en[13] = clkmgr_cg_en_i.main_infra;
+  assign unused_cg_en[14] = clkmgr_cg_en_i.main_powerup;
+  assign unused_cg_en[15] = clkmgr_cg_en_i.main_secure;
+  assign unused_cg_en[16] = clkmgr_cg_en_i.usb_infra;
+  assign unused_cg_en[17] = clkmgr_cg_en_i.usb_peri;
+  assign unused_cg_en[18] = clkmgr_cg_en_i.usb_powerup;
 
   assign unused_rst_en[0] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainAonSel];
   assign unused_rst_en[1] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
@@ -400,66 +398,61 @@ module englishbreakfast_pd_main #(
   assign unused_rst_en[9] = rstmgr_rst_en_i.por_aon[rstmgr_pkg::DomainMainSel];
   assign unused_rst_en[10] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainAonSel];
   assign unused_rst_en[11] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[12] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[13] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[14] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[15] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[16] = rstmgr_rst_en_i.por_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[17] = rstmgr_rst_en_i.por_io_div4_shadowed[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[18] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[19] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[20] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[21] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[22] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[23] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[24] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[25] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[26] = rstmgr_rst_en_i.sys_aon[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[27] = rstmgr_rst_en_i.sys_aon[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[28] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[29] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[30] = rstmgr_rst_en_i.sys_shadowed[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[31] = rstmgr_rst_en_i.sys_shadowed[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[32] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[33] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[12] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[13] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[14] = rstmgr_rst_en_i.por_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[15] = rstmgr_rst_en_i.por_io_div4_shadowed[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[16] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[17] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[18] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[19] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[20] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[21] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[22] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[23] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[24] = rstmgr_rst_en_i.sys_aon[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[25] = rstmgr_rst_en_i.sys_aon[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[26] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[27] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[28] = rstmgr_rst_en_i.sys_shadowed[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[29] = rstmgr_rst_en_i.sys_shadowed[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[30] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[31] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainMainSel];
 // pragma coverage on
 //VCS coverage on
 
 // Tie off unused clocks and resets
 //VCS coverage off
 // pragma coverage off
-  logic [7:0] unused_clocks;
+  logic [6:0] unused_clocks;
   assign unused_clocks[0] = clkmgr_clocks_i.clk_aon_secure;
   assign unused_clocks[1] = clkmgr_clocks_i.clk_aon_timers;
-  assign unused_clocks[2] = clkmgr_clocks_i.clk_io_div2_powerup;
-  assign unused_clocks[3] = clkmgr_clocks_i.clk_io_infra;
-  assign unused_clocks[4] = clkmgr_clocks_i.clk_io_powerup;
-  assign unused_clocks[5] = clkmgr_clocks_i.clk_main_powerup;
-  assign unused_clocks[6] = clkmgr_clocks_i.clk_usb_infra;
-  assign unused_clocks[7] = clkmgr_clocks_i.clk_usb_powerup;
+  assign unused_clocks[2] = clkmgr_clocks_i.clk_io_infra;
+  assign unused_clocks[3] = clkmgr_clocks_i.clk_io_powerup;
+  assign unused_clocks[4] = clkmgr_clocks_i.clk_main_powerup;
+  assign unused_clocks[5] = clkmgr_clocks_i.clk_usb_infra;
+  assign unused_clocks[6] = clkmgr_clocks_i.clk_usb_powerup;
 
-  logic [20:0] unused_resets;
+  logic [18:0] unused_resets;
   assign unused_resets[0] = rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainAonSel];
   assign unused_resets[1] = rstmgr_resets_i.rst_lc_shadowed_n[rstmgr_pkg::DomainAonSel];
   assign unused_resets[2] = rstmgr_resets_i.rst_por_aon_n[rstmgr_pkg::DomainAonSel];
   assign unused_resets[3] = rstmgr_resets_i.rst_por_aon_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[4] = rstmgr_resets_i.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[5] = rstmgr_resets_i.rst_por_io_div2_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[6] = rstmgr_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[7] = rstmgr_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[8] = rstmgr_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[9] = rstmgr_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[10] = rstmgr_resets_i.rst_por_io_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[11] = rstmgr_resets_i.rst_por_io_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[12] = rstmgr_resets_i.rst_por_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[13] = rstmgr_resets_i.rst_por_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[14] = rstmgr_resets_i.rst_por_usb_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[15] = rstmgr_resets_i.rst_por_usb_n[rstmgr_pkg::DomainMainSel];
-  assign unused_resets[16] = rstmgr_resets_i.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[17] = rstmgr_resets_i.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[18] = rstmgr_resets_i.rst_sys_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[19] = rstmgr_resets_i.rst_sys_shadowed_n[rstmgr_pkg::DomainAonSel];
-  assign unused_resets[20] = rstmgr_resets_i.rst_usb_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[4] = rstmgr_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[5] = rstmgr_resets_i.rst_por_io_div4_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[6] = rstmgr_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[7] = rstmgr_resets_i.rst_por_io_div4_shadowed_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[8] = rstmgr_resets_i.rst_por_io_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[9] = rstmgr_resets_i.rst_por_io_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[10] = rstmgr_resets_i.rst_por_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[11] = rstmgr_resets_i.rst_por_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[12] = rstmgr_resets_i.rst_por_usb_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[13] = rstmgr_resets_i.rst_por_usb_n[rstmgr_pkg::DomainMainSel];
+  assign unused_resets[14] = rstmgr_resets_i.rst_spi_device_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[15] = rstmgr_resets_i.rst_spi_host0_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[16] = rstmgr_resets_i.rst_sys_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[17] = rstmgr_resets_i.rst_sys_shadowed_n[rstmgr_pkg::DomainAonSel];
+  assign unused_resets[18] = rstmgr_resets_i.rst_usb_n[rstmgr_pkg::DomainAonSel];
 // pragma coverage on
 //VCS coverage on
 
@@ -543,34 +536,34 @@ module englishbreakfast_pd_main #(
   gpio #(
     .AlertAsyncOn(AsyncOnOutgoingAlertEnglishbreakfast[2]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .GpioAsyncOn(GpioGpioAsyncOn),
-    .GpioAsHwStrapsEn(GpioGpioAsHwStrapsEn)
-  ) u_gpio (
+    .GpioAsyncOn(Gpio0GpioAsyncOn),
+    .GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn)
+  ) u_gpio0 (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_div4_peri),
     .rst_ni(rstmgr_resets_i.rst_sys_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_gpio_o(intr_gpio_gpio),
+    .intr_gpio_o(intr_gpio0_gpio),
 
     // External alert group "englishbreakfast" [2]: fatal_fault
     .alert_tx_o(outgoing_alert_englishbreakfast_tx_o[2]),
     .alert_rx_i(outgoing_alert_englishbreakfast_rx_i[2]),
 
     // CIO inputs
-    .cio_gpio_i   (cio_gpio_gpio_p2d),
+    .cio_gpio_i   (cio_gpio0_gpio_p2d),
 
     // CIO outputs
-    .cio_gpio_o   (cio_gpio_gpio_d2p),
-    .cio_gpio_en_o(cio_gpio_gpio_en_d2p),
+    .cio_gpio_o   (cio_gpio0_gpio_d2p),
+    .cio_gpio_en_o(cio_gpio0_gpio_en_d2p),
 
     // Inter-module signals
     .strap_en_i(1'b0),
     .sampled_straps_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
-    .tl_i(gpio_tl_req),
-    .tl_o(gpio_tl_rsp)
+    .tl_i(gpio0_tl_req),
+    .tl_o(gpio0_tl_rsp)
   );
 
   spi_device #(
@@ -580,7 +573,7 @@ module englishbreakfast_pd_main #(
   ) u_spi_device (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_div4_peri),
-    .scan_clk_i(clkmgr_clocks_i.clk_io_div2_peri),
+    .scan_clk_i(clkmgr_clocks_i.clk_io_div4_peri),
     .rst_ni(rstmgr_resets_i.rst_spi_device_n[rstmgr_pkg::DomainMainSel]),
 
     // DFT/scan connections
@@ -998,12 +991,12 @@ module englishbreakfast_pd_main #(
     .alert_rx_i(outgoing_alert_englishbreakfast_rx_i[16]),
 
     // RACL policies
-    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
     // Inter-module signals
     .sram_otp_key_o(),
     .sram_otp_key_i(otp_ctrl_pkg::SRAM_OTP_KEY_RSP_DEFAULT),
-    .ram_cfg_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_i({SramCtrlMainNumRamInst{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_o(),
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
     .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
@@ -1113,9 +1106,9 @@ module englishbreakfast_pd_main #(
 
     // Inter-module signals
     .rst_cpu_n_o(),
-    .ram_cfg_icache_tag_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_tag_i({RvCoreIbexICacheNWays{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_icache_tag_o(),
-    .ram_cfg_icache_data_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_data_i({RvCoreIbexICacheNWays{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_icache_data_o(),
     .hart_id_i(rv_core_ibex_hart_id),
     .boot_addr_i(rv_core_ibex_boot_addr),
@@ -1182,7 +1175,7 @@ module englishbreakfast_pd_main #(
     intr_spi_device_upload_payload_overflow,  // ID 53
     intr_spi_device_upload_payload_not_empty, // ID 52
     intr_spi_device_upload_cmdfifo_not_empty, // ID 51
-    intr_gpio_gpio,                           // IDs [19 +: 32]
+    intr_gpio0_gpio,                          // IDs [19 +: 32]
     intr_uart1_tx_empty,                      // ID 18
     intr_uart1_rx_parity_err,                 // ID 17
     intr_uart1_rx_timeout,                    // ID 16
@@ -1286,9 +1279,9 @@ module englishbreakfast_pd_main #(
     .tl_uart1_o(uart1_tl_req),
     .tl_uart1_i(uart1_tl_rsp),
 
-    // port: tl_gpio
-    .tl_gpio_o(gpio_tl_req),
-    .tl_gpio_i(gpio_tl_rsp),
+    // port: tl_gpio0
+    .tl_gpio0_o(gpio0_tl_req),
+    .tl_gpio0_i(gpio0_tl_rsp),
 
     // port: tl_spi_device
     .tl_spi_device_o(spi_device_tl_req),
@@ -1332,38 +1325,38 @@ module englishbreakfast_pd_main #(
 
   // Pinmux connections
   // All muxed inputs
-  assign cio_gpio_gpio_p2d[0] = mio_p2d[MioInGpioGpio0];
-  assign cio_gpio_gpio_p2d[1] = mio_p2d[MioInGpioGpio1];
-  assign cio_gpio_gpio_p2d[2] = mio_p2d[MioInGpioGpio2];
-  assign cio_gpio_gpio_p2d[3] = mio_p2d[MioInGpioGpio3];
-  assign cio_gpio_gpio_p2d[4] = mio_p2d[MioInGpioGpio4];
-  assign cio_gpio_gpio_p2d[5] = mio_p2d[MioInGpioGpio5];
-  assign cio_gpio_gpio_p2d[6] = mio_p2d[MioInGpioGpio6];
-  assign cio_gpio_gpio_p2d[7] = mio_p2d[MioInGpioGpio7];
-  assign cio_gpio_gpio_p2d[8] = mio_p2d[MioInGpioGpio8];
-  assign cio_gpio_gpio_p2d[9] = mio_p2d[MioInGpioGpio9];
-  assign cio_gpio_gpio_p2d[10] = mio_p2d[MioInGpioGpio10];
-  assign cio_gpio_gpio_p2d[11] = mio_p2d[MioInGpioGpio11];
-  assign cio_gpio_gpio_p2d[12] = mio_p2d[MioInGpioGpio12];
-  assign cio_gpio_gpio_p2d[13] = mio_p2d[MioInGpioGpio13];
-  assign cio_gpio_gpio_p2d[14] = mio_p2d[MioInGpioGpio14];
-  assign cio_gpio_gpio_p2d[15] = mio_p2d[MioInGpioGpio15];
-  assign cio_gpio_gpio_p2d[16] = mio_p2d[MioInGpioGpio16];
-  assign cio_gpio_gpio_p2d[17] = mio_p2d[MioInGpioGpio17];
-  assign cio_gpio_gpio_p2d[18] = mio_p2d[MioInGpioGpio18];
-  assign cio_gpio_gpio_p2d[19] = mio_p2d[MioInGpioGpio19];
-  assign cio_gpio_gpio_p2d[20] = mio_p2d[MioInGpioGpio20];
-  assign cio_gpio_gpio_p2d[21] = mio_p2d[MioInGpioGpio21];
-  assign cio_gpio_gpio_p2d[22] = mio_p2d[MioInGpioGpio22];
-  assign cio_gpio_gpio_p2d[23] = mio_p2d[MioInGpioGpio23];
-  assign cio_gpio_gpio_p2d[24] = mio_p2d[MioInGpioGpio24];
-  assign cio_gpio_gpio_p2d[25] = mio_p2d[MioInGpioGpio25];
-  assign cio_gpio_gpio_p2d[26] = mio_p2d[MioInGpioGpio26];
-  assign cio_gpio_gpio_p2d[27] = mio_p2d[MioInGpioGpio27];
-  assign cio_gpio_gpio_p2d[28] = mio_p2d[MioInGpioGpio28];
-  assign cio_gpio_gpio_p2d[29] = mio_p2d[MioInGpioGpio29];
-  assign cio_gpio_gpio_p2d[30] = mio_p2d[MioInGpioGpio30];
-  assign cio_gpio_gpio_p2d[31] = mio_p2d[MioInGpioGpio31];
+  assign cio_gpio0_gpio_p2d[0] = mio_p2d[MioInGpio0Gpio0];
+  assign cio_gpio0_gpio_p2d[1] = mio_p2d[MioInGpio0Gpio1];
+  assign cio_gpio0_gpio_p2d[2] = mio_p2d[MioInGpio0Gpio2];
+  assign cio_gpio0_gpio_p2d[3] = mio_p2d[MioInGpio0Gpio3];
+  assign cio_gpio0_gpio_p2d[4] = mio_p2d[MioInGpio0Gpio4];
+  assign cio_gpio0_gpio_p2d[5] = mio_p2d[MioInGpio0Gpio5];
+  assign cio_gpio0_gpio_p2d[6] = mio_p2d[MioInGpio0Gpio6];
+  assign cio_gpio0_gpio_p2d[7] = mio_p2d[MioInGpio0Gpio7];
+  assign cio_gpio0_gpio_p2d[8] = mio_p2d[MioInGpio0Gpio8];
+  assign cio_gpio0_gpio_p2d[9] = mio_p2d[MioInGpio0Gpio9];
+  assign cio_gpio0_gpio_p2d[10] = mio_p2d[MioInGpio0Gpio10];
+  assign cio_gpio0_gpio_p2d[11] = mio_p2d[MioInGpio0Gpio11];
+  assign cio_gpio0_gpio_p2d[12] = mio_p2d[MioInGpio0Gpio12];
+  assign cio_gpio0_gpio_p2d[13] = mio_p2d[MioInGpio0Gpio13];
+  assign cio_gpio0_gpio_p2d[14] = mio_p2d[MioInGpio0Gpio14];
+  assign cio_gpio0_gpio_p2d[15] = mio_p2d[MioInGpio0Gpio15];
+  assign cio_gpio0_gpio_p2d[16] = mio_p2d[MioInGpio0Gpio16];
+  assign cio_gpio0_gpio_p2d[17] = mio_p2d[MioInGpio0Gpio17];
+  assign cio_gpio0_gpio_p2d[18] = mio_p2d[MioInGpio0Gpio18];
+  assign cio_gpio0_gpio_p2d[19] = mio_p2d[MioInGpio0Gpio19];
+  assign cio_gpio0_gpio_p2d[20] = mio_p2d[MioInGpio0Gpio20];
+  assign cio_gpio0_gpio_p2d[21] = mio_p2d[MioInGpio0Gpio21];
+  assign cio_gpio0_gpio_p2d[22] = mio_p2d[MioInGpio0Gpio22];
+  assign cio_gpio0_gpio_p2d[23] = mio_p2d[MioInGpio0Gpio23];
+  assign cio_gpio0_gpio_p2d[24] = mio_p2d[MioInGpio0Gpio24];
+  assign cio_gpio0_gpio_p2d[25] = mio_p2d[MioInGpio0Gpio25];
+  assign cio_gpio0_gpio_p2d[26] = mio_p2d[MioInGpio0Gpio26];
+  assign cio_gpio0_gpio_p2d[27] = mio_p2d[MioInGpio0Gpio27];
+  assign cio_gpio0_gpio_p2d[28] = mio_p2d[MioInGpio0Gpio28];
+  assign cio_gpio0_gpio_p2d[29] = mio_p2d[MioInGpio0Gpio29];
+  assign cio_gpio0_gpio_p2d[30] = mio_p2d[MioInGpio0Gpio30];
+  assign cio_gpio0_gpio_p2d[31] = mio_p2d[MioInGpio0Gpio31];
   assign cio_uart0_rx_p2d = mio_p2d[MioInUart0Rx];
   assign cio_uart1_rx_p2d = mio_p2d[MioInUart1Rx];
   assign cio_flash_ctrl_tck_p2d = mio_p2d[MioInFlashCtrlTck];
@@ -1372,75 +1365,75 @@ module englishbreakfast_pd_main #(
   assign cio_usbdev_sense_p2d = mio_p2d[MioInUsbdevSense];
 
   // All muxed outputs
-  assign mio_d2p[MioOutGpioGpio0] = cio_gpio_gpio_d2p[0];
-  assign mio_d2p[MioOutGpioGpio1] = cio_gpio_gpio_d2p[1];
-  assign mio_d2p[MioOutGpioGpio2] = cio_gpio_gpio_d2p[2];
-  assign mio_d2p[MioOutGpioGpio3] = cio_gpio_gpio_d2p[3];
-  assign mio_d2p[MioOutGpioGpio4] = cio_gpio_gpio_d2p[4];
-  assign mio_d2p[MioOutGpioGpio5] = cio_gpio_gpio_d2p[5];
-  assign mio_d2p[MioOutGpioGpio6] = cio_gpio_gpio_d2p[6];
-  assign mio_d2p[MioOutGpioGpio7] = cio_gpio_gpio_d2p[7];
-  assign mio_d2p[MioOutGpioGpio8] = cio_gpio_gpio_d2p[8];
-  assign mio_d2p[MioOutGpioGpio9] = cio_gpio_gpio_d2p[9];
-  assign mio_d2p[MioOutGpioGpio10] = cio_gpio_gpio_d2p[10];
-  assign mio_d2p[MioOutGpioGpio11] = cio_gpio_gpio_d2p[11];
-  assign mio_d2p[MioOutGpioGpio12] = cio_gpio_gpio_d2p[12];
-  assign mio_d2p[MioOutGpioGpio13] = cio_gpio_gpio_d2p[13];
-  assign mio_d2p[MioOutGpioGpio14] = cio_gpio_gpio_d2p[14];
-  assign mio_d2p[MioOutGpioGpio15] = cio_gpio_gpio_d2p[15];
-  assign mio_d2p[MioOutGpioGpio16] = cio_gpio_gpio_d2p[16];
-  assign mio_d2p[MioOutGpioGpio17] = cio_gpio_gpio_d2p[17];
-  assign mio_d2p[MioOutGpioGpio18] = cio_gpio_gpio_d2p[18];
-  assign mio_d2p[MioOutGpioGpio19] = cio_gpio_gpio_d2p[19];
-  assign mio_d2p[MioOutGpioGpio20] = cio_gpio_gpio_d2p[20];
-  assign mio_d2p[MioOutGpioGpio21] = cio_gpio_gpio_d2p[21];
-  assign mio_d2p[MioOutGpioGpio22] = cio_gpio_gpio_d2p[22];
-  assign mio_d2p[MioOutGpioGpio23] = cio_gpio_gpio_d2p[23];
-  assign mio_d2p[MioOutGpioGpio24] = cio_gpio_gpio_d2p[24];
-  assign mio_d2p[MioOutGpioGpio25] = cio_gpio_gpio_d2p[25];
-  assign mio_d2p[MioOutGpioGpio26] = cio_gpio_gpio_d2p[26];
-  assign mio_d2p[MioOutGpioGpio27] = cio_gpio_gpio_d2p[27];
-  assign mio_d2p[MioOutGpioGpio28] = cio_gpio_gpio_d2p[28];
-  assign mio_d2p[MioOutGpioGpio29] = cio_gpio_gpio_d2p[29];
-  assign mio_d2p[MioOutGpioGpio30] = cio_gpio_gpio_d2p[30];
-  assign mio_d2p[MioOutGpioGpio31] = cio_gpio_gpio_d2p[31];
+  assign mio_d2p[MioOutGpio0Gpio0] = cio_gpio0_gpio_d2p[0];
+  assign mio_d2p[MioOutGpio0Gpio1] = cio_gpio0_gpio_d2p[1];
+  assign mio_d2p[MioOutGpio0Gpio2] = cio_gpio0_gpio_d2p[2];
+  assign mio_d2p[MioOutGpio0Gpio3] = cio_gpio0_gpio_d2p[3];
+  assign mio_d2p[MioOutGpio0Gpio4] = cio_gpio0_gpio_d2p[4];
+  assign mio_d2p[MioOutGpio0Gpio5] = cio_gpio0_gpio_d2p[5];
+  assign mio_d2p[MioOutGpio0Gpio6] = cio_gpio0_gpio_d2p[6];
+  assign mio_d2p[MioOutGpio0Gpio7] = cio_gpio0_gpio_d2p[7];
+  assign mio_d2p[MioOutGpio0Gpio8] = cio_gpio0_gpio_d2p[8];
+  assign mio_d2p[MioOutGpio0Gpio9] = cio_gpio0_gpio_d2p[9];
+  assign mio_d2p[MioOutGpio0Gpio10] = cio_gpio0_gpio_d2p[10];
+  assign mio_d2p[MioOutGpio0Gpio11] = cio_gpio0_gpio_d2p[11];
+  assign mio_d2p[MioOutGpio0Gpio12] = cio_gpio0_gpio_d2p[12];
+  assign mio_d2p[MioOutGpio0Gpio13] = cio_gpio0_gpio_d2p[13];
+  assign mio_d2p[MioOutGpio0Gpio14] = cio_gpio0_gpio_d2p[14];
+  assign mio_d2p[MioOutGpio0Gpio15] = cio_gpio0_gpio_d2p[15];
+  assign mio_d2p[MioOutGpio0Gpio16] = cio_gpio0_gpio_d2p[16];
+  assign mio_d2p[MioOutGpio0Gpio17] = cio_gpio0_gpio_d2p[17];
+  assign mio_d2p[MioOutGpio0Gpio18] = cio_gpio0_gpio_d2p[18];
+  assign mio_d2p[MioOutGpio0Gpio19] = cio_gpio0_gpio_d2p[19];
+  assign mio_d2p[MioOutGpio0Gpio20] = cio_gpio0_gpio_d2p[20];
+  assign mio_d2p[MioOutGpio0Gpio21] = cio_gpio0_gpio_d2p[21];
+  assign mio_d2p[MioOutGpio0Gpio22] = cio_gpio0_gpio_d2p[22];
+  assign mio_d2p[MioOutGpio0Gpio23] = cio_gpio0_gpio_d2p[23];
+  assign mio_d2p[MioOutGpio0Gpio24] = cio_gpio0_gpio_d2p[24];
+  assign mio_d2p[MioOutGpio0Gpio25] = cio_gpio0_gpio_d2p[25];
+  assign mio_d2p[MioOutGpio0Gpio26] = cio_gpio0_gpio_d2p[26];
+  assign mio_d2p[MioOutGpio0Gpio27] = cio_gpio0_gpio_d2p[27];
+  assign mio_d2p[MioOutGpio0Gpio28] = cio_gpio0_gpio_d2p[28];
+  assign mio_d2p[MioOutGpio0Gpio29] = cio_gpio0_gpio_d2p[29];
+  assign mio_d2p[MioOutGpio0Gpio30] = cio_gpio0_gpio_d2p[30];
+  assign mio_d2p[MioOutGpio0Gpio31] = cio_gpio0_gpio_d2p[31];
   assign mio_d2p[MioOutUart0Tx] = cio_uart0_tx_d2p;
   assign mio_d2p[MioOutUart1Tx] = cio_uart1_tx_d2p;
   assign mio_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_d2p;
 
   // All muxed output enables
-  assign mio_en_d2p[MioOutGpioGpio0] = cio_gpio_gpio_en_d2p[0];
-  assign mio_en_d2p[MioOutGpioGpio1] = cio_gpio_gpio_en_d2p[1];
-  assign mio_en_d2p[MioOutGpioGpio2] = cio_gpio_gpio_en_d2p[2];
-  assign mio_en_d2p[MioOutGpioGpio3] = cio_gpio_gpio_en_d2p[3];
-  assign mio_en_d2p[MioOutGpioGpio4] = cio_gpio_gpio_en_d2p[4];
-  assign mio_en_d2p[MioOutGpioGpio5] = cio_gpio_gpio_en_d2p[5];
-  assign mio_en_d2p[MioOutGpioGpio6] = cio_gpio_gpio_en_d2p[6];
-  assign mio_en_d2p[MioOutGpioGpio7] = cio_gpio_gpio_en_d2p[7];
-  assign mio_en_d2p[MioOutGpioGpio8] = cio_gpio_gpio_en_d2p[8];
-  assign mio_en_d2p[MioOutGpioGpio9] = cio_gpio_gpio_en_d2p[9];
-  assign mio_en_d2p[MioOutGpioGpio10] = cio_gpio_gpio_en_d2p[10];
-  assign mio_en_d2p[MioOutGpioGpio11] = cio_gpio_gpio_en_d2p[11];
-  assign mio_en_d2p[MioOutGpioGpio12] = cio_gpio_gpio_en_d2p[12];
-  assign mio_en_d2p[MioOutGpioGpio13] = cio_gpio_gpio_en_d2p[13];
-  assign mio_en_d2p[MioOutGpioGpio14] = cio_gpio_gpio_en_d2p[14];
-  assign mio_en_d2p[MioOutGpioGpio15] = cio_gpio_gpio_en_d2p[15];
-  assign mio_en_d2p[MioOutGpioGpio16] = cio_gpio_gpio_en_d2p[16];
-  assign mio_en_d2p[MioOutGpioGpio17] = cio_gpio_gpio_en_d2p[17];
-  assign mio_en_d2p[MioOutGpioGpio18] = cio_gpio_gpio_en_d2p[18];
-  assign mio_en_d2p[MioOutGpioGpio19] = cio_gpio_gpio_en_d2p[19];
-  assign mio_en_d2p[MioOutGpioGpio20] = cio_gpio_gpio_en_d2p[20];
-  assign mio_en_d2p[MioOutGpioGpio21] = cio_gpio_gpio_en_d2p[21];
-  assign mio_en_d2p[MioOutGpioGpio22] = cio_gpio_gpio_en_d2p[22];
-  assign mio_en_d2p[MioOutGpioGpio23] = cio_gpio_gpio_en_d2p[23];
-  assign mio_en_d2p[MioOutGpioGpio24] = cio_gpio_gpio_en_d2p[24];
-  assign mio_en_d2p[MioOutGpioGpio25] = cio_gpio_gpio_en_d2p[25];
-  assign mio_en_d2p[MioOutGpioGpio26] = cio_gpio_gpio_en_d2p[26];
-  assign mio_en_d2p[MioOutGpioGpio27] = cio_gpio_gpio_en_d2p[27];
-  assign mio_en_d2p[MioOutGpioGpio28] = cio_gpio_gpio_en_d2p[28];
-  assign mio_en_d2p[MioOutGpioGpio29] = cio_gpio_gpio_en_d2p[29];
-  assign mio_en_d2p[MioOutGpioGpio30] = cio_gpio_gpio_en_d2p[30];
-  assign mio_en_d2p[MioOutGpioGpio31] = cio_gpio_gpio_en_d2p[31];
+  assign mio_en_d2p[MioOutGpio0Gpio0] = cio_gpio0_gpio_en_d2p[0];
+  assign mio_en_d2p[MioOutGpio0Gpio1] = cio_gpio0_gpio_en_d2p[1];
+  assign mio_en_d2p[MioOutGpio0Gpio2] = cio_gpio0_gpio_en_d2p[2];
+  assign mio_en_d2p[MioOutGpio0Gpio3] = cio_gpio0_gpio_en_d2p[3];
+  assign mio_en_d2p[MioOutGpio0Gpio4] = cio_gpio0_gpio_en_d2p[4];
+  assign mio_en_d2p[MioOutGpio0Gpio5] = cio_gpio0_gpio_en_d2p[5];
+  assign mio_en_d2p[MioOutGpio0Gpio6] = cio_gpio0_gpio_en_d2p[6];
+  assign mio_en_d2p[MioOutGpio0Gpio7] = cio_gpio0_gpio_en_d2p[7];
+  assign mio_en_d2p[MioOutGpio0Gpio8] = cio_gpio0_gpio_en_d2p[8];
+  assign mio_en_d2p[MioOutGpio0Gpio9] = cio_gpio0_gpio_en_d2p[9];
+  assign mio_en_d2p[MioOutGpio0Gpio10] = cio_gpio0_gpio_en_d2p[10];
+  assign mio_en_d2p[MioOutGpio0Gpio11] = cio_gpio0_gpio_en_d2p[11];
+  assign mio_en_d2p[MioOutGpio0Gpio12] = cio_gpio0_gpio_en_d2p[12];
+  assign mio_en_d2p[MioOutGpio0Gpio13] = cio_gpio0_gpio_en_d2p[13];
+  assign mio_en_d2p[MioOutGpio0Gpio14] = cio_gpio0_gpio_en_d2p[14];
+  assign mio_en_d2p[MioOutGpio0Gpio15] = cio_gpio0_gpio_en_d2p[15];
+  assign mio_en_d2p[MioOutGpio0Gpio16] = cio_gpio0_gpio_en_d2p[16];
+  assign mio_en_d2p[MioOutGpio0Gpio17] = cio_gpio0_gpio_en_d2p[17];
+  assign mio_en_d2p[MioOutGpio0Gpio18] = cio_gpio0_gpio_en_d2p[18];
+  assign mio_en_d2p[MioOutGpio0Gpio19] = cio_gpio0_gpio_en_d2p[19];
+  assign mio_en_d2p[MioOutGpio0Gpio20] = cio_gpio0_gpio_en_d2p[20];
+  assign mio_en_d2p[MioOutGpio0Gpio21] = cio_gpio0_gpio_en_d2p[21];
+  assign mio_en_d2p[MioOutGpio0Gpio22] = cio_gpio0_gpio_en_d2p[22];
+  assign mio_en_d2p[MioOutGpio0Gpio23] = cio_gpio0_gpio_en_d2p[23];
+  assign mio_en_d2p[MioOutGpio0Gpio24] = cio_gpio0_gpio_en_d2p[24];
+  assign mio_en_d2p[MioOutGpio0Gpio25] = cio_gpio0_gpio_en_d2p[25];
+  assign mio_en_d2p[MioOutGpio0Gpio26] = cio_gpio0_gpio_en_d2p[26];
+  assign mio_en_d2p[MioOutGpio0Gpio27] = cio_gpio0_gpio_en_d2p[27];
+  assign mio_en_d2p[MioOutGpio0Gpio28] = cio_gpio0_gpio_en_d2p[28];
+  assign mio_en_d2p[MioOutGpio0Gpio29] = cio_gpio0_gpio_en_d2p[29];
+  assign mio_en_d2p[MioOutGpio0Gpio30] = cio_gpio0_gpio_en_d2p[30];
+  assign mio_en_d2p[MioOutGpio0Gpio31] = cio_gpio0_gpio_en_d2p[31];
   assign mio_en_d2p[MioOutUart0Tx] = cio_uart0_tx_en_d2p;
   assign mio_en_d2p[MioOutUart1Tx] = cio_uart1_tx_en_d2p;
   assign mio_en_d2p[MioOutFlashCtrlTdo] = cio_flash_ctrl_tdo_en_d2p;

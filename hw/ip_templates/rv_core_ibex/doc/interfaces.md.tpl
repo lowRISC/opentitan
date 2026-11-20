@@ -7,10 +7,12 @@
 
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
 % if cheriot_available:
-The TRVK ports (signals starting with `trvk_`) are not yet exposed.
 `BaseIsa` is not exposed: it is fixed to the CHERIoT-capable base ISA, and the mode is selected at runtime by the [execution mode switch](theory_of_operation.md#execution-mode-switch).
+The TRVK revocation bitmap interface (signals starting with `trvk_revbm_`) is exposed as the `corerevbm_tl` TL-UL host port.
+The TRVK heap base address (`trvk_heap_base_addr_i`) is set with the `CheriotTrvkHeapBaseAddr` parameter.
 % else:
-The CHERIoT ports and parameters (signals and parameters starting with `trvk_`, plus `BaseIsa`) are not exposed.
+`BaseIsa` is fixed to RV32I, and the CHERIoT ports of Ibex (`cheriot_enable_i`, the capability tag and the signals starting with `trvk_`) are tied off and not exposed.
+The CHERIoT parameters of Ibex are not available.
 % endif
 Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
 
@@ -34,6 +36,13 @@ Signal                  | Direction | Type                                      
 `corei_tl_h_i`          | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming instruction tlul response.
 `cored_tl_h_o`          | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request.
 `cored_tl_h_i`          | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response.
+% if cheriot_available:
+`cored_tag_h2d_o`       | `output`  | `logic`                                               | Outgoing CHERIoT capability tag of the data tlul request.
+`cored_tag_d2h_i`       | `input`   | `logic`                                               | Incoming CHERIoT capability tag of the data tlul response.
+`corerevbm_tl_o`        | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing TRVK revocation bitmap tlul request.
+`corerevbm_tl_i`        | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming TRVK revocation bitmap tlul response.
+`cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT execution mode enable from the execution mode switch.
+% endif
 `cfg_tl_d_i`            | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request for peripheral registers.
 `cfg_tl_d_o`            | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response for peripheral registers.
 `alert_rx_i`            | `input`   | `prim_alert_pkg::alert_rx_t`                          | Incoming alert response / ping.

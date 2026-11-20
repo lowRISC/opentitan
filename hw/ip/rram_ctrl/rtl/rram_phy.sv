@@ -159,6 +159,10 @@ module rram_phy
                     (wr_busy == 1'b0) & phy_init_done_q &
                     mubi4_test_false_strict(rram_disable[CtrlDisableIdx]);
 
+  // Some tools reject assignment patterns in port connections.
+  logic [1:0] host_arb_data [2];
+  assign host_arb_data = '{default: '0};
+
   // SEC_CM: PHY_ARBITER.CTRL.REDUN
   prim_arbiter_tree_dup #(
     .N(2),
@@ -170,7 +174,7 @@ module rram_phy
     .rst_ni,
     .req_chk_i('0),
     .req_i    ({ctrl_req, host_req}),
-    .data_i   ('{default: '0}),
+    .data_i   (host_arb_data),
     .gnt_o    ({ctrl_gnt, host_gnt}),
     .idx_o    (),
     .valid_o  (phy_req),

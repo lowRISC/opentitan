@@ -104,7 +104,8 @@ const screen_bitmap_t *kScreenBitmaps[kScreenBitmapsInCycle] = {
 static status_t peripheral_init(void) {
   // Initialize DIFs.
   TRY(dif_i2c_init(mmio_region_from_addr(TOP_EARLGREY_I2C0_BASE_ADDR), &i2c));
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR),
+                    &gpio));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
                       &pinmux));
   TRY(dif_spi_host_init(mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR),
@@ -127,7 +128,7 @@ static status_t peripheral_init(void) {
 
   // Initialize pinmux for Screen SPI (CS, SCK, data out).
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob7,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sck));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
@@ -137,7 +138,7 @@ static status_t peripheral_init(void) {
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc6,
                                         kTopEarlgreyPinmuxOutselConstantOne));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc9,
-                                        kTopEarlgreyPinmuxOutselGpioGpio1));
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio1));
 
   // Pinmux pad configurations.
   pinmux_testutils_configure_pads(&pinmux, kPinmuxPadAttrs,

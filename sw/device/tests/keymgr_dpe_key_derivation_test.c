@@ -127,6 +127,104 @@ bool key_derivation_test(void) {
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe generated HMAC output from CreatorRootKey");
 
+  // Advance the DPE context with the parameter defined in kCreatorIntKeyParams
+  // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
+  adv_params.slot_src_sel = kCreatorIntKeyParams.slot_src_sel;
+  adv_params.slot_dst_sel = kCreatorIntKeyParams.slot_dst_sel;
+  adv_params.max_key_version = kCreatorIntKeyParams.max_key_version;
+  for (uint32_t i = 0; i < 8; i++) {
+    adv_params.binding_value[i] = kCreatorIntKeyParams.binding_value[i];
+  }
+  adv_params.slot_policy = kCreatorIntKeyParams.slot_policy;
+  advance(&adv_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe derived CreatorIntKey");
+
+  // Generate KMAC output from the CreatorIntKey.
+  gen_params.slot_src_sel = kCreatorIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestKmac;
+  gen_params.version = 0;
+  gen_params.salt[7] = 0x3e8a91c4;
+  gen_params.salt[6] = 0xb57d2e09;
+  gen_params.salt[5] = 0x1c64f8a3;
+  gen_params.salt[4] = 0x9f20d7b6;
+  gen_params.salt[3] = 0x52e1ac38;
+  gen_params.salt[2] = 0xd8437f15;
+  gen_params.salt[1] = 0x06bc59e2;
+  gen_params.salt[0] = 0xa1f3c470;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated KMAC output from CreatorIntKey");
+
+  // Generate AES output from the CreatorIntKey.
+  gen_params.slot_src_sel = kCreatorIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
+  gen_params.version = 1;
+  gen_params.salt[7] = 0x7d19e6a2;
+  gen_params.salt[6] = 0x4c83b05f;
+  gen_params.salt[5] = 0xe2a57d31;
+  gen_params.salt[4] = 0x18f6c94e;
+  gen_params.salt[3] = 0xb04d2a87;
+  gen_params.salt[2] = 0x6e91f3c5;
+  gen_params.salt[1] = 0xc35a087b;
+  gen_params.salt[0] = 0x29e4b6d0;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated AES output from CreatorIntKey");
+
+  // Generate SW output from the CreatorIntKey.
+  gen_params.slot_src_sel = kCreatorIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = false;  // SW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
+  gen_params.version = 2;
+  gen_params.salt[7] = 0x91c7a35e;
+  gen_params.salt[6] = 0x0fd4682b;
+  gen_params.salt[5] = 0x5ab31ec9;
+  gen_params.salt[4] = 0xe6082f74;
+  gen_params.salt[3] = 0x3d79c510;
+  gen_params.salt[2] = 0xa4e6b29f;
+  gen_params.salt[1] = 0x7802d4e3;
+  gen_params.salt[0] = 0xc1bf5a66;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated SW output from CreatorIntKey");
+
+  // Generate OTBN output from the CreatorIntKey.
+  gen_params.slot_src_sel = kCreatorIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
+  gen_params.version = 3;
+  gen_params.salt[7] = 0xf04b6c19;
+  gen_params.salt[6] = 0x83e2a7d5;
+  gen_params.salt[5] = 0x2b98f40e;
+  gen_params.salt[4] = 0xd65c1b37;
+  gen_params.salt[3] = 0x47a0e9c2;
+  gen_params.salt[2] = 0x9e3d7058;
+  gen_params.salt[1] = 0x15f2c8ab;
+  gen_params.salt[0] = 0x6ac94d03;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated OTBN output from CreatorIntKey");
+
+  // Generate HMAC output from the CreatorIntKey.
+  gen_params.slot_src_sel = kCreatorIntKeyParams.slot_dst_sel;
+  gen_params.sideload_key = true;  // HW key
+  gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;
+  gen_params.version = 0;
+  gen_params.salt[7] = 0x0e81e53d;
+  gen_params.salt[6] = 0x6e43271c;
+  gen_params.salt[5] = 0x7f1e4339;
+  gen_params.salt[4] = 0xdb35276e;
+  gen_params.salt[3] = 0x05b06259;
+  gen_params.salt[2] = 0x2612681a;
+  gen_params.salt[1] = 0x6c61f7c7;
+  gen_params.salt[0] = 0x6b2fd668;
+  generate(&gen_params);
+  // DV SYNC MESSAGE
+  LOG_INFO("KeymgrDpe generated HMAC output from CreatorIntKey");
+
   // Advance the DPE context with the parameter defined in kOwnerIntKeyParams
   // (/sw/device/lib/testing/keymgr_dpe_testutils.h)
   adv_params.slot_src_sel = kOwnerIntKeyParams.slot_src_sel;
@@ -352,7 +450,7 @@ bool key_derivation_test(void) {
   // DV SYNC MESSAGE
   LOG_INFO("KeymgrDpe derived new DPE context from OwnerKey");
 
-  // Generate AES output from the boot stage 3 key.
+  // Generate AES output from the boot stage 4 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestAes;
@@ -370,7 +468,7 @@ bool key_derivation_test(void) {
   LOG_INFO("KeymgrDpe generated AES output from DPE context in slot %0d",
            adv_params.slot_dst_sel);
 
-  // Generate OTBN output from the boot stage 3 key.
+  // Generate OTBN output from the boot stage 4 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestOtbn;
@@ -388,7 +486,7 @@ bool key_derivation_test(void) {
   LOG_INFO("KeymgrDpe generated OTBN output from DPE context in slot %0d",
            adv_params.slot_dst_sel);
 
-  // Generate SW output from the boot stage 3 key.
+  // Generate SW output from the boot stage 4 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = false;  // SW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestNone;
@@ -406,7 +504,7 @@ bool key_derivation_test(void) {
   LOG_INFO("KeymgrDpe generated SW output from DPE context in slot %0d",
            adv_params.slot_dst_sel);
 
-  // Generate KMAC output from the boot stage 3 key.
+  // Generate KMAC output from the boot stage 4 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestKmac;
@@ -424,7 +522,7 @@ bool key_derivation_test(void) {
   LOG_INFO("KeymgrDpe generated KMAC output from DPE context in slot %0d",
            adv_params.slot_dst_sel);
 
-  // Generate HMAC output from the boot stage 3 key.
+  // Generate HMAC output from the boot stage 4 key.
   gen_params.slot_src_sel = 3;
   gen_params.sideload_key = true;  // HW key
   gen_params.key_dest = kDifKeymgrDpeKeyDestHmac;

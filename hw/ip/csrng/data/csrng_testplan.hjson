@@ -43,6 +43,8 @@
             - When an initiate or reseed command is sent where flag0 is not a valid kMultiBitBool value.
             - The genbits bus value is equal to the prior valid value.
             - When an illegal command is used (0x0,0x6-0xf).
+            - When INT_STATE_NUM is written with a reserved instance index, which must be ignored.
+            Verify that INT_STATE_NUM cannot be written while INT_STATE_HALT is set.
             Verify that writing zeros to the recoverable alert status register resets all the status bits.
             Verify fatal_alert asserts when:
             - An illegal state is reached.
@@ -57,6 +59,7 @@
       desc: '''
             Verify err_code register bits assert when:
             - An error has been detected in any of the internal fifos and the corresponding write/read/state bits.
+            - A word is written to CMD_REQ while SW_CMD_STS.CMD_RDY is low.
             - An illegal state is reached in any of the 6 state machines.
             - An error is detected in the generate command counter.
             Verify that the err_code register clears all bits after reset.
@@ -146,6 +149,12 @@
       name: csrng_err_code_cg
       desc: '''
             Covers all possible fatal errors and possible AES FSM errors inside CSRNG.
+            '''
+    }
+    {
+      name: csrng_sw_cmd_drop_cg
+      desc: '''
+            Covers that a word written to CMD_REQ while SW_CMD_STS.CMD_RDY is low has been dropped.
             '''
     }
     {

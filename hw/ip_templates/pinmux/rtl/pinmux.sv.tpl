@@ -65,6 +65,10 @@ module pinmux
   input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+% if enable_rram_tap:
+  // SEC_CM: LC_NVM_DEBUG_EN.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t      lc_nvm_debug_en_i,
+% endif
   // SEC_CM: PINMUX_HW_DEBUG_EN.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t      pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
@@ -78,6 +82,10 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+% if enable_rram_tap:
+  output jtag_pkg::jtag_req_t      rram_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      rram_jtag_i,
+% endif
 % endif
 % if enable_usb_wakeup:
   // Direct USB connection
@@ -175,22 +183,8 @@ module pinmux
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      dio_pad_attr_q <= '0;
-    % if enable_strap_sampling:
-      for (int kk = 0; kk < NMioPads; kk++) begin
-        if (kk == TargetCfg.tap_strap0_idx) begin
-          // TAP strap 0 is sampled after reset (and only once for life cycle states that are not
-          // TEST_UNLOCKED* or RMA).  To ensure it gets sampled as 0 unless driven to 1 from an
-          // external source (and specifically that it gets sampled as 0 when left floating / not
-          // connected), this enables the pull-down of the pad at reset.
-          mio_pad_attr_q[kk] <= '{pull_en: 1'b1, default: '0};
-        end else begin
-          mio_pad_attr_q[kk] <= '0;
-        end
-      end
-    % else:
-      mio_pad_attr_q <= '0;
-    % endif
+      dio_pad_attr_q <= DioPadAttrResval;
+      mio_pad_attr_q <= MioPadAttrResval;
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin
@@ -388,6 +382,10 @@ module pinmux
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,
     .lc_check_byp_en_i,
+% if enable_rram_tap:
+    .lc_nvm_debug_en_i,
+    .rram_jtag_sel_i ( prim_mubi_pkg::mubi4_t'(reg2hw.rram_jtag_sel.q) ),
+% endif
     // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
     // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
     .pinmux_hw_debug_en_o,
@@ -398,7 +396,13 @@ module pinmux
     .rv_jtag_o,
     .rv_jtag_i,
     .dft_jtag_o,
+% if enable_rram_tap:
+    .dft_jtag_i,
+    .rram_jtag_o,
+    .rram_jtag_i
+% else:
     .dft_jtag_i
+% endif
   );
 % else:
   // Just pass through these signals.
@@ -688,6 +692,12 @@ module pinmux
   `ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
   `ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
   `ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
+% if enable_rram_tap:
+
+  `ASSERT_KNOWN(RramJtagTckKnown_A, rram_jtag_o.tck)
+  `ASSERT_KNOWN(RramJtagTrstKnown_A, rram_jtag_o.trst_n)
+  `ASSERT_KNOWN(RramJtagTmsKnown_A, rram_jtag_o.tms)
+% endif
 
   `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 % endif

@@ -496,11 +496,11 @@ To target a specific ChipWhisperer board, you must provide its USB serial number
 The search logic for the HyperDebug is as follows:
 - If a single HyperDebug board is detected, it is used.
 - If multiple HyperDebug boards are found, but exactly one of them is connected to the same USB hub as the ChipWhisperer USB device, then this one will be used.
-- All other cases are unsupported.
+- If multiple HyperDebug boards are connected without sharing a USB hub, you can explicitly specify both the ChipWhisperer and HyperDebug serial numbers using `--usb-serial=<cw_serial>:<hd_serial>`.
 
 Note that the CW340 has an internal USB hub to which the ChipWhisperer USB device is connected.
-Therefore, you must connect the Hyperdebug to one of the USB ports of the CW340 board for `opentitantool` to automatically detect it.
-The CW310 does not have an internal hub so an external hub must be used in this case.
+Therefore, connecting the HyperDebug to one of the USB ports of the CW340 board allows `opentitantool` to automatically detect it without needing to specify the HyperDebug serial number.
+The CW310 does not have an internal hub so an external hub or the explicit `--usb-serial=<cw_serial>:<hd_serial>` syntax can be used.
 
 ```sh
 bazel test --test_arg=--usb-serial=123456789012 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys

@@ -27,12 +27,15 @@ module keymgr_dpe
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
   parameter seed_t RndCnstHmacSeed             = RndCnstHmacSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
+  parameter seed_t RndCnstFieldEntropySeed     = RndCnstFieldEntropySeedDefault,
   // Number of instantiated HW slots
   parameter int unsigned NumInstHwSlot         = 4,
   // Number of available boot stages
-  parameter int unsigned NumBootStages         = 3,
+  parameter int unsigned NumBootStages         = 4,
   // Number of ROM digest inputs
-  parameter int unsigned NumRomDigestInputs    = 1
+  parameter int unsigned NumRomDigestInputs    = 1,
+  // Define which kdf engine is supported
+  parameter kdf_engine_sel_e KdfEngineSel      = KdfEngineKmac
 ) (
   input clk_i,
   input rst_ni,
@@ -45,14 +48,19 @@ module keymgr_dpe
   output tlul_pkg::tl_d2h_t tl_o,
 
   // key interface to crypto modules
-  output hw_key_req_t aes_key_o,
-  output hw_key_req_t kmac_key_o,
-  output wide_hw_key_req_t hmac_key_o,
-  output wide_hw_key_req_t otbn_key_o,
+  output hw_key_req_t        aes_key_o,
+  output hw_key_req_t        kmac_key_o,
+  output wide_hw_key_req_t   hmac_key_o,
+  output wide_hw_key_req_t   otbn_key_o,
 
-  // data interface to/from crypto modules
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i,
+  // Application interface when KMAC is used as hashing engine
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i,
+
+  // Application interface when OTBN is used as hashing engine
+  output kmac_pkg::app_req_t otbn_app_o,
+  input  kmac_pkg::app_rsp_t otbn_app_i,
+  output mubi4_t             sensitive_key_o,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -69,6 +77,7 @@ module keymgr_dpe
   input keymgr_dpe_creator_seed_t creator_seed_i,
   input keymgr_dpe_owner_seed_t owner_seed_i,
   input keymgr_dpe_device_id_t device_id_i,
+  input keymgr_dpe_field_entropy_t field_entropy_i,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -90,10 +99,10 @@ module keymgr_dpe
   //   - OTP device ID
   //   - LC keymgr diversification value
   //   - ROM digests
-  //   - Creator seed (only if boot stage equals two)
-  localparam int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
-      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth * NumRomDigestInputs +
-      KeyWidth * (NumBootStages == 2);
+  //   - Creator seed (only if NumBootStages == 2)
+  localparam int DpeAdvDataWidth = SwBindingWidth + SeedWidth + DeviceIdWidth +
+      lc_ctrl_pkg::LcKeymgrDivWidth + SeedWidth * NumRomDigestInputs +
+      SeedWidth * (NumBootStages == 2);
 
   // Determine the width of the data consumed by the KMAC IF during the inital
   // derivation of the CreatorRootKey.
@@ -103,7 +112,6 @@ module keymgr_dpe
 
   // Determine the actual signal width to address all the hw slots
   localparam int NumInstHwSlotWidth = prim_util_pkg::vbits(NumInstHwSlot);
-  localparam int NumMaxHwSlotWidth = prim_util_pkg::vbits(NumMaxHwSlot);
   typedef logic [NumInstHwSlotWidth-1:0] keymgr_dpe_slot_idx_e;
 
   import lc_ctrl_pkg::lc_tx_test_true_strict;
@@ -113,7 +121,7 @@ module keymgr_dpe
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 8;
+  localparam int TotalSeedWidth = SeedWidth * 9;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
@@ -121,6 +129,7 @@ module keymgr_dpe
   seed_t otbn_seed;
   seed_t kmac_seed;
   seed_t hmac_seed;
+  seed_t field_entropy_seed;
   seed_t none_seed;
 
   localparam logic [TotalSeedWidth-1:0] RndConstSeed = {RndCnstRevisionSeed,
@@ -130,6 +139,7 @@ module keymgr_dpe
                                                         RndCnstOtbnSeed,
                                                         RndCnstKmacSeed,
                                                         RndCnstHmacSeed,
+                                                        RndCnstFieldEntropySeed,
                                                         RndCnstNoneSeed};
 
   prim_sec_anchor_const #(
@@ -143,6 +153,7 @@ module keymgr_dpe
             otbn_seed,
             kmac_seed,
             hmac_seed,
+            field_entropy_seed,
             none_seed})
   );
 
@@ -156,7 +167,7 @@ module keymgr_dpe
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: CONFIG.SHADOW
   // SEC_CM: OP.CONFIG.REGWEN, RESEED.CONFIG.REGWEN, SW_BINDING.CONFIG.REGWEN
-  // SEC_CM: MAX_KEY_VER.CONFIG.REGWEN
+  // SEC_CM: KDF_ENGINE.CONFIG.REGWEN, MAX_KEY_VER.CONFIG.REGWEN, SLOT_POLICY.CONFIG.REGWEN
   keymgr_dpe_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -263,7 +274,7 @@ module keymgr_dpe
   mubi4_t hw_key_sel;
   logic adv_en, id_en, gen_en;
   logic wipe_key;
-  hw_key_req_t kmac_key;
+  internal_key_t kmac_key;
   logic op_done;
   logic init;
   logic data_valid;
@@ -276,7 +287,7 @@ module keymgr_dpe
   logic kmac_op_err;
   logic kmac_done_err;
   logic [Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_data;
-  logic [Shares-1:0][KeyWidth-1:0] kmac_data_truncated;
+  logic [Shares-1:0][InternalKeyWidth-1:0] kmac_data_truncated;
   logic [ErrLastPos-1:0] err_code;
   logic [FaultLastPos-1:0] fault_code;
   logic unlock_after_advance;
@@ -284,17 +295,26 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
   logic dest_sel_oob;
+  logic slot_src_sel_oob;
+  logic slot_dst_sel_oob;
+  logic kdf_engine_mubi_err;
 
   keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata;
+
+  // SEC_CM: METADATA.CONFIG.REGREN
   for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
     if (i < NumInstHwSlot) begin : gen_inst_slot
-      assign hw2reg.metadata_high[i].valid.d                = metadata[i].valid;
-      assign hw2reg.metadata_high[i].exportable_policy.d    = metadata[i].key_policy.exportable;
-      assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata[i].key_policy.retain_parent;
-      assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata[i].key_policy.allow_child;
-      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = metadata[i].key_policy.allow_keygen;
-      assign hw2reg.metadata_high[i].boot_stage.d           = metadata[i].boot_stage;
-      assign hw2reg.metadata_low[i].d                       = metadata[i].max_key_version;
+      keymgr_dpe_metadata_slot_t metadata_rd;
+      assign metadata_rd =
+          mubi4_test_false_strict(mubi4_t'(reg2hw.metadata_read_lock.q)) ? metadata[i] : '0;
+
+      assign hw2reg.metadata_high[i].valid.d                = metadata_rd.valid;
+      assign hw2reg.metadata_high[i].exportable_policy.d    = metadata_rd.key_policy.exportable;
+      assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata_rd.key_policy.retain_parent;
+      assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata_rd.key_policy.allow_child;
+      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = metadata_rd.key_policy.allow_keygen;
+      assign hw2reg.metadata_high[i].boot_stage.d           = metadata_rd.boot_stage;
+      assign hw2reg.metadata_low[i].d                       = metadata_rd.max_key_version;
     end else begin : gen_tieoff_slot
       assign hw2reg.metadata_high[i].valid.d                = '0;
       assign hw2reg.metadata_high[i].exportable_policy.d    = '0;
@@ -307,14 +327,17 @@ module keymgr_dpe
   end
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
-    assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
+    assign kmac_data_truncated[i] = kmac_data[i][InternalKeyWidth-1:0];
   end
 
-  hw_key_req_t root_key;
+  internal_key_t root_key;
   assign root_key.key = '{creator_root_key_i.share1,
                           creator_root_key_i.share0};
 
-  hw_key_req_t secondary_root_key;
+  keymgr_dpe_field_entropy_t field_entropy;
+  assign field_entropy.secret = field_entropy_i.secret;
+
+  internal_key_t secondary_root_key;
   assign secondary_root_key.key = '{secondary_root_key_i.share1,
                                     secondary_root_key_i.share0};
 
@@ -338,34 +361,37 @@ module keymgr_dpe
     .q_o(secondary_root_key.valid)
   );
 
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_field_entropy_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(field_entropy_i.secret_valid),
+    .q_o(field_entropy.secret_valid)
+  );
+
   keymgr_dpe_slot_t active_key_slot;
   logic op_start;
   assign op_start = reg2hw.start.q;
   logic invalid_advance;
   mubi4_t enforce_sw_binding_err;
 
-  // TODO(#30682): Remove this assertion
-  // Raise an assertion if the source / destination field provided by the
-  // sw register is out of bounds.
-  `ASSERT(SrcSelInRange_A, reg2hw.control_shadowed.slot_src_sel.q < NumInstHwSlot)
-  `ASSERT(DstSelInRange_A, reg2hw.control_shadowed.slot_dst_sel.q < NumInstHwSlot)
+  // Indicate Out-of-Bound for source / destination selection if the request matches
+  // a non-instantiated slot.
+  if (NumInstHwSlot < NumMaxHwSlot) begin : gen_oob_slot_selection
+    assign slot_src_sel_oob = (reg2hw.control_shadowed.slot_src_sel.q >= NumInstHwSlot);
+    assign slot_dst_sel_oob = (reg2hw.control_shadowed.slot_dst_sel.q >= NumInstHwSlot);
+  end else begin : gen_no_oob_slot_selection
+    assign slot_src_sel_oob = 1'b0;
+    assign slot_dst_sel_oob = 1'b0;
+  end
   keymgr_dpe_slot_idx_e slot_src_sel_trunc, slot_dst_sel_trunc;
   assign slot_src_sel_trunc =
       keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q);
   assign slot_dst_sel_trunc =
       keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q);
 
-  // AscentLint: Tie off upper bits of the slot selection register field if not the
-  // full register width is used.
-  if (NumInstHwSlotWidth < prim_util_pkg::vbits(NumMaxHwSlot)) begin : gen_unused_slot_sel_bits
-    logic unused_dst_slot_sel;
-    logic unused_src_slot_sel;
-    assign unused_dst_slot_sel = ^reg2hw.control_shadowed.slot_dst_sel.q[
-      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
-    assign unused_src_slot_sel = ^reg2hw.control_shadowed.slot_src_sel.q[
-      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
-  end
-
+  // SEC_CM: INTERNAL.KEY.SW_NOACCESS
   keymgr_dpe_ctrl # (
     .NumInstHwSlot(NumInstHwSlot),
     .NumInstHwSlotWidth(NumInstHwSlotWidth),
@@ -380,16 +406,15 @@ module keymgr_dpe
     .reseed_cnt_err_i(reseed_cnt_err),
     .sideload_sel_err_i(sideload_sel_err),
     .sideload_fsm_err_i(sideload_fsm_err),
+    .kdf_engine_mubi_err_i(kdf_engine_mubi_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_reseed_done_i(reseed_done),
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
-    .load_root_key_lock_i(reg2hw.load_root_key_lock.q),
-    .load_secondary_root_key_lock_i(reg2hw.load_secondary_root_key_lock.q),
-    // TODO(#384): Add assertions to check that we are not losing some bits by casting
-    // slot_src/dst_sel bits to enum type
+    .load_root_key_lock_i(mubi4_t'(reg2hw.load_root_key_lock.q)),
+    .load_secondary_root_key_lock_i(mubi4_t'(reg2hw.load_secondary_root_key_lock.q)),
     .slot_src_sel_i(slot_src_sel_trunc),
     .slot_dst_sel_i(slot_dst_sel_trunc),
     .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
@@ -425,7 +450,9 @@ module keymgr_dpe
     .kmac_done_err_i(kmac_done_err),
     .kmac_cmd_err_i(kmac_cmd_err),
     .kmac_data_i(kmac_data_truncated),
-    .dest_sel_oob_i(dest_sel_oob)
+    .dest_sel_oob_i(dest_sel_oob),
+    .slot_src_sel_oob_i(slot_src_sel_oob),
+    .slot_dst_sel_oob_i(slot_dst_sel_oob)
   );
 
   assign hw2reg.start.d  = '0;
@@ -528,6 +555,7 @@ module keymgr_dpe
   // input checking
   logic creator_seed_chk_vld, creator_seed_vld;
   logic owner_seed_chk_vld, owner_seed_vld;
+  logic field_entropy_chk_vld;
   logic devid_vld;
   logic health_state_vld;
 
@@ -536,22 +564,29 @@ module keymgr_dpe
   assign sw_binding = reg2hw.sw_binding;
 
   // ROM_CTRL digests.
-  logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
+  logic [SeedWidth*NumRomDigestInputs-1:0] rom_digests;
   always_comb begin
     rom_digests = '0;
     for (int k = 0; k < NumRomDigestInputs; k++) begin
-      rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
+      rom_digests[SeedWidth*k +: SeedWidth] = rom_digest_i[k].data;
     end
   end
 
-  // Advance to creator_root_key
+  // Consumed during the CreatorIntKey derivation
+  // If the field entropy is provisioned then the secret is selected automatically.
+  // Otherwise use the netlist constant `field_entropy_seed`.
+  logic [SeedWidth-1:0] field_entropy_binding;
+  assign field_entropy_binding = (field_entropy.secret_valid) ?
+      field_entropy.secret : field_entropy_seed;
+
+  // Consumed during the OwnerIntKey derivation
   // The values coming from the seed provider (otp_ctrl / rram_ctrl) / lc_ctrl are treated as
   // quasi-static for CDC purposes
-  logic [KeyWidth-1:0] creator_seed;
+  logic [SeedWidth-1:0] creator_seed;
   assign creator_seed = creator_seed_i.seed;
 
-  // Advance to owner_intermediate_key
-  logic [KeyWidth-1:0] owner_seed;
+  // Consumed during the OwnerKey derivation
+  logic [SeedWidth-1:0] owner_seed;
   assign owner_seed = owner_seed_i.seed;
 
   // A seed is only valid if its provider marks it as valid and it passes the input checks.
@@ -562,6 +597,8 @@ module keymgr_dpe
   // consumed in BootStageCreator.
   logic [DpeAdvDataWidth-1:0] adv_data_creator;
   logic adv_data_creator_valid;
+  logic [DpeAdvDataWidth-1:0] adv_data_creator_int;
+  logic adv_data_creator_int_valid;
   logic [DpeAdvDataWidth-1:0] adv_data_owner_int;
   logic adv_data_owner_int_valid;
   if (NumBootStages == 2) begin : gen_adv_matrix_for_two_boot_stages
@@ -577,7 +614,9 @@ module keymgr_dpe
                                     creator_seed_vld;
     assign adv_data_owner_int = '0;
     assign adv_data_owner_int_valid = '0;
-  end else begin : gen_adv_matrix_for_three_boot_stages
+    assign adv_data_creator_int = '0;
+    assign adv_data_creator_int_valid = '0;
+  end else begin : gen_adv_matrix_for_four_boot_stages
     assign adv_data_creator = DpeAdvDataWidth'({sw_binding,
                                                 device_id_i,
                                                 lc_keymgr_div_i,
@@ -586,6 +625,9 @@ module keymgr_dpe
     assign adv_data_creator_valid = devid_vld &
                                     health_state_vld &
                                     rom_digest_vld;
+    assign adv_data_creator_int = DpeAdvDataWidth'({sw_binding,
+                                                    field_entropy_binding});
+    assign adv_data_creator_int_valid = field_entropy_chk_vld;
     assign adv_data_owner_int = DpeAdvDataWidth'({sw_binding,
                                                   creator_seed});
     assign adv_data_owner_int_valid = creator_seed_vld;
@@ -598,9 +640,15 @@ module keymgr_dpe
 
     if ((reg2hw.control_shadowed.sw_binding_only.q == 1'b0) &&
         mubi4_test_false_strict(mubi4_t'(reg2hw.enforce_sw_binding.q))) begin
-      // For (0 = Creator) / (1 = OwnerInt) / (2 = Owner), check seed validity
+      // Assign additional hw binding value for the following bootstages:
+      // - 0 = Creator
+      // - 1 = CreatorInt (NumBootStages == 4 only)
+      // - 2 = OwnerInt (NumBootStages == 4 only)
+      // - 3 = Owner
       adv_matrix[BootStageCreator] = adv_data_creator;
       adv_dvalid[BootStageCreator] = adv_data_creator_valid;
+      adv_matrix[BootStageCreatorInt] = adv_data_creator_int;
+      adv_dvalid[BootStageCreatorInt] = adv_data_creator_int_valid;
       adv_matrix[BootStageOwnerInt] = adv_data_owner_int;
       adv_dvalid[BootStageOwnerInt] = adv_data_owner_int_valid;
       adv_matrix[BootStageOwner] = DpeAdvDataWidth'({sw_binding, owner_seed});
@@ -631,14 +679,14 @@ module keymgr_dpe
   // | 7 | Invalid        | True             | Invalid (= enforce value)  | 1                     |
   // | 8 | Invalid        | False            | False                      | 0                     |
 
-  // SEC_CM: ENFORCE_SW_BINDING.CTRL.CONSISTENCY, ENFORCE_SW_BINDING.CTRL.MUBI
+  // SEC_CM: ENFORCE_SW_BINDING.CTRL.LOCK_MUBI
   assign enforce_sw_binding_err = mubi4_and_hi(
       mubi4_t'(reg2hw.enforce_sw_binding.q), adv_consumes_hw_binding);
 
   // Generate output operation input construction
-  logic [KeyWidth-1:0] output_key;
+  logic [SeedWidth-1:0] output_key;
   keymgr_dpe_key_dest_e dest_sel;
-  logic [KeyWidth-1:0] dest_seed;
+  logic [SeedWidth-1:0] dest_seed;
 
   assign dest_sel = keymgr_dpe_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
 
@@ -666,7 +714,7 @@ module keymgr_dpe
                                            Otbn,
                                            Hmac});
 
-  hw_key_req_t curr_active_key;
+  internal_key_t curr_active_key;
   assign curr_active_key = '{
     valid: active_key_slot.valid,
     key: active_key_slot.key
@@ -686,11 +734,13 @@ module keymgr_dpe
     .key_version_i('0),
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),
+    .field_entropy_i(field_entropy_binding),
     .key_i(curr_active_key),
     .devid_i(device_id_i),
     .health_state_i(lc_keymgr_div_i),
     .creator_seed_vld_o(creator_seed_chk_vld),
     .owner_seed_vld_o(owner_seed_chk_vld),
+    .field_entropy_vld_o(field_entropy_chk_vld),
     .devid_vld_o(devid_vld),
     .health_state_vld_o(health_state_vld),
     // In keymgr_dpe, key version comparison is handled by the ctrl logic.
@@ -707,6 +757,7 @@ module keymgr_dpe
   assign hw2reg.debug.invalid_key.d                = ~key_vld;
   assign hw2reg.debug.invalid_digest.d             = ~rom_digest_vld;
   assign hw2reg.debug.invalid_root_key.d           = ~root_key.valid;
+  assign hw2reg.debug.invalid_field_entropy.d      = ~field_entropy_chk_vld;
   assign hw2reg.debug.invalid_secondary_root_key.d = ~secondary_root_key.valid;
   assign hw2reg.debug.inactive_lc_en.d             = lc_tx_test_false_loose(
                                                        lc_keymgr_en[KeymgrDpeEnDebug]);
@@ -717,23 +768,30 @@ module keymgr_dpe
   assign is_owner_boot_stage     = active_key_slot.boot_stage == BootStageOwner;
 
   // dev_id, health_state and rom digest is used when boot_stage is incremented
-  // from 0 (= Creator) to 1 (= OwnerInt)
+  // from 0 (= Creator) to either 1 (= CreatorInt) in the four-stage configuration
+  // or 3 (= Owner) in the two-stage configuration.
   assign hw2reg.debug.invalid_dev_id.de       = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_health_state.de = adv_en & is_creator_boot_stage;
   assign hw2reg.debug.invalid_digest.de       = adv_en & is_creator_boot_stage;
 
-  // creator_seed is consumed when boot_stage is incremented from 1 (= OwnerInt)
-  // to 2 (= Owner) in the three-stage configuration, or from 0 (= Creator) to
-  // 2 (= Owner) in the two-stage configuration (where OwnerInt is omitted).
-  if (NumBootStages == 2) begin : gen_invalid_creator_seed_for_2_boot_stages
+  // creator_seed is consumed when boot_stage is incremented from 2 (= OwnerInt)
+  // to 3 (= Owner) in the four-stage configuration, or from 0 (= Creator) to
+  // 3 (= Owner) in the two-stage configuration (where CreatorInt / OwnerInt is
+  // omitted).
+  // field_entropy is consumed when boot_stage is incremented from 1 (= CreatorInt)
+  // to 2 (= OwnerInt) in the four-stage configuration only.
+  if (NumBootStages == 2) begin : gen_invalid_seed_de_for_2_boot_stages
     assign hw2reg.debug.invalid_creator_seed.de =
         adv_en & is_creator_boot_stage;
-  end else begin : gen_invalid_creator_seed_for_3_boot_stages
+    assign hw2reg.debug.invalid_field_entropy.de = 1'b0;
+  end else begin : gen_invalid_seed_de_for_4_boot_stages
     assign hw2reg.debug.invalid_creator_seed.de =
         adv_en & (active_key_slot.boot_stage == BootStageOwnerInt);
+    assign hw2reg.debug.invalid_field_entropy.de =
+        adv_en & (active_key_slot.boot_stage == BootStageCreatorInt);
   end
 
-  // owner_seed is used when boot_stage is incremented from 2 (= Owner) to 3 (= Runtime).
+  // owner_seed is used when boot_stage is incremented from 3 (= Owner) to 4 (= Runtime).
   assign hw2reg.debug.invalid_owner_seed.de    = adv_en & is_owner_boot_stage;
 
   // key validity and versions are checked regardless of the boot stage, when there is an ongoing
@@ -755,6 +813,10 @@ module keymgr_dpe
   /////////////////////////////////////
   //  KMAC Control
   /////////////////////////////////////
+
+  // Intermediate signal to multiplex either otbn or kmac as KDF
+  kmac_pkg::app_req_t kmac_app_req;
+  kmac_pkg::app_rsp_t kmac_app_rsp;
 
   // `invalid_data` only checks key and message data that goes into KMAC interface is valid.
   // It does not check the validity of the requested operation, with respect to other inputs
@@ -792,8 +854,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o,
-    .kmac_data_i,
+    .kmac_data_o(kmac_app_req),
+    .kmac_data_i(kmac_app_rsp),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -801,6 +863,55 @@ module keymgr_dpe
     .cmd_error_o(kmac_cmd_err)
   );
 
+  /////////////////////////////////////
+  //  KDF SELECTION
+  /////////////////////////////////////
+
+  // This signal is used to prevent a reconfiguration of the kdf_engine while an operation
+  // is ongoing. It latches the `reg2hw.kdf_engine_shadowed` only when no operation is
+  // ongoing (cfg_regwen == 1'b1). In the trivial case of a single kdf_engine it is either
+  // tied to `MuBi4False` (kmac) or `MuBi4True` (otbn) permanently.
+  mubi4_t locked_kdf_selection_q;
+  if (KdfEngineSel == KdfEngineBoth) begin : gen_kdf_engine_selection
+    mubi4_t locked_kdf_selection_d;
+    assign locked_kdf_selection_d = cfg_regwen ?
+        mubi4_t'(reg2hw.kdf_engine_shadowed.q) : locked_kdf_selection_q;
+
+    logic [MuBi4Width-1:0] locked_kdf_selection_q_raw;
+    prim_flop #(
+      .Width(MuBi4Width),
+      .ResetValue(MuBi4Width'(MuBi4False))
+    ) u_flop_kdf_selection (
+      .clk_i,
+      .rst_ni,
+      .d_i(MuBi4Width'(locked_kdf_selection_d)),
+      .q_o(locked_kdf_selection_q_raw)
+    );
+    assign locked_kdf_selection_q = mubi4_t'(locked_kdf_selection_q_raw);
+  end else begin : gen_single_kdf_engine
+    // Hardcode either `OTBN` or `KMAC` as kdf engine
+    assign locked_kdf_selection_q = (KdfEngineSel == KdfEngineKmac) ? MuBi4False : MuBi4True;
+    logic unused_kdf_selection_register;
+    assign unused_kdf_selection_register = ^reg2hw.kdf_engine_shadowed.q;
+  end
+
+  // If the OTBN can be used as KDF (indicated by `KdfEngineSel`) then the KMAC
+  // interface is muxed between the KMAC and the OTBN.
+  assign kmac_app_rsp = mubi4_test_true_strict(locked_kdf_selection_q) ? otbn_app_i : kmac_app_i;
+  assign kmac_app_o   = mubi4_test_true_strict(locked_kdf_selection_q) ?
+      kmac_pkg::APP_REQ_DEFAULT : kmac_app_req;
+  assign otbn_app_o   = mubi4_test_true_strict(locked_kdf_selection_q) ?
+      kmac_app_req : kmac_pkg::APP_REQ_DEFAULT;
+
+  // The `sensitive_key_o` is true if:
+  // - `locked_kdf_selection_q` indicates OTBN as KDF
+  // - The sideload interface provides an internal key to the KDF (kmac_key.valid)
+  assign sensitive_key_o = KdfEngineSel inside {KdfEngineOtbn, KdfEngineBoth} ?
+      mubi4_and_hi(locked_kdf_selection_q, mubi4_bool_to_mubi(kmac_key.valid)) : MuBi4False;
+
+  // Verify mubi signal is correctly encoded
+  // SEC_CM: KDF_ENGINE.CTRL.MUBI
+  assign kdf_engine_mubi_err = mubi4_test_invalid(locked_kdf_selection_q);
 
   /////////////////////////////////////
   //  Side load key storage
@@ -815,6 +926,7 @@ module keymgr_dpe
     .wipe_key_i(wipe_key),
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),
+    .otbn_as_kdf_engine_i(locked_kdf_selection_q),
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     .data_en_i(data_hw_en),
     .data_valid_i(data_valid),
@@ -829,7 +941,7 @@ module keymgr_dpe
     .fsm_err_o(sideload_fsm_err)
   );
 
-  for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
+  for (genvar i = 0; i < NumOutReg; i++) begin : gen_sw_assigns
 
     mubi4_t [1:0] hw_key_sel_buf;
     prim_mubi4_sync #(
@@ -844,16 +956,18 @@ module keymgr_dpe
 
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share0_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[0] :
+                                     kmac_data[0][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share0_output[i].d)
     );
 
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share1_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[1] :
+                                     kmac_data[1][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share1_output[i].d)
     );
 
@@ -999,7 +1113,9 @@ module keymgr_dpe
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
+  `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
+  `ASSERT_KNOWN(SensitiveKeyKnownO_A, sensitive_key_o)
 
 
   // kmac parameter consistency
@@ -1014,11 +1130,18 @@ module keymgr_dpe
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
 
+  // Verify the kdf engine selection parameter
+  `ASSERT_INIT(InvalidKdfEngineSelection_A,
+      KdfEngineSel inside {KdfEngineKmac, KdfEngineOtbn, KdfEngineBoth})
+
   // Verify supported number of boot stage
-  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
+  `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 4})
 
   // Verify the metadata do not exceed the width of the sw registers
   `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
+
+  // Verify the SW output registers do not exceed the width of the KDF digest
+  `ASSERT_INIT(SwOutFitsInDigest_A, NumOutReg * top_pkg::TL_DW <= kmac_pkg::AppDigestW)
 
   // Verify the number of instanciated HW slots
   `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)

@@ -67,7 +67,6 @@ interface clkmgr_if (
       io_spi_host1_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_spi_host1_en.q,
       usb_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_usb_peri_en.q,
       io_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_peri_en.q,
-      io_div2_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div2_peri_en.q,
       io_div4_peri_en: `CLKMGR_HIER.reg2hw.clk_enables.clk_io_div4_peri_en.q
     };
 
@@ -257,26 +256,6 @@ interface clkmgr_if (
   clocking peri_io_div4_cb @(posedge clocks_o.clk_io_div4_powerup or negedge rst_io_n);
     input ip_clk_en = ip_clk_en_io_div4_ffs[PIPELINE_DEPTH-1];
     input clk_enable = clk_enable_io_div4_ffs[PIPELINE_DEPTH-1];
-  endclocking
-
-  logic [PIPELINE_DEPTH-1:0] clk_enable_io_div2_ffs;
-  logic [PIPELINE_DEPTH-1:0] ip_clk_en_io_div2_ffs;
-  always @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n) begin
-    if (rst_io_n) begin
-      clk_enable_io_div2_ffs <= {
-        clk_enable_io_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
-      };
-      ip_clk_en_io_div2_ffs <= {
-        ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en
-      };
-    end else begin
-      clk_enable_io_div2_ffs <= '0;
-      ip_clk_en_io_div2_ffs  <= '0;
-    end
-  end
-  clocking peri_io_div2_cb @(posedge clocks_o.clk_io_div2_powerup or negedge rst_io_n);
-    input ip_clk_en = ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-1];
-    input clk_enable = clk_enable_io_div2_ffs[PIPELINE_DEPTH-1];
   endclocking
 
   logic [PIPELINE_DEPTH-1:0] clk_enable_io_peri_ffs;

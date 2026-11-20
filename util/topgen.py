@@ -459,6 +459,30 @@ def generate_regfile_from_path(hjson_path: Path,
         sys.exit(1)
 
 
+def _gen_pad_attr_resvals(
+        top: ConfigT) -> Tuple[List[Tuple[str, Dict]], List[Tuple[str, Dict]]]:
+    """Get the reset values of the pad attributes defined by the pinout of the top.
+
+    Returns a list of (name, attrs) tuples for the MIO pads and one for the DIOs, ordered by their
+    PAD_ATTR CSR index. The attrs are passed as defined in the hjson. Pads without attrs get an
+    empty dict.
+    """
+    mio_attrs = [(pad['name'], pad.get('attrs', {}))
+                 for pad in top['pinout']['pads'] if pad['connection'] == 'muxed']
+
+    # We do not support default attrs for manual signals because it is not clear to which pad they
+    # are connected to.
+    dios = sorted((io for io in top['pinmux']['ios'] if io['connection'] != 'muxed'),
+                  key=lambda io: io['glob_idx'])
+    dio_attrs = []
+    pads = {pad['name']: pad for pad in top['pinout']['pads']}
+    for io in dios:
+        pad = pads.get(io['pad']) if io['connection'] == 'direct' else None
+        dio_attrs.append((pad['name'], pad.get('attrs', {})) if pad else (io['name'], {}))
+
+    return mio_attrs, dio_attrs
+
+
 def _get_pinmux_params(top: ConfigT) -> ParamsT:
     """Gets parameters for pinmux ipgen from top config."""
     # Generation without pinmux and pinout configuration is not supported.
@@ -509,6 +533,9 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     assert (n_mio_pads > 0)
     assert (n_dio_pads > 0)
 
+    # Determine the reset values of the pad attribute CSRs.
+    mio_pad_attr_resvals, dio_pad_attr_resvals = _gen_pad_attr_resvals(top)
+
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
@@ -527,11 +554,14 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_mio_pads": n_mio_pads,
         "n_mio_periph_in": n_mio_periph_in,
         "n_mio_periph_out": n_mio_periph_out,
+        "mio_pad_attr_resvals": mio_pad_attr_resvals,
         "n_dio_pads": n_dio_pads,
+        "dio_pad_attr_resvals": dio_pad_attr_resvals,
         "n_dio_periph_in": n_dio_periph_in,
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
+        "enable_rram_tap": pinmux.get('enable_rram_tap', False),
     })
     return ipgen_params
 
@@ -1332,14 +1362,20 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     for inst in topcfg["module"]:
         if lib.is_ipgen(inst):
             template_type = inst["template_type"]
-            if (template_type not in ["rv_plic", "alert_handler"] and
-               template_type in ipgen_instances):
+            # Multiple GPIO instances must share the generated module, i.e., have the same type and
+            # ipgen params. hjson loads the params as an OrderedDict, whose equality depends on key
+            # order, so compare the items() views instead, which compare as sets. This is
+            # intentionally a shallow comparison and isn't expected to handle nested OrderedDicts.
+            shares_module = all(template_type == "gpio" and inst["type"] == other["type"] and
+                                get_ipgen_params(inst).items() == get_ipgen_params(other).items()
+                                for other in ipgen_instances.get(template_type, []))
+            if template_type not in ["rv_plic", "alert_handler"] and not shares_module:
                 multi_instance_ipgens.append(inst)
             else:
-                ipgen_instances[inst["template_type"]].append(inst)
+                ipgen_instances[template_type].append(inst)
     if multi_instance_ipgens:
-        raise SystemExit("There are ipgen modules with multiple instances: "
-                         f"{multi_instance_ipgens}")
+        raise SystemExit("There are ipgen modules with multiple instances that differ in type or "
+                         f"ipgen_params: {multi_instance_ipgens}")
 
     if "gpio" in ipgen_instances:
         instance = ipgen_instances["gpio"][0]
@@ -1491,8 +1527,12 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
 
     ipgens_by_template_type = defaultdict(list)
     for m in topcfg["module"]:
-        if m.get("attr") == "ipgen":
-            ipgens_by_template_type[m["template_type"]].append(m)
+        if m.get("attr") != "ipgen":
+            continue
+        # Instances sharing a type share the generated module, so render it only once.
+        if any(x["type"] == m["type"] for x in ipgens_by_template_type[m["template_type"]]):
+            continue
+        ipgens_by_template_type[m["template_type"]].append(m)
 
     generate_modules("clkmgr", single_instance=True, get_params=get_clkmgr_params)
     generate_modules("flash_ctrl", single_instance=True, get_params=_get_flash_ctrl_params)

@@ -17,7 +17,7 @@
       stage: V1
       si_stage: SV2
       lc_states: ["PROD"]
-      tests: ["chip_sw_gpio"]
+      tests: ["chip_sw_gpio0", "chip_sw_gpio1"]
       bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
@@ -31,7 +31,7 @@
       stage: V1
       si_stage: SV2
       lc_states: ["PROD"]
-      tests: ["chip_sw_gpio"]
+      tests: ["chip_sw_gpio0", "chip_sw_gpio1"]
       bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
@@ -46,7 +46,7 @@
       stage: V1
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_gpio"]
+      tests: ["chip_sw_gpio0", "chip_sw_gpio1"]
       bazel: ["//sw/device/tests:gpio_intr_test"]
     }
   ]

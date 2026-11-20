@@ -7,8 +7,6 @@
 //
 // If both clocks are stopped for whatever reason, this module is effectively dead.
 
-`include "prim_assert.sv"
-
 module prim_clock_timeout #(
   parameter int TimeOutCnt = 16,
   localparam int CntWidth = prim_util_pkg::vbits(TimeOutCnt+1)

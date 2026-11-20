@@ -21,7 +21,7 @@ class chip_sw_sleep_por_reset_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for pad POR")
     // Give the chip enough time to fall asleep.
     //cfg.chip_vif.aon_clk_por_rst_if.wait_clks(10);
-    `uvm_info(`gfn, "Flipping POR_N", UVM_MEDIUM)
+    `uvm_info(`gfn, "Flipping POR_N and/or PORA_N", UVM_MEDIUM)
     execute_reset();
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRom)
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)

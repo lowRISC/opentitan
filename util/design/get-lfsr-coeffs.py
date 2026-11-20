@@ -36,6 +36,8 @@ LINE_FILTER = [
     'Table 3: Taps for Maximum-Length LFSR Counters',
     'XAPP 052 July 7,1996 (Version 1.1)'
 ]
+# entries in [2] that should be overridden
+COEFF_OVERRIDES = {102: '30000000000000000003000000'}
 
 
 # helper function to write out coeffs
@@ -155,6 +157,9 @@ def main():
             # convert to bitmask
             for k in range(len(coeffs)):
                 coeffs[k] = to_bit_mask(coeffs[k])
+
+            for (w, c) in COEFF_OVERRIDES.items():
+                coeffs[widths.index(w)] = c
 
         else:
             os.chdir(args.tempfolder)

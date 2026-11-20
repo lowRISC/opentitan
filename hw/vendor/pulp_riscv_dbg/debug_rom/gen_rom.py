@@ -40,6 +40,16 @@ license = """\
 // Auto-generated code
 """
 
+# The CHERIoT ROM also carries the copyright of its CHERIoT conversion.
+cheriot_license = """\
+/*
+ * Copyright lowRISC contributors (OpenTitan project).
+ *
+ * Conversion to CHERIoT Ibex ISA from RISC-V
+ *   Copyright SCI Semiconductor 2025
+ *
+""" + license.replace("/* Copyright 2018", " * Copyright 2018", 1)
+
 module = """\
 module $filename (
   input  logic         clk_i,
@@ -133,6 +143,6 @@ with open(filename + ".sv", "w") as f:
     # remove the trailing comma
     rom_str = rom_str[:-2]
 
-    f.write(license)
+    f.write(cheriot_license if filename.endswith("_cheriot") else license)
     s = Template(module)
     f.write(s.substitute(filename=filename, size=int(len(rom)/8), content=rom_str))

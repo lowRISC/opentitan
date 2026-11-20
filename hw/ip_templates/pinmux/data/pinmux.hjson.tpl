@@ -5,14 +5,24 @@
 ## PINMUX register template
 ##
 ## Parameter (given by Python tool)
-##  - n_mio_periph_in:     Number of muxed peripheral inputs
-##  - n_mio_periph_out:    Number of muxed peripheral outputs
-##  - n_mio_pads:          Number of muxed IO pads
-##  - n_dio_periph_in:     Number of dedicated peripheral inputs
-##  - n_dio_periph_out:    Number of dedicated peripheral outputs
-##  - n_dio_pads:          Number of dedicated IO pads
-##  - n_wkup_detect:       Number of wakeup condition detectors
-##  - wkup_cnt_width:      Width of wakeup counters
+##  - n_mio_periph_in:      Number of muxed peripheral inputs
+##  - n_mio_periph_out:     Number of muxed peripheral outputs
+##  - n_mio_pads:           Number of muxed IO pads
+##  - mio_pad_attr_resvals: A list of (name, attrs) tuples for each MIO pad. attrs can map
+##                          MIO_PAD_ATTR fields to non-default reset values.
+##  - n_dio_periph_in:      Number of dedicated peripheral inputs
+##  - n_dio_periph_out:     Number of dedicated peripheral outputs
+##  - n_dio_pads:           Number of dedicated IO pads
+##  - dio_pad_attr_resvals: A list of (name, attrs) tuples for each DIO pad. attrs can map
+##                          DIO_PAD_ATTR fields to non-default reset values.
+##  - n_wkup_detect:        Number of wakeup condition detectors
+##  - wkup_cnt_width:       Width of wakeup counters
+<%!
+  from ipgen.pinmux_gen import check_params, render_attr_resval
+%>\
+<%
+  check_params(n_mio_pads, n_dio_pads, mio_pad_attr_resvals, dio_pad_attr_resvals)
+%>\
 {
   name:               "pinmux",
   human_name:         "Pin Multiplexer",
@@ -28,11 +38,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_pinmux",
-  version:            "1.1.1",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+      {
+          version:            "1.1.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+          commit_id:          "78ad89d1aa5f81cca93a0a5c103eec42e37e4759",
+      },
+      {
+          version:            "2.0.0",
+          life_stage:         "L1",
+          design_stage:       "D1",
+          verification_stage: "V1",
+          dif_stage:          "S1",
+      },
+  ]
   notes:              "Use FPV to perform block level verification.",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
@@ -99,6 +121,19 @@
                Test enable qualifier coming from life cycle controller, used for HW strap qualification.
                '''
     }
+  % if enable_rram_tap:
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_nvm_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               NVM debug enable coming from life cycle controller.
+               The RRAM TAP can only be selected while this signal is On.
+               '''
+    }
+  % endif
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_escalate_en"
@@ -162,6 +197,17 @@
       desc:    '''
                Qualified JTAG signals for DFT TAP.
                ''',}
+  % if enable_rram_tap:
+
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "rram_jtag"
+      act:     "req"
+      package: "jtag_pkg"
+      desc:    '''
+               Qualified JTAG signals for the RRAM TAP.
+               ''',}
+  % endif
 
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",
@@ -437,6 +483,11 @@
     { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
       desc: "The life cycle check bypass signal is multibit encoded."
     }
+  % if enable_rram_tap:
+    { name: "LC_NVM_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle NVM debug enable signal is multibit encoded."
+    }
+  % endif
     { name: "PINMUX_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: '''In order to support the NDM reset feature in RV_DM,
                the pinmux latches the LC_HW_DEBUG_EN signal so that it can survive
@@ -449,6 +500,9 @@
                is gated by life cycle signals so that the RV_DM can only
                be selected during when LC_HW_DEBUG_EN is asserted, and
                the DFT TAP can only be selected when LC_DFT_EN is asserted.
+  % if enable_rram_tap:
+               The RRAM TAP can only be selected when LC_NVM_DEBUG_EN is asserted.
+  % endif
             '''
     }
   % endif
@@ -574,9 +628,7 @@
     { multireg: { name:     "MIO_PAD_ATTR",
                   desc:     '''
                             Muxed pad attributes.
-                            This register has WARL behavior since not each pad type may support
-                            all attributes.
-                            The muxed pad that is used for TAP strap 0 has a different reset value, with `pull_en` set to 1.
+                            This register has WARL behavior since not each pad type may support all attributes.
                             ''',
                   count:        "NMioPads",
                   compact:      "false",
@@ -587,22 +639,25 @@
                   regwen:       "MIO_PAD_ATTR_REGWEN",
                   regwen_multi: "true",
                   cname:        "MIO_PAD",
-                  resval:       0
                   fields: [
                     { bits: "0",
                       name: "invert",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "invert")}
                       desc: "Invert input and output levels."
                     },
                     { bits: "1",
                       name: "virtual_od_en",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "virtual_od_en")}
                       desc: "Enable virtual open drain."
                     },
                     { bits: "2",
                       name: "pull_en",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "pull_en")}
                       desc: "Enable pull-up or pull-down resistor."
                     },
                     { bits: "3",
                       name: "pull_select",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "pull_select")}
                       desc: "Pull select (0: pull-down, 1: pull-up)."
                       enum: [
                         { value: "0",
@@ -617,18 +672,22 @@
                     },
                     { bits: "4",
                       name: "keeper_en",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "keeper_en")}
                       desc: "Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`."
                     },
                     { bits: "5",
                       name: "schmitt_en",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "schmitt_en")}
                       desc: "Enable the schmitt trigger."
                     },
                     { bits: "6",
                       name: "od_en",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "od_en")}
                       desc: "Enable open drain."
                     },
                     { bits: "7",
                       name: "input_disable",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "input_disable")}
                       desc: '''
                             Disable input drivers.
                             Setting this to 1 for pads that are not used as input can reduce their leakage current.
@@ -636,18 +695,21 @@
                     },
                     { bits: "17:16",
                       name: "slew_rate",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "slew_rate")}
                       desc: "Slew rate (0x0: slowest, 0x3: fastest)."
                     },
                     { bits: "23:20",
                       name: "drive_strength",
+                      resval: ${render_attr_resval(mio_pad_attr_resvals, "drive_strength")}
                       desc: "Drive strength (0x0: weakest, 0xf: strongest)"
                     }
                   ],
-                  // these CSRs have WARL behavior and may not
+                  // These CSRs have WARL behavior and may not
                   // read back the same value that was written to them.
-                  // further, they have hardware side effects since they drive the
+                  // Further, they have hardware side effects since they drive the
                   // pad attributes, and hence no random data should be written to them.
-                  // Additionally, their reset value is defined by the RTL implementation and may not equal `resval` for all instances (#24621).
+                  // Their reset value can be defined by the top and the WARL read back filter
+                  // changes `resval` if the pad does not support all attributes.
                   tags: ["excl:CsrAllTests:CsrExclAll"]
                 }
     },
@@ -690,22 +752,25 @@
                   regwen:       "DIO_PAD_ATTR_REGWEN",
                   regwen_multi: "true",
                   cname:        "DIO_PAD",
-                  resval:       0,
                   fields: [
                     { bits: "0",
                       name: "invert",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "invert")}
                       desc: "Invert input and output levels."
                     },
                     { bits: "1",
                       name: "virtual_od_en",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "virtual_od_en")}
                       desc: "Enable virtual open drain."
                     },
                     { bits: "2",
                       name: "pull_en",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "pull_en")}
                       desc: "Enable pull-up or pull-down resistor."
                     },
                     { bits: "3",
                       name: "pull_select",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "pull_select")}
                       desc: "Pull select (0: pull-down, 1: pull-up)."
                       enum: [
                         { value: "0",
@@ -720,18 +785,22 @@
                     },
                     { bits: "4",
                       name: "keeper_en",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "keeper_en")}
                       desc: "Enable keeper termination. This weakly drives the previous pad output value when output is disabled, similar to a verilog `trireg`."
                     },
                     { bits: "5",
                       name: "schmitt_en",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "schmitt_en")}
                       desc: "Enable the schmitt trigger."
                     },
                     { bits: "6",
                       name: "od_en",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "od_en")}
                       desc: "Enable open drain."
                     },
                     { bits: "7",
                       name: "input_disable",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "input_disable")}
                       desc: '''
                             Disable input drivers.
                             Setting this to 1 for pads that are not used as input can reduce their leakage current.
@@ -739,18 +808,22 @@
                     },
                     { bits: "17:16",
                       name: "slew_rate",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "slew_rate")}
                       desc: "Slew rate (0x0: slowest, 0x3: fastest)."
                     },
                     { bits: "23:20",
                       name: "drive_strength",
+                      resval: ${render_attr_resval(dio_pad_attr_resvals, "drive_strength")}
                       desc: "Drive strength (0x0: weakest, 0xf: strongest)"
                     }
                   ],
-                  // these CSRs have WARL behavior and may not
+                  // These CSRs have WARL behavior and may not
                   // read back the same value that was written to them.
-                  // further, they have hardware side effects since they drive the
+                  // Further, they have hardware side effects since they drive the
                   // pad attributes, and hence no random data should be written to them.
-                  tags: ["excl:CsrAllTests:CsrExclWrite"]
+                  // Their reset value can be defined by the top and the WARL read back filter
+                  // changes `resval` if the pad does not support all attributes.
+                  tags: ["excl:CsrAllTests:CsrExclAll"]
                 }
     },
 
@@ -1187,5 +1260,30 @@
                 }
 
     },
+  % if enable_strap_sampling and enable_rram_tap:
+    { name: "RRAM_JTAG_SEL",
+      desc: '''
+            Enables the RRAM TAP on the TAP strap value 0, which selects no TAP otherwise.
+            While this register is set to kMultiBitBool4True and lc_nvm_debug_en is On, the TAP strap value 0 selects the RRAM TAP.
+            In all other cases, the TAP strap value 0 selects no TAP as usual.
+            The LC, RV and DFT TAPs are not affected, so this register can be written through RV_DM before the TAP straps switch to the RRAM TAP.
+            A reset clears this register.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits:   "3:0",
+          name:   "VAL",
+          mubi:   true,
+          resval: false,
+          desc:   '''
+                  Set to kMultiBitBool4True to enable the RRAM TAP on the TAP strap value 0.
+                  '''
+          // A random write can select the RRAM TAP and take over the JTAG pads.
+          tags: ["excl:CsrAllTests:CsrExclWrite"]
+        }
+      ]
+    },
+  % endif
   ],
 }

@@ -298,19 +298,22 @@ module otp_ctrl
   `ASSERT(PartSelMustBeOnehot_A, $onehot0(tlul_part_sel_oh))
 
   logic [NumPartWidth-1:0] tlul_part_idx;
+  // Some tools reject assignment patterns in port connections.
+  logic [31:0] tlul_part_sel_data [NumPart]; // prim_arbiter_fixed's default DW
+  assign tlul_part_sel_data = '{default: '0};
   prim_arbiter_fixed #(
     .N(NumPart),
     .EnDataPort(0)
   ) u_part_sel_idx (
     .clk_i,
     .rst_ni,
-    .req_i   ( tlul_part_sel_oh  ),
-    .data_i  ( '{default: '0}    ),
-    .gnt_o   (                   ), // unused
-    .idx_o   ( tlul_part_idx     ),
-    .valid_o (                   ), // unused
-    .data_o  (                   ), // unused
-    .ready_i ( 1'b0              )
+    .req_i   ( tlul_part_sel_oh   ),
+    .data_i  ( tlul_part_sel_data ),
+    .gnt_o   (                    ), // unused
+    .idx_o   ( tlul_part_idx      ),
+    .valid_o (                    ), // unused
+    .data_o  (                    ), // unused
+    .ready_i ( 1'b0               )
   );
 
   logic tlul_oob_err_d, tlul_oob_err_q;
@@ -803,6 +806,9 @@ end
   // hence they can share the same EDN interface.
   logic edn_req, edn_ack;
   logic key_edn_req, key_edn_ack;
+  // Some tools reject assignment patterns in port connections.
+  logic [31:0] edn_arb_data [2]; // prim_arbiter_tree's default DW
+  assign edn_arb_data = '{default: '0};
   prim_arbiter_tree #(
     .N(2),
     .EnDataPort(0)
@@ -811,7 +817,7 @@ end
     .rst_ni,
     .req_chk_i ( ~lc_escalate_en_any         ),
     .req_i     ( {lfsr_edn_req, key_edn_req} ),
-    .data_i    ( '{default: '0}              ),
+    .data_i    ( edn_arb_data                ),
     .gnt_o     ( {lfsr_edn_ack, key_edn_ack} ),
     .idx_o     (                             ), // unused
     .valid_o   ( edn_req                     ),
@@ -1566,9 +1572,13 @@ end
   ////////////////
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare1Size * 8)
+  `ASSERT_INIT(CreatorSeedSize_A,
+               keymgr_dpe_pkg::SeedWidth == CreatorSeedSize * 8)
+  `ASSERT_INIT(OwnerSeedSize_A,
+               keymgr_dpe_pkg::SeedWidth == OwnerSeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
   `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)

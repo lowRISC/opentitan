@@ -65,7 +65,7 @@ Providing this sequence as additional data to CSRNG requires software to write t
   </tr>
 </table>
 
-When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command paused mid-sequence, and finally the status and Generate command state, in the following order:
+When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command halted mid-sequence, and finally the status and Generate command state, in the following order:
 <table>
 <caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
 <thead>
@@ -130,15 +130,21 @@ When reading the internal state of an instance from [`INT_STATE_VAL`](registers.
 CSRNG supports pausing a single instance via [`INT_STATE_HALT`](registers.md#int_state_halt), reading out (or overwriting) its full internal DRBG state via [`INT_STATE_VAL`](registers.md#int_state_val), and resuming it:
 
 1. Select the target instance by writing its index to [`INT_STATE_NUM`](registers.md#int_state_num).
+   Writes of an index pointing to a reserved instance are ignored and raise [`RECOV_ALERT_STS.INT_STATE_NUM_INVALID_ALERT`](registers.md#recov_alert_sts).
 1. Set [`INT_STATE_HALT`](registers.md#int_state_halt) to `kMultiBitBool4True`.
    The halt applies to the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num), so only one instance can be halted at a time.
+   While [`INT_STATE_HALT`](registers.md#int_state_halt) is set, [`INT_STATE_NUM_REGWEN`](registers.md#int_state_num_regwen) is cleared and [`INT_STATE_NUM`](registers.md#int_state_num) cannot be written.
 1. Wait for the instance to quiesce, either by polling [`INT_STATE_STS`](registers.md#int_state_sts) or by waiting for the `cs_cmd_req_done` interrupt.
 1. Read all 26 words of the internal state through [`INT_STATE_VAL`](registers.md#int_state_val) to save it, or write all 26 words to restore it.
    Reserved bits are ignored on writes and read as 0.
-   The internal state includes the state of a Generate command paused mid-sequence, which continues once the instance is resumed.
-   Every read and every write advances the word pointer.
-   Switching from reads to writes, or from writes to reads, restarts the sequence at the first word.
-   Writing [`INT_STATE_NUM`](registers.md#int_state_num) also resets the word pointer to the first word.
+   The internal state includes the state of a Generate command halted mid-sequence, which continues once the instance is resumed.
+   Writing the last word of [`INT_STATE_VAL`](registers.md#int_state_val) discards any generated blocks that have not been consumed yet and clears a pending abort requested via [`GEN_ABORT`](registers.md#gen_abort).
+   The consumer can still read generated blocks while the instance is halted, so to avoid discarding them, wait for [`INT_STATE_STS.GENBITS_VLD`](registers.md#int_state_sts) to clear before restoring.
+   Each written word takes effect immediately, so stopping before all 26 words have been written leaves the instance with a mix of restored and previous state words.
+   Whether the instance continues a Generate command once resumed is determined by the Generate flag of the restored state.
+   If the Generate flag is set but the remaining Generate block count is 0, the instance acknowledges the Generate command upon resuming without producing further blocks.
+   Every read and every write advances the same word pointer.
+   Writing [`INT_STATE_NUM`](registers.md#int_state_num) resets the word pointer to the first word, so software should start every read or write sequence by writing [`INT_STATE_NUM`](registers.md#int_state_num).
 1. Set [`INT_STATE_HALT`](registers.md#int_state_halt) to `kMultiBitBool4False` to let the instance continue processing commands.
 
 [`INT_STATE_VAL`](registers.md#int_state_val) can be read independent of whether or not the instance is halted.
@@ -149,16 +155,15 @@ Halting the instance first prevents this.
 Reading requires [`CTRL.READ_INT_STATE`](registers.md#ctrl) to be set to `kMultiBitBool4True` and the selected instance's bit in [`INT_STATE_READ_ENABLE`](registers.md#int_state_read_enable) to be set.
 Writing requires [`CTRL.WRITE_INT_STATE`](registers.md#ctrl) to be set to `kMultiBitBool4True` and the selected instance's bit in [`INT_STATE_WRITE_ENABLE`](registers.md#int_state_write_enable) to be set.
 Otherwise, [`INT_STATE_VAL`](registers.md#int_state_val) reads as 0, writes are dropped, and the word pointer does not advance.
-Disabling read access while reading, or write access while writing, resets the word pointer to the first word.
 Halting requires the selected instance's bit in [`INT_STATE_HALT_ENABLE`](registers.md#int_state_halt_enable) to be set.
 Otherwise, setting [`INT_STATE_HALT`](registers.md#int_state_halt) has no effect on the instance and [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) remains 0.
 After reset, reading, writing and halting are enabled for all instances.
 Each of these settings can be locked via [`INT_STATE_READ_ENABLE_REGWEN`](registers.md#int_state_read_enable_regwen), [`INT_STATE_WRITE_ENABLE_REGWEN`](registers.md#int_state_write_enable_regwen) and [`INT_STATE_HALT_ENABLE_REGWEN`](registers.md#int_state_halt_enable_regwen), respectively.
 
-If [`INT_STATE_HALT`](registers.md#int_state_halt) is set while the instance is processing a Generate command, the instance halts as soon as the block currently being generated is complete, provided that further blocks of the command remain to be generated.
+If [`INT_STATE_HALT`](registers.md#int_state_halt) is set while the instance is processing a Generate command, the instance halts as soon as the block currently being generated is complete.
 The application does not need to read out the generated block first.
 The remaining blocks are generated after the instance is resumed.
-If the generation of the final block of the command has already started, the instance only halts after the application has read out the final block and the command has been acknowledged.
+If the final block of the command has already been generated, the internal state already reflects the completed Generate command, but the command is only acknowledged after the instance has been resumed and the application has read out the final block.
 Any other command in progress completes before the instance halts.
 Commands that have been received for the instance but not yet started are also processed before it halts.
 
@@ -240,6 +245,28 @@ In particular, the most significant byte B<sub>1</sub> of the string is read in 
     <td>0xB<sub>49</sub>B<sub>50</sub>B<sub>51</sub>B<sub>52</sub></td>
   </tr>
 </table>
+
+## Aborting Generate Commands
+
+A Generate command in progress can be aborted via [`GEN_ABORT`](registers.md#gen_abort).
+
+To abort a Generate command:
+1. Make sure that a Generate command is actually in progress and cannot complete before the abort:
+   - For a hardware instance, halt it via [`INT_STATE_HALT`](registers.md#int_state_halt) (see [Internal-State Save and Restore](#internal-state-save-and-restore)), wait for [`INT_STATE_STS.HALTED`](registers.md#int_state_sts), and make sure [`INT_STATE_STS.GEN_IN_PROGRESS`](registers.md#int_state_sts) is set.
+   - The software instance doesn't need to be halted, as its Generate command only progresses while software reads [`GENBITS`](registers.md#genbits).
+     Stop reading and check that [`SW_CMD_STS.CMD_ACK`](registers.md#sw_cmd_sts) is not set.
+1. Set the field corresponding to the instance in [`GEN_ABORT`](registers.md#gen_abort) to `kMultiBitBool4True`.
+1. If the instance was halted, resume it by setting [`INT_STATE_HALT`](registers.md#int_state_halt) back to `kMultiBitBool4False`.
+   The abort takes effect once resumed.
+1. Wait for the bit of the instance in [`GEN_ABORT_STATUS`](registers.md#gen_abort_status) to be set, then clear it by writing 1.
+1. Instantiate the instance again.
+
+If no Generate command was in progress, e.g., because it completed before the abort, the abort is ignored and a recoverable alert is raised with [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](registers.md#recov_alert_sts) set.
+It can be cleared by writing 0, without disabling CSRNG.
+
+An enabled EDN receiving the `GEN_ABORTED` status stops serving entropy until it is disabled and re-enabled (see the [EDN Programmer's Guide](../../edn/doc/programmers_guide.md#aborting-generate-commands)).
+To avoid this, disable the EDN before resuming the instance and re-enable it once [`GEN_ABORT_STATUS`](registers.md#gen_abort_status) is set.
+CSRNG doesn't need to be disabled.
 
 ## Device Interface Functions (DIFs)
 

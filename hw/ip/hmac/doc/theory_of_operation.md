@@ -200,3 +200,27 @@ This is different from a conventional memory-mapped FIFO.
 By having wide address range pointing to a single entry point, the FIFO can free software from the fixed address restriction.
 For instance, the core can use "store multiple" commands to feed the message fifo efficiently.
 Also, a DMA engine which might not have the ability to be configured to the fixed write and incremental read may benefit from this behavior.
+
+## Integration
+
+In accordance with the [comportability specification](../../../../doc/contributing/hw/comportability/README.md) HMAC offers the following interfaces:
+
+- TileLink-UL interface to registers and the message FIFO
+- Interrupts
+- Alerts
+- Idle indication (`idle_o`)
+
+In addition, HMAC has a key sideload port, `keymgr_key_i`, which is intended to be connected to the HMAC key output of the key manager (`keymgr_dpe`).
+The following requirements apply to its integration.
+
+- **Key width:**
+  The sideloaded key is fixed to 512 bits, the width given by `keymgr_dpe_pkg::WideHwKeyWidth`, see [Key sideloading](#key-sideloading).
+  It is not an HMAC parameter, changing it requires changing `WideHwKeyWidth`, which must be a key length supported by HMAC (128, 256, 384, 512 or 1024 bits).
+- **Key stability:**
+  The sideloaded key is not latched inside HMAC but is muxed directly into the HMAC core.
+  The key source must keep the valid bit set and the key stable for the entire duration of an operation.
+  HMAC cannot detect a key that changes while the valid indication stays set, see [Key sideloading](#key-sideloading).
+- **Clocking:**
+  The sideload port is not synchronized, so the key source must be in the same clock domain as HMAC (`clk_i`).
+- **Unused port:**
+  If no key source is present, the port must be tied off with the valid indication cleared.

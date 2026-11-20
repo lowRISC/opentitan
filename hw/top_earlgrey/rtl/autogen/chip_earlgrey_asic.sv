@@ -15,6 +15,7 @@ module chip_earlgrey_asic #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
+  inout PORA_N, // Manual Pad
   inout USB_P, // Manual Pad
   inout USB_N, // Manual Pad
   `INOUT_AI CC1, // Manual Pad
@@ -270,9 +271,8 @@ module chip_earlgrey_asic #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic                         [19:0] dio_in_raw;
+  logic                         [20:0] dio_in_raw;
 
   logic unused_mio_in_raw;
   logic unused_dio_in_raw;
@@ -281,6 +281,7 @@ module chip_earlgrey_asic #(
 
   // Manual pads
   logic manual_in_por_n, manual_out_por_n, manual_oe_por_n;
+  logic manual_in_pora_n, manual_out_pora_n, manual_oe_pora_n;
   logic manual_in_usb_p, manual_out_usb_p, manual_oe_usb_p;
   logic manual_in_usb_n, manual_out_usb_n, manual_oe_usb_n;
   logic manual_in_cc1, manual_out_cc1, manual_oe_cc1;
@@ -288,6 +289,7 @@ module chip_earlgrey_asic #(
   logic manual_in_rram_analog, manual_out_rram_analog, manual_oe_rram_analog;
 
   pad_attr_t manual_attr_por_n;
+  pad_attr_t manual_attr_pora_n;
   pad_attr_t manual_attr_usb_p;
   pad_attr_t manual_attr_usb_n;
   pad_attr_t manual_attr_cc1;
@@ -316,7 +318,7 @@ module chip_earlgrey_asic #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(20),
+    .NDioPads(21),
     .NMioPads(47),
     .PhysicalPads(1),
     .NIoBanks(int'(IoBankCount)),
@@ -340,6 +342,7 @@ module chip_earlgrey_asic #(
       scan_role_pkg::DioPadCc1ScanRole,
       scan_role_pkg::DioPadUsbNScanRole,
       scan_role_pkg::DioPadUsbPScanRole,
+      scan_role_pkg::DioPadPoraNScanRole,
       scan_role_pkg::DioPadPorNScanRole
     }),
     .MioScanRole ({
@@ -411,6 +414,7 @@ module chip_earlgrey_asic #(
       pad_orient_pkg::DioPadCc1PadOrient,
       pad_orient_pkg::DioPadUsbNPadOrient,
       pad_orient_pkg::DioPadUsbPPadOrient,
+      pad_orient_pkg::DioPadPoraNPadOrient,
       pad_orient_pkg::DioPadPorNPadOrient
     }),
     .MioPadOrient ({
@@ -482,6 +486,7 @@ module chip_earlgrey_asic #(
       IoBankAvcc, // CC1
       IoBankVcc, // USB_N
       IoBankVcc, // USB_P
+      IoBankVioa, // PORA_N
       IoBankVcc  // POR_N
     }),
     .MioPadBank ({
@@ -553,6 +558,7 @@ module chip_earlgrey_asic #(
       BidirTol, // CC1
       DualBidirTol, // USB_N
       DualBidirTol, // USB_P
+      InputStd, // PORA_N
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -609,7 +615,6 @@ module chip_earlgrey_asic #(
     .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -641,6 +646,7 @@ module chip_earlgrey_asic #(
 `endif
       USB_N,
       USB_P,
+      PORA_N,
       POR_N
     }),
 
@@ -712,7 +718,7 @@ module chip_earlgrey_asic #(
         dio_in[DioSpiDeviceSd2],
         dio_in[DioSpiDeviceSd1],
         dio_in[DioSpiDeviceSd0],
-        dio_in[DioSpiHost0Csb],
+        dio_in[DioSpiHost0Csb0],
         dio_in[DioSpiHost0Sck],
         dio_in[DioSpiHost0Sd3],
         dio_in[DioSpiHost0Sd2],
@@ -723,6 +729,7 @@ module chip_earlgrey_asic #(
         manual_in_cc1,
         manual_in_usb_n,
         manual_in_usb_p,
+        manual_in_pora_n,
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -734,7 +741,7 @@ module chip_earlgrey_asic #(
         dio_out[DioSpiDeviceSd2],
         dio_out[DioSpiDeviceSd1],
         dio_out[DioSpiDeviceSd0],
-        dio_out[DioSpiHost0Csb],
+        dio_out[DioSpiHost0Csb0],
         dio_out[DioSpiHost0Sck],
         dio_out[DioSpiHost0Sd3],
         dio_out[DioSpiHost0Sd2],
@@ -745,6 +752,7 @@ module chip_earlgrey_asic #(
         manual_out_cc1,
         manual_out_usb_n,
         manual_out_usb_p,
+        manual_out_pora_n,
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -756,7 +764,7 @@ module chip_earlgrey_asic #(
         dio_oe[DioSpiDeviceSd2],
         dio_oe[DioSpiDeviceSd1],
         dio_oe[DioSpiDeviceSd0],
-        dio_oe[DioSpiHost0Csb],
+        dio_oe[DioSpiHost0Csb0],
         dio_oe[DioSpiHost0Sck],
         dio_oe[DioSpiHost0Sd3],
         dio_oe[DioSpiHost0Sd2],
@@ -767,6 +775,7 @@ module chip_earlgrey_asic #(
         manual_oe_cc1,
         manual_oe_usb_n,
         manual_oe_usb_p,
+        manual_oe_pora_n,
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -778,7 +787,7 @@ module chip_earlgrey_asic #(
         dio_attr[DioSpiDeviceSd2],
         dio_attr[DioSpiDeviceSd1],
         dio_attr[DioSpiDeviceSd0],
-        dio_attr[DioSpiHost0Csb],
+        dio_attr[DioSpiHost0Csb0],
         dio_attr[DioSpiHost0Sck],
         dio_attr[DioSpiHost0Sd3],
         dio_attr[DioSpiHost0Sd2],
@@ -789,6 +798,7 @@ module chip_earlgrey_asic #(
         manual_attr_cc1,
         manual_attr_usb_n,
         manual_attr_usb_p,
+        manual_attr_pora_n,
         manual_attr_por_n
       }),
 
@@ -848,15 +858,6 @@ module chip_earlgrey_asic #(
     usb_obs: usb_diff_rx_obs
   };
 
-  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
-  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
-  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
-  // as topgen does not support conditional port generation.
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
-  assign clk_osc_byp_pd_main = clks_osc_byp;
-  assign clk_osc_byp_pd_aon  = clks_osc_byp;
-
   // Unused AST power states
   logic unused_ast_pwst_h;
   assign unused_ast_pwst_h = ^{ast_pwst_h.vcc_pok,
@@ -870,6 +871,8 @@ module chip_earlgrey_asic #(
 
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
+  assign manual_out_pora_n = 1'b0;
+  assign manual_oe_pora_n = 1'b0;
 
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
@@ -879,8 +882,9 @@ module chip_earlgrey_asic #(
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
-  // Enable schmitt trigger on POR for better signal integrity.
-  assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  // Enable schmitt trigger on the POR pads for better signal integrity.
+  assign manual_attr_por_n  = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  assign manual_attr_pora_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
 
   // These pad attributes are controlled through sensor_ctrl.  Update the description of
   // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
@@ -983,32 +987,31 @@ module chip_earlgrey_asic #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .manual_in_por_n_i            (manual_in_por_n    ),
-    .scanmode_o                   (scanmode           ),
-    .scan_en_o                    (                   ),
-    .scan_rst_n_o                 (                   ),
-    .usb_io_pu_cal_o              (usb_io_pu_cal      ),
-    .padmux2ast_i                 (padmux2ast         ),
-    .mux_iob_sel_o                (mux_iob_sel        ),
-    .ast_vx_supp_i                (ast_vx_supp        ),
-    .ast_obs_i                    (ast_obs            ),
-    .ast_adc_a0_a_i               (ast_adc_a0_a       ),
-    .ast_adc_a1_a_i               (ast_adc_a1_a       ),
-    .ast2pad_t0_a_o               (ast2pad_t0_a       ),
-    .ast2pad_t1_a_o               (ast2pad_t1_a       ),
-    .clk_osc_byp_pd_main_i        (clk_osc_byp_pd_main),
-    .clk_osc_byp_pd_aon_i         (clk_osc_byp_pd_aon ),
-    .ast_pwst_h_o                 (ast_pwst_h         ),
-    .dft_hold_tap_sel_i           ('0                 ),
-    .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
-    .usb_dn_pullup_en_o           (usb_dn_pullup_en   ),
-    .rram_test_analog_io          (RRAM_ANALOG        ),
+    .manual_in_por_n_i            (manual_in_por_n ),
+    .manual_in_pora_n_i           (manual_in_pora_n),
+    .scanmode_o                   (scanmode        ),
+    .scan_en_o                    (                ),
+    .scan_rst_n_o                 (                ),
+    .usb_io_pu_cal_o              (usb_io_pu_cal   ),
+    .padmux2ast_i                 (padmux2ast      ),
+    .ast_vx_supp_i                (ast_vx_supp     ),
+    .ast_obs_i                    (ast_obs         ),
+    .ast_adc_a0_a_i               (ast_adc_a0_a    ),
+    .ast_adc_a1_a_i               (ast_adc_a1_a    ),
+    .ast2pad_t0_a_o               (ast2pad_t0_a    ),
+    .ast2pad_t1_a_o               (ast2pad_t1_a    ),
+    .clks_osc_byp_i               (clks_osc_byp    ),
+    .ast_pwst_h_o                 (ast_pwst_h      ),
+    .dft_hold_tap_sel_i           ('0              ),
+    .usb_dp_pullup_en_o           (usb_dp_pullup_en),
+    .usb_dn_pullup_en_o           (usb_dn_pullup_en),
+    .rram_test_analog_io          (RRAM_ANALOG     ),
     .sensor_ctrl_manual_pad_attr_o(sensor_ctrl_manual_pad_attr),
-    .usbdev_usb_rx_d_i            (usb_rx_d           ),
-    .usbdev_usb_tx_d_o            (                   ),
-    .usbdev_usb_tx_se0_o          (                   ),
-    .usbdev_usb_tx_use_d_se0_o    (                   ),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable      )
+    .usbdev_usb_rx_d_i            (usb_rx_d        ),
+    .usbdev_usb_tx_d_o            (                ),
+    .usbdev_usb_tx_se0_o          (                ),
+    .usbdev_usb_tx_use_d_se0_o    (                ),
+    .usbdev_usb_rx_enable_o       (usb_rx_enable   )
   );
 
 endmodule

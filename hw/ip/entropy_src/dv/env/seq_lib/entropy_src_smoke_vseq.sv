@@ -28,10 +28,20 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
             int available_seeds;
             // Wait for data to arrive for TL consumption via the ENTROPY_DATA register
             poll(.source(TlSrcEntropyDataReg), .spinwait_delay_ns(1000));
+            // If the ENTROPY_SRC is configured to NOT clear the esfinal FIFO upon disabling,
+            // randomly disable it for reading the next bundle.
+            if (`gmv(ral.entropy_control.esfinal_fifo_clear_while_disabled) ==
+                prim_mubi_pkg::MuBi4False) begin
+              if ($urandom_range(0, 1)) begin
+                disable_dut();
+              end
+            end
             // Read all currently available data (but no more than seed_cnt)
             do_entropy_data_read(.max_bundles(seed_cnt), .bundles_found(available_seeds));
             // Update the count of remaining seeds to read
             seed_cnt -= available_seeds;
+            // Make sure to re-enable the module.
+            enable_dut();
           end while (seed_cnt > 0);
         end
         begin

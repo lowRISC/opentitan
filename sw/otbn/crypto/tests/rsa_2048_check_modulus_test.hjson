@@ -1,0 +1,19 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  "entrypoint": "main",
+  "input": {
+    "dmem": {
+      # Valid RSA-2048 modulus n = p*q (from rsa_2048_signature_functest).
+      "rsa_n": "0xb1ab4a49146810df924ec514105cc7971edbf4e2ebb97a3e28c7956b1d3d9cd75948488b639f997587d090f35a8406be977718d589bd4d2b9926ba5a426fc94f7f2d67112f25082b8b6b4800da1e92b1b0c6a23e720e95208ef6c7170e8b292dd9f7b2dcaabe9cb0cdf39538a4f8ecb99c4003010a71ad19c2f1a54668f9e0bf59bb41410d0b00fb58389f0555aacb041f9ac759508c92934fc459c721bdd5fc9fdd2d8c682d1c41dd967a37e813fe23075005d6351e386982f5611fcf6bdca858bece1f0d98fa5b5eb5ae798b80e14e1414eeff9e60110f41adab06278492e0b7de7ccbb2b807d66a260bad16354662031a892c9eb2f35c3611356d40d984b1"
+    }
+  }
+  "output": {
+    "regs": {
+      # HARDENED_BOOL_TRUE: composite and not a prime power.
+      "x2": "0x00000739"
+    }
+  }
+}

@@ -270,7 +270,8 @@ static status_t check_next_slot_bootable(void) {
  * Initializes all DIF handles used in this program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR),
+                    &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -422,6 +423,18 @@ static status_t personalize_otp_and_nvm_secrets(ujson_t *uj) {
   }
 
   return OK_STATUS();
+}
+
+/**
+ * Sets the attestation and sealing binding to the static CreatorInt binding
+ * values used by the immutable ROM_EXT section (see `dice_chain.c`).
+ */
+static void compute_keymgr_dpe_creator_int_binding(void) {
+  memcpy(attestation_binding_value.data,
+         kDiceChainCreatorIntAttestBindingValue.data,
+         kDiceMeasurementSizeInBytes);
+  memcpy(sealing_binding_value.data, kDiceChainCreatorIntSealBindingValue.data,
+         kDiceMeasurementSizeInBytes);
 }
 
 /**
@@ -663,11 +676,18 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // can initialize and seal the ownership block.
   ownership_seal_init();
 
+  // Mirror the immutable ROM_EXT section: derive the CreatorIntKeys with the
+  // same static binding values before deriving the OwnerIntKeys.
+  sc_keymgr_dpe_advance_data_t adv_sealing_data;
+  sc_keymgr_dpe_advance_data_t adv_attestation_data;
+  compute_keymgr_dpe_creator_int_binding();
+  keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
+  TRY(sc_keymgr_dpe_advance_creator_int(adv_sealing_data,
+                                        adv_attestation_data));
+
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
   compute_keymgr_dpe_owner_int_binding();
-  sc_keymgr_dpe_advance_data_t adv_sealing_data;
-  sc_keymgr_dpe_advance_data_t adv_attestation_data;
   keymgr_dpe_advance_data_get(&adv_sealing_data, &adv_attestation_data);
   TRY(sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyCdi0, &cdi_0_pubkey_id,
@@ -1162,26 +1182,26 @@ static status_t finalize_otp_partitions(void) {
 }
 
 static status_t configure_ate_gpio_indicators(void) {
-  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  // IOA6 / gpio0 pin 4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
-  // IOA5 / GPIO3 is for SPI console TX ready signal.
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleRxReady));
+  // IOA5 / gpio0 pin 3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
-  // IOA0 / GPIO2 is for error reporting.
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
+  // IOA0 / gpio0 pin 2 is for error reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestError));
-  // IOA1 / GPIO1 is for test done reporting.
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestError));
+  // IOA1 / gpio0 pin 1 is for test done reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestDone));
-  // IOA4 / GPIO0 is for test start reporting.
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestDone));
+  // IOA4 / gpio0 pin 0 is for test start reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinTestStart));
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestStart));
   TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1f));  // Enable first 5 GPIOs.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));    // Intialize all to 0.
   return OK_STATUS();

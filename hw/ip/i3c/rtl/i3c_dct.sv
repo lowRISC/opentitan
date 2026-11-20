@@ -7,6 +7,7 @@
 // - conveys the properties of each assigned Target to the driver software.
 // - hardware requires only write access and has highest priority.
 module i3c_dct
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
   import prim_ram_1p_pkg::*;
 #(

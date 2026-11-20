@@ -244,11 +244,13 @@ bool test_main(void) {
       &keymgr_dpe,
       (dif_keymgr_dpe_config_t){.entropy_reseed_interval = 0xFFFF}));
 
-  CHECK_DIF_OK(
-      dif_kmac_configure(&kmac, (dif_kmac_config_t){
-                                    .sideload = true,
-                                    .entropy_mode = kDifKmacEntropyModeSoftware,
-                                }));
+  CHECK_DIF_OK(dif_kmac_configure(&kmac, (dif_kmac_config_t){
+                                             .sideload = true,
+                                         }));
+  CHECK_DIF_OK(dif_kmac_configure_entropy(
+      &kmac, (dif_kmac_entropy_config_t){
+                 .entropy_mode = kDifKmacEntropyModeSoftware,
+             }));
 
   // chip_sw_rram_ctrl_lc_rw_en_vseq steps through DEV and PROD LC states.
   // DEV LC state:

@@ -31,14 +31,19 @@ class SkuConfig:
     ast_cfg_version: int = 255  # valid: any positive integer < 256 (to fit in one byte)
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
+    resolve_paths: bool = True
     blob_version: int = 0  # valid: any unsigned integer
 
     def __post_init__(self):
         # Load CA configs.
         if self.dice_ca:
-            self.dice_ca = CaConfig(name="dice_ca", **self.dice_ca)
+            self.dice_ca = CaConfig(name="dice_ca",
+                                    resolve_paths=self.resolve_paths,
+                                    **self.dice_ca)
         if self.ext_ca:
-            self.ext_ca = CaConfig(name="ext_ca", **self.ext_ca)
+            self.ext_ca = CaConfig(name="ext_ca",
+                                   resolve_paths=self.resolve_paths,
+                                   **self.ext_ca)
 
         # Load product IDs database.
         product_ids_hjson = resolve_runfile(_PRODUCT_IDS_HJSON)
@@ -59,7 +64,7 @@ class SkuConfig:
         self.load_hw_ids()
 
         # Resolve LC token encryption key path.
-        if self.token_encrypt_key:
+        if self.resolve_paths and self.token_encrypt_key:
             self.token_encrypt_key = resolve_runfile(self.token_encrypt_key)
 
     @staticmethod

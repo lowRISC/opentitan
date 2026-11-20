@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
       - lowrisc:ip:jtag_pkg
       - pulp-platform:riscv-dbg:0.1

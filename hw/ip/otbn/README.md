@@ -123,7 +123,7 @@ Control and Status Registers (CSRs) are 32b wide registers used for "special" pu
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} and {{#otbn-insn-ref CSRRW}}.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
+All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)), except `MAI_CTRL.OPERATION`, which starts as secAdd because 0 is not a valid operation.
 
 <!-- This list of CSRs is replicated in otbn_env_cov.sv, csr.py, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other five as well. -->
@@ -626,13 +626,13 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>0</td>
               <td>
-                START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+                START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_SOFTWARE_ERROR.
               </td>
             </tr>
             <tr>
               <td>5:1</td>
               <td>
-                OPERATION: This field defines which type of operation is to be performed. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+                OPERATION: This field defines which type of operation is to be performed. Invalid values and writing to these bits when MAI is busy will cause a MAI_SOFTWARE_ERROR.
                 <p>Values:</p><ul>
                   <li>11: A2B</li>
                   <li>16: B2A</li>
@@ -644,7 +644,53 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>31:6</td>
               <td>
-                Reserved. Any write is ignored. Always reads as 0.
+                Reserved. Writing a non-zero value will cause a MAI_SOFTWARE_ERROR. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0x7E2</td>
+      <td>RW</td>
+      <td>KEYMGR_CTRL</td>
+      <td>
+        The keymgr interface control register.
+        Always reads as 0.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                START: Writing 1 to this bit starts accepting requests on the interface. This command is ignored once a session is started until a response was sent.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                SEND: Writing 1 to this bit starts sending a response on the interface. The response contains the current message in the message WSRs. This command is ignored if KEYMGR_STATUS.MSG_COMPLETE is not 1.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                Reserved for future use (SEND_LAST). Any write is ignored.
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                SEND_ERROR: Writing 1 to this bit starts sending an error response on the interface. The response contains the current message in the message WSRs and has the error flag set. This command is ignored if KEYMGR_STATUS.MSG_COMPLETE is not 1. This command has priority over the SEND command in case both commands are at the same time.
+              </td>
+            </tr>
+            <tr>
+              <td>31:4</td>
+              <td>
+                Reserved. Any write is ignored.
               </td>
             </tr>
           </tbody>
@@ -768,6 +814,63 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             </tr>
             <tr>
               <td>31:2</td>
+              <td>
+                Reserved. Always reads as 0.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>0xFCC</td>
+      <td>RO</td>
+      <td>KEYMGR_STATUS</td>
+      <td>
+        The keymgr interface status register.
+        <table>
+          <thead>
+            <tr><th>Bit</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>0</td>
+              <td>
+                RECEIVING is 1 once a START command has been issued until a request with `req_last` set to 1 is received.
+              </td>
+            </tr>
+            <tr>
+              <td>1</td>
+              <td>
+                SENDING is 1 once a send command has been issued until the response is accepted.
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                MSG_VALID is 1 when KEYMGR_MSG_S0_L and STRB contain a valid message beat. Reading KEYMGR_MSG_S0_L sets this bit back to 0 and the interface is ready to receive the next message beat.
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                MSG_COMPLETE goes to 1 once any received message beat has the `req_last` flag set to 1. It stays 1 until a response is sent back (i.e., the response is accepted). As long as it is 1, the interface does not accept any message beats.
+              </td>
+            </tr>
+            <tr>
+              <td>15:4</td>
+              <td>
+                Reserved. Always reads as 0.
+              </td>
+            </tr>
+            <tr>
+              <td>23:16</td>
+              <td>
+                STRB indicates which bytes of KEYMGR_MSG_S0_L are valid if it carries valid data. Each bit corresponds to one byte in KEYMGR_MSG_S0_L, with bit 0 corresponding to the least significant byte.
+              </td>
+            </tr>
+            <tr>
+              <td>31:24</td>
               <td>
                 Reserved. Always reads as 0.
               </td>
@@ -978,7 +1081,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 0 of the first input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -988,7 +1091,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 1 of the first input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -998,7 +1101,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 0 of the second input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -1008,7 +1111,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 1 of the second input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -1032,6 +1135,42 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
         <br>
         There is no immediate state validation when restoring a state.
         If an invalid state (e.g., all-zero) is provided the URND PRNG will raise a fatal error on the next state update.
+      </td>
+    </tr>
+    <tr>
+      <td>0x11</td>
+      <td>RW</td>
+      <td><a name="keymgr-msg-s0-l">KEYMGR_MSG_S0_L</a></td>
+      <td>
+        This register is used to receive message beats from the keymgr interface as well as to send a response back.
+        When receiving the message beats, bits [63:0] contain the data when KEYMGR_STATUS.MSG_VALID is 1.
+        The other bits are not updated when a beat is received.
+        <br>
+        When sending a response, this register defines the bits [255:0] of share 0 of the response.
+      </td>
+    </tr>
+    <tr>
+      <td>0x12</td>
+      <td>RW</td>
+      <td><a name="keymgr-msg-s0-h">KEYMGR_MSG_S0_H</a></td>
+      <td>
+        Bits [511:256] of share 0 when sending a keymgr interface response.
+      </td>
+    </tr>
+    <tr>
+      <td>0x13</td>
+      <td>RW</td>
+      <td><a name="keymgr-msg-s1-l">KEYMGR_MSG_S1_L</a></td>
+      <td>
+        Bits [255:0] of share 1 when sending a keymgr interface response.
+      </td>
+    </tr>
+    <tr>
+      <td>0x14</td>
+      <td>RW</td>
+      <td><a name="keymgr-msg-s1-h">KEYMGR_MSG_S1_H</a></td>
+      <td>
+        Bits [511:256] of share 1 when sending a keymgr interface response.
       </td>
     </tr>
   </tbody>

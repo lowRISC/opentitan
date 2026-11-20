@@ -68,10 +68,6 @@ waive -rules CONST_OUTPUT         -location {ibex_decoder.sv} -regexp {Output 'a
       -comment "not all possible mux select values are used in enum"
 waive -rules CONST_OUTPUT         -location {ibex_multdiv_fast.sv} -regexp {Output 'alu_operand_._o.0.' is driven by constant} ${"\\"}
       -comment "bottom bit set to 1 for rounding"
-waive -rules VAR_INDEX            -location {ibex_multdiv_fast.sv} -regexp {Variable index expression 'op_numerator_q.div_counter_n.' encountered} ${"\\"}
-      -comment "TODO: discuss: I don't think this is a problem"
-waive -rules VAR_INDEX            -location {ibex_register_file_ff.sv} -regexp {Variable index expression 'rf_reg.raddr_._i.' encountered} ${"\\"}
-      -comment "TODO: discuss: I don't think this is a problem"
 waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'pccr_index' is not read from} ${"\\"}
       -comment "Used in non synthesis scenario"
 waive -rules NOT_READ             -location {ibex_cs_registers.sv} -regexp {Signal 'pccr_all_sel' is not read from} ${"\\"}

@@ -33,7 +33,7 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_gpio"
+      name:   "tl_gpio0"
       act:    "req"
       package: "tlul_pkg"
     }

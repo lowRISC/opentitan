@@ -10,11 +10,8 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:diff_decode
-      - lowrisc:prim:buf
-      - lowrisc:prim:flop
       - lowrisc:prim:sec_anchor
-      - lowrisc:prim:mubi
-      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:prim:mubi_pkg
     files:
       - rtl/prim_alert_pkg.sv
       - rtl/prim_alert_receiver.sv

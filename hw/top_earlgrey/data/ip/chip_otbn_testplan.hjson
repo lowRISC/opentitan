@@ -139,6 +139,60 @@
       ]
     }
     {
+      name: chip_sw_otbn_kmac
+      desc: '''Verify the OTBN connection to the KMAC application interface.
+
+            - SW configures KMAC and brings it to an idle state.
+            - SW loads an OTBN app that computes SHAKE-128, SHAKE-256 and SHA3-256 digests of a
+              fixed message through the KMAC interface and writes them to dmem.
+            - SW checks that OTBN completed without errors and compares the digests read from dmem
+              against the expected values.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_otbn_kmac"]
+      bazel: ["//sw/device/tests:otbn_kmac_test"]
+      lc_states: ["PROD"]
+      features: []
+    }
+    {
+      name: chip_sw_otbn_mai
+      desc: '''Verify the OTBN masked arithmetic interface (MAI).
+
+            - SW loads an OTBN app and writes a secret and two operands to dmem.
+            - The app runs a B2A conversion followed by an A2B conversion on the secret, and a
+              secAdd on the two operands.
+            - SW checks that OTBN completed without errors, that the secret is unchanged after the
+              round trip and that the secAdd result is the element-wise sum of the operands.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_otbn_mai"]
+      bazel: ["//sw/device/tests:otbn_mai_test"]
+      lc_states: ["PROD"]
+      features: []
+    }
+    {
+      name: chip_sw_otbn_wfi
+      desc: '''Verify the OTBN WFI instruction and the RESUME command.
+
+            - SW enables WFI, writes a value to dmem and starts an OTBN app that copies it and then
+              executes WFI.
+            - SW polls until OTBN is paused, then checks that the done interrupt is pending and
+              checks the copied value.
+            - SW writes a second value, issues RESUME and polls the interrupt state until the done
+              interrupt of the second WFI is pending. It then checks the status and the copied value
+              again.
+            - SW issues RESUME once more and checks that OTBN completes without errors.
+            '''
+      stage: V2
+      si_stage: SV3
+      tests: ["chip_sw_otbn_wfi"]
+      bazel: ["//sw/device/tests:otbn_wfi_test"]
+      lc_states: ["PROD"]
+      features: []
+    }
+    {
       name: chip_sw_otbn_keymgr
       desc: '''Check the OTBN keymgr dpe connection is functional.
 

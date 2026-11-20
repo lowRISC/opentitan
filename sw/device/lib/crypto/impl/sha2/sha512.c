@@ -109,8 +109,8 @@ static status_t process_message_buffer(sha512_otbn_ctx_t *ctx) {
       OTBN_ADDR_T_INIT(run_sha512, n_chunks);
   HARDENED_TRY(otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha512NChunks));
 
-  HARDENED_TRY(otbn_execute());
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  // Run the OTBN program synchronously.
+  HARDENED_TRY_WIPE_DMEM(otbn_execute_sync());
 
   ctx->num_blocks = 0;
   return OTCRYPTO_OK;
@@ -274,9 +274,8 @@ status_t sha512_update(sha512_state_t *state, const uint8_t *msg,
 }
 
 static status_t state_shred(sha512_state_t *state) {
-  HARDENED_TRY(hardened_memshred(state->H, kSha512StateWords));
-  HARDENED_TRY(
-      hardened_memshred(state->partial_block, kSha512MessageBlockWords));
+  hardened_memshred(state->H, kSha512StateWords);
+  hardened_memshred(state->partial_block, kSha512MessageBlockWords);
   state->total_len.lower = 0;
   state->total_len.upper = 0;
 

@@ -49,6 +49,10 @@ p384_isoncurve_proj_check:
 
   jal       x1, p384_isoncurve_proj
 
+  /* Fail if z == 0 mod p (b * z^3 mod p in [w5, w4] is 0). */
+  bn.or     w0, w4, w5
+  jal       x1, trigger_fault_if_fg0_not_z
+
   /* load result to WDRs for comparison */
   li        x2, 2
   bn.lid    x2++,  0(x22)

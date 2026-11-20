@@ -201,6 +201,9 @@ These can be skipped, or contain an empty list `[]`, or a comma-separated list o
 Items on the input list of the form `name` incur a module input of the form `cio_name_i`.
 Items on the output list of the form `name` incur a module output of the form `cio_name_o` as well as an output enable `cio_name_en_o`.
 Items on the inout list of the form `name` incur all three.
+An item can have a `width` field to make it a bus.
+The `width` field of an item can also name a parameter of the peripheral with `expose: "true"`.
+Each instance of the peripheral then sets the width of the bus through the `param_decl` field of the top-level configuration.
 
 #### Multiplexing Feature and Pad Control
 
@@ -297,6 +300,8 @@ The following standardised countermeasures are defined:
 | REDUN          | There are redundant versions of the asset | ADDR, CTRL, CONFIG, CTR
 | REGWEN         | A register write enable is used to protect the asset from write access | CONFIG, MEM
 | REGWEN_MUBI    | A multi-bit encoded register write enable is used to protect the asset from write access | CONFIG, MEM
+| LOCK           | A lock register disables certain RTL functionality until the next reset when set | CTRL
+| LOCK_MUBI      | A multi-bit lock register disables certain RTL functionality until the next reset when set | CTRL
 | SHADOW         | The asset has a shadow replica to cross-check against | CONFIG
 | REGREN         | A register write enable is used to protect the asset from read access | CONFIG, MEM
 | SCRAMBLE       | The asset is scrambled | CONFIG, MEM

@@ -114,7 +114,14 @@ package csrng_env_pkg;
     ENABLE_FIELD_ALERT              = 0,
     SW_APP_ENABLE_FIELD_ALERT       = 1,
     READ_INT_STATE_FIELD_ALERT      = 2,
-    ACMD_FLAG0_FIELD_ALERT          = 3,
+    WRITE_INT_STATE_FIELD_ALERT     = 3,
+    FIPS_FORCE_ENABLE_FIELD_ALERT   = 4,
+    ACMD_FLAG0_FIELD_ALERT          = 5,
+    GEN_ABORT_INVALID_ALERT         = 6,
+    GEN_ABORT_FIELD_ALERT           = 7,
+    INT_STATE_HALT_FIELD_ALERT      = 8,
+    INT_STATE_OVERWRITE_ALERT       = 9,
+    INT_STATE_NUM_INVALID_ALERT     = 10,
     CS_BUS_CMP_ALERT                = 12,
     CMD_STAGE_INVALID_ACMD_ALERT    = 13,
     CMD_STAGE_INVALID_GEN_CMD_ALERT = 14,
@@ -134,16 +141,16 @@ package csrng_env_pkg;
   } which_fifo_err_e;
 
   typedef enum int {
-    cmd_gen_cnt_sel  = 0,
-    ctr_drbg_cnt_sel = 1
-  } which_cnt_e;
-
-  typedef enum int {
     fsm_sparse  = 0,
     fsm_redun   = 1,
     ctrl_sparse = 2,
     ctr_redun   = 3
   } which_aes_cm_e;
+
+  typedef enum int {
+    ctr_drbg_cnt     = 0,
+    state_db_reg_ptr = 1
+  } which_cnt_e;
 
   // functions
 

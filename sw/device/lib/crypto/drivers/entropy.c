@@ -62,6 +62,11 @@ enum {
   kEntropyPollCmdDoneTimeout = 1000000,
   // Timeout for waiting for GenBits to become valid
   kEntropyPollGenBitsTimeout = 131071,
+
+  /**
+   * Sparse FSM encoding for MainSmIdle in csrng_pkg.sv.
+   */
+  kCsrngMainSmStateIdle = 0x17,
 };
 
 /**
@@ -172,6 +177,13 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t bypass_conditioner;
   /**
+   * If set, the esfinal FIFO holding previously produced entropy seeds is
+   * cleared upon disabling the module. Otherwise, previously produced entropy
+   * seeds get served to CSRNG upon request or can alternatively get read out
+   * via ENTROPY_DATA CSR even after disabling the module.
+   */
+  multi_bit_bool_t clear_esfinal_fifo_while_disabled;
+  /**
    * Enables single bit entropy mode.
    */
   multi_bit_bool_t single_bit_mode;
@@ -270,6 +282,7 @@ static const entropy_complex_config_t
                         .rng_fips = kMultiBitBool4True,
                         .route_to_firmware = kMultiBitBool4False,
                         .bypass_conditioner = kMultiBitBool4False,
+                        .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                         .single_bit_mode = kMultiBitBool4False,
                         .threshold_scope = kMultiBitBool4False,
                         .fips_test_window_size = 0x200,
@@ -351,18 +364,19 @@ static const entropy_complex_config_t
                     .rng_fips = kMultiBitBool4True,
                     .route_to_firmware = kMultiBitBool4False,
                     .bypass_conditioner = kMultiBitBool4False,
+                    .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                     .single_bit_mode = kMultiBitBool4False,
                     .threshold_scope = kMultiBitBool4True,
                     .fips_test_window_size = 512,
                     .alert_threshold = 4,
                     .repcnt_threshold = 81,
                     .repcnts_threshold = 21,
-                    .adaptp_hi_threshold = 1592,
-                    .adaptp_lo_threshold = 2048 - 1592,  // 456
+                    .adaptp_hi_threshold = 1591,
+                    .adaptp_lo_threshold = 2048 - 1591,  // 457
                     .adaptps_threshold = 201,
-                    .bucket_threshold = 202,
-                    .markov_hi_threshold = 825,
-                    .markov_lo_threshold = 1024 - 825,  // 199
+                    .bucket_threshold = 201,
+                    .markov_hi_threshold = 824,
+                    .markov_lo_threshold = 1024 - 824,  // 200
                     .extht_hi_threshold = 0xffff,
                     .extht_lo_threshold = 0x0,
                 },
@@ -527,6 +541,7 @@ OT_USED static status_t csrng_send_app_cmd(
   reg = bitfield_field32_write(reg, kAppCmdFieldFlag0, kMultiBitBool4False);
 
   if (launder32(cmd.disable_trng_input) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(cmd.disable_trng_input, kHardenedBoolTrue);
     reg = bitfield_field32_write(reg, kAppCmdFieldFlag0, kMultiBitBool4True);
   }
 
@@ -567,6 +582,9 @@ OT_USED static status_t csrng_send_app_cmd(
       if (timeout == 0) {
         return OTCRYPTO_RECOV_ERR;
       }
+      HARDENED_CHECK_EQ(bitfield_bit32_read(launder32(reg),
+                                            CSRNG_GENBITS_VLD_GENBITS_VLD_BIT),
+                        true);
 
     } else {
       // The non-Generate commands complete earlier, so poll the "command
@@ -582,11 +600,18 @@ OT_USED static status_t csrng_send_app_cmd(
       if (timeout == 0) {
         return OTCRYPTO_RECOV_ERR;
       }
+      HARDENED_CHECK_EQ(
+          bitfield_bit32_read(launder32(reg),
+                              CSRNG_INTR_STATE_CS_CMD_REQ_DONE_BIT),
+          true);
 
       reg = abs_mmio_read32(csrng_base() + CSRNG_SW_CMD_STS_REG_OFFSET);
       if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
         return OTCRYPTO_RECOV_ERR;
       }
+      HARDENED_CHECK_EQ(
+          bitfield_field32_read(launder32(reg), CSRNG_SW_CMD_STS_CMD_STS_FIELD),
+          CSRNG_SW_CMD_STS_CMD_STS_VALUE_SUCCESS);
     }
   }
 
@@ -619,19 +644,24 @@ OT_USED static status_t csrng_send_app_cmd(
  * enabled, and FIPS flag forcing disabled.
  */
 OT_USED static void csrng_configure(void) {
+  // Clear the CSRNG recoverable alert status register.
+  abs_mmio_write32(csrng_base() + CSRNG_RECOV_ALERT_STS_REG_OFFSET, 0);
+
   uint32_t reg =
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_WRITE_INT_STATE_FIELD,
+                               kMultiBitBool4False);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, reg);
 }
 
 /**
- * Verify the CTRL register from the CSRNG.
+ * Verify the CTRL and error status registers from the CSRNG.
  */
 static void csrng_verify(void) {
   uint32_t reg =
@@ -640,9 +670,13 @@ static void csrng_verify(void) {
                                kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_READ_INT_STATE_FIELD,
                                kMultiBitBool4True);
+  reg = bitfield_field32_write(reg, CSRNG_CTRL_WRITE_INT_STATE_FIELD,
+                               kMultiBitBool4False);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_FIPS_FORCE_ENABLE_FIELD,
                                kMultiBitBool4False);
   HARDENED_CHECK_EQ(abs_mmio_read32(csrng_base() + CSRNG_CTRL_REG_OFFSET), reg);
+  HARDENED_CHECK_EQ(abs_mmio_read32(csrng_base() + CSRNG_ERR_CODE_REG_OFFSET),
+                    0);
 }
 
 /**
@@ -754,6 +788,18 @@ static void entropy_src_stop(void) {
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
 
+  // Wait for the entropy_src state machine to become idle and verify that
+  // REGWEN is asserted before writing REGWEN-protected configuration registers.
+  uint32_t timeout = kEntropyPollReadyTimeout;
+  while (
+      !bitfield_bit32_read(abs_mmio_read32(entropy_src_base() +
+                                           ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET),
+                           ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT) &&
+      --timeout > 0) {
+  }
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_REGWEN_REG_OFFSET), 1);
+
   // Set default values for other critical registers to avoid synchronization
   // issues.
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
@@ -791,11 +837,16 @@ void entropy_complex_stop_all(void) {
   edn_stop(edn0_base());
   edn_stop(edn1_base());
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  // Read back CSRNG state to synchronize the disable write on the bus and
+  // ensure any in-flight block encryption drains while CSRNG is disabled.
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(csrng_base() + CSRNG_MAIN_SM_STATE_REG_OFFSET),
+      kCsrngMainSmStateIdle);
   entropy_src_stop();
 
   if (status_ok(res)) {
     state.csrng_instantiated = kHardenedByteBoolFalse;
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    state.csrng_is_manual = kHardenedByteBoolFalse;
     OT_DISCARD(store_state(&state).value);
   }
 }
@@ -821,6 +872,10 @@ OT_USED static status_t entropy_src_configure(
   entropy_control = bitfield_field32_write(
       entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
       config->bypass_conditioner);
+  entropy_control = bitfield_field32_write(
+      entropy_control,
+      ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
+      config->clear_esfinal_fifo_while_disabled);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    entropy_control);
 
@@ -950,7 +1005,8 @@ OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
   //   1. CONF.FIPS_ENABLE = true
   //   2. CONF.RNG_BIT_ENABLE = false
   //   3. CONTROL.ES_TYPE = false
-  //   3. CONTROL.ES_ROUTE = false
+  //   4. CONTROL.ES_ROUTE = false
+  //   5. CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD = true
   reg = abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET);
   uint32_t conf_fips_enable =
       bitfield_field32_read(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD);
@@ -966,8 +1022,11 @@ OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD);
   uint32_t control_es_route =
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD);
+  uint32_t control_esfinal_fifo_clear_while_disabled = bitfield_field32_read(
+      reg, ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD);
   if (control_es_type != kMultiBitBool4False ||
-      control_es_route != kMultiBitBool4False) {
+      control_es_route != kMultiBitBool4False ||
+      control_esfinal_fifo_clear_while_disabled != kMultiBitBool4True) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1181,7 +1240,11 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
 
   // Check recoverable alerts
   if (abs_mmio_read32(entropy_src_base() +
-                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(csrng_base() + CSRNG_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(edn0_base() + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(edn1_base() + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+    // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1236,21 +1299,21 @@ status_t entropy_csrng_instantiate(
   crypto_state_t state;
   bool has_state = status_ok(read_state(&state));
 
-  uint8_t is_default = kHardenedByteBoolFalse;
-  if (launder32(disable_trng_input) == kHardenedBoolFalse &&
-      (seed_material == NULL || seed_material->len == 0)) {
+  uint8_t is_manual = kHardenedByteBoolTrue;
+  if (launder32(disable_trng_input) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
-    is_default = kHardenedByteBoolTrue;
+    is_manual = kHardenedByteBoolFalse;
   }
 
   hardened_bool_t skip_inst = kHardenedBoolFalse;
   if (has_state) {
-    if (launder32(is_default) == kHardenedByteBoolTrue &&
+    if ((seed_material == NULL || seed_material->len == 0) &&
+        launder32(is_manual) == kHardenedByteBoolFalse &&
         launder32(state.csrng_instantiated) == kHardenedByteBoolTrue &&
-        launder32(state.csrng_is_default) == kHardenedByteBoolTrue) {
-      HARDENED_CHECK_EQ(is_default, kHardenedByteBoolTrue);
+        launder32(state.csrng_is_manual) == kHardenedByteBoolFalse) {
+      HARDENED_CHECK_EQ(is_manual, kHardenedByteBoolFalse);
       HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedByteBoolTrue);
-      HARDENED_CHECK_EQ(state.csrng_is_default, kHardenedByteBoolTrue);
+      HARDENED_CHECK_EQ(state.csrng_is_manual, kHardenedByteBoolFalse);
       skip_inst = kHardenedBoolTrue;
     }
   }
@@ -1275,7 +1338,7 @@ status_t entropy_csrng_instantiate(
 
   if (has_state) {
     state.csrng_instantiated = kHardenedByteBoolTrue;
-    state.csrng_is_default = is_default;
+    state.csrng_is_manual = is_manual;
     HARDENED_TRY(store_state(&state));
   }
 
@@ -1286,7 +1349,26 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
   crypto_state_t state;
   if (status_ok(read_state(&state))) {
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    if (state.csrng_instantiated != kHardenedByteBoolTrue) {
+      // COVERAGE (SW ERR) Internal callers instantiate CSRNG before reseeding.
+      return OTCRYPTO_RECOV_ERR;
+    }
+
+    // Re-instantiate when switching between manual and non-manual modes to
+    // flush the CSRNG state registers and avoid mixing approved and
+    // non-approved data.
+    if (launder32(disable_trng_input) == kHardenedBoolFalse) {
+      HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
+      if (state.csrng_is_manual == kHardenedByteBoolTrue) {
+        return entropy_csrng_instantiate(disable_trng_input, seed_material);
+      }
+      state.csrng_is_manual = kHardenedByteBoolFalse;
+    } else {
+      if (state.csrng_is_manual == kHardenedByteBoolFalse) {
+        return entropy_csrng_instantiate(disable_trng_input, seed_material);
+      }
+      state.csrng_is_manual = kHardenedByteBoolTrue;
+    }
     HARDENED_TRY(store_state(&state));
   }
 
@@ -1315,7 +1397,7 @@ status_t entropy_csrng_generate_start(
   crypto_state_t state;
   // Check whether the state is present and use it if so
   if (status_ok(read_state(&state))) {
-    if (state.csrng_instantiated != kHardenedByteBoolTrue) {
+    if (launder32(state.csrng_instantiated) != kHardenedByteBoolTrue) {
       // COVERAGE (SW ERR) Internal callers instantiate CSRNG before generating.
       return OTCRYPTO_RECOV_ERR;
     }
@@ -1338,9 +1420,20 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
                                          hardened_bool_t fips_check) {
   static_assert(kEntropyCsrngBitsBufferNumWords == 4,
                 "kEntropyCsrngBitsBufferNumWords must be 4.");
+  crypto_state_t state;
+  bool has_state = status_ok(read_state(&state));
+  if (has_state) {
+    if (launder32(fips_check) == kHardenedBoolFalse) {
+      HARDENED_CHECK_EQ(fips_check, kHardenedBoolFalse);
+      state.csrng_is_manual = kHardenedByteBoolTrue;
+      HARDENED_TRY(store_state(&state));
+    }
+  }
+
   size_t nblocks = ceil_div(len, 4);
   status_t res = OTCRYPTO_OK;
-  for (size_t block_idx = 0; block_idx < nblocks; ++block_idx) {
+  size_t block_idx = 0;
+  for (; launder32(block_idx) < nblocks; ++block_idx) {
     // Block until there is more data available in the genbits buffer. CSRNG
     // generates data in 128bit chunks (i.e. 4 words).
     uint32_t reg;
@@ -1354,19 +1447,27 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
     if (timeout == 0) {
       return OTCRYPTO_RECOV_ERR;
     }
+    HARDENED_CHECK_EQ(
+        bitfield_bit32_read(launder32(reg), CSRNG_GENBITS_VLD_GENBITS_VLD_BIT),
+        true);
 
     if (fips_check != kHardenedBoolFalse &&
-        !bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT)) {
+        (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT) ||
+         (has_state && state.csrng_is_manual == kHardenedByteBoolTrue))) {
       // Entropy isn't FIPS-compatible, so we should return an error when
       // done. However, we still need to read the result to clear CSRNG's FIFO.
       res = OTCRYPTO_RECOV_ERR;
+    } else if (launder32(fips_check) != kHardenedBoolFalse) {
+      HARDENED_CHECK_EQ(bitfield_bit32_read(launder32(reg),
+                                            CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT),
+                        true);
     }
 
     // Read the full 128-bit block, in reverse word order to match known-answer
     // tests. To clear the FIFO, we need to read all blocks generated by the
     // request even if we don't use them.
-    for (size_t offset = 0; offset < kEntropyCsrngBitsBufferNumWords;
-         ++offset) {
+    size_t offset = 0;
+    for (; launder32(offset) < kEntropyCsrngBitsBufferNumWords; ++offset) {
       uint32_t word = abs_mmio_read32(csrng_base() + CSRNG_GENBITS_REG_OFFSET);
       size_t word_idx = (block_idx * kEntropyCsrngBitsBufferNumWords) +
                         kEntropyCsrngBitsBufferNumWords - 1 - offset;
@@ -1374,9 +1475,24 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
         buf[word_idx] = word;
       }
     }
+    HARDENED_CHECK_EQ(offset, kEntropyCsrngBitsBufferNumWords);
+  }
+  HARDENED_CHECK_EQ(block_idx, nblocks);
+
+  // For Generate commands, CSRNG only asserts CMD_ACK and updates CMD_STS once
+  // all requested 128-bit blocks have been drained from the genbits FIFO.
+  if (nblocks > 0) {
+    uint32_t sts_reg =
+        abs_mmio_read32(csrng_base() + CSRNG_SW_CMD_STS_REG_OFFSET);
+    HARDENED_CHECK_EQ(
+        bitfield_bit32_read(sts_reg, CSRNG_SW_CMD_STS_CMD_ACK_BIT), true);
+    HARDENED_CHECK_EQ(
+        bitfield_field32_read(sts_reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD),
+        CSRNG_SW_CMD_STS_CMD_STS_VALUE_SUCCESS);
   }
 
-  // Check the CTRL register from the CSRNG to protect against fault attacks.
+  // Check the CTRL and status registers from the CSRNG to protect against fault
+  // attacks.
   csrng_verify();
 
   return res;
@@ -1402,7 +1518,7 @@ status_t entropy_csrng_uninstantiate(void) {
   // Check whether the state is present and use it if so
   if (status_ok(read_state(&state))) {
     state.csrng_instantiated = kHardenedByteBoolFalse;
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    state.csrng_is_manual = kHardenedByteBoolFalse;
     HARDENED_TRY(store_state(&state));
   }
 

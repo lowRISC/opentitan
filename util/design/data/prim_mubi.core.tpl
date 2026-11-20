@@ -16,6 +16,9 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:prim:flop_2sync
+      - lowrisc:prim:xor2
+      - lowrisc:prim:sec_anchor
       - lowrisc:prim:mubi_pkg
     files:
 % for n in range(1, n_max_nibbles+1):

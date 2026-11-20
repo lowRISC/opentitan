@@ -65,6 +65,8 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
   `uvm_object_new
 
   virtual function void initialize(bit inherit_ral_models = 1'b0);
+    int unsigned dmi_idle_cycles;
+
     list_of_alerts = lc_ctrl_env_pkg::LIST_OF_ALERTS;
     tl_intg_alert_name = "fatal_bus_integ_error";
     sec_cm_alert_name = "fatal_state_error";
@@ -99,6 +101,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
     m_jtag_riscv_agent_cfg = jtag_riscv_agent_cfg::type_id::create("m_jtag_riscv_agent_cfg");
     `DV_CHECK_RANDOMIZE_FATAL(m_jtag_riscv_agent_cfg)
+    // A DMI write to the lc_ctrl registers takes more than 8 TCK cycles.
+    // With fewer idle cycles, the status check after a request reports busy and the driver retries.
+    // Randomize the idle cycles, so that both cases are covered.
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dmi_idle_cycles, dmi_idle_cycles inside {[0:16]};)
+    m_jtag_riscv_agent_cfg.dmi_idle_cycles = dmi_idle_cycles;
 
     m_kmac_app_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_app_agent_cfg");
     m_kmac_app_agent_cfg.if_mode = Device;

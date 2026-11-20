@@ -110,6 +110,8 @@ pinmux_required = {
     ['pb', 'Enable hardware strap sampling of pinmux']
 }
 pinmux_optional = {
+    'enable_rram_tap':
+    ['pb', 'Enable the RRAM TAP on the TAP strap value 0 through a pinmux register'],
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
@@ -177,7 +179,8 @@ pad_required = {
 }
 pad_optional = {
     'desc': ['s', 'Pad description'],
-    'port_type': ['s', 'Special port type other than `inout wire`']
+    'port_type': ['s', 'Special port type other than `inout wire`'],
+    'attrs': ['g', 'Reset values of pad attribute fields']
 }
 pad_added = {
     'idx': ['d', 'the index of the pad'],
@@ -655,6 +658,11 @@ def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
             pad['connection'], pad['name']))
         error += 1
 
+    if 'attrs' in pad and pad['connection'] not in ['direct', 'muxed']:
+        log.warning(f"topgen does not support attrs for manual pad {pad['name']} because it is "
+                    "not clear if a manual pad has a DIO_PAD_ATTR CSR.")
+        error += 1
+
     pad.setdefault('port_type', 'inout')
 
     return error
@@ -749,6 +757,13 @@ def check_pinout(top: ConfigT, prefix: str) -> int:
 def check_pinmux(top: ConfigT, prefix: str) -> int:
     error = check_keys(top['pinmux'], pinmux_required, pinmux_optional,
                        pinmux_added, prefix + ' Pinmux')
+
+    # The RRAM TAP is part of the TAP strap sampling.
+    if (top['pinmux'].get('enable_rram_tap', False) and
+            not top['pinmux'].get('enable_strap_sampling', False)):
+        log.error(f'{prefix} Pinmux enable_rram_tap requires '
+                  'enable_strap_sampling')
+        error += 1
 
     # This is used for the direct connection accounting below,
     # where we tick off already connected direct pads.

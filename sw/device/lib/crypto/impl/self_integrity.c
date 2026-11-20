@@ -23,7 +23,6 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   HARDENED_TRY(read_state(&state));
 
   if (launder32(state.locked_state) != kHardenedByteBoolFalse) {
-    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -73,13 +72,12 @@ otcrypto_status_t otcrypto_integrity_check(void) {
     diff |= ((uint8_t *)digest.data)[i] ^ hash_ptr[i];
   }
 
-  HARDENED_TRY(hardened_memshred(digest.data, digest.len));
+  hardened_memshred(digest.data, digest.len);
 
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed
     state.locked_state = kHardenedByteBoolTrue;
     HARDENED_TRY(store_state(&state));
-    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 #endif  // OTCRYPTO_BINARY_BLOB

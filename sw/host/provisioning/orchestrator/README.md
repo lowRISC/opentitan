@@ -15,7 +15,7 @@ bazel run \
   --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
   --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
-    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
+    --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.json \
     --test-unlock-token="0x11111111_11111111_11111111_11111111" \
     --test-exit-token="0x22222222_22222222_22222222_22222222" \
     --fpga=cw340 \
@@ -28,7 +28,7 @@ To run on silicon, run:
 ```
 bazel run \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
-    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
+    --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.json \
     --test-unlock-token=<token as a hexstring> \
     --test-exit-token=<token as a hexstring> \
     --non-interactive \
@@ -61,7 +61,7 @@ unzip ${ORCHESTRATOR_ZIP}
 # Run tool. The path to the --sku-config parameter is relative to the
 # workspace root.
 python3 ${ORCHESTRATOR_ZIP} \
-  --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
+  --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.json \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=cw340 \

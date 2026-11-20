@@ -79,6 +79,9 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
    status register. However, if there is a delay in servicing the interrupt the
    `mtime` value could wrap to zero (and continue to increment) so the value
    read by the interrupt service routine will be less than the comparison value.
+   With a [`CFG0.step`](registers.md#cfg0) above 1, one tick can also carry
+   `mtime` from below `mtimecmp` past the end of the range, so `mtime` skips
+   the comparison value and the interrupt is not raised.
 
 2. When the timer is setup to trigger a `timeout` some number of timer ticks
    into the future, the computation of the comparison value `mtime + timeout`
@@ -89,6 +92,10 @@ between `mtime` and `mtimecmp` care is needed. A couple of cases are:
    routine for that interrupt will need to poll `mtime` until it wraps (which
    could take up to a timer clock tick) before scheduling the required interrupt
    using the originally computed `mtimecmp` value.
+   With a `step` above 1, `mtime` can step over the all-ones value and this
+   intermediate interrupt is never raised. Setting `mtimecmp` to
+   `0xFFFF_FFFF_FFFF_FFFF - step + 1` works for any nonzero `step`, since the
+   last value of `mtime` before it wraps is always at least that large.
 
 ## Interrupt Handling
 

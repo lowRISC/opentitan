@@ -248,9 +248,8 @@ status_t sha384_update(sha384_state_t *state, const uint8_t *msg,
 }
 
 static status_t state_shred(sha384_state_t *state) {
-  HARDENED_TRY(hardened_memshred(state->H, kSha384StateWords));
-  HARDENED_TRY(
-      hardened_memshred(state->partial_block, kSha384MessageBlockWords));
+  hardened_memshred(state->H, kSha384StateWords);
+  hardened_memshred(state->partial_block, kSha384MessageBlockWords);
   state->total_len.lower = 0;
   state->total_len.upper = 0;
 

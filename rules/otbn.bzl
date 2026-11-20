@@ -628,6 +628,9 @@ def _otbn_fi_sim_test_impl(ctx):
     if ctx.attr.fixed_instruction_count:
         script_content += " --fixed-instruction-count"
 
+    for val in ctx.attr.ignore_outputs:
+        script_content += " --ignore-output {}".format(val)
+
     for syms, config in ctx.attr.target_a_secrets.items():
         script_content += ' --target-a-secret "{}:{}"'.format(syms, config)
 
@@ -666,6 +669,7 @@ otbn_fi_sim_test = rule(
         "collision_mode": attr.string(default = "unmasked", values = ["unmasked", "boolean", "additive"]),
         "collision_modulus": attr.string(default = ""),
         "fixed_instruction_count": attr.bool(default = False),
+        "ignore_outputs": attr.string_list(default = []),
         "_fi_campaign": attr.label(default = "//hw/ip/otbn/util:otbn_fi_campaign", executable = True, cfg = "exec"),
         "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone", executable = True, cfg = "exec"),
     },

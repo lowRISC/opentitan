@@ -143,6 +143,13 @@ package chip_env_pkg;
     LcOtpPartitionError
   } lc_ctrl_status_e;
 
+  // Selects which power on reset pin(s) are pulled low to reset the chip.
+  typedef enum {
+    PorPinPorN,
+    PorPinPoraN,
+    PorPinBoth
+  } por_pin_e;
+
   typedef enum bit[1:0] {
     SysrstCtrlPadKey0 = 0,
     SysrstCtrlPadKey1 = 1,

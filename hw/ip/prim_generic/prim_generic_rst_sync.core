@@ -13,7 +13,7 @@ filesets:
     depend:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:flop_2sync
-      - lowrisc:prim:mubi
+      - lowrisc:prim:mubi_pkg
     files:
       - rtl/prim_rst_sync.sv
     file_type: systemVerilogSource

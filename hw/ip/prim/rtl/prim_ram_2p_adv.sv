@@ -13,8 +13,6 @@
 // Note that the write mask needs to be per Byte if parity is enabled. If ECC is enabled, the write
 // mask cannot be used and has to be tied to {Width{1'b1}}.
 
-`include "prim_assert.sv"
-
 module prim_ram_2p_adv import prim_ram_2p_pkg::*; #(
   parameter  int Depth                = 512,
   parameter  int Width                = 32,

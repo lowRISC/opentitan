@@ -393,7 +393,11 @@ rg_srcs = get_rg_srcs(typed_clocks)
   % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
   % else:
-    .mubi_i(MuBi4False),
+    // Without a calibration-ready input there is nothing that could invalidate the clock
+    // frequencies, so the clocks are always considered calibrated. Tying this to MuBi4False
+    // instead would permanently force measure_ctrl_regwen to 1 and permanently clear the
+    // measurement enables, disabling the frequency measurement feature altogether.
+    .mubi_i(MuBi4True),
   % endif
     .mubi_o({calib_rdy})
   );

@@ -43,7 +43,7 @@ parameter int unsigned EntropyStreams   = 4;
 parameter int unsigned AdcChannels      = 2;
 parameter int unsigned AdcDataWidth     = 10;
 parameter int unsigned UsbCalibWidth    = 20;
-parameter int unsigned Ast2PadOutWidth  = 9;
+parameter int unsigned Ast2PadOutWidth  = 8;
 parameter int unsigned Pad2AstInWidth   = 8;
 //
 // AstRegsNum is the number of AST registers programmed during initialization. It includes

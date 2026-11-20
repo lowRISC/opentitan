@@ -16,9 +16,8 @@ Once the FIFO is empty, subsequent entropy seed requests will have to wait the w
 ## Entropy Source Module Disable
 
 A useful feature for the ENTROPY_SRC block is the ability to disable it in a graceful matter.
-Since there exists another feature to avoid power spikes between ENTROPY_SRC and CSRNG, software needs to monitor the disabling process.
 Bit 16 in the [`DEBUG_STATUS`](registers.md#debug_status) should be polled after the ENTROPY_SRC enable bits are cleared in the [`CONF`](registers.md#conf) register.
-After the handshakes with CSRNG are finished, the above bit should be set and the ENTROPY_SRC block can be safely enabled again.
+Once the above bit is set, the ENTROPY_SRC block can be safely enabled again.
 
 Disabling Entropy Source does not clear the bits in `RECOV_ALERT_STS` (see [*Handling a Recoverable Alert*](#handling-a-recoverable-alert)).
 

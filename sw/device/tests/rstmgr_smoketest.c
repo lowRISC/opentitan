@@ -16,9 +16,9 @@ static dt_rstmgr_t kTestRstmgr = (dt_rstmgr_t)0;
 
 OTTF_DEFINE_TEST_CONFIG();
 
-// The SV side will flip POR_N and cause some AON power glitches prior to the
-// start of test_main. Both of these cause a new POR, so all this has to do is
-// check that the `reset_info` CSR is POR.
+// The SV side will flip POR_N and/or PORA_N and cause some AON power glitches
+// prior to the start of test_main. Both of these cause a new POR, so all this
+// has to do is check that the `reset_info` CSR is POR.
 bool test_main(void) {
   dif_rstmgr_t rstmgr;
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kTestRstmgr, &rstmgr));

@@ -32,7 +32,7 @@ class RomMockGroup : public AbstractBootstrapMockGroup {
             "bootstrap_enabled", kHardenedBoolFalse)));
 
     ON_CALL(mmio_,
-            Read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET))
+            Read32(TOP_EARLGREY_GPIO0_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET))
         .WillByDefault(
             ::testing::Return(stream_.ParseIntOr<uint32_t>("strapping", 0)));
   }

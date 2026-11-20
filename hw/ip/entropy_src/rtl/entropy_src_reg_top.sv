@@ -176,6 +176,8 @@ module entropy_src_reg_top (
   logic [3:0] entropy_control_es_route_wd;
   logic [3:0] entropy_control_es_type_qs;
   logic [3:0] entropy_control_es_type_wd;
+  logic [3:0] entropy_control_esfinal_fifo_clear_while_disabled_qs;
+  logic [3:0] entropy_control_esfinal_fifo_clear_while_disabled_wd;
   logic entropy_data_re;
   logic [31:0] entropy_data_qs;
   logic health_test_windows_we;
@@ -337,6 +339,8 @@ module entropy_src_reg_top (
   logic recov_alert_sts_fips_flag_field_alert_wd;
   logic recov_alert_sts_rng_fips_field_alert_qs;
   logic recov_alert_sts_rng_fips_field_alert_wd;
+  logic recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_qs;
+  logic recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_wd;
   logic recov_alert_sts_postht_entropy_drop_alert_qs;
   logic recov_alert_sts_postht_entropy_drop_alert_wd;
   logic err_code_sfifo_esrng_err_qs;
@@ -1068,6 +1072,34 @@ module entropy_src_reg_top (
 
     // to register interface (read)
     .qs     (entropy_control_es_type_qs)
+  );
+
+  //   F[esfinal_fifo_clear_while_disabled]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h6),
+    .Mubi    (1'b1)
+  ) u_entropy_control_esfinal_fifo_clear_while_disabled (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (entropy_control_gated_we),
+    .wd     (entropy_control_esfinal_fifo_clear_while_disabled_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.entropy_control.esfinal_fifo_clear_while_disabled.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (entropy_control_esfinal_fifo_clear_while_disabled_qs)
   );
 
 
@@ -2683,6 +2715,34 @@ module entropy_src_reg_top (
     .qs     (recov_alert_sts_rng_fips_field_alert_qs)
   );
 
+  //   F[esfinal_fifo_clear_while_disabled_field_alert]: 19:19
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.esfinal_fifo_clear_while_disabled_field_alert.de),
+    .d      (hw2reg.recov_alert_sts.esfinal_fifo_clear_while_disabled_field_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_qs)
+  );
+
   //   F[postht_entropy_drop_alert]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -3295,6 +3355,8 @@ module entropy_src_reg_top (
   assign entropy_control_es_route_wd = reg_wdata[3:0];
 
   assign entropy_control_es_type_wd = reg_wdata[7:4];
+
+  assign entropy_control_esfinal_fifo_clear_while_disabled_wd = reg_wdata[11:8];
   assign entropy_data_re = addr_hit[9] & reg_re & !reg_error;
   assign health_test_windows_we = addr_hit[10] & reg_we & !reg_error;
 
@@ -3423,6 +3485,8 @@ module entropy_src_reg_top (
 
   assign recov_alert_sts_rng_fips_field_alert_wd = reg_wdata[18];
 
+  assign recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_wd = reg_wdata[19];
+
   assign recov_alert_sts_postht_entropy_drop_alert_wd = reg_wdata[31];
   assign err_code_test_we = addr_hit[49] & reg_we & !reg_error;
 
@@ -3539,6 +3603,7 @@ module entropy_src_reg_top (
       addr_hit[8]: begin
         reg_rdata_next[3:0] = entropy_control_es_route_qs;
         reg_rdata_next[7:4] = entropy_control_es_type_qs;
+        reg_rdata_next[11:8] = entropy_control_esfinal_fifo_clear_while_disabled_qs;
       end
 
       addr_hit[9]: begin
@@ -3730,6 +3795,7 @@ module entropy_src_reg_top (
         reg_rdata_next[16] = recov_alert_sts_es_fw_ov_disable_alert_qs;
         reg_rdata_next[17] = recov_alert_sts_fips_flag_field_alert_qs;
         reg_rdata_next[18] = recov_alert_sts_rng_fips_field_alert_qs;
+        reg_rdata_next[19] = recov_alert_sts_esfinal_fifo_clear_while_disabled_field_alert_qs;
         reg_rdata_next[31] = recov_alert_sts_postht_entropy_drop_alert_qs;
       end
 

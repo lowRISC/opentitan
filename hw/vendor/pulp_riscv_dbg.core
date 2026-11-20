@@ -13,6 +13,7 @@ filesets:
     files:
       - pulp_riscv_dbg/debug_rom/debug_rom.sv
       - pulp_riscv_dbg/debug_rom/debug_rom_one_scratch.sv
+      - pulp_riscv_dbg/debug_rom/debug_rom_cheriot.sv
       - pulp_riscv_dbg/src/dm_pkg.sv
       - pulp_riscv_dbg/src/dm_sba.sv
       - pulp_riscv_dbg/src/dm_csrs.sv

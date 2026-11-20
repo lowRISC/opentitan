@@ -45,7 +45,7 @@
   ],
   interrupt_list: [
     { name: "timer_expired_hart0_timer0",
-      desc: "raised if hart0's timer0 expired (mtimecmp >= mtime)"
+      desc: "raised if hart0's timer0 expired (mtime >= mtimecmp)"
     },
   ],
   alert_list: [

@@ -142,17 +142,12 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 # This requires knowledge of actual port name
 set CLK_DST_NAME $CLK_DST_PIN
 
-# generated clocks (div2/div4)
-set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div2_div
-create_generated_clock -name IO_DIV2_CLK  \
-    -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
-
+# generated clocks (div4)
 set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
 # Define these variables for later use
-set IO_DIV2_TCK_PERIOD [expr $IO_TCK_PERIOD * 2]
 set IO_DIV4_TCK_PERIOD [expr $IO_TCK_PERIOD * 4]
 
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
@@ -211,6 +206,8 @@ create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
+create_generated_clock -name RRAM_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
+    [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rram/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 
 set LC_JTAG_TCK_INV_PIN \
   [get_pins -leaf -filter {@pin_direction == out} -of_objects \
@@ -1304,21 +1301,21 @@ set_multicycle_path -hold -end 1 \
 
 # Approved by Ziv
 #  SPI_HOST_D0
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_7__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_HOST_D1
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_8__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_HOST_D2
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_HOST_D3
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_DEV_D0
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_DEV_D1
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_DEV_D2
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #  SPI_DEV_D3
-set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+set_false_path -hold -fall_through [get_pins u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #IOB0
 set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #IOB1
@@ -1389,91 +1386,91 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -
 ########################################
 # Note that these set_case_analysis and set_false_path constraints have not been used for synthesis but as PrimeTime waivers only.
 if { $synopsys_program_name eq "pt_shell"  } {
-# SPI_HOST1 CSB (MioOut 47 -> mux sel 50) drives IOB0 (MIO pad 9):
+# SPI_HOST1 CSB0 (MioOut 87 -> mux sel 90) drives IOB0 (MIO pad 9):
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[0]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[1]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[2]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[3]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_9/q[6]
 
-# SPI_HOST1 SD0 (MioOut 38 -> mux sel 41) drives IOB1 (MIO pad 10):
+# SPI_HOST1 SD0 (MioOut 74 -> mux sel 77) drives IOB1 (MIO pad 10):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[0]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[1]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[2]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[3]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_10/q[6]
 
-# IOB1 (MIO pad 10 -> mux sel 12) drives SPI_HOST1 SD0 (MioIn 38):
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[4]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_38/q[5]
+# IOB1 (MIO pad 10 -> mux sel 12) drives SPI_HOST1 SD0 (MioIn 74):
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_74/q[5]
 
-# SPI_HOST1 SD1 (MioOut 39 -> mux sel 42) drives IOB2 (MIO pad 11):
+# SPI_HOST1 SD1 (MioOut 75 -> mux sel 78) drives IOB2 (MIO pad 11):
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[0]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[1]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[2]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[3]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_11/q[6]
 
-# IOB2 (MIO pad 11 -> mux sel 13) drives SPI_HOST1 SD1 (MioIn 39):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[4]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_39/q[5]
+# IOB2 (MIO pad 11 -> mux sel 13) drives SPI_HOST1 SD1 (MioIn 75):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_75/q[5]
 
-# SPI_HOST1 SD2 (MioOut 40 -> mux sel 43) drives IOB4 (MIO pad 13):
+# SPI_HOST1 SD2 (MioOut 76 -> mux sel 79) drives IOB4 (MIO pad 13):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[0]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[1]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[2]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[3]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_13/q[6]
 
-# IOB4 (MIO pad 13 -> mux sel 15) drives SPI_HOST1 SD2 (MioIn 40):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[0]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[4]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_40/q[5]
+# IOB4 (MIO pad 13 -> mux sel 15) drives SPI_HOST1 SD2 (MioIn 76):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[0]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_76/q[5]
 
-# SPI_HOST1 SD3 (MioOut 41 -> mux sel 44) drives IOB6 (MIO pad 15):
+# SPI_HOST1 SD3 (MioOut 77 -> mux sel 80) drives IOB6 (MIO pad 15):
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[0]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[2]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[3]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_15/q[6]
 
-# IOB6 (MIO pad 15 -> mux sel 17) drives SPI_HOST1 SD3 (MioIn 41):
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[0]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[1]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[2]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[3]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[4]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_41/q[5]
+# IOB6 (MIO pad 15 -> mux sel 17) drives SPI_HOST1 SD3 (MioIn 77):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[1]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_periph_insel_77/q[5]
 
-# SPI_HOST1 SCK (MioOut 46 -> mux 49) drives IOB3 (MIO pad 12):
+# SPI_HOST1 SCK (MioOut 86 -> mux sel 89) drives IOB3 (MIO pad 12):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[0]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[1]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[2]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[3]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[4]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[5]
-set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[6]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[5]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_aon/u_pinmux/u_reg/u_mio_outsel_12/q[6]
 
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_CLK
@@ -1556,67 +1553,67 @@ set_disable_clock_gating_check [get_cells -of_objects [gpo top_earlgrey/earlgrey
 # SPI Slew Rate and Drive Strength Constraints
 
 #  SPI_HOST_D0
+set_case_analysis 0 u_padring/gen_dio_pads_7__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_7__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_7__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_7__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_D1
+set_case_analysis 0 u_padring/gen_dio_pads_8__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_8__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_8__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 0 u_padring/gen_dio_pads_8__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_HOST_D2
 set_case_analysis 0 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 0 u_padring/gen_dio_pads_9__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_HOST_D1
+#  SPI_HOST_D3
 set_case_analysis 0 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 0 u_padring/gen_dio_pads_10__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_HOST_D2
+#  SPI_HOST_CLK
 set_case_analysis 0 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 0 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_HOST_D3
+set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 1 u_padring/gen_dio_pads_11__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
+#  SPI_HOST_CS_L
 set_case_analysis 0 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 0 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_HOST_CLK
+set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 1 u_padring/gen_dio_pads_12__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
+#  SPI_DEV_D0
 set_case_analysis 0 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-set_case_analysis 1 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
-#  SPI_HOST_CS_L
+set_case_analysis 0 u_padring/gen_dio_pads_13__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_D1
 set_case_analysis 0 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-set_case_analysis 1 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE
-#  SPI_DEV_D0
+set_case_analysis 0 u_padring/gen_dio_pads_14__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#  SPI_DEV_D2
 set_case_analysis 0 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 0 u_padring/gen_dio_pads_15__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_DEV_D1
+#  SPI_DEV_D3
 set_case_analysis 0 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
 set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 0 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_DEV_D2
-set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
-#  SPI_DEV_D3
-set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #  SPI_DEV_CLK
-set_case_analysis 0 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_19__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #  SPI_DEV_CS_L
-set_case_analysis 0 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_20__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #IOA7
 # Open drain pads have just one drive strength bit.
 set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/DS
@@ -1669,9 +1666,8 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
-    -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
-    -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
+    -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK RRAM_JTAG_TCK"] \
     -group [get_clocks AON_CLK                                      ]
 
 # UART loopback path can be considered to be a false path
@@ -1740,5 +1736,4 @@ if { $synopsys_program_name  == "pt_shell" } {
   set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*] ${SYSRST_MAXDELAY} -probe
 }
 
-set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV2_CLK]
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV4_CLK]

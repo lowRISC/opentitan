@@ -115,6 +115,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   HARDENED_TRY(digest_num_words_from_key_mode(
       key_derivation_key->config.key_mode, &digest_word_len));
 
+  HARDENED_TRY(keyblob_ensure_xor_masked(key_derivation_key->config));
+
   // Ensure that the derived key is a symmetric key masked with XOR and is not
   // supposed to be hardware-backed.
   HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
@@ -150,17 +152,13 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
   uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 
-  // Check if label or context contain 0x00 bytes
-  // Since 0x00 is used as the delimiter between label and context
-  // there shouldn't be multiple instances of them in input data
+  // Check if label contains 0x00 bytes.
+  // Since 0x00 is used as the delimiter between label and context,
+  // there shouldn't be multiple instances of it in the label data.
   HARDENED_TRY(check_zero_byte(label));
-  HARDENED_TRY(check_zero_byte(context));
 
   // Setup
   uint8_t zero = 0x00;
-  size_t share_word_len = keyblob_share_num_words(output_key_material->config);
-  uint32_t *share0_ptr = output_key_material->keyblob;
-  uint32_t *share1_ptr = output_key_material->keyblob + share_word_len;
   size_t words_written = 0;
 
   // Repeatedly call HMAC to generate the derived key based on input data:
@@ -200,18 +198,19 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     }
 
     uint32_t mask_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+    hardened_memshred(mask_data, words_to_copy);
 
     uint32_t share0_data[kHmacMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
 
-    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
-                                 words_to_copy));
-    HARDENED_TRY(
-        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+    HARDENED_TRY(keyblob_write_shares(
+        share0_data, mask_data, words_written, words_to_copy,
+        output_key_material->config, output_key_material->keyblob));
 
     words_written += words_to_copy;
   }
+  HARDENED_CHECK_EQ(words_written, required_word_len);
+  HARDENED_CHECK_GT(words_written, 0);
 
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);

@@ -15,7 +15,7 @@ The main address space, shared between the CPU and DM
 | Module         | Interface   | Base Address   | Size (bytes)   | Size (words)   | Description                   |
 |----------------|-------------|----------------|----------------|----------------|-------------------------------|
 | uart0          | default     | `0x30010000`   | `0x40`         | `0x10`         | uart0                         |
-| gpio           | default     | `0x30000000`   | `0x100`        | `0x40`         | gpio                          |
+| gpio0          | default     | `0x30000000`   | `0x100`        | `0x40`         | gpio0                         |
 | spi_device     | default     | `0x30310000`   | `0x2000`       | `0x800`        | spi_device                    |
 | i2c0           | default     | `0x30080000`   | `0x80`         | `0x20`         | i2c0                          |
 | rv_timer       | default     | `0x30100000`   | `0x200`        | `0x80`         | rv_timer                      |
@@ -40,7 +40,7 @@ The main address space, shared between the CPU and DM
 | kmac           | default     | `0x21120000`   | `0x1000`       | `0x400`        | kmac                          |
 | otbn           | default     | `0x21130000`   | `0x10000`      | `0x4000`       | otbn                          |
 | keymgr_dpe     | default     | `0x21140000`   | `0x200`        | `0x80`         | keymgr_dpe                    |
-| csrng          | default     | `0x21150000`   | `0x80`         | `0x20`         | csrng                         |
+| csrng          | default     | `0x21150000`   | `0x100`        | `0x40`         | csrng                         |
 | entropy_src    | default     | `0x21160000`   | `0x100`        | `0x40`         | entropy_src                   |
 | edn0           | default     | `0x21170000`   | `0x80`         | `0x20`         | edn0                          |
 | edn1           | default     | `0x21180000`   | `0x80`         | `0x20`         | edn1                          |

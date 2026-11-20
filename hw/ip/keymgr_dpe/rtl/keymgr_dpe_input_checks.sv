@@ -13,15 +13,17 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
   parameter int unsigned NumRomDigestInputs = 1
 ) (
   input rom_ctrl_pkg::keymgr_data_t [NumRomDigestInputs-1:0] rom_digest_i,
-  input [KeyVersionWidth-1:0] cur_max_key_version_i,
-  input hw_key_req_t key_i,
-  input [31:0] key_version_i,
-  input [KeyWidth-1:0] creator_seed_i,
-  input [KeyWidth-1:0] owner_seed_i,
-  input [DeviceIdWidth-1:0] devid_i,
+  input logic [KeyVersionWidth-1:0] cur_max_key_version_i,
+  input internal_key_t key_i,
+  input logic [KeyVersionWidth-1:0] key_version_i,
+  input logic [SeedWidth-1:0] creator_seed_i,
+  input logic [SeedWidth-1:0] owner_seed_i,
+  input logic [SeedWidth-1:0] field_entropy_i,
+  input logic [DeviceIdWidth-1:0] devid_i,
   input lc_ctrl_pkg::lc_keymgr_div_t health_state_i,
   output logic creator_seed_vld_o,
   output logic owner_seed_vld_o,
+  output logic field_entropy_vld_o,
   output logic devid_vld_o,
   output logic health_state_vld_o,
   output logic key_version_vld_o,
@@ -30,7 +32,7 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 );
 
   // Common width to which all checked inputs are extended
-  localparam int MaxWidth = KeyWidth;
+  localparam int MaxWidth = InternalKeyWidth;
   `ASSERT_INIT(MaxWidthCovers_A, (MaxWidth >= DeviceIdWidth) &&
                                  (MaxWidth >= $bits(lc_ctrl_pkg::lc_keymgr_div_t)) &&
                                  (MaxWidth >= $bits(rom_digest_i[0].data)))
@@ -45,9 +47,10 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 
   // general data check
   logic [MaxWidth-1:0] creator_seed_padded, owner_seed_padded, devid_padded, health_state_padded;
+  logic [MaxWidth-1:0] field_entropy_padded;
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth(SeedWidth),
     .OutWidth(MaxWidth)
   ) u_creator_seed (
     .in_i(creator_seed_i),
@@ -55,11 +58,19 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
   );
 
   prim_msb_extend #(
-    .InWidth(KeyWidth),
+    .InWidth(SeedWidth),
     .OutWidth(MaxWidth)
   ) u_owner_seed (
     .in_i(owner_seed_i),
     .out_o(owner_seed_padded)
+  );
+
+  prim_msb_extend #(
+    .InWidth(SeedWidth),
+    .OutWidth(MaxWidth)
+  ) u_field_entropy (
+    .in_i(field_entropy_i),
+    .out_o(field_entropy_padded)
   );
 
   prim_msb_extend #(
@@ -80,6 +91,7 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 
   assign creator_seed_vld_o = valid_chk(creator_seed_padded);
   assign owner_seed_vld_o = valid_chk(owner_seed_padded);
+  assign field_entropy_vld_o = valid_chk(field_entropy_padded);
   assign devid_vld_o = valid_chk(devid_padded);
   assign health_state_vld_o = valid_chk(health_state_padded);
 
@@ -93,7 +105,7 @@ module keymgr_dpe_input_checks import keymgr_dpe_pkg::*; #(
 
   for (genvar i = 0; i < KeyShares; i++) begin : gen_key_chk
     prim_msb_extend #(
-      .InWidth(KeyWidth),
+      .InWidth(InternalKeyWidth),
       .OutWidth(MaxWidth)
     ) u_key_pad (
       .in_i(key_i.key[i]),

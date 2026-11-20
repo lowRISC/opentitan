@@ -26,8 +26,13 @@ typedef enum otcrypto_rsa_padding {
   kOtcryptoRsaPaddingPkcs = 0x94e,
   // Pads input data according to the PKCS#1-PSS scheme. The mask generation
   // function is MGF1 with the same hash function as the input message
-  // (supported SHA2 or SHA3 hash functions only).
+  // (supported SHA1 or SHA2 hash functions).
   kOtcryptoRsaPaddingPss = 0x6b1,
+  // No padding (raw modular exponentiation; requires `kOtcryptoKeyModeRsaRaw`
+  // and `kOtcryptoHashModeNull`). When `kOtcryptoHashModeNull` is used with
+  // RSA (`kOtcryptoRsaPaddingPkcs` or `kOtcryptoRsaPaddingNull`),
+  // `message_digest.len` is in bytes.
+  kOtcryptoRsaPaddingNull = 0x137,
 } otcrypto_rsa_padding_t;
 
 /**
@@ -105,26 +110,34 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_blinded_key_t *private_key);
 
 /**
- * Performs deterministic RSA key generation from caller-provided entropy.
+ * Checks whether a candidate prime is a probable RSA prime.
  *
- * Computes RSA private key (d) and the public key modulus (n) by seeding the
- * CSRNG in deterministic mode with `entropy` and testing candidate primes p
- * and q in a loop by writing each candidate into OTBN DMEM (`rsa_n`) via
- * `otbn_dmem_write` and invoking the OTBN prime check routine that bypasses
- * the EDN `RND` call during candidate generation.
- *
- * See `otcrypto_rsa_keygen` for details on the requirements for `public_key`
- * and `private_key`.
+ * Tests `prime_candidate` as-is on OTBN using the Fermat and Miller-Rabin
+ * primality tests (4 iterations). The candidate must have its lowest two bits
+ * set (`p = 3 mod 4`) and its most significant bit set.
  *
  * @param size RSA size parameter.
- * @param entropy Caller-provided entropy seed material (1 to 48 bytes).
- * @param[out] public_key Pointer to public key struct.
- * @param[out] private_key Pointer to blinded private key struct.
- * @return Result of the deterministic RSA key generation.
+ * @param prime_candidate Candidate prime buffer (half the modulus size).
+ * @param[out] prime_ok Whether the candidate passed the primality checks.
+ * @return Result of the prime check operation.
  */
-otcrypto_status_t otcrypto_rsa_keygen_deterministic(
-    otcrypto_rsa_size_t size, const otcrypto_const_byte_buf_t *entropy,
-    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
+otcrypto_status_t otcrypto_rsa_prime_check(
+    otcrypto_rsa_size_t size,
+    const otcrypto_const_word32_buf_t *prime_candidate,
+    hardened_bool_t *prime_ok);
+
+/**
+ * Computes the RSA public modulus `n = p * q` from two primes `p` and `q`.
+ *
+ * @param size RSA size parameter.
+ * @param prime_p First prime factor `p` (half the modulus size).
+ * @param prime_q Second prime factor `q` (half the modulus size).
+ * @param[out] modulus Output buffer for `n = p * q` (full modulus size).
+ * @return Result of the modulus computation.
+ */
+otcrypto_status_t otcrypto_rsa_create_n_from_primes(
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *prime_p,
+    const otcrypto_const_word32_buf_t *prime_q, otcrypto_word32_buf_t *modulus);
 
 /**
  * Constructs an RSA public key from the modulus and public exponent.
@@ -178,6 +191,13 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * `keyblob_length`, and `key_length` fields accordingly. Similarly, the caller
  * should allocate space for the public key and set the `key` and `key_length`
  * fields.
+ *
+ * The public key returned from this function is recomputed assuming two
+ * distinct prime factors; we recommend that the caller compare it to the
+ * originally passed `modulus` value to ensure that everything went as
+ * expected. If the key is invalid in certain ways (such as `modulus` not being
+ * divisible by the cofactor), then the recomputed modulus will not match the
+ * original input.
  *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
@@ -246,10 +266,18 @@ otcrypto_status_t otcrypto_rsa_verify(
  * Computes and verifies the digital signature on the input message data by
  * hashing first.
  *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same RSA keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * share the same modulus `n` beforehand, compare the `num_words`
+ * (`public_key->key_length / sizeof(uint32_t)`) words at `public_key->key`
+ * against `&private_key->keyblob[2 * num_words]`.
+ *
  * @param private_key Pointer to blinded private key struct.
  * @param public_key Pointer to public key struct.
- * @param hash_mode Hash algorithm to use for message hashing.
- * @param message Message data to be hashed and signed.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param padding_mode Padding scheme to be used for the data.
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation. Returns
@@ -259,18 +287,17 @@ otcrypto_status_t otcrypto_rsa_verify(
  * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_rsa_hash_sign_verify(
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature);
 
 /**
- * Verifies the authenticity of the input signature by hashing first.
+ * Finalizes a streaming hash context and verifies the authenticity of the input
+ * RSA signature.
  *
  * @param public_key Pointer to public key struct.
- * @param hash_mode Hash algorithm to use for message hashing.
- * @param message Message data to be hashed and verified.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param padding_mode Padding scheme to be used for the data.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification.
@@ -280,9 +307,8 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
  * integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_rsa_hash_verify(
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_rsa_hash_verify_final(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
@@ -291,7 +317,7 @@ otcrypto_status_t otcrypto_rsa_hash_verify(
  * Encrypts a message with RSA.
  *
  * The only padding scheme available is OAEP, where the hash function is a
- * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * member of the SHA-1 or SHA-2 family and the mask generation function is
  * MGF1 with the same hash function.
  *
  * OAEP imposes strict limits on the length of the message (see IETF RFC 8017
@@ -331,7 +357,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * Decrypts a message with RSA.
  *
  * The only padding scheme available is OAEP, where the hash function is a
- * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * member of the SHA-1 or SHA-2 family and the mask generation function is
  * MGF1 with the same hash function.
  *
  * The caller should allocate space for the `plaintext` buffer and set the

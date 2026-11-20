@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from enum import Enum
 
 from basegen.lib import Name
-from topgen.lib import find_modules
+from topgen.lib import find_modules, get_conns_for
 from reggen.ip_block import IpBlock
 
 import logging
@@ -806,8 +806,11 @@ class IpHelper:
         return len(self._device_clocks) > 0
 
     def _init_clocks(self):
-        # We only care about external clocks.
-        self._device_clocks = self.ip.clocking.clock_signals(False)
+        # We only care about external clocks. A split IP has clock ports in each partition, and all
+        # of them are listed; however, a port that both partitions have must only be listed once.
+        # Convert to a dict and back to a list again to de-duplicate the list of clock signal names.
+        clock_signal_names = self.ip.clocking.clock_signals(False, partition=None)
+        self._device_clocks = list(dict.fromkeys(clock_signal_names))
         # Remove the scan clock
         if "scan_clk_i" in self._device_clocks:
             self._device_clocks.remove("scan_clk_i")
@@ -859,8 +862,12 @@ class IpHelper:
     def _init_resets(self):
         self.reset_enum = EnumType(Name(["dt"]) + self.ip_name + Name(["reset"]))
         self.reset_map = OrderedDict()
-        # Resets are listed alongside clocks.
-        for rst in self.ip.clocking.reset_signals():
+        # Resets are listed alongside clocks, in the IP's clocking description. A split IP has reset
+        # ports in each partition, and all of them are listed; however, a port that both partitions
+        # have must only be listed once.
+        # Iterate over the keys of a dict to de-duplicate the list of reset signal names.
+        reset_signal_names = self.ip.clocking.reset_signals(partition=None)
+        for rst in dict.fromkeys(reset_signal_names):
             rst_orig = rst
             # Remove the rst_ prefix and _ni suffix.
             assert rst.startswith("rst_") and rst.endswith("_ni"), \
@@ -879,10 +886,17 @@ class IpHelper:
 
     def _init_periph_io(self):
         inouts, inputs, outputs = self.ip.xputs
+        instances = [m for m in self.top["module"] if m["type"] == self.ip.name]
         self._device_signals = OrderedDict()
+        self._periph_io_sigs = {}
         for sig in inputs + outputs + inouts:
-            if sig.bits.width() > 1:
-                for bit in range(sig.bits.width()):
+            self._periph_io_sigs[sig.name] = sig
+            # The width of a signal can depend on a parameter of each instance, so use the
+            # largest width among all instances.
+            width = max((sig.width(m.get("param_decl")) for m in instances),
+                        default=sig.bits.width())
+            if width > 1:
+                for bit in range(width):
                     self._device_signals[sig.name + str(bit)] = (sig.name, bit)
             else:
                 self._device_signals[sig.name] = (sig.name, -1)
@@ -1120,26 +1134,40 @@ This value is undefined if the block is not connected to the Alert Handler."""
         # Clock map.
         if self.has_clocks():
             inst_clock_map = OrderedDict()
-            for (port, clock) in m["clock_srcs"].items():
-                if port not in self.clock_map:
-                    continue
-                # The clock source can either be just a string with the clock name, e.g.
-                #   clock_srcs: {clk_i: "main", clk_edn_i: "main"}
-                # Or a dictionary with the clock name and group:
-                #  clock_srcs: { clk_esc_i: { clock: io_div4, group: secure } }
-                if isinstance(clock, str):
-                    clk_name = clock
-                else:
-                    clk_name = clock["clock"]
-                inst_clock_map[Name.from_snake_case(self.clock_map[port])] = \
-                    Name.from_snake_case(clk_name)
+            # A split IP has the clock sources of each partition (clock_srcs, clock_srcs_secondary).
+            for (_partition, srcs) in get_conns_for(m, "clock_srcs"):
+                for (port, clock) in srcs.items():
+                    if port not in self.clock_map:
+                        continue
+                    # The clock source can either be just a string with the clock name, e.g.
+                    #   clock_srcs: {clk_i: "main", clk_edn_i: "main"}
+                    # Or a dictionary with the clock name and group:
+                    #  clock_srcs: { clk_esc_i: { clock: io_div4, group: secure } }
+                    if isinstance(clock, str):
+                        clk_name = clock
+                    else:
+                        clk_name = clock["clock"]
+                    key = Name.from_snake_case(self.clock_map[port])
+                    value = Name.from_snake_case(clk_name)
+                    if key in inst_clock_map and inst_clock_map[key] != value:
+                        raise RuntimeError(
+                            f"{modname}: the clock port {port} is connected to "
+                            f"different clocks in its partitions")
+                    inst_clock_map[key] = value
             inst_desc[self.CLOCK_FIELD_NAME] = inst_clock_map
         # Reset map.
         if self.has_resets():
             inst_reset_map = OrderedDict()
-            for (port, rst) in m["reset_connections"].items():
-                inst_reset_map[Name.from_snake_case(self.reset_map[port])] = \
-                    Name.from_snake_case(rst["name"])
+            # A split IP has the resets of each partition (reset_connections, ..._secondary).
+            for (_partition, conns) in get_conns_for(m, "reset_connections"):
+                for (port, rst) in conns.items():
+                    key = Name.from_snake_case(self.reset_map[port])
+                    value = Name.from_snake_case(rst["name"])
+                    if key in inst_reset_map and inst_reset_map[key] != value:
+                        raise RuntimeError(
+                            f"{modname}: the reset port {port} is connected to "
+                            f"different resets in its partitions")
+                    inst_reset_map[key] = value
             inst_desc[self.RESET_FIELD_NAME] = inst_reset_map
         # First IRQ
         if self.has_irqs():
@@ -1186,9 +1214,16 @@ This value is undefined if the block is not connected to the Alert Handler."""
         if self.has_periph_io():
             periph_ios = OrderedDict()
             for (sig, (port, idx)) in self._device_signals.items():
+                # The signal of this instance can be narrower than the widest instance.  Bits
+                # beyond its width do not exist, and topgen connects a 1-bit signal with index -1.
+                inst_width = self._periph_io_sigs[port].width(m.get("param_decl"))
+                if idx >= inst_width:
+                    periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
+                    continue
+                conn_idx = -1 if inst_width == 1 else idx
                 found = False
                 for conn in self.top.get("pinmux", {}).get("ios", []):
-                    if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
+                    if conn["name"] != m["name"] + "_" + port or conn_idx != conn["idx"]:
                         continue
                     if found:
                         logging.warning(

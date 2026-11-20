@@ -38,7 +38,8 @@
       i2c0
       i2c1
       i2c2
-      gpio
+      gpio0
+      gpio1
       spi_device
       rv_timer
       pwrmgr
@@ -220,7 +221,7 @@
       req_fifo_pass: true
     }
     {
-      name: gpio
+      name: gpio0
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -241,6 +242,27 @@
       req_fifo_pass: true
     }
     {
+      name: gpio1
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: gpio
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40050000
+          }
+          size_byte: 0x400
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
       name: spi_device
       type: device
       clock: clk_peri_i
@@ -252,7 +274,7 @@
         {
           base_addrs:
           {
-            hart: 0x40050000
+            hart: 0x40060000
           }
           size_byte: 0x2000
         }
@@ -690,7 +712,7 @@
       index: -1
     }
     {
-      name: tl_gpio
+      name: tl_gpio0
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -699,7 +721,20 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: gpio_tl
+      top_signame: gpio0_tl
+      index: -1
+    }
+    {
+      name: tl_gpio1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: gpio1_tl
       index: -1
     }
     {

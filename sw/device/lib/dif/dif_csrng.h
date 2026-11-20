@@ -306,11 +306,45 @@ typedef enum dif_csrng_recoverable_alert {
   kDifCsrngRecoverableAlertBadIntState =
       1U << CSRNG_RECOV_ALERT_STS_READ_INT_STATE_FIELD_ALERT_BIT,
   /**
+   * Indicates a bad value was written to the WRITE_INT_STATE field of the
+   * control register.
+   */
+  kDifCsrngRecoverableAlertBadWriteIntState =
+      1U << CSRNG_RECOV_ALERT_STS_WRITE_INT_STATE_FIELD_ALERT_BIT,
+  /**
+   * Indicates a bad value was written to the FIPS_FORCE_ENABLE field of the
+   * control register.
+   */
+  kDifCsrngRecoverableAlertBadFipsForceEnable =
+      1U << CSRNG_RECOV_ALERT_STS_FIPS_FORCE_ENABLE_FIELD_ALERT_BIT,
+  /**
    * Indicates the FLAG0 field in the Application Command is set to a value
    * other than kMultiBitBool4True or kMultiBitBool4False.
    */
   kDifCsrngRecoverableAlertBadFlag0 =
       1U << CSRNG_RECOV_ALERT_STS_ACMD_FLAG0_FIELD_ALERT_BIT,
+  /**
+   * Indicates a Generate command abort was requested for an instance without a
+   * Generate command in progress.
+   */
+  kDifCsrngRecoverableAlertInvalidGenAbort =
+      1U << CSRNG_RECOV_ALERT_STS_GEN_ABORT_INVALID_ALERT_BIT,
+  /**
+   * Indicates a bad value was written to the GEN_ABORT register.
+   */
+  kDifCsrngRecoverableAlertBadGenAbort =
+      1U << CSRNG_RECOV_ALERT_STS_GEN_ABORT_FIELD_ALERT_BIT,
+  /**
+   * Indicates a bad value was written to the INT_STATE_HALT register.
+   */
+  kDifCsrngRecoverableAlertBadIntStateHalt =
+      1U << CSRNG_RECOV_ALERT_STS_INT_STATE_HALT_FIELD_ALERT_BIT,
+  /**
+   * Indicates the selected internal state was updated by CSRNG while it was
+   * being accessed via INT_STATE_VAL.
+   */
+  kDifCsrngRecoverableAlertIntStateOverwrite =
+      1U << CSRNG_RECOV_ALERT_STS_INT_STATE_OVERWRITE_ALERT_BIT,
   /**
    * Indicates the genbits bus saw two identical values, indicating a possible
    * attack.

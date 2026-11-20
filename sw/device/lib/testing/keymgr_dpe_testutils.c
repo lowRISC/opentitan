@@ -220,6 +220,11 @@ status_t keymgr_dpe_initialize_sim_dv(dif_keymgr_dpe_t *keymgr_dpe,
   TRY(keymgr_dpe_testutils_generate_key(keymgr_dpe, &kKeyVersionedParams));
   LOG_INFO("Keymgr DPE generated key at CreatorRootKey State");
 
+  // Advance to CreatorIntermediateKey state.
+  TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kCreatorIntKeyParams));
+  LOG_INFO("Keymgr DPE generated the CreatorIntKey in slot %d",
+           kCreatorIntKeyParams.slot_dst_sel);
+
   // Advance to OwnerIntermediateKey state and check that the state is correct.
   // The sim_dv testbench expects this state.
   TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kOwnerIntKeyParams));
@@ -235,7 +240,10 @@ status_t keymgr_dpe_initialize_sival(dif_keymgr_dpe_t *keymgr_dpe,
   // keymgr_dpe should have loaded the Creator Key after this function
   TRY(keymgr_dpe_testutils_try_startup(keymgr_dpe, kmac, &keymgr_dpe_state));
 
-  // Advance the Creator Key to the Owner Int Key
+  // Advance the Creator Key to the Creator Int Key
+  TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kCreatorIntKeyParams));
+
+  // Advance the Creator Int Key to the Owner Int Key
   TRY(keymgr_dpe_testutils_advance_state(keymgr_dpe, &kOwnerIntKeyParams));
 
   // Advance the Owner Int Key to the Owner Key
@@ -392,10 +400,6 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
  * policy register) then these locks are not removed after the initial advance
  * call completes.
  */
-// TODO(#30665): Verify if the max key version needs to be written here too!
-// When loading the UDS the RTL fetches the max key version from the SW
-// register. Verify that the lock is released when the version register is
-// locked.
 status_t keymgr_dpe_testutils_initial_load_uds(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {

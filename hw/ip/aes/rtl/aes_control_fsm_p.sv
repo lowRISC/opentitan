@@ -111,6 +111,7 @@ module aes_control_fsm_p
 
   // Trigger register
   output logic                                    start_we_o,
+  output logic                                    key_iv_data_in_clear_o,
   output logic                                    key_iv_data_in_clear_we_o,
   output logic                                    data_out_clear_we_o,
   output logic                                    prng_reseed_o,
@@ -350,6 +351,7 @@ module aes_control_fsm_p
   logic                                    prng_update;
   logic                                    prng_reseed_req;
   logic                                    start_we;
+  logic                                    key_iv_data_in_clear_out_buf;
   logic                                    key_iv_data_in_clear_we;
   logic                                    data_out_clear_we;
   logic                                    prng_reseed_out_buf;
@@ -456,6 +458,7 @@ module aes_control_fsm_p
     .prng_reseed_ack_i         ( prng_reseed_ack               ),
 
     .start_we_o                ( start_we                      ),
+    .key_iv_data_in_clear_o    ( key_iv_data_in_clear_out_buf  ),
     .key_iv_data_in_clear_we_o ( key_iv_data_in_clear_we       ),
     .data_out_clear_we_o       ( data_out_clear_we             ),
     .prng_reseed_o             ( prng_reseed_out_buf           ),
@@ -510,6 +513,7 @@ module aes_control_fsm_p
     prng_update_o,
     prng_reseed_req_o,
     start_we_o,
+    key_iv_data_in_clear_o,
     key_iv_data_in_clear_we_o,
     data_out_clear_we_o,
     prng_reseed_o,
@@ -560,6 +564,7 @@ module aes_control_fsm_p
     prng_update,
     prng_reseed_req,
     start_we,
+    key_iv_data_in_clear_out_buf,
     key_iv_data_in_clear_we,
     data_out_clear_we,
     prng_reseed_out_buf,
@@ -616,6 +621,7 @@ module aes_control_fsm_p
           prng_update_o,
           prng_reseed_req_o,
           start_we_o,
+          key_iv_data_in_clear_o,
           key_iv_data_in_clear_we_o,
           data_out_clear_we_o,
           prng_reseed_o,

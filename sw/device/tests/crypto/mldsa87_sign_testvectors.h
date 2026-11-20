@@ -15,6 +15,7 @@ typedef struct mldsa87_sign_testvector {
   size_t ctx_len;  // bytes
   const uint8_t *msg;
   size_t msg_len;  // bytes
+  const uint32_t *mu;
   otcrypto_mldsa_hash_mode_t hash_mode;
   otcrypto_mldsa_sign_mode_t sign_mode;
 } mldsa87_sign_testvector_t;
@@ -2400,6 +2401,12 @@ static const uint8_t kCtxNistAcvp61[33] = {
     0xd2, 0x81, 0xc6, 0xf9, 0x17, 0xb5, 0xa8, 0x72, 0x3d, 0xd8, 0x78,
 };
 
+static const uint32_t kMuNistAcvp61[kOtcryptoMldsa87MuWords] = {
+    0x4b6def65, 0xc2c2fb7e, 0xe891a57c, 0x66f237db, 0x3c0b06f8, 0xf4f16797,
+    0x0e356000, 0x1ece3926, 0x99dc2d91, 0x6858d011, 0x91a3cb59, 0xf907a9f9,
+    0x78c5a99a, 0xbd408da5, 0x8f2713df, 0xcccf08e1,
+};
+
 static const uint32_t kSkNistAcvp76[1224 + 368] = {
     // rho (32)
     0x6326c748,
@@ -4665,12 +4672,14 @@ static const uint8_t kCtxNistAcvp76[251] = {
 };
 
 // See
-// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ML-DSA-sigGen-FIPS204/internalProjection.json
+// https://github.com/usnistgov/ACVP-Server/blob/v1.1.0.40/gen-val/json-files/ML-DSA-sigGen-FIPS204/internalProjection.json
 enum {
-  // NIST ACVP vector 63 (pure mode, determinstic, 1 iteration).
+  // NIST ACVP vector 61 (pure mode, deterministic, 1 iteration).
   kMldsa87SignNistAcvp61Pure,
-  // NIST ACVP vector 79 (pre-hash mode SHA3-384, determinstic, 5 iterations).
+  // NIST ACVP vector 76 (pre-hash mode SHA3-384, deterministic, 5 iterations).
   kMldsa87SignNistAcvp76PreHashSha3_384,
+  // NIST ACVP vector 61 with precomputed mu.
+  kMldsa87SignNistAcvp61ExternalMu,
 };
 
 static const mldsa87_sign_testvector_t mldsa87_sign_testvectors[] = {
@@ -4694,6 +4703,13 @@ static const mldsa87_sign_testvector_t mldsa87_sign_testvectors[] = {
             .msg = kMsgNistAcvp76,
             .msg_len = sizeof(kMsgNistAcvp76),
             .hash_mode = kOtcryptoMldsaHashModeSha3_384,
+            .sign_mode = kOtcryptoMldsaSignModeDet,
+        },
+    [kMldsa87SignNistAcvp61ExternalMu] =
+        {
+            .sk = kSkNistAcvp61,
+            .sig = kSigNistAcvp61,
+            .mu = kMuNistAcvp61,
             .sign_mode = kOtcryptoMldsaSignModeDet,
         },
 };

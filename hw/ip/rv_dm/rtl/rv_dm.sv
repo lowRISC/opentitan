@@ -20,6 +20,7 @@ module rv_dm
   parameter int unsigned                    AlertSkewCycles                   = 1,
   parameter logic [31:0]                    IdcodeValue                       = 32'h 0000_0001,
   parameter bit                             UseDmiInterface                   = 1'b0,
+  parameter bit                             CheriotSupport                    = 1'b0,
   parameter bit                             SecVolatileRawUnlockEn            = 0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits              = 0,
   parameter bit                             EnableRacl                        = 1'b0,
@@ -53,6 +54,8 @@ module rv_dm
   // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // Late debug enable disablement signal coming from the OTP HW_CFG1 partition.
   input  prim_mubi_pkg::mubi8_t otp_dis_rv_dm_late_debug_i,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset
@@ -238,6 +241,25 @@ module rv_dm
     .mubi_o(otp_dis_rv_dm_late_debug)
   );
 
+  prim_mubi_pkg::mubi4_t cheriot_ena;
+  if (CheriotSupport) begin : gen_cheriot
+    // ndmreset can reset the core's CHERIoT switch while rv_dm keeps running, so the switch output
+    // can change asynchronously to this domain.
+    prim_mubi4_sync #(
+      .NumCopies (1)
+    ) u_prim_mubi4_sync_cheriot_ena (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(cheriot_ena_i),
+      .mubi_o({cheriot_ena})
+    );
+  end else begin : gen_no_cheriot
+    // CHERIoT is inactive
+    assign cheriot_ena = prim_mubi_pkg::MuBi4False;
+    logic unused_cheriot_ena;
+    assign unused_cheriot_ena = ^cheriot_ena_i;
+  end
+
   prim_mubi_pkg::mubi32_t [lc_ctrl_pkg::TxWidth-1:0] late_debug_enable;
   prim_mubi32_sync #(
     .NumCopies (lc_ctrl_pkg::TxWidth),
@@ -380,10 +402,21 @@ module rv_dm
                         !lc_rst_asserted &&
                         reset_req_en;
 
-  // Apply the latched LC value only while an NDM reset is pending.
+  // Apply the latched LC value only while an NDM reset is pending. The OR is hardened so that two
+  // values that are not strictly On cannot combine into On.
   for (genvar k = 0; k < int'(LcEnLastPos); k++) begin : gen_ndm_gated
+    lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_gated_or_latched;
+    prim_lc_or_hardened #(
+      .ActVal(lc_ctrl_pkg::On)
+    ) u_prim_lc_or_hardened (
+      .clk_i,
+      .rst_ni,
+      .lc_en_a_i(lc_hw_debug_en_gated[k]),
+      .lc_en_b_i(lc_hw_debug_en_latched_q),
+      .lc_en_o  (lc_hw_debug_en_gated_or_latched)
+    );
     assign lc_hw_debug_en_gated_ndm[k] = (ndmreset_pending_q) ?
-        lc_ctrl_pkg::lc_tx_or_hi(lc_hw_debug_en_gated[k], lc_hw_debug_en_latched_q) :
+        lc_hw_debug_en_gated_or_latched :
         lc_hw_debug_en_gated[k];
   end
 
@@ -698,6 +731,7 @@ module rv_dm
     .NrHarts        (NrHarts),
     .BusWidth       (BusWidth),
     .SelectableHarts(SelectableHarts),
+    .CheriotSupport (CheriotSupport),
     // The debug module provides a simplified ROM for systems that map the debug ROM to offset 0x0
     // on the system bus. In that case, only one scratch register has to be implemented in the core.
     // However, we require that the DM can be placed at arbitrary offsets in the system, which
@@ -708,6 +742,7 @@ module rv_dm
     .clk_i,
     .rst_ni,
     .next_dm_addr_i,
+    .cheriot_enable_i      (cheriot_ena         ),
     .testmode_i            (testmode            ),
     .ndmreset_o            (ndmreset_req        ),
     .ndmreset_ack_i        (ndmreset_ack        ),

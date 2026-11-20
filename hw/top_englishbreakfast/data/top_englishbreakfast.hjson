@@ -51,7 +51,6 @@
     // src:  From which clock source is the clock derived
     // div:  Ratio between derived clock and source clock
     derived_srcs: [
-      { name: "io_div2", aon: "no", div: 2, src: "io", freq: "48000000" }
       { name: "io_div4", aon: "no", div: 4, src: "io", freq: "24000000" }
     ],
 
@@ -139,7 +138,6 @@
       { name: "sys_src",     gen: false, type: "int",                    clock: "io_div4" }
       { name: "por",         gen: true,  type: "top", parent: "por_aon", clock: "main"    }
       { name: "por_io",      gen: true,  type: "top", parent: "por_aon", clock: "io"      }
-      { name: "por_io_div2", gen: true,  type: "top", parent: "por_aon", clock: "io_div2" }
       { name: "por_io_div4", gen: true , type: "top", parent: "por_aon", clock: "io_div4" }
       { name: "por_usb",     gen: true,  type: "top", parent: "por_aon", clock: "usb"     }
       { name: "lc",          gen: true,  type: "top", parent: "lc_src",  clock: "main"    }
@@ -147,7 +145,7 @@
       { name: "sys",         gen: true,  type: "top", parent: "sys_src", clock: "main"    }
       { name: "sys_io_div4", gen: true,  type: "top", parent: "sys_src", clock: "io_div4" }
       { name: "sys_aon",     gen: true,  type: "top", parent: "sys_src", clock: "aon"     }
-      { name: "spi_device",  gen: true,  type: "top", parent: "sys_src", clock: "io_div2", sw: true }
+      { name: "spi_device",  gen: true,  type: "top", parent: "sys_src", clock: "io_div4", sw: true }
       { name: "spi_host0",   gen: true,  type: "top", parent: "sys_src", clock: "io",      sw: true }
       { name: "usb",         gen: true,  type: "top", parent: "sys_src", clock: "usb",     sw: true }
     ]
@@ -205,7 +203,7 @@
           nodes: [
             "uart0",
             "uart1",
-            "gpio",
+            "gpio0",
             "spi_device",
             "rv_timer"
             "spi_host0",
@@ -276,7 +274,7 @@
       },
       outgoing_alert: "englishbreakfast",
     },
-    { name: "gpio",
+    { name: "gpio0",
       type: "gpio",
       template_type: "gpio",
       clock_srcs: {clk_i: "io_div4"},
@@ -293,7 +291,7 @@
     }
     { name: "spi_device",
       type: "spi_device",
-      clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div2"},
+      clock_srcs: {clk_i: "io_div4", scan_clk_i: "io_div4"},
       clock_group: "peri",
       reset_connections: {rst_ni: "spi_device"},
       base_addr: {
@@ -354,7 +352,7 @@
       type: "rstmgr",
       template_type: "rstmgr",
       clock_srcs: {clk_i: "io_div4", clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
-                   clk_io_div2_i: "io_div2", clk_io_div4_i: "io_div4"},
+                   clk_io_div4_i: "io_div4"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "lc_io_div4", rst_por_ni: "por_io_div4"},
       domain: "Aon",
@@ -393,13 +391,11 @@
       reset_connections: {rst_ni: "por_io_div4",
                           rst_aon_ni: "por_aon",
                           rst_io_ni: "por_io",
-                          rst_io_div2_ni: "por_io_div2",
                           rst_io_div4_ni: "por_io_div4",
                           rst_main_ni: "por",
                           rst_usb_ni: "por_usb",
                           rst_root_ni: "por_io_div4",
                           rst_root_io_ni: "por_io",
-                          rst_root_io_div2_ni: "por_io_div2",
                           rst_root_io_div4_ni: "por_io_div4",
                           rst_root_main_ni: "por",
                           rst_root_usb_ni: "por_usb",
@@ -831,7 +827,7 @@
   interrupt_module: [
     "uart0",
     "uart1",
-    "gpio",
+    "gpio0",
     "spi_device",
     "spi_host0",
     // "rv_timer", connected to a dedicated interrupt input in rv_core_ibex.
@@ -866,7 +862,22 @@
     //
     //               3) 'muxed': This is a muxed IO pad that will be connected to the pinmux.
     //
-    // Optionally, each pad can also have a 'desc' field for further description.
+    // Optionally, each pad can also have the following keys:
+    //
+    // - desc: A field for further description.
+    //
+    // - port_type: A field to override the default 'inout wire' type (this is currently only used
+    //              for simulating ADC connections where the ports have to be switched to a real
+    //              type when the ANALOGSIM macro is defined).
+    //
+    // Muxed and direct pads may also have:
+    //
+    // - attrs: This field allows to define the reset values of the MIO/DIO_PAD_ATTR CSR of direct
+    //          or muxed pads. It is a dict mapping CSR field names to integer reset values. An
+    //          example is: `attrs: {virtual_od_en: 1, drive_strength: 3}`
+    //
+    //          Fields not specified keep the default reset value of the pinmux. Whether a pad
+    //          supports an attribute depends on its type and technology (WARL).
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
@@ -923,7 +934,9 @@
       { name: 'IOC5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      // Enable pull-down to ensure TAP strap 0 gets sampled as 0 unless driven to 1 from an external source
+      // (and specifically that it gets sampled as 0 when left floating / not connected).
+      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad', attrs: {pull_en: 1}},
       { name: 'IOC9'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -980,6 +993,7 @@
     // - attr: Manual direct IOs may specify an additional pad attr field.
     //         This is used to create the correct pad attribute CSR for that DIO channel (since the
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
+    //         Not to be confused with the 'attrs' key of a pad.
     //
     signals: [
       // SPI Host0
@@ -1000,7 +1014,7 @@
       { instance: 'usbdev',          port: 'usb_dp', connection: 'manual', pad: ''             , desc: ''},
       { instance: 'usbdev',          port: 'usb_dn', connection: 'manual', pad: ''             , desc: ''},
       // MIOs
-      { instance: "gpio",            port: '',      connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "gpio0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "uart1",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pad: ''             , desc: ''},
@@ -1082,6 +1096,7 @@
       pinmux: {
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
           { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
           { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },
@@ -1133,6 +1148,7 @@
         // Same special signal (JTAG / strap) positions as the cw305 target.
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
           { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
           { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },

@@ -75,8 +75,9 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand which_fifo_e     which_fifo;
   rand which_fifo_err_e which_fifo_err;
   rand invalid_mubi_e   which_invalid_mubi;
-  rand which_cnt_e      which_cnt;
   rand which_aes_cm_e   which_aes_cm;
+  rand which_cnt_e      which_cnt;
+  rand bit              drop_sw_cmd_word;
 
   bit                                    compliance[MaxNumApps], status[MaxNumApps];
   bit [csrng_env_pkg::KEY_LEN-1:0]       key[MaxNumApps];
@@ -164,7 +165,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       [fifo_write_error : fifo_state_error]    := 1
   };}
   constraint which_err_code_c { which_err_code dist {
-      [sfifo_cmd_err : sfifo_genbits_err]    := 3, // 3 error types per sfifo
+      sfifo_cmd_err                          := 4, // 3 error types plus a dropped SW cmd word
+      sfifo_genbits_err                      := 3, // 3 error types
       [cmd_stage_sm_err : ctr_drbg_sm_err]   := 1, // 1 error type per FSM
       aes_cipher_sm_err                      := num_bins_aes_cipher_sm_err,
       ctr_err                                := 2, // 2 counters feed into this bit
@@ -331,6 +333,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_key = (rdata<<TL_DW*i) + hw_key;
     end
+    // Skip the additional data of a Generate command halted mid-sequence.
+    repeat (csrng_pkg::SeedLen/TL_DW) begin
+      csr_rd(.ptr(ral.int_state_val), .value(rdata));
+    end
     csr_rd(.ptr(ral.int_state_val), .value(rdata));
     hw_compliance = rdata[1];
     hw_status     = rdata[0];
@@ -348,7 +354,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     `uvm_info(`gfn, $sformatf("cfg.compliance/status = 0b%b", {compliance[app], status[app]}),
         UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
-    if (compare) begin
+    if (compare && !under_reset) begin
       // The dedicated RESEED_COUNTER CSR is always readable.
       `DV_CHECK_EQ_FATAL(csr_reseed_counter, reseed_counter[app])
       if ((read_int_state == MuBi4True) && (csr_int_state_read_enable[app] == 1'b1)) begin

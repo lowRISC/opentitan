@@ -53,7 +53,7 @@ interface chip_if;
 `define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
 `define RRAM_CTRL_HIER      `PD_MAIN_HIER.u_rram_ctrl
 `define RRAM_MACRO_HIER     `PD_MAIN_HIER.u_rram_macro
-`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define GPIO_HIER(i)        `PD_MAIN_HIER.u_gpio``i
 `define HMAC_HIER           `PD_MAIN_HIER.u_hmac
 `define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
@@ -96,8 +96,9 @@ interface chip_if;
   pins_if#(.Width(top_earlgrey_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_earlgrey_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
-  //Allow pull up from testbench on POR pad
+  //Allow pull up from testbench on POR and PORA pads
   bit por_external_pu = 1;
+  bit pora_external_pu = 1;
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -119,6 +120,10 @@ interface chip_if;
       void'($value$plusargs("por_external_pu=%0b", por_external_pu));
       if (por_external_pu) begin
         dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
+      end
+      void'($value$plusargs("pora_external_pu=%0b", pora_external_pu));
+      if (pora_external_pu) begin
+        dios_if.pins_pu[top_earlgrey_pkg::DioPadPoraN] = 1;
       end
       dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
       dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
@@ -184,6 +189,14 @@ interface chip_if;
   // Functional (dedicated) interface (input): power on reset input.
   pins_if #(.Width(1), .PullStrength("Weak")) por_n_if(.pins(dios[top_earlgrey_pkg::DioPadPorN]));
 
+  // Functional (dedicated) interface (input): VIOA power on reset input.
+  pins_if #(.Width(1), .PullStrength("Weak")) pora_n_if(
+    .pins(dios[top_earlgrey_pkg::DioPadPoraN])
+  );
+
+  // The chip power on reset is based on POR_N and PORA_N is generated inside AST.
+  wire chip_por_n = dios[top_earlgrey_pkg::DioPadPorN] & dios[top_earlgrey_pkg::DioPadPoraN];
+
   // Functional (dedicated) interface (inout): USB.
   // TODO!
 
@@ -191,6 +204,11 @@ interface chip_if;
   pins_if #(.Width(2), .PullStrength("Weak")) cc_if(
     .pins(dios[top_earlgrey_pkg::DioPadCc2:top_earlgrey_pkg::DioPadCc1])
   );
+
+  // Returns 1 for an undriven pad, as if the pad had a pull-up.
+  function automatic logic pulled_up(logic pad);
+    return (pad === 1'bz) ? 1'b1 : pad;
+  endfunction
 
   // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
   bit enable_spi_host = 1;
@@ -224,8 +242,11 @@ interface chip_if;
   assign spi_device0_if.sck = __enable_spi_device[0] ?
       dios[top_earlgrey_pkg::DioPadSpiHostClk] : 1'bz;
 
+  // CSB[0] is on a dedicated pad, CSB[1] and CSB[2] are muxed.  Undriven pads are inactive.
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {'1, dios[top_earlgrey_pkg::DioPadSpiHostCsL]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoa6]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIoa3]),
+       dios[top_earlgrey_pkg::DioPadSpiHostCsL]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);
@@ -247,8 +268,11 @@ interface chip_if;
   assign spi_device1_if.sck = __enable_spi_device[1] ?
       mios[top_earlgrey_pkg::MioPadIob0] : 1'bz;
 
+  // All CSB lines are muxed.  Undriven pads are inactive.
   assign spi_device1_if.csb = __enable_spi_device[1] ?
-      {'1, mios[top_earlgrey_pkg::MioPadIob1]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoc10]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIob7]),
+       mios[top_earlgrey_pkg::MioPadIob1]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1*", "vif", spi_device1_if);
@@ -439,12 +463,11 @@ interface chip_if;
   endfunction
 
   // Functional (muxed) interface: AST2PAD.
-  pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
-    .pins({mios[top_earlgrey_pkg::MioPadIoa0], mios[top_earlgrey_pkg::MioPadIoa1],
-           mios[top_earlgrey_pkg::MioPadIob3], mios[top_earlgrey_pkg::MioPadIob4],
-           mios[top_earlgrey_pkg::MioPadIob5], mios[top_earlgrey_pkg::MioPadIoc0],
-           mios[top_earlgrey_pkg::MioPadIoc4], mios[top_earlgrey_pkg::MioPadIoc7],
-           mios[top_earlgrey_pkg::MioPadIoc9]})
+  pins_if #(.Width(8), .PullStrength("Weak")) ast2pad_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIoa1], mios[top_earlgrey_pkg::MioPadIob3],
+           mios[top_earlgrey_pkg::MioPadIob4], mios[top_earlgrey_pkg::MioPadIob5],
+           mios[top_earlgrey_pkg::MioPadIoc0], mios[top_earlgrey_pkg::MioPadIoc4],
+           mios[top_earlgrey_pkg::MioPadIoc7], mios[top_earlgrey_pkg::MioPadIoc9]})
   );
 
   // Functional (muxed) interface: PAD2AST.
@@ -544,8 +567,8 @@ interface chip_if;
   //
   // The reset port is passive only.
   clk_rst_if ext_clk_if(
-     .clk (mios[top_earlgrey_pkg::MioPadIoc6]),
-    .rst_n(dios[top_earlgrey_pkg::DioPadPorN])
+    .clk (mios[top_earlgrey_pkg::MioPadIoc6]),
+    .rst_n(chip_por_n)
   );
 
   // Internal probes / monitors.
@@ -697,7 +720,6 @@ interface chip_if;
 
   wire usbdev_clk_is_enabled = 0;
   wire io_clk_is_enabled = 0;
-  wire io_div2_clk_is_enabled = 0;
   wire io_div4_clk_is_enabled = 0;
 `else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
@@ -707,7 +729,6 @@ interface chip_if;
 
   wire usbdev_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_usb_peri_en.q;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
-  wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
   wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
 `endif
   // Ibex monitors.
@@ -943,8 +964,8 @@ interface chip_if;
   // Disconnects all interfaces from chip IOs.
   //
   // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
-  // The por_n_if is exempt from this. The disconnection of default pulls using dios_if is
-  // conditioned on the `disconnect_default_pulls` arg.
+  // The por_n_if and pora_n_if are exempt from this. The disconnection of default pulls using
+  // dios_if is conditioned on the `disconnect_default_pulls` arg.
   function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) dios_if.disconnect();

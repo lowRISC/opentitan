@@ -38,6 +38,7 @@ extern "C" {
  *
  * - `dif_kmac_init()`
  * - `dif_kmac_configure()`
+ * - `dif_kmac_configure_entropy()`
  *
  * If configuration changes are required then `dif_kmac_configure` can be called
  * again so long as there are no operations in progress.
@@ -67,18 +68,6 @@ extern "C" {
  *       SHA-3 Derived Functions: cSHAKE, KMAC, TupleHash and ParallelHash
  *       https://doi.org/10.6028/NIST.SP.800-185
  */
-
-/**
- * Supported entropy modes.
- *
- * Entropy may be provided by the entropy distribution network (EDN) or using a
- * seed provided by software.
- */
-typedef enum dif_kmac_entropy_mode {
-  kDifKmacEntropyModeIdle = 0,
-  kDifKmacEntropyModeEdn,
-  kDifKmacEntropyModeSoftware,
-} dif_kmac_entropy_mode_t;
 
 /**
  * Maximum lengths supported by the KMAC unit.
@@ -146,16 +135,51 @@ enum {
 };
 
 /**
- * Runtime configuration for KMAC.
+ * Supported entropy modes.
  *
- * This struct describes runtime information for configuration of the hardware.
+ * Entropy may be provided by the entropy distribution network (EDN) or using a
+ * seed provided by software.
  */
-typedef struct dif_kmac_config {
+typedef enum dif_kmac_entropy_mode {
+  kDifKmacEntropyModeEdn = 0,
+  kDifKmacEntropyModeSoftware,
+} dif_kmac_entropy_mode_t;
+
+/**
+ * Entropy configuration for KMAC.
+ *
+ * This struct describes entropy configuration of the hardware.
+ */
+typedef struct dif_kmac_entropy_config {
   /**
    * Entropy mode specifying the source of entropy (EDN or software).
    */
   dif_kmac_entropy_mode_t entropy_mode;
 
+  /**
+   * Ignore entropy reseed requests received via CMD register.
+   */
+  bool ignore_cmd_entropy_req;
+
+  /**
+   * The number of KMAC invocations that triggers an automatic reseed request
+   * from EDN.
+   */
+  uint16_t edn_mode_refresh_threshold;
+
+  /**
+   * Software entropy seed. Only used when the source of entropy is software.
+   */
+  uint32_t sw_mode_entropy_seed[kDifKmacEntropySeedWords];
+
+} dif_kmac_entropy_config_t;
+
+/**
+ * Runtime configuration for KMAC.
+ *
+ * This struct describes runtime information for configuration of the hardware.
+ */
+typedef struct dif_kmac_config {
   /**
    * Entropy fast process mode when enabled prevents the KMAC unit consuming
    * entropy unless it is processing a secret key. This process should not be
@@ -163,30 +187,6 @@ typedef struct dif_kmac_config {
    * it may lead to leakage of the secret key in the power trace.
    */
   bool entropy_fast_process;
-
-  /**
-   * Entropy seed. Only used when the source of entropy is software.
-   */
-  uint32_t entropy_seed[kDifKmacEntropySeedWords];
-
-  /**
-   * The number of KMAC invocations that triggers an automatic seed request from
-   * EDN.
-   */
-  uint16_t entropy_hash_threshold;
-
-  /**
-   * Number of clock cycles to wait for the EDN to reseed the entropy generator
-   * before an error is raised (see `dif_kmac_get_error`). If 0 the unit will
-   * wait forever.
-   */
-  uint16_t entropy_wait_timer;
-
-  /**
-   * Prescaler value that determines how many clock pulse triggers an increment
-   * in the timer counter.
-   */
-  uint16_t entropy_prescaler;
 
   /**
    * Convert the message to big-endian byte order.
@@ -541,6 +541,17 @@ typedef struct dif_kmac_status {
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_configure(dif_kmac_t *kmac, dif_kmac_config_t config);
+
+/**
+ * Configures KMAC entropy interface with non-boot-entropy-mode configuration.
+ *
+ * @param kmac A KMAC handle.
+ * @param config Entropy configuration parameters.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_configure_entropy(dif_kmac_t *kmac,
+                                        dif_kmac_entropy_config_t config);
 
 /**
  * Encode a customization string (S).
@@ -902,6 +913,24 @@ dif_result_t dif_kmac_get_hash_counter(const dif_kmac_t *kmac,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_config_is_locked(const dif_kmac_t *kmac, bool *is_locked);
+
+/**
+ * Reports whether or not the KMAC entropy configuration register is locked.
+ *
+ * If writes to the KMAC entropy configuration register are disabled (locked)
+ * then it is not possible to change any entropy configuration parameters. The
+ * entropy configuration register is locked when an operation (including a PRNG
+ * reseed operation) has been started and is unlocked again when it completes.
+ * In addition, it can be locked until the next reset via the entropy
+ * configuration lock register.
+ *
+ * @param kmac A KMAC handle.
+ * @param[out] is_locked Out-param reporting the lock state.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_kmac_entropy_config_is_locked(const dif_kmac_t *kmac,
+                                               bool *is_locked);
 
 /**
  * Poll until a given flag in the status register is set.

@@ -31,8 +31,8 @@ static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects a pinmux");
 static const dt_rstmgr_t kRstmgrDt = 0;
 static_assert(kDtRstmgrCount == 1, "this test expects a rstmgr");
-static const dt_gpio_t kGpioDt = 0;
-static_assert(kDtGpioCount == 1, "this test expects a gpio");
+static const dt_gpio_t kGpioDt = kDtGpioFirst;
+static_assert(kDtGpioCount >= 1, "this test expects at least one gpio");
 static const dt_sysrst_ctrl_t kSysrstCtrlDt = 0;
 static_assert(kDtSysrstCtrlCount == 1, "this test expects a sysrst_ctrl");
 

@@ -15,6 +15,12 @@ package keymgr_dpe_env_pkg;
   import keymgr_dpe_ral_pkg::*;
   import kmac_app_agent_pkg::*;
   import sec_cm_pkg::*;
+  import keymgr_dpe_reg_pkg::NumSwBindingReg;
+  import keymgr_dpe_pkg::InternalKeyWidth;
+  import keymgr_dpe_pkg::HwKeyWidth;
+  import keymgr_dpe_pkg::WideHwKeyWidth;
+  import keymgr_dpe_pkg::SeedWidth;
+  import keymgr_dpe_pkg::SwBindingWidth;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -22,7 +28,7 @@ package keymgr_dpe_env_pkg;
 
   // Define default values for all blocklevel dv parameter
   `ifndef DEF_DV_BOOT_STAGES
-   `define DEF_DV_BOOT_STAGES 3
+   `define DEF_DV_BOOT_STAGES 4
   `endif
   `ifndef DEF_DV_DPE_NUM_SLOT
    `define DEF_DV_DPE_NUM_SLOT 4
@@ -44,11 +50,11 @@ package keymgr_dpe_env_pkg;
   //   - OTP device ID
   //   - LC keymgr diversification value
   //   - ROM digests
-  //   - Creator seed (only if boot stage equals two)
+  //   - Creator seed (only if DvBootStages == 2)
   parameter int DvDpeAdvDataWidth = keymgr_dpe_pkg::SwBindingWidth +
-      keymgr_dpe_pkg::KeyWidth + keymgr_dpe_pkg::KeyWidth * (DvBootStages == 2) +
+      keymgr_dpe_pkg::SeedWidth + keymgr_dpe_pkg::SeedWidth * (DvBootStages == 2) +
       lc_ctrl_pkg::LcKeymgrDivWidth + keymgr_dpe_pkg::DeviceIdWidth +
-      keymgr_dpe_pkg::KeyWidth * DvNumRomDigestInputs;
+      keymgr_dpe_pkg::SeedWidth * DvNumRomDigestInputs;
 
   localparam int DvNumInstHwSlotWidth = prim_util_pkg::vbits(DvNumInstHwSlot);
   typedef logic [DvNumInstHwSlotWidth-1:0] dv_keymgr_dpe_slot_idx_e;
@@ -57,11 +63,15 @@ package keymgr_dpe_env_pkg;
   parameter uint NUM_ALERTS = 2;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_operation_err", "fatal_fault_err"};
   parameter uint NUM_EDN = 1;
-  parameter uint DIGEST_SHARE_WORD_NUM = keymgr_dpe_pkg::KeyWidth / TL_DW;
+  parameter uint SW_OUTPUT_WORD_NUM = keymgr_dpe_reg_pkg::NumOutReg;
+  parameter uint SW_OUTPUT_WIDTH = SW_OUTPUT_WORD_NUM * TL_DW;
 
   typedef virtual keymgr_dpe_if keymgr_dpe_vif;
-  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::KeyWidth-1:0] key_shares_t;
-  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::WideHwKeyWidth-1:0] wide_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::HwKeyWidth-1:0] hw_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::InternalKeyWidth-1:0]
+      internal_key_shares_t;
+  typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::WideHwKeyWidth-1:0]
+      wide_hw_key_shares_t;
   typedef bit [keymgr_dpe_pkg::Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_digests_t;
   typedef enum {
     IntrOpDone,

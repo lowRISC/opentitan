@@ -4,8 +4,9 @@
 """Generate markdown documentation for the registers of an IpBlock."""
 
 import json
-from typing import List, TextIO, Dict, Any, Optional
+from typing import Collection, List, TextIO, Dict, Any, Optional
 
+from reggen.field import Field
 from reggen.ip_block import IpBlock
 from reggen.md_helpers import (
     coderef, mono, italic, list_item, table,
@@ -128,11 +129,15 @@ def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
     return mreg.compact and (mreg.pregs[0].fields[0].bits.msb + 1) <= width // 2
 
 
-def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
+def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool,
+                     reset_per_instance: bool = False) -> None:
     '''Write a header for the register description.
 
     If with_offset is True, this includes the offset of the register. (Set it
     to False if printing a MultiRegister)
+
+    If reset_per_instance is True, the reset value is listed per instance of a
+    MultiRegister instead.
     '''
     regwen_str = ""
     if reg.regwen is not None:
@@ -144,7 +149,8 @@ def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
                             mono(f"{reg.offset:#x}")) if with_offset else "")
     output.write(
         title(reg.name, 2) + regref_to_link(reg.desc) + "\n" + offset_str +
-        list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
+        list_item("Reset default: " +
+                  ("see Instances" if reset_per_instance else mono(f"{reg.resval:#x}"))) +
         list_item("Reset mask: " + mono(f"{reg.resmask:#x}")) + regwen_str)
 
 
@@ -161,16 +167,34 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     # The general definition of the registers making up this multiregister block.
     reg_def = mreg.pregs[0]
 
+    # The instances can have different reset values if a field reset value
+    # depends on multireg_idx.
+    reset_per_instance = len({reg.resval for reg in mreg.cregs}) > 1
+    reset_per_instance_fields = [
+        idx for idx in range(len(reg_def.fields))
+        if len({reg.fields[idx].resval for reg in mreg.cregs}) > 1
+    ]
+
     # Information
-    describe_reg_hdr(output, reg_def, False)
+    describe_reg_hdr(output, reg_def, False, reset_per_instance)
 
     # Instances
     output.write("\n" + title("Instances", 3))
-    output.write(
-        table(
-            ["Name", "Offset"],
-            [[reg.name, hex(reg.offset)] for reg in mreg.cregs],
-        ))
+    if reset_per_instance:
+        output.write(
+            table(
+                ["Name", "Offset", "Reset"] +
+                [f"{reg_def.fields[idx].name} reset" for idx in reset_per_instance_fields],
+                [[reg.name, hex(reg.offset), hex(reg.resval)] +
+                 [field_resval(reg.fields[idx]) for idx in reset_per_instance_fields]
+                 for reg in mreg.cregs],
+            ))
+    else:
+        output.write(
+            table(
+                ["Name", "Offset"],
+                [[reg.name, hex(reg.offset)] for reg in mreg.cregs],
+            ))
 
     # Fields
     output.write("\n" + title("Fields", 3))
@@ -179,7 +203,8 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str,
     gen_md_reg_picture(output, reg_def, width)
 
     # Generate fields
-    gen_md_reg_fields(output, reg_def, width)
+    gen_md_reg_fields(output, reg_def, width,
+                      [reg_def.fields[idx].name for idx in reset_per_instance_fields])
 
 
 def gen_md_register(output: TextIO, reg: Register, comp: str,
@@ -254,7 +279,18 @@ def gen_md_reg_picture(output: TextIO, reg: Register, width: int) -> None:
     output.write(wavejson(json_str))
 
 
-def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
+def field_resval(field: Field) -> str:
+    '''Return the reset value of a field, or 'x' if it is unknown.'''
+    return 'x' if field.resval is None else hex(field.resval)
+
+
+def gen_md_reg_fields(output: TextIO, reg: Register, width: int,
+                      reset_per_instance_fields: Collection[str] = ()) -> None:
+    '''Write the field table of a register.
+
+    The fields in reset_per_instance_fields reset to different values in the
+    instances of a MultiRegister, the table refers to the instances for them.
+    '''
     # The maximum field description length allowed in a register's field table
     MAX_DESCRIPTION_LEN = 250
 
@@ -290,7 +326,8 @@ def gen_md_reg_fields(output: TextIO, reg: Register, width: int) -> None:
         row = [
             field.bits.as_str(),
             field.swaccess.key,
-            'x' if field.resval is None else hex(field.resval),
+            ('see Instances' if fname in reset_per_instance_fields else
+             field_resval(field)),
         ]
         # If generating field sections, just add the name with a link to it's section.
         if field_sections:

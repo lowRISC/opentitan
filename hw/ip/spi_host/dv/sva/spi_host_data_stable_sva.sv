@@ -33,7 +33,7 @@ module spi_host_data_stable_sva #(
   // Driven in neg-edge, sampled in pos-edge
   reg    sampled_posedge_enable;
   logic  csbs;
-  // Current design support NumCS=1 only
+  // At most one CSB line is active at a time.
   assign csbs = &cio_csb_o;
 
   // HIGH when driven on pos-edge, sampled on the negedge

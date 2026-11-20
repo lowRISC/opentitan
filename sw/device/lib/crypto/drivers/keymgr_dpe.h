@@ -23,6 +23,9 @@ enum {
   kKeymgrDPESaltNumWords = 8,
   /**
    * Number of 32-bit words for each output key share.
+   *
+   * The key manager provides a wider (384-bit) software output; the cryptolib
+   * only uses the first 256 bits of it.
    */
   kKeymgrDPEOutputShareNumWords = 8,
 };
@@ -83,9 +86,10 @@ typedef struct keymgr_dpe_policy {
  */
 typedef enum keymgr_dpe_boot_stage {
   kKeymgrDPEBootStageCreator = 0,
-  kKeymgrDPEBootStageOwnerInt = 1,
-  kKeymgrDPEBootStageOwner = 2,
-  kKeymgrDPEBootStageRuntime = 3,
+  kKeymgrDPEBootStageCreatorInt = 1,
+  kKeymgrDPEBootStageOwnerInt = 2,
+  kKeymgrDPEBootStageOwner = 3,
+  kKeymgrDPEBootStageRuntime = 4,
 } keymgr_dpe_boot_stage_t;
 
 /**

@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
@@ -28,6 +29,10 @@ KEYMGR_DPE_ASSERT(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT,
                   KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
 KEYMGR_DPE_ASSERT(KEYMGR_DPE_METADATA_HIGH_MULTIREG_COUNT,
                   KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
+KEYMGR_DPE_ASSERT(kScKeymgrDPEKeyNumWords,
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_MULTIREG_COUNT);
+KEYMGR_DPE_ASSERT(kScKeymgrDPEKeyNumWords,
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT);
 
 /**
  * Internal keymgr dpe operation definition
@@ -53,7 +58,8 @@ static inline uint32_t sc_keymgr_dpe_base(void) {
  *
  * @param exl_sw_binding Should additional hw bindings be used during the
  * next advance call. Only impact DPE context generation if either the
- * creator root key / owner int key / owner key is being generated.
+ * creator root key / creator int key / owner int key / owner key is being
+ * generated.
  * @param ops The type of operation to execute next.
  * @param sel_src_slot Source slot when either advancing a DPE context inside
  * the slot or if an HW / SW key is being generated.
@@ -180,14 +186,14 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   uint32_t got_state = abs_mmio_read32(sc_keymgr_dpe_base() +
                                        KEYMGR_DPE_WORKING_STATE_REG_OFFSET);
 
-  if (launder32(op_status_field) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
-      launder32(error_code) == 0u && launder32(got_state) == expected_state) {
-    HARDENED_CHECK_EQ(op_status_field, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
-    HARDENED_CHECK_EQ(error_code, 0u);
-    HARDENED_CHECK_EQ(got_state, expected_state);
-    return kErrorOk;
+  if (launder32(op_status_field) != KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE ||
+      launder32(error_code) != 0u || launder32(got_state) != expected_state) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(op_status_field, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+  HARDENED_CHECK_EQ(error_code, 0u);
+  HARDENED_CHECK_EQ(got_state, expected_state);
+  return kErrorOk;
 }
 
 /**
@@ -201,11 +207,11 @@ static rom_error_t keymgr_dpe_is_idle(void) {
       abs_mmio_read32(sc_keymgr_dpe_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
   uint32_t status =
       bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
-  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
-    HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
-    return kErrorOk;
+  if (launder32(status) != KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+  return kErrorOk;
 }
 
 /**
@@ -244,6 +250,25 @@ static void sc_keymgr_dpe_advance(
 }
 
 /**
+ * Policy the hardware assigns to a loaded UDS DPE context.
+ *
+ * Must match `DEFAULT_UDS_POLICY` in keymgr_dpe_pkg.sv.
+ */
+static const sc_keymgr_dpe_policies_t kUdsPolicy = {
+    .parent = kScKeymgrDPESlotPolEraseParent,
+    .child = kScKeymgrDPESlotPolAllowChild,
+    .expo = kScKeymgrDPESlotPolNoExport,
+    .keygen = kScKeymgrDPESlotPolNoKeygen,
+};
+
+/**
+ * Max key version the hardware assigns to a loaded UDS DPE context.
+ *
+ * Must match `DEFAULT_UDS_MAX_KEY_VERSION` in keymgr_dpe_pkg.sv.
+ */
+static const uint32_t kUdsMaxKeyVersion = 0;
+
+/**
  * Sets the entropy reseed interval of the key manager dpe.
  */
 void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval) {
@@ -253,6 +278,26 @@ void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval) {
   sec_mmio_write32_shadowed(
       sc_keymgr_dpe_base() + KEYMGR_DPE_RESEED_INTERVAL_SHADOWED_REG_OFFSET,
       reg);
+}
+
+/**
+ * Selects the engine used by the key manager dpe for key derivation.
+ */
+void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineSet, 1);
+  uint32_t reg = bitfield_field32_write(
+      0, KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_FIELD, engine);
+  sec_mmio_write32_shadowed(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET, reg);
+}
+
+/**
+ * Locks the KDF engine selection until the next reset.
+ */
+void sc_keymgr_dpe_kdf_engine_lock(void) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineLock, 1);
+  sec_mmio_write32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
 }
 
 /**
@@ -458,17 +503,42 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void) {
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-      1 << KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_BIT);
+      kMultiBitBool4True);
+}
+
+/**
+ * Set `ENFORCE_SW_BINDING` to enforce sw-binding-only DPE context derivation.
+ */
+rom_error_t sc_keymgr_dpe_enforce_sw_binding(void) {
+  abs_mmio_write32(
+      sc_keymgr_dpe_base() + KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET,
+      kMultiBitBool4True << KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_OFFSET);
+
+  // Writing `kMultiBitBool4True` must always read back as `kMultiBitBool4True`,
+  // anything else is a fault.
+  uint32_t enforce = bitfield_field32_read(
+      abs_mmio_read32(sc_keymgr_dpe_base() +
+                      KEYMGR_DPE_ENFORCE_SW_BINDING_REG_OFFSET),
+      KEYMGR_DPE_ENFORCE_SW_BINDING_ENFORCE_FIELD);
+  if (launder32(enforce) != kMultiBitBool4True) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_CHECK_EQ(enforce, kMultiBitBool4True);
+  return kErrorOk;
 }
 
 /**
  * Load the UDS into the provided destination slot.
  */
-// TODO(#30667): Verify if the max key version needs to be written here too!
-//              When loading the UDS the RTL fetches the max key version from
-//              the SW register. Verify that the lock is released when the
-//              version register is locked.
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
+  // Verify the destination slot is empty.
+  sc_keymgr_dpe_metadata_t metadata;
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(sel_dst_slot, &metadata));
+  if (launder32(metadata.valid) != kHardenedBoolFalse) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolFalse);
+
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
       kScKeymgrDPEUseAdditionalHwBinding,
@@ -477,17 +547,18 @@ rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
 
   // Start the load operation
   sc_keymgr_dpe_start_operation();
-  return sc_keymgr_dpe_wait_until_done();
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
+
+  // Verify the slot holds the UDS with the default max key version and policy.
+  return sc_keymgr_dpe_check_metadata(sel_dst_slot, kUdsMaxKeyVersion,
+                                      kScKeymgrDPEBootStageCreator,
+                                      &kUdsPolicy);
 }
 
 /**
  * Executes the first advance call to load the UDS in the selected slot and
  * sets the keymgr_dpe FSM to available.
  */
-// TODO(#30667): Verify if the max key version needs to be written here too!
-//              When loading the UDS the RTL fetches the max key version from
-//              the SW register. Verify that the lock is released when the
-//              version register is locked.
 rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds) {
   // Verify the reset state
   HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateReset));
@@ -505,7 +576,12 @@ rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds) {
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
   // Verify the available state
-  return expected_state_check(kScKeymgrDPEStateAvailable);
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
+  // Verify the UDS slot holds the default metadata and boot stage Creator (0).
+  return sc_keymgr_dpe_check_metadata(sel_dst_slot_uds, kUdsMaxKeyVersion,
+                                      kScKeymgrDPEBootStageCreator,
+                                      &kUdsPolicy);
 }
 
 /**
@@ -535,17 +611,36 @@ rom_error_t sc_keymgr_dpe_advance_creator(
   // Advance the attestation key chain
   sc_keymgr_dpe_advance(kScKeymgrDPEUseAdditionalHwBinding,
                         adv_data_attestation);
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  return sc_keymgr_dpe_wait_until_done();
+  // Verify both keys hold the expected metadata and boot stage CreatorInt (1).
+  // Note: The expected boot stages assume a keymgr_dpe with four boot stages
+  // (`NumBootStages == 4`).
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+      adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
+      kScKeymgrDPEBootStageCreatorInt, &adv_data_sealing.policy));
+  return sc_keymgr_dpe_check_metadata(
+      adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
+      kScKeymgrDPEBootStageCreatorInt, &adv_data_attestation.policy);
 }
 
 /**
  * Sets the binding registers / key version registers and advances the
- * creator keys into the owner int keys (sealing and attestation).
+ * sealing and attestation keys into the next intermediate keys.
+ *
+ * Shared by `sc_keymgr_dpe_advance_creator_int()` and
+ * `sc_keymgr_dpe_advance_owner_int()`, which only differ in the boot stage
+ * the advanced keys have to report.
+ *
+ * @param adv_data_sealing All required data for the sealing key.
+ * @param adv_data_attestation All required data for the attestation key.
+ * @param expected_boot_stage Boot stage both slots must hold after the advance.
+ * @return The result of the advance call.
  */
-rom_error_t sc_keymgr_dpe_advance_owner_int(
+static rom_error_t sc_keymgr_dpe_advance_int_keys(
     sc_keymgr_dpe_advance_data_t adv_data_sealing,
-    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+    sc_keymgr_dpe_advance_data_t adv_data_attestation,
+    sc_keymgr_dpe_boot_stage_t expected_boot_stage) {
   // Sanity checks
   if ((adv_data_sealing.sel_src_slot != adv_data_sealing.sel_dst_slot) ||
       (adv_data_attestation.sel_src_slot !=
@@ -563,8 +658,39 @@ rom_error_t sc_keymgr_dpe_advance_owner_int(
   // Advance the attestation key
   sc_keymgr_dpe_advance(kScKeymgrDPEUseAdditionalHwBinding,
                         adv_data_attestation);
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  return sc_keymgr_dpe_wait_until_done();
+  // Verify keys hold the expected metadata and boot stage.
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+      adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
+      expected_boot_stage, &adv_data_sealing.policy));
+  return sc_keymgr_dpe_check_metadata(
+      adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
+      expected_boot_stage, &adv_data_attestation.policy);
+}
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator keys into the creator int keys (sealing and attestation).
+ */
+rom_error_t sc_keymgr_dpe_advance_creator_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+  // The creator int keys report boot stage OwnerInt (2).
+  return sc_keymgr_dpe_advance_int_keys(adv_data_sealing, adv_data_attestation,
+                                        kScKeymgrDPEBootStageOwnerInt);
+}
+
+/**
+ * Sets the binding registers / key version registers and advances the
+ * creator int keys into the owner int keys (sealing and attestation).
+ */
+rom_error_t sc_keymgr_dpe_advance_owner_int(
+    sc_keymgr_dpe_advance_data_t adv_data_sealing,
+    sc_keymgr_dpe_advance_data_t adv_data_attestation) {
+  // The owner int keys report boot stage Owner (3).
+  return sc_keymgr_dpe_advance_int_keys(adv_data_sealing, adv_data_attestation,
+                                        kScKeymgrDPEBootStageOwner);
 }
 
 /**
@@ -589,8 +715,15 @@ rom_error_t sc_keymgr_dpe_advance_owner(
   // Advance the attestation key
   sc_keymgr_dpe_advance(kScKeymgrDPEUseAdditionalHwBinding,
                         adv_data_attestation);
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
 
-  return sc_keymgr_dpe_wait_until_done();
+  // Verify both keys hold the expected metadata and boot stage Runtime (4).
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+      adv_data_sealing.sel_dst_slot, adv_data_sealing.version,
+      kScKeymgrDPEBootStageRuntime, &adv_data_sealing.policy));
+  return sc_keymgr_dpe_check_metadata(
+      adv_data_attestation.sel_dst_slot, adv_data_attestation.version,
+      kScKeymgrDPEBootStageRuntime, &adv_data_attestation.policy);
 }
 
 /**
@@ -607,7 +740,16 @@ rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot) {
   sc_keymgr_dpe_start_operation();
 
   // Wait until the erase operation has finished
-  return sc_keymgr_dpe_wait_until_done();
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_wait_until_done());
+
+  // Verify the slot no longer holds a valid DPE context.
+  sc_keymgr_dpe_metadata_t metadata;
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(sel_dst_slot, &metadata));
+  if (launder32(metadata.valid) != kHardenedBoolFalse) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolFalse);
+  return kErrorOk;
 }
 
 /**
@@ -656,23 +798,23 @@ rom_error_t sc_keymgr_dpe_check_metadata(
     const sc_keymgr_dpe_policies_t *expected_policy) {
   sc_keymgr_dpe_metadata_t metadata;
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(slot, &metadata));
-  if (launder32(metadata.valid) == kHardenedBoolTrue &&
-      launder32(metadata.max_key_version) == expected_max_key_version &&
-      launder32(metadata.boot_stage) == expected_boot_stage &&
-      launder32(metadata.slot_policy.child) == expected_policy->child &&
-      launder32(metadata.slot_policy.expo) == expected_policy->expo &&
-      launder32(metadata.slot_policy.parent) == expected_policy->parent &&
-      launder32(metadata.slot_policy.keygen) == expected_policy->keygen) {
-    HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
-    HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
-    HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
-    HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
-    HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
-    HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
-    HARDENED_CHECK_EQ(metadata.slot_policy.keygen, expected_policy->keygen);
-    return kErrorOk;
+  if (launder32(metadata.valid) != kHardenedBoolTrue ||
+      launder32(metadata.max_key_version) != expected_max_key_version ||
+      launder32(metadata.boot_stage) != expected_boot_stage ||
+      launder32(metadata.slot_policy.child) != expected_policy->child ||
+      launder32(metadata.slot_policy.expo) != expected_policy->expo ||
+      launder32(metadata.slot_policy.parent) != expected_policy->parent ||
+      launder32(metadata.slot_policy.keygen) != expected_policy->keygen) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
+  HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
+  HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
+  HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
+  HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
+  HARDENED_CHECK_EQ(metadata.slot_policy.keygen, expected_policy->keygen);
+  return kErrorOk;
 }
 
 /**

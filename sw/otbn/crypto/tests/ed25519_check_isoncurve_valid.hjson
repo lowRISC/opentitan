@@ -1,0 +1,16 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  "input": {
+    "dmem": {
+      "mode": "0x000006da",
+      "ed25519_public_key": "0x1a5107f7681a02af2523a6daf372e10e3a0764c9d3fe4bd5b70ab18201985ad7"
+    }
+  },
+  "output": {
+    "dmem": {
+      "ed25519_verify_result": "0x00000739"
+    }
+  }
+}

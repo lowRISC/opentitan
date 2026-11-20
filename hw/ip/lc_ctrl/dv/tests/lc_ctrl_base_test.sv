@@ -40,17 +40,17 @@ class lc_ctrl_base_test extends cip_base_test #(
     super.add_message_demotes(catcher);
 
     // Demote field access warnings to infos
-    msg = "\s*Individual field access not available for field.*";
+    msg = "Individual field access not available for field *";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
 
     // Demote field access warnings to infos
-    msg = "\s*Target bus does not support byte enabling.*";
+    msg = "Target bus does not support byte enabling*";
     catcher.add_change_sev("RegModel", msg, UVM_INFO);
 
     // Demote field busy warning
     msg = {
-      "\s*Setting the value of field \".*\" while containing",
-      "\s+register \"lc_ctrl_regs_reg_block.alert_test\" is being accessed"
+      "Setting the value of field \"*\" while containing register",
+      " \"lc_ctrl_regs_reg_block.alert_test\" is being accessed*"
     };
     catcher.add_change_sev("UVM/FLD/SET/BSY", msg, UVM_INFO);
 

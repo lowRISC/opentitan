@@ -33,7 +33,8 @@ no_of_simulations
 
 % number of simulations in each step, should be a factor of 64, and a divisor of no_of_simulations
 no_of_step_simulations
-128000
+64000
+
 % number of simulations in each step that result files are written, should be a factor of 64, and
 % a divisor of no_of_simulations and should be a factor of no_of_step_simulations
 no_of_step_write_results
@@ -83,11 +84,11 @@ no_of_always_random_inputs
 
 % number of primary inputs during the initialization
 no_of_initial_inputs
-27
+30
 
 % number of clock cycles to initiate the run (start of encryption)
 no_of_initial_clock_cycles
-17
+15
 
 %1 - First clock cycle with inactive reset.
             rst_ni                    1'b1
@@ -97,26 +98,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b1
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %2 - Reset the DUT.
             rst_ni                    1'b0
@@ -126,28 +130,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b1
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%3 - Mark entropy input as being ready
+%3 - Disable entropy boot mode to trigger the reseeding of the internal PRNG.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -155,26 +162,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b1
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %4 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -184,26 +194,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
+            entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %5 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -213,26 +226,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
+            entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %6 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -242,26 +258,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
+            entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %7 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -271,26 +290,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
+            entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %8 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -300,26 +322,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
+            entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 %9 - Perform an initial reseed of the internal PRNG to put it into a random state.
             rst_ni                    1'b1
@@ -329,86 +354,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
-            entropy_ack_i             1'b1
-[1:0]       mode_i                    2'b00
-[2:0]       strength_i                3'b010
-[351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
-[7:0]       msg_strb_i                8'hFF
-            msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
-            entropy_fast_process_i    1'b0
-            entropy_in_keyblock_i     1'b1
-            entropy_seed_update_i     1'b0
-[31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
-[9:0]       entropy_hash_threshold_i  10'b1111111111
-            entropy_hash_clr_i        1'b0
-[3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
-
-%10 - Perform an initial reseed of the internal PRNG to put it into a random state.
-            rst_ni                    1'b1
-[127:0]     msg_i                     group_in0[127:0]
-[255:128]   msg_i                     group_in1[127:0]
-            msg_valid_i               1'b0
-            start_i                   1'b0
-            process_i                 1'b0
-            run_i                     1'b0
-[3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
-            entropy_refresh_req_i     1'b1
-            entropy_ack_i             1'b1
-[1:0]       mode_i                    2'b00
-[2:0]       strength_i                3'b010
-[351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
-[7:0]       msg_strb_i                8'hFF
-            msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
-            entropy_fast_process_i    1'b0
-            entropy_in_keyblock_i     1'b1
-            entropy_seed_update_i     1'b0
-[31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
-[9:0]       entropy_hash_threshold_i  10'b1111111111
-            entropy_hash_clr_i        1'b0
-[3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
-
-%11 - Stop reseeding the internal PRNG.
-            rst_ni                    1'b1
-[127:0]     msg_i                     group_in0[127:0]
-[255:128]   msg_i                     group_in1[127:0]
-            msg_valid_i               1'b0
-            start_i                   1'b0
-            process_i                 1'b0
-            run_i                     1'b0
-[3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%12 - Send the start trigger.
+%10 - Send the start trigger.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -416,28 +386,31 @@ no_of_initial_clock_cycles
             start_i                   1'b1
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%13 - Signal that the message is valid.
+%11 - Signal that the message is valid.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -445,28 +418,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%14 - Internal message loading.
+%12 - Internal message loading.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -474,28 +450,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%15 - Internal message loading.
+%13 - Internal message loading.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -503,28 +482,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%16 - Send the process trigger.
+%14 - Send the process trigger.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -532,28 +514,31 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b1
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
-%17 - De-assert process_i.
+%15 - De-assert process_i.
             rst_ni                    1'b1
 [127:0]     msg_i                     group_in0[127:0]
 [255:128]   msg_i                     group_in1[127:0]
@@ -561,26 +546,29 @@ no_of_initial_clock_cycles
             start_i                   1'b0
             process_i                 1'b0
             run_i                     1'b0
+            stop_i                    1'b0
+            continue_i                1'b0
 [3:0]       done_i                    4'b1001
-            entropy_ready_i           1'b0
             entropy_refresh_req_i     1'b0
             entropy_ack_i             1'b1
 [1:0]       mode_i                    2'b00
 [2:0]       strength_i                3'b010
 [351:0]     ns_prefix_i               352'h000000000000000000000000000000000000000000000000000000000000000000000000000043414D4B2001
 [7:0]       msg_strb_i                8'hFF
+[1:0]       state_we_i                2'b00
+[5:0]       state_waddr_i             6'b000000
+[31:0]      state_wdata_i             32'h00000000
+[3:0]       state_clear_i             4'b1001
             msg_mask_en_i             1'b1
-[1:0]       entropy_mode_i            2'b01
+            entropy_boot_mode_i       1'b0
+            entropy_mode_i            1'b0
             entropy_fast_process_i    1'b0
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
-            err_processed_i           1'b0
 
 % the condition to check to terminate the simulation (e.g., done signal is high) or a number of
 % clock cycles, e.g., ClockCycles 5.
@@ -594,7 +582,7 @@ end_wait_cycles
 
 % maximum number of clock cycles per run before checking the end_condition
 max_clock_cycle
-132
+130
 
 no_of_outputs
 0
@@ -603,7 +591,7 @@ no_of_outputs
 no_of_test_clock_cycles
 1
 
-12-132  % The start trigger is sent at %12 and the state_valid_o arrives at %131.
+10-130  % The start trigger is sent at %10 and the state_valid_o arrives at %129.
 
 % max number of entries in the report file with maximum leakage
 % 0 : do not generate the report file

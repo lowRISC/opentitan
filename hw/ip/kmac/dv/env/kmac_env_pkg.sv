@@ -108,15 +108,22 @@ package kmac_env_pkg;
     KmacStrengthLSB = 1,
     KmacStrengthMSB = 3,
     KmacModeLSB = 4,
-    KmacModeMSB = 5, KmacMsgEndian = 8,
+    KmacModeMSB = 5,
+    KmacMsgEndian = 8,
     KmacStateEndian = 9,
     KmacSideload = 12,
-    KmacEntropyModeLSB = 16,
-    KmacEntropyModeMSB = 17,
     KmacFastEntropy = 19,
-    KmacEntropyReady = 24,
     KmacErrProcessed = 25
   } kmac_cfg_e;
+
+  // ENTROPY_CFG csr bit positions
+  typedef enum int {
+    KmacEntropyBootMode = 0,
+    KmacEntropyMode = 1,
+    KmacEntropyIgnoreCmdEntropyReq = 2,
+    KmacEntropyEdnModeRefreshThresholdLSB = 16,
+    KmacEntropyEdnModeRefreshThresholdMSB = 25
+  } kmac_entropy_cfg_e;
 
   // STATUS csr bit positions
   typedef enum int {
@@ -126,15 +133,10 @@ package kmac_env_pkg;
     KmacStatusFifoDepthLSB = 8,
     KmacStatusFifoDepthMSB = 12,
     KmacStatusFifoEmpty = 14,
-    KmacStatusFifoFull = 15
+    KmacStatusFifoFull = 15,
+    KmacStatusEntropyReady = 20,
+    KmacStatusEntropyReseeding = 21
   } kmac_status_e;
-
-  typedef enum int {
-    KmacPrescaler = 0,
-    EntropyPeriodReserved = 10,
-    KmacWaitTimer = 16
-  } kmac_entropy_period_e;
-
 
   typedef enum int {
     KmacCmdIdx = 5,

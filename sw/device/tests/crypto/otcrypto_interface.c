@@ -10,6 +10,7 @@ volatile otcrypto_interface_t otcrypto = {
     .set_security_config = &otcrypto_set_security_config,
     .disable_icache = &otcrypto_disable_icache,
     .restore_icache = &otcrypto_restore_icache,
+    .clear_alerts = &otcrypto_clear_alerts,
     .init = &otcrypto_init,
     .eval_exit = &otcrypto_eval_exit,
     .show_status = &otcrypto_show_status,
@@ -30,7 +31,10 @@ volatile otcrypto_interface_t otcrypto = {
     .entropy_health_test_config_check =
         &otcrypto_entropy_health_test_config_check,
 
-    // Integrity.
+// Integrity.
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+    .verify_buf_integrity = &verify_buf_integrity,
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
     .make_byte_buf = &otcrypto_make_byte_buf,
     .make_const_byte_buf = &otcrypto_make_const_byte_buf,
     .make_word32_buf = &otcrypto_make_word32_buf,
@@ -51,10 +55,12 @@ volatile otcrypto_interface_t otcrypto = {
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,
     .hw_backed_attestation_key = &otcrypto_hw_backed_attestation_key,
+    .hw_backed_keygen = &otcrypto_hw_backed_keygen,
 
     // Secret key import/export.
     .import_blinded_key = &otcrypto_import_blinded_key,
     .export_blinded_key = &otcrypto_export_blinded_key,
+    .blinded_key_migrate = &otcrypto_blinded_key_migrate,
 
     // Key wrapping.
     .wrapped_key_len = &otcrypto_wrapped_key_len,
@@ -64,6 +70,12 @@ volatile otcrypto_interface_t otcrypto = {
     // AES
     .aes = &otcrypto_aes,
     .aes_padded_plaintext_length = &otcrypto_aes_padded_plaintext_length,
+    .aes_padding_strip = &otcrypto_aes_padding_strip,
+
+    // TDES
+    .tdes = &otcrypto_tdes,
+    .tdes_padded_plaintext_length = &otcrypto_tdes_padded_plaintext_length,
+    .tdes_padding_strip = &otcrypto_tdes_padding_strip,
 
     // AES-GCM (one-shot).
     .aes_gcm_encrypt = &otcrypto_aes_gcm_encrypt,
@@ -85,6 +97,9 @@ volatile otcrypto_interface_t otcrypto = {
     .cmac_update = &otcrypto_cmac_update,
     .cmac_final = &otcrypto_cmac_final,
 
+    // CMAC-KDF
+    .cmac_kdf = &otcrypto_cmac_kdf,
+
     // DRBG
     .drbg_instantiate = &otcrypto_drbg_instantiate,
     .drbg_reseed = &otcrypto_drbg_reseed,
@@ -96,6 +111,13 @@ volatile otcrypto_interface_t otcrypto = {
     .drbg_manual_instantiate = &otcrypto_drbg_manual_instantiate,
     .drbg_manual_reseed = &otcrypto_drbg_manual_reseed,
     .drbg_manual_generate = &otcrypto_drbg_manual_generate,
+
+    // HMAC-DRBG
+    .hmac_drbg_init = &otcrypto_hmac_drbg_init,
+    .hmac_drbg_deinit = &otcrypto_hmac_drbg_deinit,
+    .hmac_drbg_reseed = &otcrypto_hmac_drbg_reseed,
+    .hmac_drbg_set_auto_reseed = &otcrypto_hmac_drbg_set_auto_reseed,
+    .hmac_drbg_generate = &otcrypto_hmac_drbg_generate,
 
     // HKDF
     .hkdf = &otcrypto_hkdf,
@@ -110,6 +132,12 @@ volatile otcrypto_interface_t otcrypto = {
     .hmac_update = &otcrypto_hmac_update,
     .hmac_final = &otcrypto_hmac_final,
 
+    // HMAC-SHA-1 (one-shot and streaming).
+    .hmac_sha1 = &otcrypto_hmac_sha1,
+    .hmac_sha1_init = &otcrypto_hmac_sha1_init,
+    .hmac_sha1_update = &otcrypto_hmac_sha1_update,
+    .hmac_sha1_final = &otcrypto_hmac_sha1_final,
+
     // KDF-CTR with HMAC
     .kdf_ctr_hmac = &otcrypto_kdf_ctr_hmac,
 
@@ -118,6 +146,12 @@ volatile otcrypto_interface_t otcrypto = {
 
     // KMAC-KDF
     .kmac_kdf = &otcrypto_kmac_kdf,
+
+    // SHA-1 (one-shot and streaming).
+    .sha1 = &otcrypto_sha1,
+    .sha1_init = &otcrypto_sha1_init,
+    .sha1_update = &otcrypto_sha1_update,
+    .sha1_final = &otcrypto_sha1_final,
 
     // SHA-2 (one-shot).
     .sha2_256 = &otcrypto_sha2_256,
@@ -128,6 +162,9 @@ volatile otcrypto_interface_t otcrypto = {
     .sha2_init = &otcrypto_sha2_init,
     .sha2_update = &otcrypto_sha2_update,
     .sha2_final = &otcrypto_sha2_final,
+    .hash_init = &otcrypto_hash_init,
+    .hash_update = &otcrypto_hash_update,
+    .hash_final = &otcrypto_hash_final,
 
     // SHA-3
     .sha3_224 = &otcrypto_sha3_224,
@@ -148,6 +185,7 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_sign = &otcrypto_ed25519_sign,
     .ed25519_sign_verify = &otcrypto_ed25519_sign_verify,
     .ed25519_verify = &otcrypto_ed25519_verify,
+    .ed25519_point_on_curve = &otcrypto_ed25519_point_on_curve,
 
     // Ed25519 (async).
     .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
@@ -177,13 +215,18 @@ volatile otcrypto_interface_t otcrypto = {
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 
+    // Curve25519 utility.
+    .curve25519_private_key_import = &otcrypto_curve25519_private_key_import,
+    .curve25519_private_key_export = &otcrypto_curve25519_private_key_export,
+
     // RSA key construction.
     .rsa_public_key_construct = &otcrypto_rsa_public_key_construct,
     .rsa_private_key_from_exponents = &otcrypto_rsa_private_key_from_exponents,
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,
-    .rsa_keygen_deterministic = &otcrypto_rsa_keygen_deterministic,
+    .rsa_prime_check = &otcrypto_rsa_prime_check,
+    .rsa_create_n_from_primes = &otcrypto_rsa_create_n_from_primes,
     .rsa_keypair_from_cofactor = &otcrypto_rsa_keypair_from_cofactor,
 
     // RSA key generation (async).
@@ -196,9 +239,9 @@ volatile otcrypto_interface_t otcrypto = {
 
     // RSA signatures (blocking).
     .rsa_sign = &otcrypto_rsa_sign,
-    .rsa_hash_sign_verify = &otcrypto_rsa_hash_sign_verify,
+    .rsa_hash_sign_verify_final = &otcrypto_rsa_hash_sign_verify_final,
     .rsa_verify = &otcrypto_rsa_verify,
-    .rsa_hash_verify = &otcrypto_rsa_hash_verify,
+    .rsa_hash_verify_final = &otcrypto_rsa_hash_verify_final,
 
     // RSA signatures (async).
     .rsa_sign_async_start = &otcrypto_rsa_sign_async_start,
@@ -227,10 +270,11 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p256_dice_keygen = &otcrypto_ecdsa_p256_dice_keygen,
     .ecdsa_p256_sign_config_k = &otcrypto_ecdsa_p256_sign_config_k,
     .ecdsa_p256_sign = &otcrypto_ecdsa_p256_sign,
-    .ecdsa_p256_hash_sign_verify = &otcrypto_ecdsa_p256_hash_sign_verify,
+    .ecdsa_p256_hash_sign_verify_final =
+        &otcrypto_ecdsa_p256_hash_sign_verify_final,
     .ecdsa_p256_sign_verify = &otcrypto_ecdsa_p256_sign_verify,
     .ecdsa_p256_verify = &otcrypto_ecdsa_p256_verify,
-    .ecdsa_p256_hash_verify = &otcrypto_ecdsa_p256_hash_verify,
+    .ecdsa_p256_hash_verify_final = &otcrypto_ecdsa_p256_hash_verify_final,
 
     // ECDH P-256 (blocking).
     .ecdh_p256_keygen = &otcrypto_ecdh_p256_keygen,
@@ -276,11 +320,12 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDSA P-384 (blocking).
     .ecdsa_p384_keygen = &otcrypto_ecdsa_p384_keygen,
     .ecdsa_p384_sign = &otcrypto_ecdsa_p384_sign,
-    .ecdsa_p384_hash_sign_verify = &otcrypto_ecdsa_p384_hash_sign_verify,
+    .ecdsa_p384_hash_sign_verify_final =
+        &otcrypto_ecdsa_p384_hash_sign_verify_final,
     .ecdsa_p384_sign_config_k = &otcrypto_ecdsa_p384_sign_config_k,
     .ecdsa_p384_sign_verify = &otcrypto_ecdsa_p384_sign_verify,
     .ecdsa_p384_verify = &otcrypto_ecdsa_p384_verify,
-    .ecdsa_p384_hash_verify = &otcrypto_ecdsa_p384_hash_verify,
+    .ecdsa_p384_hash_verify_final = &otcrypto_ecdsa_p384_hash_verify_final,
 
     // ECDH P-384 (blocking).
     .ecdh_p384_keygen = &otcrypto_ecdh_p384_keygen,

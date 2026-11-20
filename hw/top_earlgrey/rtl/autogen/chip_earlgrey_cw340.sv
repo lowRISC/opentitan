@@ -281,7 +281,6 @@ module chip_earlgrey_cw340 #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [26:0] dio_in_raw;
 
@@ -336,7 +335,7 @@ module chip_earlgrey_cw340 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [66:0] unused_sig;
+  logic [67:0] unused_sig;
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -433,7 +432,6 @@ module chip_earlgrey_cw340 #(
     .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -547,7 +545,7 @@ module chip_earlgrey_cw340 #(
         dio_in[DioSpiDeviceSd2],
         dio_in[DioSpiDeviceSd1],
         dio_in[DioSpiDeviceSd0],
-        dio_in[DioSpiHost0Csb],
+        dio_in[DioSpiHost0Csb0],
         dio_in[DioSpiHost0Sck],
         dio_in[DioSpiHost0Sd3],
         dio_in[DioSpiHost0Sd2],
@@ -576,7 +574,7 @@ module chip_earlgrey_cw340 #(
         dio_out[DioSpiDeviceSd2],
         dio_out[DioSpiDeviceSd1],
         dio_out[DioSpiDeviceSd0],
-        dio_out[DioSpiHost0Csb],
+        dio_out[DioSpiHost0Csb0],
         dio_out[DioSpiHost0Sck],
         dio_out[DioSpiHost0Sd3],
         dio_out[DioSpiHost0Sd2],
@@ -605,7 +603,7 @@ module chip_earlgrey_cw340 #(
         dio_oe[DioSpiDeviceSd2],
         dio_oe[DioSpiDeviceSd1],
         dio_oe[DioSpiDeviceSd0],
-        dio_oe[DioSpiHost0Csb],
+        dio_oe[DioSpiHost0Csb0],
         dio_oe[DioSpiHost0Sck],
         dio_oe[DioSpiHost0Sd3],
         dio_oe[DioSpiHost0Sd2],
@@ -634,7 +632,7 @@ module chip_earlgrey_cw340 #(
         dio_attr[DioSpiDeviceSd2],
         dio_attr[DioSpiDeviceSd1],
         dio_attr[DioSpiDeviceSd0],
-        dio_attr[DioSpiHost0Csb],
+        dio_attr[DioSpiHost0Csb0],
         dio_attr[DioSpiHost0Sck],
         dio_attr[DioSpiHost0Sd3],
         dio_attr[DioSpiHost0Sd2],
@@ -731,7 +729,7 @@ module chip_earlgrey_cw340 #(
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .clk_main_o(clk_main),
     .clk_io_o(clk_io),
     .clk_48MHz_o(clk_usb_48mhz),
@@ -768,15 +766,6 @@ module chip_earlgrey_cw340 #(
     otm_obs: '0,
     usb_obs: '0
   };
-
-  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
-  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
-  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
-  // as topgen does not support conditional port generation.
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
-  assign clk_osc_byp_pd_main = clks_osc_byp;
-  assign clk_osc_byp_pd_aon  = clks_osc_byp;
 
   // AST power states are unused
   logic unused_ast_pwst_h;
@@ -939,32 +928,31 @@ module chip_earlgrey_cw340 #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .manual_in_por_n_i            (rst_n              ),
-    .scanmode_o                   (scanmode           ),
-    .scan_en_o                    (                   ),
-    .scan_rst_n_o                 (                   ),
-    .usb_io_pu_cal_o              (                   ),
-    .padmux2ast_i                 (padmux2ast         ),
-    .mux_iob_sel_o                (mux_iob_sel        ),
-    .ast_vx_supp_i                (ast_vx_supp        ),
-    .ast_obs_i                    (ast_obs            ),
-    .ast_adc_a0_a_i               (ast_adc_a0_a       ),
-    .ast_adc_a1_a_i               (ast_adc_a1_a       ),
-    .ast2pad_t0_a_o               (ast2pad_t0_a       ),
-    .ast2pad_t1_a_o               (ast2pad_t1_a       ),
-    .clk_osc_byp_pd_main_i        (clk_osc_byp_pd_main),
-    .clk_osc_byp_pd_aon_i         (clk_osc_byp_pd_aon ),
-    .ast_pwst_h_o                 (ast_pwst_h         ),
-    .dft_hold_tap_sel_i           ('0                 ),
-    .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
-    .usb_dn_pullup_en_o           (                   ),
-    .rram_test_analog_io          ('0                 ),
-    .sensor_ctrl_manual_pad_attr_o(                   ),
-    .usbdev_usb_rx_d_i            (usb_rx_d           ),
-    .usbdev_usb_tx_d_o            (                   ),
-    .usbdev_usb_tx_se0_o          (                   ),
-    .usbdev_usb_tx_use_d_se0_o    (                   ),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable      )
+    .manual_in_por_n_i            (rst_n           ),
+    .manual_in_pora_n_i           (rst_n           ),
+    .scanmode_o                   (scanmode        ),
+    .scan_en_o                    (                ),
+    .scan_rst_n_o                 (                ),
+    .usb_io_pu_cal_o              (                ),
+    .padmux2ast_i                 (padmux2ast      ),
+    .ast_vx_supp_i                (ast_vx_supp     ),
+    .ast_obs_i                    (ast_obs         ),
+    .ast_adc_a0_a_i               (ast_adc_a0_a    ),
+    .ast_adc_a1_a_i               (ast_adc_a1_a    ),
+    .ast2pad_t0_a_o               (ast2pad_t0_a    ),
+    .ast2pad_t1_a_o               (ast2pad_t1_a    ),
+    .clks_osc_byp_i               (clks_osc_byp    ),
+    .ast_pwst_h_o                 (ast_pwst_h      ),
+    .dft_hold_tap_sel_i           ('0              ),
+    .usb_dp_pullup_en_o           (usb_dp_pullup_en),
+    .usb_dn_pullup_en_o           (                ),
+    .rram_test_analog_io          ('0              ),
+    .sensor_ctrl_manual_pad_attr_o(                ),
+    .usbdev_usb_rx_d_i            (usb_rx_d        ),
+    .usbdev_usb_tx_d_o            (                ),
+    .usbdev_usb_tx_se0_o          (                ),
+    .usbdev_usb_tx_use_d_se0_o    (                ),
+    .usbdev_usb_rx_enable_o       (usb_rx_enable   )
   );
 
 
@@ -1003,7 +991,7 @@ module chip_earlgrey_cw340 #(
 
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
+    unique case ({mio_out[MioOutGpio0Gpio11], mio_out[MioOutGpio0Gpio10]})
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1017,17 +1005,17 @@ module chip_earlgrey_cw340 #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
     .Width ($bits(clk_trans_idle) + 4)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .d_i   ({clk_trans_idle,
              clk_io_div4_trigger_hw_en,
              clk_io_div4_trigger_hw_oe,

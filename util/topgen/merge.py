@@ -1996,7 +1996,7 @@ def amend_pinmux_io(top: ConfigT,
         if block is None and allow_missing_blocks:
             continue
 
-        for sig in block.get_signals_as_list_of_dicts():
+        for sig in block.get_signals_as_list_of_dicts(m.get('param_decl')):
             # Each CIO belongs to the power domain of its owning partition.
             pd_sig = lib.get_domain_of_partition(
                 m, sig.get('partition', PART_PRIMARY), pd_default)
@@ -2054,7 +2054,7 @@ def amend_pinmux_io(top: ConfigT,
                 idx = -1
                 sig_name = sig['port']
 
-            sig_inst = deepcopy(block.get_signal_by_name_as_dict(sig_name))
+            sig_inst = deepcopy(block.get_signal_by_name_as_dict(sig_name, m.get('param_decl')))
 
             if idx >= 0 and idx >= sig_inst['width']:
                 raise SystemExit(f"Index {idx} is out of bounds for signal "
@@ -2084,7 +2084,7 @@ def amend_pinmux_io(top: ConfigT,
         # signals of this block and we need to extract them here one by one
         # signals here.
         else:
-            sig_list = deepcopy(block.get_signals_as_list_of_dicts())
+            sig_list = deepcopy(block.get_signals_as_list_of_dicts(m.get('param_decl')))
 
             for sig_inst in sig_list:
                 # If this is a multibit signal, unroll the bus and

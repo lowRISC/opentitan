@@ -8,7 +8,6 @@ description: "Positive/ Negative Edge detector"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:assert
       - lowrisc:prim:flop_2sync
     files:
       - rtl/prim_edge_detector.sv

@@ -66,7 +66,7 @@ OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
  */
 static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
                                    kmac_blinded_key_t *kmac_key) {
-  size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
+  size_t key_len = key->config.key_length;
 
   // Check `key_len` is valid/supported by KMAC HWIP.
   HARDENED_TRY(kmac_key_length_check(key_len));
@@ -85,6 +85,7 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
   kmac_key->len = key_len;
 
   if (key->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     if (key_len != kKmacSideloadKeyLength / 8) {
       return OTCRYPTO_BAD_ARGS;
     }
@@ -95,15 +96,16 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
     // Diversification call also checks that `key->keyblob_length` is 8 words
     // long.
     HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
     HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
-    // Remask the key.
-    HARDENED_TRY(keyblob_remask(key));
-
     // Check `key_len` matches `keyblob_length`.
     if (key->keyblob_length != 2 * key->config.key_length) {
       return OTCRYPTO_BAD_ARGS;
     }
+
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key));
     HARDENED_TRY(keyblob_to_shares(key, &kmac_key->share0, &kmac_key->share1));
     // Set the checksum of the key.
     kmac_key->checksum = kmac_key_integrity_checksum(kmac_key);
@@ -120,7 +122,6 @@ otcrypto_status_t otcrypto_kmac(
     size_t required_output_len, otcrypto_word32_buf_t *tag) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC);
   OTCRYPTO_HEALTH_CHECK(kTestKmac256Bit);
-  // TODO (#16410) Revisit/complete error checks
 
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for null pointers.
@@ -158,12 +159,10 @@ otcrypto_status_t otcrypto_kmac(
       (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
   // Per NIST SP 800-185, KMAC tag length must be at least 32 bits (4 bytes).
-  if (tag->len != required_output_words || required_output_len < 4) {
+  if (tag->len != required_output_words || required_output_len < 4 ||
+      required_output_words > kOtcryptoWrappedKeyMaxWords) {
     return OTCRYPTO_BAD_ARGS;
   }
-
-  kmac_blinded_key_t kmac_key;
-  HARDENED_TRY(kmac_key_construct(key, &kmac_key));
 
   status_t (*kmac_fn)(kmac_blinded_key_t *, hardened_bool_t,
                       const otcrypto_const_byte_buf_t *, const unsigned char *,
@@ -185,8 +184,11 @@ otcrypto_status_t otcrypto_kmac(
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
+  kmac_blinded_key_t kmac_key;
+  HARDENED_TRY(kmac_key_construct(key, &kmac_key));
+
   // Preload the tag with randomness.
-  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
+  hardened_memshred(tag->data, tag->len);
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     // No protection against FI.
@@ -205,8 +207,8 @@ otcrypto_status_t otcrypto_kmac(
                          customization_string->len, tag->data,
                          required_output_len));
     // Second KMAC computation using the KMAC core.
-    uint32_t tag_redundant_data[required_output_words];
-    HARDENED_TRY(hardened_memshred(tag_redundant_data, required_output_words));
+    uint32_t tag_redundant_data[kOtcryptoWrappedKeyMaxWords];
+    hardened_memshred(tag_redundant_data, required_output_words);
     kmac_blinded_key_t kmac_key_redundant;
     HARDENED_TRY(kmac_key_construct(key, &kmac_key_redundant));
     HARDENED_TRY(kmac_fn(&kmac_key_redundant,
@@ -217,6 +219,10 @@ otcrypto_status_t otcrypto_kmac(
     HARDENED_CHECK_EQ(
         hardened_memeq(&tag->data[0], &tag_redundant_data[0], tag->len),
         kHardenedBoolTrue);
+  }
+
+  if (is_sideloaded == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
   }
 
   // Verify the input buffer

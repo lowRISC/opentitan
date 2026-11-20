@@ -13,7 +13,9 @@ filesets:
         - rtl/prim_sec_anchor_flop.sv
     file_type: systemVerilogSource
     depend:
-        - lowrisc:prim:assert
+        - lowrisc:prim:buf
+        - lowrisc:prim:const_sec
+        - lowrisc:prim:flop
 
 targets:
   default:

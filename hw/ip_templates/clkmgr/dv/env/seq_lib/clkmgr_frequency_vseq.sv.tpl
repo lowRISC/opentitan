@@ -55,8 +55,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   rand int min_offset;
   rand int max_offset;
 
+% if ext_clk_bypass:
   mubi4_t calib_rdy;
 
+% endif
   constraint thresholds_c {
     solve clk_tested before mesr;
     solve mesr before min_offset, max_offset;
@@ -84,10 +86,22 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
 % endfor
   }
 
+% if ext_clk_bypass:
   function void post_randomize();
     calib_rdy = get_rand_mubi4_val(6, 2, 2);
     `uvm_info(`gfn, $sformatf("randomize: calib_rdy=0x%x", calib_rdy), UVM_MEDIUM)
     super.post_randomize();
+  endfunction
+
+% endif
+  // Whether the DUT treats its clocks as calibrated, i.e., runs measurements.
+  local function bit clocks_calibrated();
+% if ext_clk_bypass:
+    return calib_rdy != MuBi4False;
+% else:
+    // Without a calib_rdy_i input the clocks are always calibrated.
+    return 1'b1;
+% endif
   endfunction
 
   // Keep saturating the count on aon negedges if needed.
@@ -190,7 +204,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
-          if (calib_rdy != MuBi4False &&
+          if (clocks_calibrated() &&
               (min_threshold > expected || max_threshold < expected - 1 || cause_saturation)) begin
             `uvm_info(`gfn, $sformatf(
                       "Expect %0s to get a %0s error%0s",

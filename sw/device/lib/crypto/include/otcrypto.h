@@ -8,6 +8,7 @@
 #include "aes.h"
 #include "aes_gcm.h"
 #include "cmac.h"
+#include "cmac_kdf.h"
 #include "cmvp.h"
 #include "config.h"
 #include "cryptolib_build_info.h"
@@ -19,6 +20,7 @@
 #include "entropy_src.h"
 #include "hkdf.h"
 #include "hmac.h"
+#include "hmac_drbg.h"
 #include "integrity.h"
 #include "kdf_ctr.h"
 #include "key_transport.h"
@@ -26,8 +28,10 @@
 #include "kmac_kdf.h"
 #include "rsa.h"
 #include "self_integrity.h"
+#include "sha1.h"
 #include "sha2.h"
 #include "sha3.h"
+#include "tdes.h"
 
 /**
  * @file

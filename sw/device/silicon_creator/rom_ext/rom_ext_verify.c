@@ -32,12 +32,18 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
   // Check if there is an SPX+ key.
   const manifest_ext_spx_key_t *ext_spx_key;
   const manifest_ext_spx_signature_t *ext_spx_signature;
+  // Initialized to NULL so that the absent-extension case passes a NULL
+  // signature to `owner_verify`, which rejects it.  Taking the address of
+  // `ext_spx_signature->signature` unconditionally would offset an
+  // indeterminate pointer and defeat that check.
+  const sigverify_spx_signature_t *spx_signature = NULL;
   rom_error_t spx_err = manifest_ext_get_spx_key(manifest, &ext_spx_key);
   spx_err += manifest_ext_get_spx_signature(manifest, &ext_spx_signature);
   switch ((uint32_t)spx_err) {
     case kErrorOk * 2:
       // Both extensions present: valid SPX+ signature.
       key_id ^= sigverify_spx_key_id_get(&ext_spx_key->key);
+      spx_signature = &ext_spx_signature->signature;
       break;
     case kErrorManifestBadExtension * 2:
       // Both extensions absent: ECDSA only.
@@ -82,7 +88,7 @@ rom_error_t rom_ext_verify(const manifest_t *manifest, char slot_id,
 
   RETURN_IF_ERROR(owner_verify(
       key_alg, &keyring->key[*verify_key]->data, &manifest->ecdsa_signature,
-      &ext_spx_signature->signature, &usage_constraints_from_hw,
+      spx_signature, &usage_constraints_from_hw,
       sizeof(usage_constraints_from_hw), NULL, 0, digest_region.start,
       digest_region.length, &act_digest, flash_exec));
 

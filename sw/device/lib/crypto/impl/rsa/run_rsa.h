@@ -54,7 +54,16 @@ status_t rsa_modexp_wait(size_t *num_words);
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
                                     uint32_t pub_exp, const uint32_t *modulus,
-                                    uint32_t checksum);
+                                    uint32_t checksum, uint32_t key_mode);
+
+/**
+ * Reads the RSA `key_mode` preserved in OTBN's `mode` word after modexp.
+ *
+ * @param[out] key_mode Reconstructed `otcrypto_key_mode_t` value.
+ * @return Status of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_modexp_key_mode(uint32_t *key_mode);
 
 /**
  * Start a variable-time RSA modular exponentiation.
@@ -87,6 +96,25 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
 status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
 
 /**
+ * Finalizes a modular exponentiation given the expected word length.
+ *
+ * @param num_words Expected number of 32-bit words for the modexp result.
+ * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
+ * @return Status of the operation (OK or error).
+ */
+status_t rsa_modexp_finalize(size_t num_words, uint32_t *result);
+
+/**
+ * Converts an internal `rsa_size_t` to the corresponding word length.
+ *
+ * @param size RSA size parameter.
+ * @param[out] num_words Number of 32-bit words in the modulus.
+ * @return Status of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words);
+
+/**
  * Starts an RSA key generation operation; returns immediately.
  *
  * The key exponent is always F4=65537; no other exponents are supported.
@@ -99,14 +127,30 @@ status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
 status_t rsa_keygen_start(rsa_size_t size);
 
 /**
- * Starts an RSA key generation routine on OTBN (standard or deterministic).
+ * Checks whether a candidate prime is a probable RSA prime on OTBN.
  *
  * @param size RSA key size.
- * @param deterministic Whether to run deterministic key generation.
+ * @param prime_candidate Candidate prime buffer (half the modulus word length).
+ * @param[out] prime_ok Whether the candidate passed primality testing.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic);
+status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
+                         hardened_bool_t *prime_ok);
+
+/**
+ * Multiplies two prime factors p and q on OTBN to compute the modulus n = p *
+ * q.
+ *
+ * @param size RSA size parameter.
+ * @param prime_p First prime factor p.
+ * @param prime_q Second prime factor q.
+ * @param[out] modulus Output buffer for the modulus n = p * q.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
+                                  const uint32_t *prime_q, uint32_t *modulus);
 
 /**
  * Waits for an RSA key generation to complete.
@@ -124,6 +168,28 @@ status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic);
  */
 status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
                                   uint32_t *d1, uint32_t *p, uint32_t *q);
+
+/**
+ * Checks that an RSA modulus is composite and not a power of a prime.
+ *
+ * Runs the enhanced Miller-Rabin test of FIPS 186-5, Appendix B.3.2, on OTBN
+ * as required by NIST SP 800-89, Section 5.3.3. Blocks until OTBN is done and
+ * wipes DMEM afterwards.
+ *
+ * The modulus is public; the check is not constant time. The modulus must be
+ * odd and have its most significant bit set.
+ *
+ * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
+ *
+ * @param size RSA size parameter (e.g. 2048, 3072, 4096).
+ * @param modulus RSA modulus n.
+ * @param[out] result kHardenedBoolTrue if n is composite and not a prime power,
+ *                    kHardenedBoolFalse otherwise.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_modulus_composite_check(rsa_size_t size, const uint32_t *modulus,
+                                     hardened_bool_t *result);
 
 #ifdef __cplusplus
 }  // extern "C"

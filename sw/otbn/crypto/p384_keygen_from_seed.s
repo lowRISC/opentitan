@@ -22,8 +22,8 @@
  * instead just compute d = seed mod n. The caller MUST ensure that if this
  * routine is used, then other routines that use d (e.g. signing, public key
  * generation) are checking if d is 0.
- * To generate 448-bit key shares, we just take 63 bits from RND multiplied by n
- * and then added to the seed shares. (63 bits to prevent overflow.)
+ * To generate 448-bit key shares, we just take 63 bits from URND multiplied by
+ * n and then added to the seed shares. (63 bits to prevent overflow.)
  *
  * Most complexity in this routine comes from masking. The input seed is
  * provided in two 384-bit shares, seed0 and seed1, such that:
@@ -147,11 +147,11 @@ p384_key_from_seed:
   bn.sel    w22, w28, w26, FG0.C
   bn.sel    w23, w29, w27, FG0.C
 
-  /* Get 63 bits of randomness from RND, multiply it with n,
+  /* Get 63 bits of randomness from URND, multiply it with n,
      and add it to the key share to get a 448-bit share. */
 
-  /* [w2,w1] <= (RND >> 193) * n */
-  bn.wsrr   w10, RND
+  /* [w2,w1] <= (URND >> 193) * n */
+  bn.wsrr   w10, URND
   bn.rshi   w10, w31, w10 >> 193
   bn.mov    w11, w31
   jal       x1, mul384
@@ -164,19 +164,19 @@ p384_key_from_seed:
   bn.xor    w18, w18, w18
   bn.xor    w19, w19, w19
 
-  /* [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (RND >> 193) * n = d1' */
+  /* [w6,w5] <= [w6,w5] + [w2,w1] = d1 + (URND >> 193) * n = d1' */
   bn.add    w5, w5, w1
   bn.addc   w6, w6, w2
 
-  /* [w4,w3] <= (RND >> 193) * n */
-  bn.wsrr   w10, RND
+  /* [w4,w3] <= (URND >> 193) * n */
+  bn.wsrr   w10, URND
   bn.rshi   w10, w31, w10 >> 193
   bn.mov    w11, w31
   jal       x1, mul384
   bn.mov    w3, w18
   bn.mov    w4, w19
 
-  /* [w23,w22] <= [w23,w22] + [w4,w3] = d0 + (RND >> 193) * n = d0' */
+  /* [w23,w22] <= [w23,w22] + [w4,w3] = d0 + (URND >> 193) * n = d0' */
   bn.add    w22, w22, w3
   bn.addc   w23, w23, w4
 

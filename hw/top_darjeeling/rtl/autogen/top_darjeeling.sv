@@ -12,9 +12,9 @@
 // This wrapper hosts all power domain wrappers and the connections between them for darjeeling.
 module top_darjeeling #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 1,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 1,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
@@ -47,6 +47,7 @@ module top_darjeeling #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
+  parameter bit RvDmCheriotSupport = 0,
   parameter bit SecRvDmVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for aes
@@ -352,8 +353,8 @@ module top_darjeeling #(
   ///////////////////////////
   darjeeling_pd_main #(
   // Auto-inferred parameters
-  .GpioGpioAsyncOn(GpioGpioAsyncOn),
-  .GpioGpioAsHwStrapsEn(GpioGpioAsHwStrapsEn),
+  .Gpio0GpioAsyncOn(Gpio0GpioAsyncOn),
+  .Gpio0GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn),
   .SpiDeviceSramType(SpiDeviceSramType),
   .I2c0InputDelayCycles(I2c0InputDelayCycles),
   .OtpMacroMemInitFile(OtpMacroMemInitFile),
@@ -368,6 +369,7 @@ module top_darjeeling #(
   .PinmuxTargetCfg(PinmuxTargetCfg),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
+  .RvDmCheriotSupport(RvDmCheriotSupport),
   .SecRvDmVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
   .RvDmTlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits),
   .AesAESGCMEnable(AesAESGCMEnable),

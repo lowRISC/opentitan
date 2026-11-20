@@ -53,14 +53,6 @@
     derived_srcs:
     [
       {
-        name: io_div2
-        aon: no
-        freq: "48000000"
-        ref: false
-        div: "2"
-        src: io
-      }
-      {
         name: io_div4
         aon: no
         freq: "24000000"
@@ -96,7 +88,6 @@
           clk_main_powerup: main
           clk_io_powerup: io
           clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
         }
       }
       {
@@ -142,7 +133,6 @@
         clocks:
         {
           clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
           clk_io_peri: io
           clk_usb_peri: usb
           clk_aon_peri: aon
@@ -233,20 +223,6 @@
         path: rst_por_io_n
         parent: por_aon
         clock: io
-      }
-      {
-        name: por_io_div2
-        gen: true
-        type: top
-        domains:
-        [
-          Aon
-        ]
-        shadowed: false
-        sw: false
-        path: rst_por_io_div2_n
-        parent: por_aon
-        clock: io_div2
       }
       {
         name: por_io_div4
@@ -361,7 +337,7 @@
         sw: true
         path: rst_spi_device_n
         parent: sys_src
-        clock: io_div2
+        clock: io_div4
       }
       {
         name: spi_host0
@@ -449,7 +425,7 @@
           [
             uart0
             uart1
-            gpio
+            gpio0
             spi_device
             rv_timer
             spi_host0
@@ -657,7 +633,7 @@
       generate_dif: true
     }
     {
-      name: gpio
+      name: gpio0
       type: gpio
       template_type: gpio
       clock_srcs:
@@ -694,7 +670,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsyncOn
+          name_top: Gpio0GpioAsyncOn
         }
         {
           name: GpioAsHwStrapsEn
@@ -703,7 +679,7 @@
           default: 1'b1
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsHwStrapsEn
+          name_top: Gpio0GpioAsHwStrapsEn
         }
       ]
       inter_signal_list:
@@ -720,7 +696,7 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -732,7 +708,7 @@
           act: req
           width: 1
           default: "'0"
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -747,7 +723,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -758,7 +734,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -768,11 +744,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
       ]
@@ -791,7 +767,7 @@
       clock_srcs:
       {
         clk_i: io_div4
-        scan_clk_i: io_div2
+        scan_clk_i: io_div4
       }
       clock_group: peri
       reset_connections:
@@ -807,7 +783,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_div4_peri
-        scan_clk_i: clkmgr_clocks_i.clk_io_div2_peri
+        scan_clk_i: clkmgr_clocks_i.clk_io_div4_peri
       }
       param_decl: {}
       memory: {}
@@ -1792,7 +1768,6 @@
         clk_main_i: main
         clk_io_i: io
         clk_usb_i: usb
-        clk_io_div2_i: io_div2
         clk_io_div4_i: io_div4
       }
       clock_group: powerup
@@ -1824,7 +1799,6 @@
         clk_main_i: clkmgr_clocks.clk_main_powerup
         clk_io_i: clkmgr_clocks.clk_io_powerup
         clk_usb_i: clkmgr_clocks.clk_usb_powerup
-        clk_io_div2_i: clkmgr_clocks.clk_io_div2_powerup
         clk_io_div4_i: clkmgr_clocks.clk_io_div4_powerup
       }
       memory: {}
@@ -2036,11 +2010,6 @@
           name: por_io
           domain: Aon
         }
-        rst_io_div2_ni:
-        {
-          name: por_io_div2
-          domain: Aon
-        }
         rst_io_div4_ni:
         {
           name: por_io_div4
@@ -2064,11 +2033,6 @@
         rst_root_io_ni:
         {
           name: por_io
-          domain: Aon
-        }
-        rst_root_io_div2_ni:
-        {
-          name: por_io_div2
           domain: Aon
         }
         rst_root_io_div4_ni:
@@ -5040,9 +5004,9 @@
       [
         peri.tl_uart1
       ]
-      gpio.tl:
+      gpio0.tl:
       [
-        peri.tl_gpio
+        peri.tl_gpio0
       ]
       spi_device.tl:
       [
@@ -5663,7 +5627,7 @@
         [
           uart0
           uart1
-          gpio
+          gpio0
           spi_device
           spi_host0
           rv_timer
@@ -5733,7 +5697,7 @@
           req_fifo_pass: true
         }
         {
-          name: gpio
+          name: gpio0
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -5991,7 +5955,7 @@
           index: -1
         }
         {
-          name: tl_gpio
+          name: tl_gpio0
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -6000,7 +5964,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
         {
@@ -6134,7 +6098,7 @@
   [
     uart0
     uart1
-    gpio
+    gpio0
     spi_device
     spi_host0
     usbdev
@@ -6609,6 +6573,10 @@
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
+        attrs:
+        {
+          pull_en: 1
+        }
         idx: 30
         port_type: inout
       }
@@ -6875,7 +6843,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: ""
         connection: muxed
         pad: ""
@@ -7042,7 +7010,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 0
@@ -7054,7 +7022,7 @@
         glob_idx: 0
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 1
@@ -7066,7 +7034,7 @@
         glob_idx: 1
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 2
@@ -7078,7 +7046,7 @@
         glob_idx: 2
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 3
@@ -7090,7 +7058,7 @@
         glob_idx: 3
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 4
@@ -7102,7 +7070,7 @@
         glob_idx: 4
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 5
@@ -7114,7 +7082,7 @@
         glob_idx: 5
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 6
@@ -7126,7 +7094,7 @@
         glob_idx: 6
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 7
@@ -7138,7 +7106,7 @@
         glob_idx: 7
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 8
@@ -7150,7 +7118,7 @@
         glob_idx: 8
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 9
@@ -7162,7 +7130,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 10
@@ -7174,7 +7142,7 @@
         glob_idx: 10
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 11
@@ -7186,7 +7154,7 @@
         glob_idx: 11
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 12
@@ -7198,7 +7166,7 @@
         glob_idx: 12
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 13
@@ -7210,7 +7178,7 @@
         glob_idx: 13
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 14
@@ -7222,7 +7190,7 @@
         glob_idx: 14
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 15
@@ -7234,7 +7202,7 @@
         glob_idx: 15
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 16
@@ -7246,7 +7214,7 @@
         glob_idx: 16
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 17
@@ -7258,7 +7226,7 @@
         glob_idx: 17
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 18
@@ -7270,7 +7238,7 @@
         glob_idx: 18
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 19
@@ -7282,7 +7250,7 @@
         glob_idx: 19
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 20
@@ -7294,7 +7262,7 @@
         glob_idx: 20
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 21
@@ -7306,7 +7274,7 @@
         glob_idx: 21
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 22
@@ -7318,7 +7286,7 @@
         glob_idx: 22
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 23
@@ -7330,7 +7298,7 @@
         glob_idx: 23
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 24
@@ -7342,7 +7310,7 @@
         glob_idx: 24
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 25
@@ -7354,7 +7322,7 @@
         glob_idx: 25
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 26
@@ -7366,7 +7334,7 @@
         glob_idx: 26
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 27
@@ -7378,7 +7346,7 @@
         glob_idx: 27
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 28
@@ -7390,7 +7358,7 @@
         glob_idx: 28
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 29
@@ -7402,7 +7370,7 @@
         glob_idx: 29
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 30
@@ -7414,7 +7382,7 @@
         glob_idx: 30
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 31
@@ -8008,13 +7976,13 @@
         lpg_idx: 0
       }
       {
-        name: gpio_fatal_fault
+        name: gpio0_fatal_fault
         width: 1
         type: alert
         async: "1"
         handler: null
-        module_name: gpio
-        desc: gpio fatal_fault alert
+        module_name: gpio0
+        desc: gpio0 fatal_fault alert
         lpg_name: peri_sys_io_div4_Main
         lpg_idx: 1
       }
@@ -8532,11 +8500,11 @@
       outgoing: false
     }
     {
-      name: gpio_gpio
+      name: gpio0_gpio
       width: 32
       type: interrupt
-      module_name: gpio
-      desc: gpio gpio interrupt
+      module_name: gpio0
+      desc: gpio0 gpio interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -9328,7 +9296,7 @@
         External alert group "englishbreakfast" [1]: fatal_fault
       ]
     }
-    module_gpio:
+    module_gpio0:
     {
       tx_expr: outgoing_alert_englishbreakfast_tx_o[2]
       rx_expr: outgoing_alert_englishbreakfast_rx_i[2]
@@ -9518,7 +9486,7 @@
     [
       uart0
       uart1
-      gpio
+      gpio0
       spi_device
       spi_host0
       rv_timer
@@ -9579,7 +9547,6 @@
           clocks:
           {
             clk_io_div4_peri: io_div4
-            clk_io_div2_peri: io_div2
             clk_io_peri: io
             clk_usb_peri: usb
             clk_aon_peri: aon
@@ -9605,7 +9572,6 @@
           clocks:
           {
             clk_io_div4_peri: io_div4
-            clk_io_div2_peri: io_div2
             clk_io_peri: io
             clk_usb_peri: usb
             clk_aon_peri: aon
@@ -9631,7 +9597,6 @@
           clocks:
           {
             clk_io_div4_peri: io_div4
-            clk_io_div2_peri: io_div2
             clk_io_peri: io
             clk_usb_peri: usb
             clk_aon_peri: aon
@@ -9657,7 +9622,6 @@
           clocks:
           {
             clk_io_div4_peri: io_div4
-            clk_io_div2_peri: io_div2
             clk_io_peri: io
             clk_usb_peri: usb
             clk_aon_peri: aon
@@ -9706,7 +9670,6 @@
           clocks:
           {
             clk_io_div4_peri: io_div4
-            clk_io_div2_peri: io_div2
             clk_io_peri: io
             clk_usb_peri: usb
             clk_aon_peri: aon
@@ -9736,7 +9699,6 @@
             clk_main_powerup: main
             clk_io_powerup: io
             clk_usb_powerup: usb
-            clk_io_div2_powerup: io_div2
           }
         }
         clock_connection: clkmgr_clocks.clk_io_div4_powerup
@@ -9763,7 +9725,6 @@
             clk_main_powerup: main
             clk_io_powerup: io
             clk_usb_powerup: usb
-            clk_io_div2_powerup: io_div2
           }
         }
         clock_connection: clkmgr_clocks.clk_io_div4_powerup
@@ -10020,7 +9981,7 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -10032,7 +9993,7 @@
         act: req
         width: 1
         default: "'0"
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -10047,7 +10008,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -10058,7 +10019,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -10068,11 +10029,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -12686,7 +12647,7 @@
         index: -1
       }
       {
-        name: tl_gpio
+        name: tl_gpio0
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -12695,7 +12656,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -14632,7 +14593,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: gpio_tl_req
+        signame: gpio0_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -14644,7 +14605,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: gpio_tl_rsp
+        signame: gpio0_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

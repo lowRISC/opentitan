@@ -22,13 +22,6 @@ waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clk_ast_ext_i' is
 waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clkmgr_clocks..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(clkmgr_clocks_(i|o)..*)', and used as a clock} \
       -comment "Clock struct feedthrough across the wrapper into the power domains."
 
-# clkmgr_clocks.clk_usb_peri is flagged as it is only assigned to the unused-signal assignment in the open-source AST.
-waive -rules {CLOCK_USE} -location {earlgrey_pd_aon.sv} -regexp {'clkmgr_clocks.clk_usb_peri' is connected to 'ast_part_secondary' port 'clk_ast_usb_i', and used as a clock} \
-      -comment "Clock struct distribution inside the power domain."
-
-waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'ast_intraip_s2p.clk_rst.clk_ast_es' is connected to 'earlgrey_pd_main' port 'ast_intraip_s2p_i.clk_rst.clk_ast_es', and used as a clock} \
-      -comment "This is a clock passed to the other partition."
-
 waive -rules {RESET_USE} -location {top_earlgrey.sv} -regexp {'rstmgr_resets..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(rstmgr_resets_(i|o)..*)', and used as an asynchronous reset or set} \
       -comment "Reset struct feedthrough across the wrapper into the power domains."
 
@@ -39,14 +32,11 @@ waive -rules {RESET_USE} -location {earlgrey_pd_aon.sv} -regexp {'rstmgr_resets.
 waive -rules {CLOCK_USE} -location {earlgrey_pd_aon.sv} -regexp {'ast_sns_clks..*' is connected to 'ast_part_secondary' port 'sns_clks_i..*', and used as a clock} \
       -comment "These clocks are fed back to AST for sensing purposes."
 
-waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'spi_device_sck_monitor' is connected to 'earlgrey_pd_aon' port 'spi_device_sck_monitor_i', and used as a clock} \
-      -comment "This clock is fed back to AST for sensing purposes."
-
 waive -rules {RESET_USE} -location {earlgrey_pd_aon.sv} -regexp {'ast_sns_rsts..*' is connected to 'ast_part_secondary' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
       -comment "These resets are fed back to AST for sensing purposes."
 
 # Clock MUXs
-waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {'ast_intraip_s2p.clk_rst.clk_ast_tlul' is driven by a multiplexer here} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {'ast_intraip_p2s.clk_rst.clk_ast_tlul' is driven by a multiplexer here} \
       -comment "This is an actual clock signal originating from a DFT clock mux"
 
 waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_aon.sv} -regexp {'ast_clk_src_io.*' reaches a multiplexer here, used as a clock} \
@@ -94,9 +84,9 @@ waive -rules SAME_NAME_TYPE -location {i3c_reset_detector.sv prim_sync_reqack.sv
 # The I3C Target transceiver has no free-running clock: it is clocked by the Controller-supplied
 # SCL, and by SDA to detect START, Repeated START and STOP conditions. Both arrive through MIO
 # pads, so the pad inputs legitimately reach clock inputs.
-waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(38|39|40|41)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_i|sda0_clk_ni)' at} \
+waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(70|71|72|73)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_i|sda0_clk_ni)' at} \
       -comment "The I3C Target SCL and SDA pins clock the Target transceiver, which has no free-running clock."
-waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(50|51|52|53)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_buf|sda_clk_n)' at} \
+waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(82|83|84|85)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_buf|sda_clk_n)' at} \
       -comment "The SCL and SDA inputs of the I3C Target Reset Detectors clock the detectors, which have no free-running clock."
 
 waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
@@ -104,3 +94,7 @@ waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgr
 
 waive -rules LINE_LENGTH -location {top_earlgrey_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_earlgrey_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+# RRAM TAP reset
+waive -rules {RESET_DRIVER} -location {top_earlgrey.sv} -regexp {'pinmux_rram_jtag_req.trst_n' is driven by instance 'earlgrey_pd_aon' of module 'earlgrey_pd_aon', and used as an asynchronous reset 'trst_ni' at dmi_jtag_tap.sv} \
+      -comment "TRSTn of the RRAM TAP in rram_macro. Pinmux holds it asserted while the RRAM TAP is not selected."

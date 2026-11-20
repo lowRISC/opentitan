@@ -123,6 +123,20 @@ cc_library(
 )
 
 cc_library(
+    name = "hmac_drbg",
+    srcs = ["hmac_drbg.c"],
+    hdrs = ["hmac_drbg.h"],
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:hmac_drbg_commands",
+    ],
+)
+
+cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = ["hash.h"],
@@ -231,6 +245,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto",
+        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
@@ -331,6 +346,7 @@ FIRMWARE_DEPS = [
     ":hash",
     ":hkdf",
     ":hmac",
+    ":hmac_drbg",
     ":kdf",
     ":kmac",
     ":mldsa",

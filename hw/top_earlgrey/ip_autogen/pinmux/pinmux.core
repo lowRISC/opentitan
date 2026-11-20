@@ -17,6 +17,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_or_hardened
+      - lowrisc:prim:mubi
       - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:prim:pad_attr
       - lowrisc:ip:jtag_pkg

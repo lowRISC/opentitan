@@ -152,6 +152,61 @@ OT_ASSERT_ENUM_VALUE(ARRAYSIZE(prefix_offsets), KMAC_PREFIX_MULTIREG_COUNT);
 OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
 
 /**
+ * Issue a command to `KMAC_CMD.CMD`.
+ */
+static void kmac_cmd_write(uint32_t cmd_value) {
+  uint32_t cmd_reg = bitfield_field32_write(KMAC_CMD_REG_RESVAL,
+                                            KMAC_CMD_CMD_FIELD, cmd_value);
+  abs_mmio_write32(kmac_base() + KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+static void kmac_hwip_release(void) {
+  const uint32_t kBase = kmac_base();
+  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    kmac_cmd_write(KMAC_CMD_CMD_VALUE_PROCESS);
+    while (
+        !bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT) &&
+        !bitfield_bit32_read(status_reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
+      status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+    }
+  }
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT)) {
+    kmac_cmd_write(KMAC_CMD_CMD_VALUE_DONE);
+  }
+}
+
+/**
+ * Hardware wipe guard.
+ *
+ * Streaming operations disable the guard by setting it to `kHardenedBoolFalse`
+ * when there is no error because the hardware must remain claimed between
+ * calls.
+ */
+void kmac_wipe_guard(uint32_t *guard) {
+  if (launder32(*guard) == kHardenedBoolFalse) {
+    return;
+  }
+  kmac_hwip_release();
+}
+
+/**
+ * Clear recoverable error state in the KMAC hardware block.
+ */
+static void kmac_err_clear(void) {
+  const uint32_t kBase = kmac_base();
+  uint32_t cmd_reg =
+      bitfield_bit32_write(KMAC_CMD_REG_RESVAL, KMAC_CMD_ERR_PROCESSED_BIT, 1);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+  kmac_hwip_release();
+  abs_mmio_write32(kBase + KMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
+
+  // Read the shadowed registers to clear their write phase trackers.
+  (void)abs_mmio_read32(kBase + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET);
+  (void)abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET);
+}
+
+/**
  * Return the rate (in bytes) for given security strength.
  *
  * The caller must ensure that `keccak_rate` is not a NULL pointer. This is not
@@ -257,10 +312,12 @@ status_t kmac_hwip_default_configure(void) {
   }
   if (bitfield_bit32_read(status_reg,
                           KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
   // Check that core is not busy
   if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_IDLE_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -268,13 +325,21 @@ status_t kmac_hwip_default_configure(void) {
   uint32_t intr_state =
       abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
   if (bitfield_bit32_read(intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
 
   // Check CFG.regwen
   uint32_t cfg_regwen =
       abs_mmio_read32(kmac_base() + KMAC_CFG_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(cfg_regwen, KMAC_CFG_REGWEN_EN_BIT)) {
+  if (!cfg_regwen) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Check ENTROPY_CFG.regwen
+  uint32_t entropy_cfg_regwen =
+      abs_mmio_read32(kmac_base() + KMAC_ENTROPY_CFG_REGWEN_REG_OFFSET);
+  if (!entropy_cfg_regwen) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -283,26 +348,30 @@ status_t kmac_hwip_default_configure(void) {
   intr_reg = bitfield_bit32_write(intr_reg, KMAC_INTR_ENABLE_KMAC_ERR_BIT, 0);
   abs_mmio_write32(kmac_base() + KMAC_INTR_ENABLE_REG_OFFSET, intr_reg);
 
-  // Configure max for entropy period (use UINT32_MAX and let bitfield clamp
-  // them to their bitfield)
-  uint32_t entropy_period = KMAC_ENTROPY_PERIOD_REG_RESVAL;
-  entropy_period = bitfield_field32_write(
-      entropy_period, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD, UINT32_MAX);
-  entropy_period = bitfield_field32_write(
-      entropy_period, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD, UINT32_MAX);
-  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                   entropy_period);
+  // Configure ENTROPY_CFG
+  uint32_t entropy_cfg_reg = KMAC_ENTROPY_CFG_SHADOWED_REG_RESVAL;
+  // Disable Entropy Boot Mode if not yet disabled.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_BOOT_MODE_BIT, 0);
+  // Activate EDN Mode.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_MODE_BIT,
+      KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
+  // Handle manual reseed requests.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_IGNORE_CMD_ENTROPY_REQ_BIT, 0);
+  // Configure the refresh threshold to a reasonably high value. If software
+  // prefers to reseed earlier, it can request an EDN reseed operation manually
+  // at any point.
+  entropy_cfg_reg = bitfield_field32_write(
+      entropy_cfg_reg,
+      KMAC_ENTROPY_CFG_SHADOWED_EDN_MODE_REFRESH_THRESHOLD_FIELD, 128);
 
-  // Configure max for hash threshold (use UINT32_MAX and let bitfield clamp
-  // them to their bitfield)
-  uint32_t entropy_hash_threshold =
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
-  entropy_hash_threshold = bitfield_field32_write(
-      entropy_hash_threshold,
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, UINT32_MAX);
-  abs_mmio_write32_shadowed(
-      kmac_base() + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
-      entropy_hash_threshold);
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET,
+                            entropy_cfg_reg);
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kmac_base() + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET),
+      launder32(entropy_cfg_reg));
 
   // Configure CFG
   uint32_t cfg_reg = KMAC_CFG_SHADOWED_REG_RESVAL;
@@ -315,26 +384,20 @@ status_t kmac_hwip_default_configure(void) {
   // Sideload: off, default key comes from SW
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
 
-  // Entropy mode: EDN
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
-                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
-
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
                                  KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
-  // Do not remask message blocks
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
+  // Remask message blocks
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
 
-  // Mark entropy source as ready
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
   // Unsupported modes: disabled
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
 
   abs_mmio_write32_shadowed(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET,
                             cfg_reg);
+  HARDENED_CHECK_EQ(abs_mmio_read32(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET),
+                    launder32(cfg_reg));
 
   return OTCRYPTO_OK;
 }
@@ -360,54 +423,21 @@ static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
       return OTCRYPTO_FATAL_ERR;
     }
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
+      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
+      kmac_err_clear();
+      return OTCRYPTO_RECOV_ERR;
+    }
+    uint32_t intr_state =
+        abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
+    if (bitfield_bit32_read(intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT)) {
+      // COVERAGE (HW ERR) This is only reached if KMAC reports an error.
+      kmac_err_clear();
       return OTCRYPTO_RECOV_ERR;
     }
     if (bitfield_bit32_read(reg, bit_position) == bit_value) {
       return OTCRYPTO_OK;
     }
   }
-}
-
-static void kmac_hwip_release(void) {
-  // Do nothing when the block is already in `IDLE` mode.
-  const uint32_t kBase = kmac_base();
-  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_IDLE_BIT)) {
-    return;
-  }
-
-  // If the hardware is still absorbing, terminate the absorption phase.
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
-    uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
-    cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                     KMAC_CMD_CMD_VALUE_PROCESS);
-    abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-  }
-
-  // Wait until the squeeze state is reached.
-  if (!status_ok(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1))) {
-    return;
-  }
-
-  // Issue `CMD.DONE` to wipe the internal state and release the hardware.
-  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
-  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                   KMAC_CMD_CMD_VALUE_DONE);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-}
-
-/**
- * Hardware wipe guard.
- *
- * Streaming operations disable the guard by setting it to `kHardenedBoolFalse`
- * when there is no error because the hardware must remain claimed between
- * calls.
- */
-void kmac_wipe_guard(uint32_t *guard) {
-  if (launder32(*guard) == kHardenedBoolFalse) {
-    return;
-  }
-  kmac_hwip_release();
 }
 
 /**
@@ -472,7 +502,8 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   uint32_t prefix_buffer[kKmacPrefixRegCount] = {0x0};
   unsigned char *prefix_buf_ptr = (unsigned char *)prefix_buffer;
 
-  if (func_name_len + cust_str_len > kKmacPrefixMaxSize) {
+  if (func_name_len > kKmacPrefixMaxSize ||
+      cust_str_len > kKmacPrefixMaxSize - func_name_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -484,8 +515,12 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   prefix_buf_ptr += bytes_written + 1;
 
   // copy `func_name`
-  memcpy(prefix_buf_ptr, func_name, func_name_len);
-  prefix_buf_ptr += func_name_len;
+  if (launder32(func_name_len) > 0) {
+    memcpy(prefix_buf_ptr, func_name, func_name_len);
+    prefix_buf_ptr += func_name_len;
+  } else {
+    HARDENED_CHECK_EQ(func_name_len, 0);
+  }
 
   // left_encode(`cust_str_len_bits`) below
   HARDENED_TRY(little_endian_encode(cust_str_len << 3, prefix_buf_ptr + 1,
@@ -494,7 +529,11 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   prefix_buf_ptr += bytes_written + 1;
 
   // copy `cust_str`
-  memcpy(prefix_buf_ptr, cust_str, cust_str_len);
+  if (launder32(cust_str_len) > 0) {
+    memcpy(prefix_buf_ptr, cust_str, cust_str_len);
+  } else {
+    HARDENED_CHECK_EQ(cust_str_len, 0);
+  }
 
   // Copy from `prefix_buffer` to PREFIX_REGS
   for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; i++) {
@@ -534,23 +573,26 @@ static status_t kmac_init(kmac_operation_t operation,
                           hardened_bool_t hw_backed) {
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
-  // We need to preserve some bits of CFG register, such as:
-  // entropy_mode, entropy_ready etc. On the other hand, some bits
-  // need to be reset for each invocation.
-  uint32_t cfg_reg =
-      abs_mmio_read32(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET);
+  uint32_t cfg_reg = KMAC_CFG_SHADOWED_REG_RESVAL;
+  cfg_reg =
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT, 0);
+  cfg_reg =
+      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, 0);
+  cfg_reg = bitfield_bit32_write(cfg_reg,
+                                 KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
+  cfg_reg = bitfield_bit32_write(
+      cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
 
-  // Make sure kmac_en and sideload bits of CFG are reset at each invocation
-  // These bits should be set to 1 only if needed by the rest of the code
-  // in this function.
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 0);
-  if (hw_backed == kHardenedBoolTrue) {
+  if (launder32(hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(hw_backed, kHardenedBoolTrue);
     cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 1);
-  } else if (hw_backed == kHardenedBoolFalse) {
+  } else if (launder32(hw_backed) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(hw_backed, kHardenedBoolFalse);
     cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
   } else {
     return OTCRYPTO_BAD_ARGS;
-  };
+  }
 
   // operation bit fields: Bit 0: `kmac_en`, Bit 1-2: `mode`
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT,
@@ -603,13 +645,13 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   // Write random words to the key registers and use hardened_memcpy
   // for SCA defense. Using the hardened_mem* functions is fine as
   // we are always operating on multiples of 32-bit words.
-  uint32_t share0_addr = kBase + KMAC_KEY_SHARE0_0_REG_OFFSET;
-  uint32_t share1_addr = kBase + KMAC_KEY_SHARE1_0_REG_OFFSET;
+  uintptr_t share0_addr = kBase + KMAC_KEY_SHARE0_0_REG_OFFSET;
+  uintptr_t share1_addr = kBase + KMAC_KEY_SHARE1_0_REG_OFFSET;
   size_t key_len_words = key->len / sizeof(uint32_t);
-  HARDENED_TRY(hardened_memshred((uint32_t *)share0_addr, key_len_words));
+  hardened_memshred((uint32_t *)share0_addr, key_len_words);
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share0_addr, key->share0, key_len_words));
-  HARDENED_TRY(hardened_memshred((uint32_t *)share1_addr, key_len_words));
+  hardened_memshred((uint32_t *)share1_addr, key_len_words);
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
 
@@ -717,8 +759,8 @@ static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
                              size_t digest_len_bytes,
                              hardened_bool_t masked_digest) {
   const uint32_t kBase = kmac_base();
-  size_t digest_len_words =
-      (digest_len_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t digest_len_words = (digest_len_bytes / sizeof(uint32_t)) +
+                            (digest_len_bytes % sizeof(uint32_t) != 0);
 
   // If the operation is KMAC, then `right_encode(digest->len)` is appended.
   if (operation == kKmacOperationKmac) {
@@ -737,8 +779,10 @@ static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
     uint8_t bytes_written;
     HARDENED_TRY(little_endian_encode(digest_len_bits, buf, &bytes_written));
     buf[bytes_written] = bytes_written;
-    uint8_t *fifo_dst = (uint8_t *)(kBase + KMAC_MSG_FIFO_REG_OFFSET);
-    memcpy(fifo_dst, buf, bytes_written + 1);
+    for (size_t j = 0; j < (size_t)bytes_written + 1; j++) {
+      HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
+      abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, buf[j]);
+    }
   }
 
   // Issue the process command, so that squeezing phase can start
@@ -770,8 +814,8 @@ static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
     // Read words from the state registers (either `digest_len_words` or the
     // maximum number of words available).
     size_t offset = 0;
-    uint32_t offset_share0 = kBase + KMAC_STATE_REG_OFFSET;
-    uint32_t offset_share1 =
+    uintptr_t offset_share0 = kBase + KMAC_STATE_REG_OFFSET;
+    uintptr_t offset_share1 =
         kBase + KMAC_STATE_REG_OFFSET + kKmacStateShareSize;
     size_t read_len_words = keccak_rate_words;
     if (idx + read_len_words >= digest_len_words) {
@@ -814,6 +858,12 @@ static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
 
   // Poll the status register until in the 'squeeze' state.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET),
+                    launder32(cfg_reg));
+  HARDENED_CHECK_EQ(
+      bitfield_bit32_read(abs_mmio_read32(kBase + KMAC_INTR_STATE_REG_OFFSET),
+                          KMAC_INTR_STATE_KMAC_ERR_BIT),
+      false);
 
   // Zero out the trailing bytes in the final word.
   size_t remainder_bytes = digest_len_bytes % sizeof(uint32_t);
@@ -880,7 +930,8 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
                      size_t digest_wordlen, uint32_t *digest) {
   // Note: to save code size, we check for null pointers here instead of
   // separately for every different Keccak hash operation.
-  if (digest == NULL || (message->data == NULL && message->len != 0)) {
+  if (digest == NULL || (message->data == NULL && message->len != 0) ||
+      digest_wordlen > SIZE_MAX / sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -971,6 +1022,8 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
   HARDENED_TRY(
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength128, key->hw_backed));
 
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
+
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
   const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
@@ -987,6 +1040,8 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        uint32_t *digest, size_t digest_len) {
   HARDENED_TRY(
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength256, key->hw_backed));
+
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
 
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
@@ -1111,6 +1166,8 @@ static status_t stream_kmac_init(kmac_security_str_t security_str,
   barrier32(hw_cleanup_guard);
 
   HARDENED_TRY(kmac_init(kKmacOperationKmac, security_str, key->hw_backed));
+
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
 
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
@@ -1301,9 +1358,9 @@ status_t kmac_xof_squeeze(kmac_ctx_t *ctx, uint32_t *digest,
     if (read_len_words > digest_len - idx) {
       read_len_words = digest_len - idx;
     }
-    uint32_t offset_share0 =
+    uintptr_t offset_share0 =
         kBase + KMAC_STATE_REG_OFFSET + ctx->squeeze_offset * sizeof(uint32_t);
-    uint32_t offset_share1 = offset_share0 + kKmacStateShareSize;
+    uintptr_t offset_share1 = offset_share0 + kKmacStateShareSize;
 
     // Unmask the digest as we read it.
     HARDENED_TRY(hardened_xor((const uint32_t *)offset_share0,

@@ -201,7 +201,7 @@ static status_t run_kmac_kdf_non_word_aligned_test(void) {
 
   otcrypto_key_config_t okm_config = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeKdfKmac128,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = exact_byte_len,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolTrue,

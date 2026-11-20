@@ -10,6 +10,8 @@ virtual:
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:buf
     files:
       - rtl/prim_usb_diff_rx.sv
     file_type: systemVerilogSource

@@ -133,7 +133,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
   // doesn't really matter, it just needs to be some symmetric key.
   otcrypto_key_config_t okm_config = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -414,7 +414,7 @@ static status_t test_otcrypto_hkdf(void) {
   // Setup OKM
   otcrypto_key_config_t okm_config = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 42,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -489,7 +489,7 @@ static status_t run_negative_tests(void) {
   };
   otcrypto_key_config_t valid_okm_cfg = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 42,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -615,12 +615,33 @@ static status_t run_negative_tests(void) {
   // Exceed 255 iterations
   otcrypto_key_config_t huge_okm_cfg = valid_okm_cfg;
   huge_okm_cfg.key_length = 8161;
-  uint32_t huge_blob[keyblob_num_words(huge_okm_cfg)];
+  static uint32_t
+      huge_blob[2 * ((8161 + sizeof(uint32_t) - 1) / sizeof(uint32_t))];
   otcrypto_blinded_key_t huge_okm = {.config = huge_okm_cfg,
                                      .keyblob_length = sizeof(huge_blob),
                                      .keyblob = huge_blob};
   huge_okm.checksum = otcrypto_integrity_blinded_checksum(&huge_okm);
   CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &huge_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Hardware-backed IKM, PRK, and OKM must all be rejected.
+  uint32_t hw_blob[kKeyblobHwBackedWords] = {0};
+  otcrypto_key_config_t hw_ikm_cfg = valid_ikm.config;
+  hw_ikm_cfg.key_length = 32;
+  hw_ikm_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t hw_ikm = {
+      .config = hw_ikm_cfg,
+      .keyblob_length = sizeof(hw_blob),
+      .keyblob = hw_blob,
+  };
+  hw_ikm.checksum = otcrypto_integrity_blinded_checksum(&hw_ikm);
+  CHECK(otcrypto_hkdf_extract(&hw_ikm, &valid_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hkdf(&hw_ikm, &valid_buf, &valid_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t hw_prk = hw_ikm;
+  CHECK(otcrypto_hkdf_expand(&hw_prk, &valid_buf, &valid_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   return OTCRYPTO_OK;

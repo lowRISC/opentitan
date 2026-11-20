@@ -4,10 +4,13 @@
 
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
+load("//rules:ownership.bzl", "owner_block_binary", "ownership_detached_signature")
 load("//hw/top:defs.bzl", "opentitan_require_top")
 load(
     "//rules/opentitan:defs.bzl",
+    "fpga_params",
     "opentitan_binary",
+    "opentitan_test",
 )
 load(
     "//sw/device/silicon_creator/rom_ext/e2e/ownership:defs.bzl",
@@ -760,6 +763,152 @@ ownership_transfer_test(
 )
 
 ownership_transfer_test(
+    name = "anyversion_update_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --config-version=2
+            # We expect to see the version updated, the owner key the same, and transfers = 0.
+            --expect "config_version = 2"
+            --expect "owner_key = 8e3dcb50"
+            --expect "ownership_transfers = 0"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_update_fails_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            # We expect the update to fail (since version 0 is not greater than current 1),
+            # so config_version must remain 1.
+            --expect "config_version = 1"
+            --expect "ownership_transfers = 0"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_transfer_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            # We expect to see the version is 0 (transfer under AnyVersion doesn't require newer version),
+            # the owner key is the dummy key (665ff5e3), and transfers = 1.
+            --expect "config_version = 0"
+            --expect "owner_key = 665ff5e3"
+            --expect "ownership_transfers = 1"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
+    name = "anyversion_unlock_update_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --unlock-mode=Update
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+            --non-transfer-update=true
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
+    name = "anyversion_unlock_transfer_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
+    name = "anyversion_wildcard_nonce_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        "test_cmd": """
+            --next-key-alg=HybridSpxPure
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key_spx)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --config-version=0
+            --use-zero-nonce
+            # We expect the transfer to successfully complete using the zero wildcard nonce,
+            # so the owner key is the dummy key (665ff5e3), and transfers = 1.
+            --expect "config_version = 0"
+            --expect "owner_key = 665ff5e3"
+            --expect "ownership_transfers = 1"
+        """,
+        "test_harness": "//sw/host/tests/ownership:newversion_test",
+    },
+)
+
+ownership_transfer_test(
     name = "newversion_badlock_test",
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
@@ -983,4 +1132,190 @@ ownership_transfer_test(
         """,
         "test_harness": "//sw/host/tests/ownership:newversion_test",
     },
+)
+
+manifest({
+    "name": "manifest_secver5",
+    "identifier": hex(CONST.OWNER),
+    "security_version": "5",
+    "visibility": ["//visibility:public"],
+})
+
+ownership_transfer_test(
+    name = "bl0_secver_persistence_test",
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0",
+    },
+    fpga = {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_newversion",
+        "test_cmd": """
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.pub.der
+        """,
+        "test_harness": "//sw/host/tests/ownership:bl0_secver_persistence_test",
+    },
+    manifest = ":manifest_secver5",
+)
+
+owner_block_binary(
+    name = "test_owner_config_bin",
+    src = "//sw/device/silicon_creator/lib/ownership:testdata/dummy_owner.json5",
+    keys = [
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:all_keys",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:all_keys",
+    ],
+)
+
+ownership_detached_signature(
+    name = "test_owner_config_sig",
+    src = ":test_owner_config_bin",
+    command = "Owner",
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key",
+    key_alg = "HybridSpxPrehash",
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key_spx",
+)
+
+manifest({
+    "name": "test_owner_transfer_manifest",
+    "identifier": hex(CONST.OWNER),
+    "owner_transfer_block": ":test_owner_config_bin",
+    "owner_transfer_detached_signature": ":test_owner_config_sig",
+    "visibility": ["//visibility:public"],
+})
+
+opentitan_binary(
+    name = "boot_test_with_owner_transfer",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    defines = ["WITH_OWNERSHIP_INFO=1"],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = ":test_owner_transfer_manifest",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+    ],
+)
+
+opentitan_test(
+    name = "rom_ext_e2e_owner_transfer_manifest_test",
+    srcs = ["owner_transfer_inplace.c"],
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware:signed_bin}@{owner_slot_a} {transfer:signed_bin}@{owner_slot_b}",
+        binaries = {
+            ":boot_test_with_owner_transfer": "transfer",
+        },
+        # Manual exit_failure overrides the default regex which incorrectly matches
+        # BFV:00000000 (success boot code). Includes checking for double-boot of Slot A to
+        # catch boot loops during failed transfer.
+        exit_failure = "FAIL|FAULT|(?s)Slot A firmware started.*Slot A firmware started",
+        exit_success = "bl0_slot = __BB",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/rom_ext:rom_ext_boot_policy_ptrs",
+    ],
+)
+
+ownership_detached_signature(
+    name = "test_owner_config_sig_invalid",
+    src = ":test_owner_config_bin",
+    command = "Owner",
+    ecdsa_key = "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key",
+    key_alg = "HybridSpxPrehash",
+    spx_key = "//sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_spx",
+)
+
+manifest({
+    "name": "test_owner_transfer_invalid_manifest",
+    "identifier": hex(CONST.OWNER),
+    "owner_transfer_block": ":test_owner_config_bin",
+    "owner_transfer_detached_signature": ":test_owner_config_sig_invalid",
+    "visibility": ["//visibility:public"],
+})
+
+opentitan_binary(
+    name = "boot_test_with_owner_transfer_invalid",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    defines = ["WITH_OWNERSHIP_INFO=1"],
+    ecdsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
+    },
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+    manifest = ":test_owner_transfer_invalid_manifest",
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+    ],
+)
+
+opentitan_test(
+    name = "rom_ext_e2e_owner_transfer_manifest_invalid_test",
+    srcs = ["owner_transfer_inplace.c"],
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        assemble = "{rom_ext}@{rom_ext_slot_a} {firmware:signed_bin}@{owner_slot_a} {transfer:signed_bin}@{owner_slot_b}",
+        binaries = {
+            ":boot_test_with_owner_transfer_invalid": "transfer",
+        },
+        exit_failure = "bl0_slot = __BB",
+        # In this negative test, we expect the signature verification of the new owner block
+        # to fail, causing the device to remain in/fallback to Slot A. Thus, Slot A firmware
+        # should boot loop. Match double Slot A boot as success.
+        exit_success = "(?s)Slot A firmware started.*Slot A firmware started",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_owner_update_anyversion",
+        testopt_clear_after_test = "True",
+        testopt_clear_before_test = "True",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/rom_ext:rom_ext_boot_policy_ptrs",
+    ],
 )

@@ -760,9 +760,12 @@ opentitan_test(
 )
 
 CHERIOT_SMOKETEST_DEPS = [
+    "//hw/top:cheriot_mem_sys_c_regs",
     "//hw/top:rv_core_ibex_c_regs",
+    "//hw/top:sram_ctrl_c_regs",
     "//hw/top:top_lib",
     "//hw/top:uart_c_regs",
+    "//sw/device/lib/base:csr",
     "//sw/device/lib/base:multibits",
     "//sw/device/silicon_creator/lib:manifest_def",
 ]
@@ -816,6 +819,18 @@ opentitan_test(
         exit_failure = CHERIOT_SMOKETEST_FAILURE,
         exit_success = "ePMP PASS!\r\n",
     ),
+    deps = CHERIOT_SMOKETEST_DEPS,
+)
+
+opentitan_test(
+    name = "cheriot_trvk_revocation_test",
+    srcs = ["cheriot_trvk_revocation_test.S"],
+    dv = dv_params(
+        defines = ["DV_TEST_STATUS"],
+    ),
+    exec_env = CHERIOT_SMOKETEST_ENVS,
+    local_defines = ["TEST_ITERATION_COUNT=128"],
+    platform = CHERIOT_PLATFORM,
     deps = CHERIOT_SMOKETEST_DEPS,
 )
 
@@ -2448,6 +2463,41 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "keymgr_dpe_otbn_hkdf_smoketest",
+    srcs = ["keymgr_dpe_otbn_hkdf_smoketest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            # keymgr_dpe_testutils_startup() uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
+        },
+    ),
+    # Run in both Owner and non-Owner envs to test otbn as key derivation engine.
+    run_in_ci = [
+        "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
+    verilator = verilator_params(timeout = "long"),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/dif:keymgr_dpe",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/dif:otbn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:keymgr_dpe_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/otbn/keymgr:keymgr_test",
+    ],
+)
+
 otp_json(
     name = "otp_ctrl_descrambling_otp_json",
     partitions = [
@@ -2472,8 +2522,8 @@ otp_json(
             name = "SECRET2",
             items = {
                 "RMA_TOKEN": "6ef5b95acb3ded39bed4fd235f6b24d4",
-                "CREATOR_ROOT_KEY_SHARE0": "f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
-                "CREATOR_ROOT_KEY_SHARE1": "e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
+                "CREATOR_ROOT_KEY_SHARE0": "9daa9628b943bf1efa51de2bdcd18fc4f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
+                "CREATOR_ROOT_KEY_SHARE1": "958a2b5c833e516c3f4e6580cbdeec50e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
             },
             lock = False,
         ),
@@ -2830,51 +2880,15 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "kmac_entropy_test",
-    srcs = ["kmac_entropy_test.c"],
-    # TODO(#30949):
-    # The ROM configures the KMAC entropy in software mode for the
-    # keymgr_dpe operations. The KMAC entropy FSM latches the entropy
-    # mode only once, so KMAC can no longer be switched to EDN entropy
-    # afterwards which this test relies on.
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "kmac_error_conditions_test",
     srcs = ["kmac_error_conditions_test.c"],
-    # TODO(#30949):
-    # The ROM configures the KMAC entropy in software mode for the
-    # keymgr_dpe operations. The KMAC entropy FSM latches the entropy
-    # mode only once, so KMAC can no longer be switched to EDN entropy
-    # afterwards which this test relies on.
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         # TODO(#30919): Disable tests on darjeeling due to missing keymgr_dpe
         # testutils functions.
         #DARJEELING_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -2901,6 +2915,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -3157,6 +3172,7 @@ opentitan_test(
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -3264,7 +3280,6 @@ opentitan_test(
     srcs = ["otbn_kmac_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
@@ -3993,6 +4008,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     verilator = verilator_params(tags = ["broken"]),
@@ -7644,6 +7660,7 @@ opentitan_test(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top:entropy_src_c_regs",
+        "//hw/top:kmac_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

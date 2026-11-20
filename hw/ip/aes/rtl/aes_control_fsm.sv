@@ -110,6 +110,7 @@ module aes_control_fsm
 
   // Trigger register
   output logic                                    start_we_o,
+  output logic                                    key_iv_data_in_clear_o,
   output logic                                    key_iv_data_in_clear_we_o,
   output logic                                    data_out_clear_we_o,
   output logic                                    prng_reseed_o,
@@ -168,11 +169,12 @@ module aes_control_fsm
   logic                     doing_cfb_enc, doing_cfb_dec;
   logic                     doing_ofb;
   logic                     doing_ctr;
-  logic                     ctrl_we_q;
+  logic                     ctrl_we_d, ctrl_we_q;
   logic                     clear_in_out_status;
   logic                     clear_on_fatal;
 
   logic                     start_we;
+  logic                     key_iv_data_in_clear;
   logic                     key_iv_data_in_clear_we;
   logic                     data_out_clear_we;
   logic                     prng_reseed_we;
@@ -391,6 +393,7 @@ module aes_control_fsm
 
     // Trigger register control
     start_we                = 1'b0;
+    key_iv_data_in_clear    = 1'b0;
     key_iv_data_in_clear_we = 1'b0;
     data_out_clear_we       = 1'b0;
     prng_reseed_we          = 1'b0;
@@ -436,11 +439,13 @@ module aes_control_fsm
         start_core = start | key_iv_data_in_clear_i | data_out_clear_i | prng_reseed_i;
 
         // Update status register. A write to the main control register (if sideload is enabled)
-        // or writing the last key register can initiate a PRNG reseed operation via trigger
-        // register. To avoid that subsequent writes to the main control, key or IV registers
-        // collide with the start of the reseed operation, de-assert the idle bit. The GHASH block
-        // may still be busy while the cipher core is actually idle.
-        idle    = ~(start_core | (prng_reseed_o & prng_reseed_we_o)) & ghash_idle;
+        // or writing the last key register can initiate clearing and/or PRNG reseed operations via
+        // trigger register. To avoid that subsequent writes to the main control, key or IV
+        // registers collide with the start of these operations, de-assert the idle bit. The GHASH
+        // block may still be busy while the cipher core is actually idle.
+        idle    = ghash_idle &
+                      ~(start_core | (key_iv_data_in_clear_o & key_iv_data_in_clear_we_o) |
+                                     (prng_reseed_o          & prng_reseed_we_o));
         idle_we = 1'b1;
 
         // Clear the start trigger when seeing invalid configurations or performing automatic
@@ -465,6 +470,12 @@ module aes_control_fsm
           // advances the IV, we have to clear the IV status tracking when re-initializing GCM.
           key_init_clear = ctrl_we_o;
           iv_clear       = ctrl_we_o | (gcm_init & gcm_clear);
+
+          // Updates to the main control register trigger the clearing of key, IV and data input
+          // registers if sideload is enabled during the second write (meaning the initial key
+          // registers potentially hold a sideload key).
+          key_iv_data_in_clear    = ctrl_we_o & ctrl_phase_i & sideload_i;
+          key_iv_data_in_clear_we = key_iv_data_in_clear;
 
           // Also clear GCM-specific status tracking.
           if (ctrl_we_o | gcm_clear) begin
@@ -998,11 +1009,18 @@ module aes_control_fsm
   // applied one cycle later here to avoid zero-latency loops. This additional delay is not
   // relevant as if we are about to start encryption/decryption, we anyway don't allow writes
   // to the control register.
+  //
+  // If sideload was enabled previously, the second write to the main control register may trigger
+  // additional actions such as clearing key, IV and data input registers. We thus keep the
+  // `ctrl_we_q` signal high until after all such triggers have been handled.
+  assign ctrl_we_d = ctrl_we_o |
+                    (ctrl_we_q & (key_iv_data_in_clear_i | data_out_clear_i | prng_reseed_i));
+
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_ctrl_we
     if (!rst_ni) begin
       ctrl_we_q <= 1'b0;
     end else begin
-      ctrl_we_q <= ctrl_we_o;
+      ctrl_we_q <= ctrl_we_d;
     end
   end
   assign clear_in_out_status = ctrl_we_q;
@@ -1110,6 +1128,7 @@ module aes_control_fsm
   // Most triggers are only ever cleared by control. Fatal alerts clear all bits in the trigger
   // register.
   assign start_we_o                = clear_on_fatal ? 1'b1 : start_we;
+  assign key_iv_data_in_clear_o    = clear_on_fatal ? 1'b0 : key_iv_data_in_clear;
   assign key_iv_data_in_clear_we_o = clear_on_fatal ? 1'b1 : key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = clear_on_fatal ? 1'b1 : data_out_clear_we;
 

@@ -91,6 +91,11 @@ TEST_OWNER_CONFIGS = {
         "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeNewVersion"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
     },
+    "owner_update_anyversion": {
+        # Enable the AnyVersion update mode of ownership.
+        "owner_defines": ["TEST_OWNER_UPDATE_MODE=kOwnershipUpdateModeAnyVersion"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
     "owner_sram_exec_enabled": {
         "owner_defines": [
             "TEST_OWNER_SRAM_EXEC_MODE=kOwnerSramExecModeEnabled",

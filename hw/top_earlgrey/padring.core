@@ -10,7 +10,6 @@ filesets:
     depend:
       - lowrisc:prim:mubi
       - lowrisc:prim:pad_wrapper_pkg
-      - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:virtual_systems:top_earlgrey_physical_pads
     files:
       - rtl/padring.sv

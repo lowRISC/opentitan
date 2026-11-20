@@ -54,13 +54,13 @@
             Software controller operations on the data and info partitions.
 
             **Stimulus**:
-            - Read operations with `CONTROL.NUM` values across the full range (1 to 1024 bus words),
-              including unaligned start addresses and transactions that cross page boundaries.
-            - Write operations with `CONTROL.NUM` a multiple of 4 bus words, 16-byte aligned, up
-              to 1024 bus words, including multi-page writes.
-            - Write `ADDR.START` values that are not 16-byte aligned to check the truncation to
-              the next lower RRAM word. Read addresses that are not bus-word aligned are
-              truncated to the next lower bus word.
+            - Read operations of 1 to 1024 bus words (the full `CONTROL.NUM` range), including start
+              addresses that are not aligned to an RRAM word and transactions that cross page
+              boundaries.
+            - Write operations of a multiple of 4 bus words up to 1024 bus words, starting at an
+              RRAM-word aligned address, including multi-page writes.
+            - Read `ADDR.START` values that are not bus-word aligned to check the truncation to
+              the next lower bus word.
             - Interleave reads and writes to the same and to different pages.
             - Randomize the timing of FIFO accesses: fill the write FIFO after setting
               `CONTROL.START` with random delays, and drain the read FIFO slowly and quickly.
@@ -92,13 +92,60 @@
             - After the rewrite the backdoor contents match the original stored word, with the
               error corrected.
             - The read FIFO is not filled by the rewrite.
-            - Rewrites are not subject to memory protection: they complete without
-              `ERR_CODE.mp_err` on any page, whatever its region or page configuration, and leave
-              the stored data unchanged.
+            - While all `DIS.DIS_*_REWRITE` fields are `MuBi4False`, rewrites are not subject to
+              memory protection: they complete without `ERR_CODE.mp_err` on any page, whatever
+              its region or page configuration, and leave the stored data unchanged.
 
             Note: with the open-source macro, a double bit error must be injected by flipping
             one bit in each 64-bit half. This is because the macro protects each half with its
             own Hamming(72,64) code and two bits in the same half are uncorrectable.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rewrite_disable
+      desc: '''
+            Verify that `DIS.DIS_ALL_REWRITE`, `DIS.DIS_OTP_REWRITE` and `DIS.DIS_INFO_REWRITE`
+            restrict the `Rewrite` operation.
+
+            **Stimulus**:
+            - Preload RRAM words through the backdoor, some of them with a correctable error.
+            - Set a random subset of the three fields, writing `MuBi4True` or a random non-
+              `MuBi4False` value, and keep the other fields unchanged.
+            - Issue rewrites to random pages of the data partition outside the OTP region, to the
+              OTP region (data and integrity page), and to the info partition.
+            - Write `MuBi4False` or 0 to a set field, then repeat the rewrites.
+
+            **Checks**:
+            - A rewrite is rejected if `DIS_ALL_REWRITE` is set, if `DIS_OTP_REWRITE` is set and it
+              targets the OTP region, or if `DIS_INFO_REWRITE` is set and it targets the info
+              partition. Otherwise it behaves as in `rewrite_op`.
+            - A rejected rewrite completes with `OP_STATUS.err`, `ERR_CODE.mp_err` and `ERR_ADDR`
+              set, and the backdoor contents of the targeted word are unchanged, i.e. a
+              correctable error injected into it is still present.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: sw_op_misaligned
+      desc: '''
+            Verify that software writes and Rewrites that do not cover whole RRAM words are
+            rejected.
+
+            **Stimulus**:
+            - Write operations whose number of bus words (`CONTROL.NUM` + 1) is not a multiple
+              of 4.
+            - Write and Rewrite operations whose start address is not 16-byte aligned.
+            - For writes, push data into the write FIFO after setting `CONTROL.START`.
+            - Follow each rejected operation with a valid write to a different page.
+
+            **Checks**:
+            - The rejected operation completes with `OP_STATUS.err` and `ERR_CODE.op_err` set.
+            - The RRAM contents are unchanged, as checked through the backdoor.
+            - A valid write issued after the rejected operation writes only its own data, i.e.
+              no data from the rejected operation is left in the controller and committed with it.
             '''
       stage: V2
       tests: []

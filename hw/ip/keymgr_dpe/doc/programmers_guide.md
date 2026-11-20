@@ -6,6 +6,32 @@ Except for the first advance call that initializes keymgr_dpe, this means keymgr
 Similarly, at the end of the operation (when `OP_STATUS` is not `WIP` anymore), it is recommended to check that the operation was successful by reading `ERR_CODE`.
 SW can also read the reported FSM state through `WORKING_STATE` to confirm that keymgr_dpe reaches the expected state.
 
+`CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` must select an instantiated slot, i.e. a value below `NumInstHwSlot`.
+Both fields are sized for `NumMaxHwSlot` slots, so they accept larger values.
+An operation that uses a slot selection at or above `NumInstHwSlot` is rejected with `ERR_CODE.INVALID_OP`, and no slot is modified.
+
+## Select the KDF engine
+
+This step is only relevant if keymgr_dpe is instantiated with `KdfEngineSel = KdfEngineBoth`.
+With `KdfEngineKmac` or `KdfEngineOtbn` the engine is fixed and `KDF_ENGINE_SHADOWED` is ignored.
+Values other than `kMultiBitBool4False` or `kMultiBitBool4True` will raise `ERR_CODE.INVALID_OP`.
+See [KDF Engine Selection](theory_of_operation.md#kdf-engine-selection) for the background.
+
+SW selects the engine used by all following advance and versioned key generation operations by configuring the following CSRs:
+*  Make sure `OP_STATUS` is not `WIP` and `CFG_REGWEN` is set.
+   The selection is only taken over while no operation is ongoing, so a write during an operation is delayed until the operation is done.
+*  Set `KDF_ENGINE_SHADOWED.SEL` to `kMultiBitBool4False` to use KMAC (default) or to `kMultiBitBool4True` to use HKDF on OTBN.
+   As the register is shadowed, the value must be written twice.
+*  Set `KDF_ENGINE_REGWEN.EN` to zero to lock the KDF engine selection.
+
+Any value other than `kMultiBitBool4True` or `kMultiBitBool4False` makes subsequent advance and generate operations fail with `ERR_CODE.INVALID_OP`.
+SW can recover by writing a valid value, unless `KDF_ENGINE_REGWEN.EN` has been cleared.
+Operations that do not involve a KDF engine (the first advance call, erase, load and disable) are not affected.
+
+When OTBN is selected, the KDF requests are issued on the `otbn_app` interface (OTBN's `keymgr_app`) instead of the KMAC interface.
+The internal key is handed to OTBN through its sideload key interface and `sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
+If such a key is presented, OTBN is required to ensure (by HW) that this key is never exposed to host SW.
+
 ## Initialize (first advance call)
 
 From a SW perspective, there is not an explicit initialize command.
@@ -18,6 +44,9 @@ Keymgr_DPE is initialized by configuring the following CSR:
 *  Set `START` to initiate the operation.
 
 At the end of the successful first advance call, the UDS is latched into the specified destination slot.
+If `SLOT_DST_SEL` is at or above `NumInstHwSlot`, the call is rejected with `ERR_CODE.INVALID_OP` and keymgr_dpe remains in `Reset` state.
+SW can then correct `SLOT_DST_SEL` and retry.
+Like for the [load root key operations](#load-root-key--load-secondary-root-key), the slot receives the default UDS policy (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`) and the default max key version (`0`), ignoring `SLOT_POLICY` and `MAX_KEY_VER_SHADOWED`.
 
 ## Advance
 
@@ -27,7 +56,7 @@ The advance operation is executed by configuring the following CSR:
 *  Set `SW_BINDING`.
 *  Set `SW_BINDING_REGWEN` to zero, if modifications on `SW_BINDING` needs to be prevented until the next advance call.
 *  Set `CONTROL_SHADOWED.SW_BINDING_ONLY` if this advance call should use `SW_BINDING` only, excluding all HW binding values.
-Once `ENFORCE_SW_BINDING.ENFORCE` has been set, this is mandatory for advance calls whose parent slot consumes HW binding values (i.e. `boot_stage` 0 to 2: Creator, OwnerInt and Owner).
+Once `ENFORCE_SW_BINDING.ENFORCE` has been set, this is mandatory for advance calls whose parent slot consumes HW binding values (i.e. `boot_stage` 0 to 3: Creator, CreatorInt, OwnerInt and Owner).
 It has no effect for parents in later boot stages, whose derivation only uses `SW_BINDING`.
 *  Set `MAX_KEY_VER_SHADOWED`.
 *  Set `MAX_KEY_VER_REGWEN` to zero, if modifications on `MAX_KEY_VER_SHADOWED` needs to be prevented until the next advance call.
@@ -46,8 +75,10 @@ At the end of a successful operation, the slot selected by `SLOT_DST_SEL` is loa
 *  `valid` bit is set to 1.
 *  Its `key_policy` is updated with `SLOT_POLICY`.
 *  `max_key_version` is updated with `MAX_KEY_VERSION`.
-*  `boot_stage` is set to the parent’s `boot_stage + 1`
-*  `key` is updated from the digest received from KMAC (after truncating to 256-bit).
+*  `boot_stage` is set to the parent’s next boot stage (i.e. `boot_stage + 1`, skipping the omitted stages in the two-stage configuration).
+   Once `boot_stage` reaches `Runtime`, it saturates.
+*  `key` is updated from the digest received from the KDF engine (after truncating the 512-bit KDF digest to the 384-bit slot key size).
+   Note that the slot key is 384-bit wide, but if KMAC is the KDF engine, only its lower 256 bits are used as the KMAC key in following operations.
 
 The slot `SLOT_SRC_SEL` remains unmodified (unless `SLOT_SRC_SEL = SLOT_DST_SEL` required by `retain_parent = false`).
 
@@ -72,6 +103,7 @@ SW needs to configure the following registers:
 *  Trigger the operation by setting `START`.
 
 If SW key is requested, then it becomes available at `SW_SHARE0_OUTPUT`, `SW_SHARE1_OUTPUT` registers in two shares.
+Each share is 384 bits wide (`NumOutReg` 32-bit registers).
 If HW key is requested then it becomes available in the configured sideload port.
 The key on the slot remains valid unless:
 *  It is explicitly cleared by SW.
@@ -94,20 +126,22 @@ The destination slot must be empty, so erase it first if it currently holds a DP
 Invoking the load operation on a valid slot fails with `ERR_CODE.INVALID_OP`.
 
 SW needs to configure the following registers to load a root key:
-*  Set `MAX_KEY_VER_SHADOWED`.
 *  Set `CONTROL_SHADOWED.OPERATION` to `Load root key` or `Load secondary root key`.
 *  Set `CONTROL_SHADOWED.SLOT_DST_SEL` to the empty slot that should store the root key.
+*  Neither `MAX_KEY_VER_SHADOWED` nor `SLOT_POLICY` needs to be configured, as both are ignored by these operations.
 *  Set `START` to initiate the operation.
 
-At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0` and the default UDS policy.
+At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0`, the default UDS policy and the default max key version.
+As `allow_keygen = 0`, no key can be generated from this slot, hence its `max_key_version` is irrelevant.
 As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
 
-Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+Once a root key is no longer needed in the current boot and to prevent further usage, SW can write `kMultiBitBool4True` to `LOAD_ROOT_KEY_LOCK.LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK.LOCK` respectively.
+Although all values other `kMultiBitBool4False` will be treated as locked.
 Any further load request of that root key is then rejected until the next reset.
 
 ## Read Slot Metadata
 
-Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
+Until `METADATA_READ_LOCK` is set, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
 *  `METADATA_LOW[i].MAX_KEY_VERSION` reports `max_key_version` of slot `i`.
 *  `METADATA_HIGH[i].VALID` reports whether slot `i` currently holds a valid DPE context.
 *  `METADATA_HIGH[i].BOOT_STAGE` reports the `boot_stage` of slot `i`.
@@ -118,6 +152,9 @@ Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `ke
 
 The secret key itself is never exposed through these registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
+
+SW can hide the slot metadata until the next reset by writing `kMultiBitBool4True` to `METADATA_READ_LOCK.LOCK`.
+Any value other than `kMultiBitBool4False` is treated as locked.
 
 # Disable
 

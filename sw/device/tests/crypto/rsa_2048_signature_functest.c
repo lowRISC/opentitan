@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/rsa.h"
+#include "sw/device/lib/crypto/include/sha1.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
@@ -100,6 +101,15 @@ static status_t compute_digest(const otcrypto_const_byte_buf_t *msg,
                                otcrypto_hash_digest_t *digest) {
   digest->mode = hash_mode;
   switch (hash_mode) {
+    case kOtcryptoHashModeNull:
+      memset(digest->data, 0,
+             ceil_div(msg->len, sizeof(uint32_t)) * sizeof(uint32_t));
+      memcpy(digest->data, msg->data, msg->len);
+      digest->len = msg->len;
+      return OK_STATUS();
+    case kOtcryptoHashModeSha1:
+      digest->len = 160 / 32;
+      return otcrypto_sha1(msg, digest);
     case kOtcryptoHashModeSha256:
       digest->len = 256 / 32;
       return otcrypto_sha2_256(msg, digest);
@@ -151,6 +161,9 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
     case kOtcryptoRsaPaddingPss:
       key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
+    case kOtcryptoRsaPaddingNull:
+      key_mode = kOtcryptoKeyModeRsaRaw;
+      break;
     default:
       return INVALID_ARGUMENT();
   };
@@ -187,7 +200,8 @@ static status_t run_rsa_2048_sign(const uint8_t *msg, size_t msg_len,
   // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
-  uint32_t msg_digest_data[512 / 32];  // Accommodates up to SHA-512
+  uint32_t
+      msg_digest_data[kRsa2048NumWords];  // Accommodates up to raw RSA-2048
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
   };
@@ -219,6 +233,9 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
     case kOtcryptoRsaPaddingPss:
       key_mode = kOtcryptoKeyModeRsaSignPss;
       break;
+    case kOtcryptoRsaPaddingNull:
+      key_mode = kOtcryptoKeyModeRsaRaw;
+      break;
     default:
       return INVALID_ARGUMENT();
   };
@@ -239,7 +256,8 @@ static status_t run_rsa_2048_verify(const uint8_t *msg, size_t msg_len,
   // Hash the message dynamically.
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, msg_len);
-  uint32_t msg_digest_data[512 / 32];  // Accommodates up to SHA-512
+  uint32_t
+      msg_digest_data[kRsa2048NumWords];  // Accommodates up to raw RSA-2048
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
   };
@@ -281,7 +299,8 @@ status_t pkcs1v15_verify_valid_test(void) {
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
-  // Also test otcrypto_rsa_hash_sign_verify and otcrypto_rsa_hash_verify.
+  // Also test otcrypto_rsa_hash_sign_verify_final and
+  // otcrypto_rsa_hash_verify_final.
   otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   otcrypto_const_word32_buf_t d_share0 =
@@ -321,15 +340,19 @@ status_t pkcs1v15_verify_valid_test(void) {
   uint32_t sig[kRsa2048NumWords];
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
-  TRY(otcrypto_rsa_hash_sign_verify(&private_key, &public_key,
-                                    kOtcryptoHashModeSha256, &msg_buf,
-                                    kOtcryptoRsaPaddingPkcs, &sig_buf));
+  otcrypto_hash_context_t hash_ctx;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_sign_verify_final(&private_key, &public_key, &hash_ctx,
+                                          kOtcryptoRsaPaddingPkcs, &sig_buf));
   otcrypto_const_word32_buf_t const_sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
   verification_result = kHardenedBoolFalse;
-  TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256, &msg_buf,
-                               kOtcryptoRsaPaddingPkcs, &const_sig_buf,
-                               &verification_result));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx,
+                                     kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                                     &verification_result));
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
   return OK_STATUS();
@@ -448,6 +471,13 @@ static status_t run_signature_negative_tests(void) {
   CHECK(otcrypto_rsa_sign_async_start(&valid_priv, valid_digest,
                                       kOtcryptoRsaPaddingPss)
             .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPss,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_exp(&valid_pub, 65537, valid_digest,
+                                kOtcryptoRsaPaddingPss, &valid_const_sig,
+                                &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Verify negative tests
 
@@ -544,10 +574,10 @@ static status_t run_signature_negative_tests(void) {
 
 status_t all_hashes_sign_verify_test(void) {
   static const otcrypto_hash_mode_t kHashModes[] = {
-      kOtcryptoHashModeSha256,   kOtcryptoHashModeSha384,
-      kOtcryptoHashModeSha512,   kOtcryptoHashModeSha3_224,
-      kOtcryptoHashModeSha3_256, kOtcryptoHashModeSha3_384,
-      kOtcryptoHashModeSha3_512,
+      kOtcryptoHashModeSha1,     kOtcryptoHashModeSha256,
+      kOtcryptoHashModeSha384,   kOtcryptoHashModeSha512,
+      kOtcryptoHashModeSha3_224, kOtcryptoHashModeSha3_256,
+      kOtcryptoHashModeSha3_384, kOtcryptoHashModeSha3_512,
   };
 
   for (size_t i = 0; i < ARRAYSIZE(kHashModes); i++) {
@@ -555,7 +585,7 @@ status_t all_hashes_sign_verify_test(void) {
     uint32_t sig[kRsa2048NumWords];
     hardened_bool_t verification_result;
 
-    // Test PKCS#1 v1.5 dynamically
+    // Test PKCS#1 v1.5 dynamically (supports SHA-1, SHA-2, and SHA-3 via OID).
     TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
                           kOtcryptoRsaPaddingPkcs, hash_mode, sig));
     TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
@@ -563,13 +593,22 @@ status_t all_hashes_sign_verify_test(void) {
                             &verification_result));
     TRY_CHECK(verification_result == kHardenedBoolTrue);
 
-    // Test PSS dynamically
-    TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
-                          hash_mode, sig));
-    TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
-                            kOtcryptoRsaPaddingPss, hash_mode,
-                            &verification_result));
-    TRY_CHECK(verification_result == kHardenedBoolTrue);
+    // PSS MGF1 / H construction uses the streaming SHA-1/SHA-2 hash interface.
+    if (hash_mode == kOtcryptoHashModeSha1 ||
+        hash_mode == kOtcryptoHashModeSha256 ||
+        hash_mode == kOtcryptoHashModeSha384 ||
+        hash_mode == kOtcryptoHashModeSha512) {
+      TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
+                            kOtcryptoRsaPaddingPss, hash_mode, sig));
+      TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                              kOtcryptoRsaPaddingPss, hash_mode,
+                              &verification_result));
+      TRY_CHECK(verification_result == kHardenedBoolTrue);
+    } else {
+      TRY_CHECK(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
+                                  kOtcryptoRsaPaddingPss, hash_mode, sig)
+                    .value == OTCRYPTO_BAD_ARGS.value);
+    }
   }
 
   // Encrypt Finalize: Bad Ciphertext Length
@@ -765,6 +804,231 @@ status_t custom_exp_sign_verify_test(void) {
   return OK_STATUS();
 }
 
+#ifdef FIPS_MODE
+// 2048-bit modulus n = 751 * q (q prime). 751 is the largest prime that must
+// be rejected by the small-factor check (NIST SP 800-89, Section 5.3.3).
+static const uint32_t kTestModulusFactor751[kRsa2048NumWords] = {
+    0xfaab90b9, 0x870437c7, 0xe86d669c, 0x2599a119, 0xf01fb3f8, 0xc1f534c7,
+    0xdf971d35, 0x3d6cfaff, 0x6cc2d548, 0x679383bb, 0x16fa9606, 0x23ee880e,
+    0xeb0950b5, 0xb29efe7e, 0x2b18576f, 0xb85b2e76, 0xd7f211cd, 0x8a04ed66,
+    0x16a4509e, 0x64f56fc6, 0x6a9ce958, 0x2eb8af8d, 0x01380f31, 0x36c6aefc,
+    0xb6dfcd07, 0xa0f64e93, 0x8f30d5e6, 0x17eccc75, 0x006feebc, 0x9c452ea4,
+    0x02569c4b, 0xdf3d9559, 0xab3fc69f, 0x9acbb030, 0xcb08cbee, 0x1420e530,
+    0x42b8def0, 0xbdd506aa, 0xb95ecf83, 0x4225cb21, 0xf2405279, 0xe2294940,
+    0x0e0506b0, 0x79b65270, 0x8a978849, 0x77a426c1, 0x8ade3645, 0xb749e66a,
+    0x72926818, 0xc72157b5, 0x55cdc53f, 0x1353830e, 0x16e00e5a, 0xfe2aaac4,
+    0x316354b6, 0x1ebbe646, 0x6ecd587f, 0x02faf7e9, 0xbea015bb, 0xf475064d,
+    0xdd6a048f, 0xfd359f95, 0xd78c86ef, 0xa603ba75,
+};
+
+// 2048-bit modulus n = 757 * q (q prime). 757 is the smallest prime above the
+// small-factor bound, so this modulus must pass the small-factor check.
+static const uint32_t kTestModulusFactor757[kRsa2048NumWords] = {
+    0x2f628df9, 0xbab4ed5f, 0x7ae98c6e, 0x2edfd47e, 0xd3cc5297, 0x83b10d77,
+    0xe0ac6722, 0xb703e1a8, 0xefd4d847, 0x2e74efba, 0x6de728c6, 0x206b2a4d,
+    0x6abfe528, 0x179cc82c, 0xfa712ceb, 0xb866141c, 0x095e274c, 0x5063d42e,
+    0xe4e05851, 0xc663fb27, 0x4179600e, 0x017d4eb6, 0xb986737c, 0xa3fdf618,
+    0x09db4fc7, 0x66a8e38e, 0xef4383b6, 0x8294bca1, 0xaa510c45, 0xc5d48cc5,
+    0x55708e16, 0xc5eb4882, 0x9a093636, 0x534cf802, 0x3b310db3, 0xd09916e5,
+    0x69ef16fb, 0x971264b7, 0x1d150877, 0x823e647f, 0x8439352c, 0xda70e490,
+    0xc038728d, 0x0bd3ab8a, 0x9f65da4c, 0x2ec3ff71, 0xfd2942a2, 0x27663e57,
+    0xa197d208, 0xb6f624a0, 0xdfbdce09, 0x1b7f6f1f, 0xd331237f, 0x46b71f49,
+    0x2cfd6458, 0x84e6f34a, 0x1d835758, 0x4d2826b8, 0x842d7308, 0xb8f700cc,
+    0x79532938, 0x718a44e7, 0xffc72b42, 0xcb605263,
+};
+
+// 2048-bit prime with no factors below 752: must fail the compositeness check.
+static const uint32_t kTestModulusPrime[kRsa2048NumWords] = {
+    0x50d32bab, 0x61c92bf3, 0x39f268c6, 0x4539c0b0, 0xeb85911e, 0x5df94fe3,
+    0xec2ba344, 0x2ab744f2, 0x7a182028, 0x93fbda09, 0xded7c71a, 0xb7300eee,
+    0xe20626f9, 0x71553f6a, 0x26a52d5a, 0xb4e82227, 0x4564d4ce, 0xd4743611,
+    0x242eec91, 0x2deed304, 0x37a41831, 0xa4f3a96a, 0x3a44354d, 0x7305adfe,
+    0x24e4be8e, 0x362978fc, 0x6cb849df, 0xd6a1cb65, 0x6d91a881, 0xf2b1b1ba,
+    0x64e94ab8, 0xf2cc7de2, 0x648c00fc, 0x3cf8c6d4, 0xb90fc191, 0x9d1395e1,
+    0xdce8ea7b, 0x57b1a862, 0x58c2ab66, 0x15ec073b, 0xdc35844d, 0x730b74b0,
+    0x636dd285, 0xed726b30, 0xb4db9372, 0x10c2b900, 0x71deb755, 0xe9ffd275,
+    0x98942a6c, 0xbc9af0a8, 0xfdb459b7, 0xdc129b87, 0x41f2eec5, 0xfe3656c4,
+    0xf5a38739, 0xcc89198f, 0xbc7253d9, 0xb4c78caa, 0xa6b9e8a5, 0x321ab9ba,
+    0x91fbdc17, 0xd8c63b0e, 0xf9a2413a, 0xeca3e138,
+};
+
+// 2048-bit modulus n = q^2 (q a 1024-bit prime): composite, but a prime power.
+static const uint32_t kTestModulusPrimeSquare[kRsa2048NumWords] = {
+    0xf412d069, 0xc7aeb59d, 0x4704860b, 0xfd2eddc4, 0x4e8f69c0, 0x5b67e45b,
+    0x98393c59, 0x4a7818cc, 0x6e67e014, 0xc659ba2a, 0x9fb9af14, 0xe7214023,
+    0x816dc734, 0xb33f5c7b, 0x7ccbe951, 0xc865a154, 0xb66b334e, 0xf86668f4,
+    0x1a87ddce, 0xea33a6ce, 0x9793d52f, 0x33aad6d3, 0xd7cb88f8, 0x0f762ff3,
+    0xd067e203, 0xc8e0085b, 0x143ed746, 0x53bf43e8, 0x72c2eea8, 0x491d4e9f,
+    0xdf152aef, 0x376e6504, 0x9ad84090, 0x24e47826, 0x547c68bb, 0x2df4b486,
+    0xb8e2cccc, 0xac3b684c, 0x5ebcb6c1, 0xfab2b0ea, 0x858b3f50, 0xa7202af9,
+    0xda4ea3e8, 0xf8e6f16e, 0x922231ec, 0xab9adecd, 0x57c7a97a, 0xe82e742b,
+    0x6871472c, 0xf3df06f7, 0x75c08a68, 0x1a3e468d, 0xecd34cb1, 0x9b384861,
+    0x3696cb39, 0x45f757ce, 0x8ef4a6ae, 0x935478ab, 0x4ef32a2f, 0x8f6d615d,
+    0xf3b84bd4, 0x0b53d5c7, 0xdf2d7f99, 0x9881aeea,
+};
+
+/**
+ * Run `otcrypto_rsa_hash_verify_final` on a hand-built public key.
+ *
+ * The key is built without `otcrypto_rsa_public_key_construct`, so the
+ * modulus checks in `otcrypto_rsa_hash_verify_final` are the only ones applied.
+ */
+static otcrypto_status_t hash_verify_with_modulus(
+    const uint32_t *modulus, hardened_bool_t *verification_result) {
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  memcpy(public_key_data, modulus, kRsa2048NumBytes);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  otcrypto_const_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kValidSignaturePkcs1v15,
+                        ARRAYSIZE(kValidSignaturePkcs1v15));
+  otcrypto_hash_context_t hash_ctx;
+  HARDENED_TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  HARDENED_TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  return otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx,
+                                        kOtcryptoRsaPaddingPkcs, &sig_buf,
+                                        verification_result);
+}
+
+status_t hash_verify_modulus_check_test(void) {
+  LOG_INFO("Running RSA hash_verify modulus check tests");
+  hardened_bool_t verification_result;
+  uint32_t modulus[kRsa2048NumWords];
+
+  // Valid modulus: passes the checks and verifies the signature.
+  verification_result = kHardenedBoolFalse;
+  TRY(hash_verify_with_modulus(kTestModulus, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // Even modulus.
+  memcpy(modulus, kTestModulus, sizeof(modulus));
+  modulus[0] ^= 1;
+  TRY_CHECK(hash_verify_with_modulus(modulus, &verification_result).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus shorter than 2048 bits (most significant bit clear).
+  memcpy(modulus, kTestModulus, sizeof(modulus));
+  modulus[kRsa2048NumWords - 1] &= 0x7fffffff;
+  TRY_CHECK(hash_verify_with_modulus(modulus, &verification_result).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus with a prime factor smaller than 752.
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusFactor751, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus whose smallest prime factor (757) is above the small-factor bound.
+  // It passes the small-factor check but is rejected by the compositeness
+  // check: 756 divides n-1, so b^(n-1) = 1 mod 757 for every witness b and the
+  // enhanced Miller-Rabin test returns PROVABLY COMPOSITE WITH FACTOR.
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusFactor757, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Prime modulus (passes the small-factor check, but is not composite).
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusPrime, &verification_result).value ==
+      OTCRYPTO_BAD_ARGS.value);
+
+  // Prime power modulus q^2 (composite, but a power of a prime).
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusPrimeSquare, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // The non-approved verify API does not apply the modulus checks.
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  memcpy(public_key_data, kTestModulusFactor751, kRsa2048NumBytes);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t msg_digest_data[256 / 32];
+  otcrypto_hash_digest_t msg_digest = {.data = msg_digest_data};
+  TRY(compute_digest(&msg_buf, kOtcryptoHashModeSha256, &msg_digest));
+  otcrypto_const_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kValidSignaturePkcs1v15,
+                        ARRAYSIZE(kValidSignaturePkcs1v15));
+  verification_result = kHardenedBoolTrue;
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
+                          &sig_buf, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+
+  return OK_STATUS();
+}
+#endif  // FIPS_MODE
+
+status_t pkcs1v15_null_hash_and_raw_sign_verify_test(void) {
+  // 1. Test PKCS#1 v1.5 signing & verification with kOtcryptoHashModeNull
+  // (DigestType::NULL: omits the ASN.1 DER DigestInfo prefix).
+  uint32_t sig[kRsa2048NumWords];
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  uint8_t custom_digest[23];
+  for (size_t i = 0; i < sizeof(custom_digest); i++) {
+    custom_digest[i] = (uint8_t)(0xa0 + i);
+  }
+  TRY(run_rsa_2048_sign(custom_digest, sizeof(custom_digest),
+                        kOtcryptoRsaPaddingPkcs, kOtcryptoHashModeNull, sig));
+  TRY(run_rsa_2048_verify(custom_digest, sizeof(custom_digest), sig,
+                          kOtcryptoRsaPaddingPkcs, kOtcryptoHashModeNull,
+                          &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // Tampering with the raw digest must fail verification.
+  custom_digest[0] ^= 0x01;
+  TRY(run_rsa_2048_verify(custom_digest, sizeof(custom_digest), sig,
+                          kOtcryptoRsaPaddingPkcs, kOtcryptoHashModeNull,
+                          &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+  custom_digest[0] ^= 0x01;
+
+  // 2. Test Raw RSA (kOtcryptoKeyModeRsaRaw + kOtcryptoRsaPaddingNull +
+  // kOtcryptoHashModeNull) sign and verify.
+  uint32_t raw_msg[kRsa2048NumWords];
+  for (size_t i = 0; i < kRsa2048NumWords; i++) {
+    raw_msg[i] = 0x01020304u + (uint32_t)i;
+  }
+  // Ensure raw_msg < kTestModulus (kTestModulus[63] = 0xb1ab4a49).
+  raw_msg[kRsa2048NumWords - 1] = 0x12345678u;
+
+  TRY(run_rsa_2048_sign((const uint8_t *)raw_msg, sizeof(raw_msg),
+                        kOtcryptoRsaPaddingNull, kOtcryptoHashModeNull, sig));
+  verification_result = kHardenedBoolFalse;
+  TRY(run_rsa_2048_verify((const uint8_t *)raw_msg, sizeof(raw_msg), sig,
+                          kOtcryptoRsaPaddingNull, kOtcryptoHashModeNull,
+                          &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // Tampering with raw_msg must fail verification.
+  raw_msg[0] ^= 1u;
+  TRY(run_rsa_2048_verify((const uint8_t *)raw_msg, sizeof(raw_msg), sig,
+                          kOtcryptoRsaPaddingNull, kOtcryptoHashModeNull,
+                          &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+  raw_msg[0] ^= 1u;
+
+  // Negative check: Raw RSA sign must reject input >= modulus.
+  uint32_t large_raw_msg[kRsa2048NumWords];
+  memset(large_raw_msg, 0xff, sizeof(large_raw_msg));
+  CHECK(run_rsa_2048_sign((const uint8_t *)large_raw_msg, sizeof(large_raw_msg),
+                          kOtcryptoRsaPaddingNull, kOtcryptoHashModeNull, sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -776,7 +1040,11 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, pss_verify_valid_test);
   EXECUTE_TEST(test_result, pss_verify_invalid_test);
   EXECUTE_TEST(test_result, all_hashes_sign_verify_test);
+  EXECUTE_TEST(test_result, pkcs1v15_null_hash_and_raw_sign_verify_test);
   EXECUTE_TEST(test_result, run_signature_negative_tests);
   EXECUTE_TEST(test_result, custom_exp_sign_verify_test);
+#ifdef FIPS_MODE
+  EXECUTE_TEST(test_result, hash_verify_modulus_check_test);
+#endif  // FIPS_MODE
   return status_ok(test_result);
 }

@@ -147,7 +147,19 @@ static const dif_keymgr_dpe_advance_params_t kCreatorRootKeyParams = {
 };
 
 /**
- * Parameter for advancing: creator root key > owner int key
+ * Parameter for advancing: creator root key > creator int key
+ */
+static const dif_keymgr_dpe_advance_params_t kCreatorIntKeyParams = {
+    .binding_value = {0x5a3c9e17, 0x8b2f41d6, 0xc70e5a93, 0x2d6b18f4,
+                      0x91e47c0a, 0x3f85b26d, 0xe6d2093b, 0x47a1cf58},
+    .max_key_version = 0x55,
+    .slot_src_sel = 1,
+    .slot_dst_sel = 1,
+    .slot_policy = 9  // 0b1001 Allow keygen and children, erase the parent
+};
+
+/**
+ * Parameter for advancing: creator int key > owner int key
  */
 static const dif_keymgr_dpe_advance_params_t kOwnerIntKeyParams = {
     .binding_value = {0xe4987b39, 0x3f83d390, 0xc2f3bbaf, 0x3195dbfa,
@@ -270,7 +282,7 @@ status_t keymgr_dpe_testutils_init_nvm_then_reset(void);
  *   keymgr_dpe_testutils_startup(&keymgr_dpe, &kmac);
  *
  *   // Remainder of test; optionally advance the CreatorRootKey to the
- *   // OwnerIntKey, generate keys and identities.
+ *   // CreatorIntKey, generate keys and identities.
  *   ...
  * }
  * ```

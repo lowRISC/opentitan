@@ -19,7 +19,7 @@
 %     else:
 
     // RACL policies
-    .racl_policy_sel_ranges_${if_name}_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_${if_name}_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 %     endif
 %   endif
 % endfor\

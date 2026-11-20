@@ -5,6 +5,7 @@
 .text
 .globl modexp_65537
 .globl modexp
+.globl montmul_mul1
 
 /**
  * Constant-time exponentiation of the random blinding factor by e-1 = F4-1 =
@@ -235,7 +236,7 @@ modexp:
   addi x2, x11, 0
   la   x3, r1
   loop x30, 2
-    bn.wsrr w2, RND
+    bn.wsrr w2, URND
     bn.sid  x2, 0(x3++)
 
   # Compute R^(e-1) and store it in DMEM at location r2.
@@ -330,7 +331,7 @@ _message_blinding_prologue_end:
     bn.sid  x20, 0(x5++)
 
   # Generate random bit b'.
-  bn.wsrr w25, RND
+  bn.wsrr w25, URND
   bn.add  w26, w25, w25
   csrrs   x4,  FG0, x0
   andi    x4,  x4, 1

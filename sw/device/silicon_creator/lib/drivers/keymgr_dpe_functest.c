@@ -52,6 +52,23 @@ static const keymgr_dpe_binding_value_t kBindingValueRomExt = {
 };
 
 /**
+ * Software binding values associated with the CreatorIntKey. Programmed by the
+ * immutable ROM_EXT section.
+ *
+ * Must match `kDiceChainCreatorIntSealBindingValue` and
+ * `kDiceChainCreatorIntAttestBindingValue` in
+ * `sw/device/silicon_creator/lib/cert/dice_chain.c`.
+ */
+static const keymgr_dpe_binding_value_t kBindingValueCreatorIntSealing = {
+    .data = {0x84794d9a, 0x8f8dbc8f, 0x983c982c, 0x9a1c6781, 0xcb547343,
+             0x92b7cd91, 0xcb2cfb9d, 0xd1224a62},
+};
+static const keymgr_dpe_binding_value_t kBindingValueCreatorIntAttestation = {
+    .data = {0x09a1dd87, 0x67acaa58, 0x33f0d0df, 0xddb8e842, 0xa18ac2e0,
+             0x004207d0, 0x40f41d3c, 0x5b4a9a20},
+};
+
+/**
  * Software binding value associated with BL0. Programmed by ROM_EXT.
  */
 static const keymgr_dpe_binding_value_t kBindingValueBl0Attestation = {
@@ -106,7 +123,10 @@ static void check_lock_otp_partition(const dif_otp_ctrl_t *otp) {
       otp_ctrl_testutils_lock_partition(otp, kDifOtpCtrlPartitionSecret2, 0));
 }
 
-/** Key manager configuration steps performed in ROM. */
+/**
+ * Key manager configuration steps performed in ROM and the immutable ROM_EXT
+ * section.
+ */
 rom_error_t keymgr_dpe_rom_test(void) {
   sc_keymgr_dpe_advance_data_t attestation_key = {
       .binding_value = &kBindingValueRom,
@@ -161,9 +181,32 @@ rom_error_t keymgr_dpe_rom_test(void) {
   }
 
   CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, creator_max_key_version,
-                                     kScKeymgrDPEBootStageOwnerInt,
+                                     kScKeymgrDPEBootStageCreatorInt,
                                      &kDefaultPolicy) == kErrorOk);
   CHECK(sc_keymgr_dpe_check_metadata(kAttestationSlot, creator_max_key_version,
+                                     kScKeymgrDPEBootStageCreatorInt,
+                                     &kDefaultPolicy) == kErrorOk);
+
+  // ------ CreatorIntKey Stage ------------------------
+  // Derive both the attestation and sealing CreatorIntKey.
+  attestation_key.binding_value = &kBindingValueCreatorIntAttestation;
+  attestation_key.version = kMaxVerRomExt;
+  sealing_key.binding_value = &kBindingValueCreatorIntSealing;
+  sealing_key.version = kMaxVerRomExt;
+
+  SEC_MMIO_WRITE_INCREMENT(
+      2 * (kScKeymgrDPESecMmioSwBindingSet + kScKeymgrDPESecMmioMaxVerSet));
+  SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSlotPolicy));
+
+  RETURN_IF_ERROR(
+      sc_keymgr_dpe_advance_creator_int(sealing_key, attestation_key));
+  LOG_INFO("Keymgr DPE: CreatorIntKey derived");
+  sec_mmio_check_values(/*rnd_offset=*/0);
+
+  CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, kMaxVerRomExt,
+                                     kScKeymgrDPEBootStageOwnerInt,
+                                     &kDefaultPolicy) == kErrorOk);
+  CHECK(sc_keymgr_dpe_check_metadata(kAttestationSlot, kMaxVerRomExt,
                                      kScKeymgrDPEBootStageOwnerInt,
                                      &kDefaultPolicy) == kErrorOk);
 
@@ -183,7 +226,7 @@ rom_error_t keymgr_dpe_rom_test(void) {
   LOG_INFO("Keymgr DPE: OwnerIntKey derived");
   sec_mmio_check_values(/*rnd_offset=*/0);
 
-  sec_mmio_check_counters(/*expected_check_count=*/3);
+  sec_mmio_check_counters(/*expected_check_count=*/4);
 
   CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, kMaxVerRomExt,
                                      kScKeymgrDPEBootStageOwner,
@@ -219,7 +262,7 @@ rom_error_t keymgr_dpe_rom_ext_test(void) {
   LOG_INFO("Keymgr DPE: OwnerKey derived");
   sec_mmio_check_values(/*rnd_offset=*/0);
 
-  sec_mmio_check_counters(/*expected_check_count=*/5);
+  sec_mmio_check_counters(/*expected_check_count=*/6);
 
   CHECK(sc_keymgr_dpe_check_metadata(kSealingSlot, kMaxVerBl0,
                                      kScKeymgrDPEBootStageRuntime,

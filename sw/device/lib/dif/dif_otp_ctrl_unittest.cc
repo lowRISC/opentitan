@@ -317,6 +317,11 @@ TEST_F(ReadLockTest, NotLockablePartitions) {
       &otp_, kDifOtpCtrlPartitionSecret2, &flag));
 
   EXPECT_DIF_BADARG(
+      dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionSecret3));
+  EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
+      &otp_, kDifOtpCtrlPartitionSecret3, &flag));
+
+  EXPECT_DIF_BADARG(
       dif_otp_ctrl_lock_reading(&otp_, kDifOtpCtrlPartitionLifeCycle));
   EXPECT_DIF_BADARG(dif_otp_ctrl_reading_is_locked(
       &otp_, kDifOtpCtrlPartitionLifeCycle, &flag));
@@ -391,7 +396,7 @@ TEST_F(StatusTest, Errors) {
   EXPECT_READ32(OTP_CTRL_ERR_CODE_5_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ECC_CORR_ERROR}});
-  EXPECT_READ32(OTP_CTRL_ERR_CODE_12_REG_OFFSET,
+  EXPECT_READ32(OTP_CTRL_ERR_CODE_13_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
                   OTP_CTRL_ERR_CODE_0_ERR_CODE_0_VALUE_MACRO_ERROR}});
 
@@ -713,6 +718,34 @@ INSTANTIATE_TEST_SUITE_P(
             0,
         },
         RelativeAddressParams{
+            "Secret3Okay",
+            kDifOtpCtrlPartitionSecret3,
+            OTP_CTRL_PARAM_SECRET3_OFFSET + 8,
+            kDifOk,
+            8,
+        },
+        RelativeAddressParams{
+            "Secret3Unaligned",
+            kDifOtpCtrlPartitionSecret3,
+            OTP_CTRL_PARAM_SECRET3_OFFSET + 1,
+            kDifUnaligned,
+            0,
+        },
+        RelativeAddressParams{
+            "Secret3OutOfRangeBeforeStart",
+            kDifOtpCtrlPartitionSecret3,
+            OTP_CTRL_PARAM_SECRET3_OFFSET - 8,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
+            "Secret3OutOfRangePastEnd",
+            kDifOtpCtrlPartitionSecret3,
+            OTP_CTRL_PARAM_SECRET3_OFFSET + OTP_CTRL_PARAM_SECRET3_SIZE,
+            kDifOutOfRange,
+            0,
+        },
+        RelativeAddressParams{
             "LifeCycleOkay",
             kDifOtpCtrlPartitionLifeCycle,
             OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET + 4,
@@ -1006,6 +1039,14 @@ TEST_F(DaiDigestTest, DigestHw) {
 
   EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionSecret2,
                                         /*digest=*/0));
+
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
+                 OTP_CTRL_PARAM_SECRET3_OFFSET);
+  EXPECT_WRITE32(OTP_CTRL_DIRECT_ACCESS_CMD_REG_OFFSET,
+                 {{OTP_CTRL_DIRECT_ACCESS_CMD_DIGEST_BIT, true}});
+
+  EXPECT_DIF_OK(dif_otp_ctrl_dai_digest(&otp_, kDifOtpCtrlPartitionSecret3,
+                                        /*digest=*/0));
 }
 
 TEST_F(DaiDigestTest, BadPartition) {
@@ -1173,6 +1214,12 @@ INSTANTIATE_TEST_SUITE_P(
             true,
             OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET,
             OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET,
+        },
+        DigestParams{
+            kDifOtpCtrlPartitionSecret3,
+            true,
+            OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET,
+            OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET,
         },
         DigestParams{
             kDifOtpCtrlPartitionLifeCycle,

@@ -18,7 +18,9 @@ filesets:
     file_type: systemVerilogSource
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:mubi
+      - lowrisc:prim:pulse_sync
+      - lowrisc:prim:sync_reqack
+      - lowrisc:prim:mubi_pkg
 
   files_verilator_waiver:
     depend:

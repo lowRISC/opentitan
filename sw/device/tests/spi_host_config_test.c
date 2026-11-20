@@ -93,7 +93,7 @@ static status_t spi_config_test(dif_spi_host_t *spi) {
 static status_t configure_pinmux(const dif_pinmux_t *pinmux) {
   // CSB.
   TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor10,
-                               kTopEarlgreyPinmuxOutselSpiHost1Csb));
+                               kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   // SCLK.
   TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor11,
                                kTopEarlgreyPinmuxOutselSpiHost1Sck));

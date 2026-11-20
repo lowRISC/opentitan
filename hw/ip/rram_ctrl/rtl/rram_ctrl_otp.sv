@@ -26,6 +26,9 @@
 //
 // Note on security: zer_en_q and intg_en_q are mubi encoded for protection against fault injection
 // that targets to skip integrity checks.
+//
+// When RRAM access is disabled, the FSM moves to the terminal StDisabled state. StDisabled and
+// StError answer every command with MacroError instead of hanging. Only StError reports a fault.
 
 `include "prim_assert.sv"
 
@@ -59,13 +62,17 @@ module rram_ctrl_otp
   output logic                          fatal_err_o,
   output logic                          intg_err_o,
   input  logic                          rram_init_done_i,
-  input  logic                          rram_wr_busy_i
+  input  logic                          rram_wr_busy_i,
+  // RRAM access disabled
+  input  prim_mubi_pkg::mubi4_t         disable_i
 );
 
   import prim_mubi_pkg::*;
   import prim_util_pkg::vbits;
 
   logic fsm_err;
+  logic disabled;
+  logic rsp_pending_d, rsp_pending_q;
   err_e err_d, err_q;
   logic valid_d, valid_q;
   logic otp_req_ready;
@@ -107,7 +114,7 @@ module rram_ctrl_otp
   // SEC_CM: CTRL.FSM.SPARSE
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 99887766 --distance 5 --states 15 --bits 12
+  //     --seed 99887766 --distance 5 --states 16 --bits 12
   //
   // Hamming distance histogram:
   //
@@ -116,13 +123,13 @@ module rram_ctrl_otp
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||| (31.43%)
-  //  6: |||||||||||||||||||| (33.33%)
-  //  7: ||||||||| (16.19%)
-  //  8: |||||| (11.43%)
-  //  9: || (4.76%)
-  // 10: | (1.90%)
-  // 11:  (0.95%)
+  //  5: |||||||||||||||||| (31.67%)
+  //  6: |||||||||||||||||||| (34.17%)
+  //  7: ||||||||| (16.67%)
+  //  8: |||||| (10.83%)
+  //  9: || (4.17%)
+  // 10:  (1.67%)
+  // 11:  (0.83%)
   // 12: --
   //
   // Minimum Hamming distance: 5
@@ -146,7 +153,8 @@ module rram_ctrl_otp
     StWriteIntg    = 12'b110001101111,
     StWaitWrite    = 12'b001000110001,
     StReadBack     = 12'b101111001011,
-    StError        = 12'b001110010010
+    StError        = 12'b001110010010,
+    StDisabled     = 12'b011101010111
   } state_e;
 
   state_e state_d, state_q;
@@ -313,6 +321,8 @@ module rram_ctrl_otp
 
   assign otp_byte_addr = BusAddrByteW'(otp_req_addr) << OtpAddrShift;
 
+  assign disabled = mubi4_test_true_loose(disable_i);
+
   // OTP-FSM
   always_comb begin : p_fsm
     state_d       = state_q;
@@ -336,6 +346,7 @@ module rram_ctrl_otp
     intg_en_d     = intg_en_q;
     intg_addr_d   = intg_addr_q;
     intg_ind_d    = intg_ind_q;
+    rsp_pending_d = rsp_pending_q;
 
     unique case (state_q)
       // Wait here until the initialization command is received.
@@ -581,9 +592,18 @@ module rram_ctrl_otp
         end
       end
 
-      // Terminal state, can only be reached by FI.
-      StError: begin
-        fsm_err = 1'b1;
+      // Terminal states: answer the pending command, then every new command, with MacroError.
+      // StDisabled: RRAM access disabled. StError: fault, also reported via fsm_err.
+      StDisabled, StError: begin
+        fsm_err = (state_q == StError);
+        if (fifo_wready && !valid_q) begin
+          otp_req_ready = !rsp_pending_q;
+          if (rsp_pending_q || otp_req_valid) begin
+            clr_buf = 1'b1;
+            valid_d = 1'b1;
+            err_d   = MacroError;
+          end
+        end
       end
 
       default: begin
@@ -592,9 +612,30 @@ module rram_ctrl_otp
       end
     endcase
 
+    // RRAM access disabled: abort the current operation. StError is never left, and a fault
+    // detected in this cycle (fsm_err) still goes to StError.
+    if (disabled && !(state_q inside {StDisabled, StError}) && !fsm_err) begin
+      state_d     = StDisabled;
+      req_o       = 1'b0;
+      start       = 1'b0;
+      wvalid_o    = 1'b0;
+      rsw_en      = 1'b0;
+      intg_update = 1'b0;
+      bus_cnt_en  = 1'b0;
+      bus_cnt_clr = 1'b1;
+    end
+
     // If mubi values are tampered, go to error state regardless of the current state
     if (mubi4_test_invalid(zer_en_q) || mubi4_test_invalid(intg_en_q)) begin
       state_d = StError;
+    end
+
+    // An accepted command waits for its response (StReset only answers Init).
+    if (valid_d) begin
+      rsp_pending_d = 1'b0;
+    end else if (otp_req_valid && otp_req_ready &&
+                 (state_q != StReset || otp_req_cmd == Init)) begin
+      rsp_pending_d = 1'b1;
     end
   end
 
@@ -688,6 +729,7 @@ module rram_ctrl_otp
       intg_en_q      <= MuBi4True;
       err_q          <= NoError;
       valid_q        <= '0;
+      rsp_pending_q  <= 1'b0;
     end else begin
       bus_wcnt_err_q <= bus_wcnt_err_q | bus_wcnt_err_d;
       addr_q         <= addr_d;
@@ -698,6 +740,7 @@ module rram_ctrl_otp
       intg_en_q      <= intg_en_d;
       err_q          <= err_d;
       valid_q        <= valid_d;
+      rsp_pending_q  <= rsp_pending_d;
       if (otp_req_ready && otp_req_valid) begin
         otp_off_q   <= otp_req_addr[RramOtpSizeWidth-1:0];
         otp_size_q  <= otp_req_size;
@@ -722,6 +765,12 @@ module rram_ctrl_otp
                              |-> (otp_macro_req_i.addr[1:0] == '0), clk_otp_i, !rst_otp_ni)
   `ASSERT(IllegalSize,      (otp_macro_req_i.valid |-> (otp_macro_req_i.size != 2'd2)),
                              clk_otp_i, !rst_otp_ni)
+
+  // Once disabled, go to a terminal state and stop accessing the RRAM.
+  `ASSERT(DisableTerminal_A, disabled |=> state_q inside {StDisabled, StError})
+  `ASSERT(DisableNoRramReq_A, disabled |-> !req_o && !start && !wvalid_o)
+  // StError is terminal.
+  `ASSERT(ErrorTerminal_A, state_q == StError |=> state_q == StError && fsm_err)
 
   // OTP data must fit into OtpPages-1 pages, its integrity bytes into the first page.
   `ASSERT_INIT(OtpDataFitsRramRegion_A,

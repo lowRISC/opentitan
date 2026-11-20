@@ -305,7 +305,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   bltu t1, t0, .L_rma_strap_pu_spin_cycles_loop
 
   // Read the strap GPIOs and check their value.
-  li   a0, TOP_GPIO_BASE_ADDR
+  li   a0, TOP_GPIO0_BASE_ADDR
   lw   t0, GPIO_DATA_IN_REG_OFFSET(a0)
   li   t5, SW_STRAP_MASK
   and  t0, t0, t5
@@ -315,7 +315,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
 
   // Double-check the GPIO strap value.
   li   t6, HARDENED_BOOL_TRUE
-  li   a1, TOP_GPIO_BASE_ADDR
+  li   a1, TOP_GPIO0_BASE_ADDR
   lw   t1, GPIO_DATA_IN_REG_OFFSET(a1)
   and  t1, t1, t5
   xor  t1, t1, t4
@@ -400,6 +400,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_WRITE_INT_STATE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_FIPS_FORCE_ENABLE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 

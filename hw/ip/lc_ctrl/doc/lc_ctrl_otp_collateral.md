@@ -36,13 +36,13 @@
 </tr>
 <tr>
 <td>CREATOR_ROOT_KEY_SHARE0</td>
-<td>256</td>
+<td>384</td>
 <td rowspan="2">Key Manager</td>
 <td rowspan="2">The root creator secret.</td>
 </tr>
 <tr>
 <td>CREATOR_ROOT_KEY_SHARE1</td>
-<td>256</td>
+<td>384</td>
 </tr>
 <tr>
 <td>SECRET0_DIGEST</td>

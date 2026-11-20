@@ -18,7 +18,6 @@ package clkmgr_pkg;
     logic clk_main_powerup;
     logic clk_io_powerup;
     logic clk_usb_powerup;
-    logic clk_io_div2_powerup;
     logic clk_aon_secure;
     logic clk_aon_peri;
     logic clk_aon_timers;
@@ -34,7 +33,6 @@ package clkmgr_pkg;
     logic clk_main_secure;
     logic clk_io_div4_timers;
     logic clk_io_div4_peri;
-    logic clk_io_div2_peri;
     logic clk_io_peri;
     logic clk_usb_peri;
     logic clk_io_spi_host1;
@@ -47,7 +45,6 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_powerup;
     prim_mubi_pkg::mubi4_t io_powerup;
     prim_mubi_pkg::mubi4_t usb_powerup;
-    prim_mubi_pkg::mubi4_t io_div2_powerup;
     prim_mubi_pkg::mubi4_t aon_secure;
     prim_mubi_pkg::mubi4_t aon_peri;
     prim_mubi_pkg::mubi4_t aon_timers;
@@ -63,13 +60,12 @@ package clkmgr_pkg;
     prim_mubi_pkg::mubi4_t main_secure;
     prim_mubi_pkg::mubi4_t io_div4_timers;
     prim_mubi_pkg::mubi4_t io_div4_peri;
-    prim_mubi_pkg::mubi4_t io_div2_peri;
     prim_mubi_pkg::mubi4_t io_peri;
     prim_mubi_pkg::mubi4_t usb_peri;
     prim_mubi_pkg::mubi4_t io_spi_host1;
   } clkmgr_cg_en_t;
 
-  parameter int NumOutputClk = 25;
+  parameter int NumOutputClk = 23;
 
 
   typedef struct packed {

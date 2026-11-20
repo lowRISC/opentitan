@@ -5,6 +5,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hw/top/dt/api.h"   // Generated
+#include "hw/top/dt/uart.h"  // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -52,37 +54,50 @@ static size_t ottf_console_uart_sink(void *io, const char *buf, size_t len) {
   return len;
 }
 
+/**
+ * Finds the UART whose primary register block is at `base_addr`.
+ */
+static bool uart_from_base_addr(uintptr_t base_addr, dt_uart_t *uart) {
+  for (size_t i = 0; i < kDtUartCount; i++) {
+    if (base_addr == dt_uart_primary_reg_block((dt_uart_t)i)) {
+      *uart = (dt_uart_t)i;
+      return true;
+    }
+  }
+  return false;
+}
+
 void ottf_console_configure_uart(ottf_console_t *console, uintptr_t base_addr) {
+  dt_uart_t uart;
+  CHECK(uart_from_base_addr(base_addr, &uart),
+        "No UART at the console base address");
   console->type = kOttfConsoleUart;
   CHECK_DIF_OK(
       dif_uart_init(mmio_region_from_addr(base_addr), &console->data.uart.dif));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
-  CHECK_DIF_OK(
-      dif_uart_configure(&console->data.uart.dif,
-                         (dif_uart_config_t){
-                             .baudrate = (uint32_t)kUartBaudrate,
-                             .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                             .parity_enable = kDifToggleDisabled,
-                             .parity = kDifUartParityEven,
-                             .tx_enable = kDifToggleEnabled,
-                             .rx_enable = kDifToggleEnabled,
-                         }));
+  uint32_t clk_freq_hz =
+      dt_clock_frequency(dt_uart_clock(uart, kDtUartClockClk));
+  CHECK_DIF_OK(dif_uart_configure(&console->data.uart.dif,
+                                  (dif_uart_config_t){
+                                      .baudrate = (uint32_t)kUartBaudrate,
+                                      .clk_freq_hz = clk_freq_hz,
+                                      .parity_enable = kDifToggleDisabled,
+                                      .parity = kDifUartParityEven,
+                                      .tx_enable = kDifToggleEnabled,
+                                      .rx_enable = kDifToggleEnabled,
+                                  }));
 
   console->getc = ottf_console_uart_getc;
   console->sink = ottf_console_uart_sink;
 }
 
 static uint32_t get_flow_control_watermark_plic_id(ottf_console_t *console) {
-  for (size_t i = 0; i < kDtUartCount; i++) {
-    dt_uart_t uart = (dt_uart_t)i;
-    if (console->data.uart.dif.base_addr.base ==
-        (void *)dt_uart_primary_reg_block(uart)) {
-      return dt_uart_irq_to_plic_id(uart, kDtUartIrqRxWatermark);
-    }
+  dt_uart_t uart;
+  if (!uart_from_base_addr((uintptr_t)console->data.uart.dif.base_addr.base,
+                           &uart)) {
+    uart = kDtUart0;
   }
-  return dt_uart_irq_to_plic_id(kDtUart0, kDtUartIrqRxWatermark);
+  return dt_uart_irq_to_plic_id(uart, kDtUartIrqRxWatermark);
 }
 
 void ottf_console_uart_flow_control_enable(ottf_console_t *console) {

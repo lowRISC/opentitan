@@ -29,6 +29,9 @@ module pinmux_bind_fpv;
     .lc_hw_debug_en_i,
     .lc_check_byp_en_i,
     .lc_escalate_en_i,
+% if enable_rram_tap:
+    .lc_nvm_debug_en_i,
+% endif
     .pinmux_hw_debug_en_o,
     .dft_strap_test_o,
     .dft_hold_tap_sel_i,
@@ -38,6 +41,10 @@ module pinmux_bind_fpv;
     .rv_jtag_i,
     .dft_jtag_o,
     .dft_jtag_i,
+% if enable_rram_tap:
+    .rram_jtag_o,
+    .rram_jtag_i,
+% endif
 % endif
 % if enable_usb_wakeup:
     .usbdev_dppullup_en_i,

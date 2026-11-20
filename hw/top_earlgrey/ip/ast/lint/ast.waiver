@@ -136,12 +136,8 @@ waive -rules CLOCK_USE -location {gfr_clk_mux2.sv} \
       -regexp {('clk_ext'|'clk_osc') is used for some other purpose, and as clock ('clk_ext_i'|'clk_osc_i') at gfr_clk_mux2.sv} \
       -comment {This message pops up due to a clock OR operation.}
 
-waive -rules CLOCK_USE -location {ast_part_secondary.sv} \
-      -regexp {'clk_ast_tlul_i' is connected to 'ast_dft' port 'clk_i', and used as a clock 'clk_i' at prim_lfsr} \
-      -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
-
 waive -rules CLOCK_USE -location {ast_part_primary.sv} \
-      -regexp {'intraip_s2p_i.clk_rst.clk_ast_tlul' is connected to 'ast_clks_byp_primary' port 'clk_ast_tlul_i', and used as a clock} \
+      -regexp {'clk_ast_tlul_i' is connected to 'ast_clks_byp_primary' port 'clk_ast_tlul_i', and used as a clock} \
       -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
 
 waive -rules CLOCK_USE -location {ast_part_secondary.sv} \
@@ -150,10 +146,6 @@ waive -rules CLOCK_USE -location {ast_part_secondary.sv} \
 
 waive -rules CLOCK_USE -location {ast.sv} \
       -regexp {'clk_ast_ext_i' is connected to 'ast_part_secondary' port 'clk_ast_ext_i', and used as a clock} \
-      -comment {This is a valid clock signal and the connection is ok here.}
-
-waive -rules CLOCK_USE -location {ast.sv} \
-      -regexp {'clk_ast_usb_i' is connected to 'ast_part_secondary' port 'clk_ast_usb_i', and used as a clock} \
       -comment {This is a valid clock signal and the connection is ok here.}
 
 waive -rules CLOCK_USE -location {ast_part_primary.sv} \
@@ -377,10 +369,6 @@ waive -rules RESET_USE -location {io_osc.sv sys_osc.sv usb_osc.sv aon_osc.sv} \
 waive -rules RESET_USE -location {ast_dft.sv} \
       -msg {'clk_io_osc_val_i' is used for some other purpose, and as asynchronous reset 'rst_clk_osc_n' at ast_dft.sv} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
-
-waive -rules RESET_USE -location {ast.sv} \
-      -msg {'rst_ast_tlul_ni' is connected to 'ast_dft' port 'rst_ni', and used as an asynchronous reset or set 'rst_n' at rng} \
-      -comment {This is a valid reset connection.}
 
 waive -rules RESET_USE -location {ast.sv} \
       -regexp {('rst_sys_clk_n'|'rst_usb_clk_n') is connected to ('sys_clk'|'usb_clk') port ('rst_sys_clk_ni'|'rst_usb_clk_ni'), and used as an asynchronous reset or set} \

@@ -11,6 +11,7 @@
 # Keep it sorted.
 autoconf
 brotli
+bsdextrautils
 build-essential
 cmake
 curl

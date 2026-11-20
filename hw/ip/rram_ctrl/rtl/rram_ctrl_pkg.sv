@@ -77,6 +77,7 @@ package rram_ctrl_pkg;
     IFetchDisableIdx,
     RdFifoIdx,
     WrFifoIdx,
+    OtpDisableIdx,
     RramDisableLast
   } rram_disable_pos_e;
 

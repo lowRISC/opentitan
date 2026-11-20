@@ -304,6 +304,18 @@
       tests: ["flash_ctrl_sec_cm"]
     }
     {
+      name: sec_cm_tlul_fifo_logic_redun
+      desc: '''Verify the countermeasure(s) TLUL_FIFO.LOGIC.REDUN.
+      Following FIFOs are in this category.
+        - dut.u_tl_adapter_eflash.gen_sec_u_reqfifo.u_reqfifo,
+        - dut.u_tl_adapter_eflash.gen_sec_u_sramreqfifo.u_sramreqfifo,
+        - dut.u_tl_adapter_eflash.gen_sec_u_rspfifo.u_rspfifo
+      A mismatch between the duplicated FIFO instances triggers a fatal alert.
+      '''
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_mem_tl_lc_gate_fsm_sparse
       desc: "Verify the countermeasure(s) MEM_TL_LC_GATE.FSM.SPARSE."
       stage: V2S

@@ -96,6 +96,7 @@ rom_e2e_keymgr_dpe_init_configs = [
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [
+            "//hw/top:keymgr_dpe_c_regs",
             "//sw/device/lib/dif:keymgr_dpe",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:rstmgr",
