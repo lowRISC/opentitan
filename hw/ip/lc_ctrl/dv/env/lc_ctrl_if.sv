@@ -61,6 +61,9 @@ interface lc_ctrl_if #(
 
   logic strap_en_override_o;
 
+  // Gate for the volatile RAW unlock, from the NVM macro.
+  prim_mubi_pkg::mubi8_t allow_vol_unlock_i;
+
   event lc_fsm_state_backdoor_write_ev;
   event lc_fsm_state_backdoor_read_ev;
   event kmac_fsm_state_backdoor_write_ev;
@@ -119,6 +122,8 @@ interface lc_ctrl_if #(
     otp_i.rma_token_valid   = otp_rma_token_valid;
 
 
+    // The volatile RAW unlock is allowed by default.
+    allow_vol_unlock_i      = prim_mubi_pkg::MuBi8True;
     clk_byp_ack_i           = clk_byp_ack;
     nvm_rma_ack_i           = nvm_rma_ack;
 
