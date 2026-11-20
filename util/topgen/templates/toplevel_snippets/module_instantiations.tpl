@@ -43,8 +43,9 @@ max_intrwidth = (max(len(x.name) for x in interrupts)
 alert_info = top["alert_connections"].get(lib.alert_conn_key(m["name"], partition), {})
 has_params, param_items = lib.get_params(top, m, partition)
 
-## Scan / DFT ports are emitted only for the primary partition of a split IP.
-has_scan = (block.scan or block.scan_reset or block.scan_en) and partition == lib.PART_PRIMARY
+## Scan / DFT ports are emitted for one partition of a split IP only, the one that the IP names in
+## scan_partition (the primary partition by default).
+has_scan = (block.scan or block.scan_reset or block.scan_en) and partition == block.scan_partition
 scan_src_is_local = feature_info["dft_source_in_domain"][domain]
 has_interrupts = len(interrupts) > 0
 has_cio_inputs = len(inputs + inouts) > 0
@@ -88,7 +89,9 @@ else:
     is_shadowed_port = lib.is_shadowed_port(block, port)
     unmanaged_reset = is_unmanaged_reset(top, reset['name'])
     reset_port = lib.get_reset_path(top, reset, domain, False, unmanaged_reset)
-    shadowed_port = lib.get_reset_path(top, reset, domain, True, unmanaged_reset)
+    # The shadowed copy goes only where a module uses it, so its path exists only for a shadowed port.
+    shadowed_port = (lib.get_reset_path(top, reset, domain, True, unmanaged_reset)
+                     if is_shadowed_port else None)
 %>\
   % if is_shadowed_port:
     .${lib.shadow_name(port)}(${shadowed_port}),

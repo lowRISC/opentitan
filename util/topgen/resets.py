@@ -44,6 +44,10 @@ class ResetItem:
 
         self.sw = bool(raw.get('sw', 0))
 
+        # The (power domain of the reset, power domain of the consumer) of each module that uses the
+        # shadowed copy. It decides where the copy crosses between the partitions of the rstmgr.
+        self.shadowed_users = set()
+
     def _asdict(self) -> Dict[str, object]:
         ret = {
             'name': self.name,
@@ -89,11 +93,15 @@ class Resets:
         else:
             raise ValueError(f'{name} is not a defined reset')
 
-    def mark_reset_shadowed(self, name: str):
-        '''Mark particular reset as requiring shadow'''
+    def mark_reset_shadowed(self, name: str, rst_domain: Optional[str] = None,
+                            consumer_domain: Optional[str] = None):
+        '''Mark particular reset as requiring shadow, and record the consumer of the shadowed copy
+        if the caller gives its power domains.'''
 
         reset = self.get_reset_by_name(name)
         reset.shadowed = True
+        if rst_domain is not None and consumer_domain is not None:
+            reset.shadowed_users.add((rst_domain, consumer_domain))
 
     def get_reset_domains(self, name: str):
         '''Get available domains for a reset'''

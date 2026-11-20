@@ -12,15 +12,36 @@ domain_has_alert_handler = lib.find_module(top["module"], "alert_handler", domai
 # Without an alert handler in this domain, nothing consumes the clock gating and reset
 # enable indication signals. Tie them off if they enter this domain as inputs (in the
 # clkmgr / rstmgr domains they are consumed by the output ports).
-tie_off_cg_en = domain_has_alert_handler or not domain_has_clkmgr
-tie_off_rst_en = domain_has_alert_handler or not domain_has_rstmgr
+# The clkmgr and the rstmgr each have two partitions, which can be in different power domains.
+# Signals from a partition in the other domain enter this domain as inputs, so they also need a
+# tie-off.
+clkmgr_partition_domains = [dom for _, dom, _, _ in lib.get_clkmgr_partitions(top)]
+domain_has_foreign_clkmgr = any(dom != domain for dom in clkmgr_partition_domains)
+tie_off_cg_en = domain_has_alert_handler or domain_has_foreign_clkmgr
+rstmgr_partition_domains = [dom for _, dom, _, _ in lib.get_rstmgr_partitions(top)]
+domain_has_foreign_rstmgr = any(dom != domain for dom in rstmgr_partition_domains)
+tie_off_rst_en = domain_has_alert_handler or domain_has_foreign_rstmgr
 # get all known typed clocks and add them to a dict
 # this is used to generate the tie-off assignments further below
 clocks = top['clocks']
 assert isinstance(clocks, Clocks)
 typed_clocks = clocks.typed_clocks()
-unused_cg_en = {lib.get_clock_lpg_path(top, clk, domain) for clk in typed_clocks.all_clocks()}
-unused_clocks = {lib.get_clock_path(top, clk, domain) for clk in typed_clocks.all_clocks()}
+clkmgr = lib.find_module(top["module"], "clkmgr")
+# The primary partition outputs all the clock gating indications. They exist in this domain, and
+# need a tie-off, if the primary partition is in this domain or its indications enter through an
+# input port.
+cg_en_here = (lib.get_domain_of_partition(clkmgr, lib.PART_PRIMARY) == domain or
+              lib.clkmgr_struct_crosses(top, 'cg_en', lib.PART_PRIMARY, domain))
+unused_cg_en = ({lib.get_clock_lpg_path(top, clk, domain) for clk in typed_clocks.all_clocks()}
+                if cg_en_here else set())
+# Collect the clock struct fields that arrive through an input port. A struct has a field for a
+# clock only if its partition outputs that clock.
+out_parts = lib.get_clkmgr_clock_out_partitions(top)
+unused_clocks = set()
+for part, dom, sfx, _ in lib.get_clkmgr_partitions(top):
+  if dom != domain and lib.clkmgr_struct_crosses(top, 'clocks', part, domain):
+    unused_clocks |= {f"{clkmgr['name']}_clocks{sfx}_i.{clk}" for clk in typed_clocks.all_clocks()
+                      if part in out_parts.get(clk, [])}
 
 # get all known resets and add them to a dict
 # this is used to generate the tie-off assignments further below
@@ -30,15 +51,33 @@ output_rsts = resets.get_top_resets()
 unused_rst_en = set()
 unused_resets = set()
 
+rstmgr = lib.find_module(top["module"], "rstmgr")
+# The primary partition outputs all the reset asserted indications. They exist in this domain, and
+# need a tie-off, if the primary partition is in this domain or its indications enter through an
+# input port.
+rst_en_here = (lib.get_domain_of_partition(rstmgr, lib.PART_PRIMARY) == domain or
+               lib.rstmgr_struct_crosses(top, 'rst_en', lib.PART_PRIMARY, domain))
+out_parts = lib.get_rstmgr_reset_out_partitions(top)
+shadowed_out_parts = lib.get_rstmgr_shadowed_out_partitions(top)
 for rst in output_rsts:
-  for dom in top['power']['domains']:
-    path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), domain, False, dom)
-    unused_rst_en.add(path)
-    unused_resets.add(lib.get_reset_path(top, {'name': rst.name, 'domain': dom}, domain))
-    if rst.shadowed:
-      path = lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(), domain, True, dom)
-      unused_rst_en.add(path)
-      unused_resets.add(lib.get_reset_path(top, {'name': rst.name, 'domain': dom}, domain, True))
+  for dom in rst.domains:
+    shadows = (False, True) if rst.shadowed else (False,)
+    if rst_en_here:
+      for shadow in shadows:
+        unused_rst_en.add(lib.get_reset_lpg_path(top, resets.get_reset_by_name(rst.name)._asdict(),
+                                                 domain, shadow, dom))
+    # Collect the reset struct fields that arrive through an input port.
+    # The rstmgr outputs each reset only in the domains that use it.
+    for part, pdom, sfx, _ in lib.get_rstmgr_partitions(top):
+      if pdom != domain and lib.rstmgr_struct_crosses(top, 'resets', part, domain):
+        prefixes = lib.get_reset_prefixes(top, domain, part)
+        # The shadowed copy has its own partitions and shape, because it goes only where a module
+        # uses it.
+        for shadow in shadows:
+          parts = (shadowed_out_parts if shadow else out_parts).get((rst.name, dom), [])
+          if part in parts:
+            index = lib.get_rstmgr_output_index(top, rst.name, dom, part, shadow)
+            unused_resets.add(resets.get_path(rst.name, prefixes, index, shadow))
 
 # Go over all modules of power domain at hand and remove all used resets and clocks from the
 # respective unused_ set.
@@ -88,10 +127,10 @@ for m in lib.get_all_modules(top, domain=domain):
 // Tie off unused clock- and reset enables
 //VCS coverage off
 // pragma coverage off
-% if tie_off_cg_en:
+% if tie_off_cg_en and unused_cg_en:
   prim_mubi_pkg::mubi4_t [${len(unused_cg_en)-1}:0] unused_cg_en;
 % endif
-% if tie_off_rst_en:
+% if tie_off_rst_en and unused_rst_en:
   prim_mubi_pkg::mubi4_t [${len(unused_rst_en)-1}:0] unused_rst_en;
 % endif
 
@@ -131,11 +170,11 @@ for m in lib.get_all_modules(top, domain=domain):
 
 % endif\
 
-% if not domain_has_clkmgr or not domain_has_rstmgr:
+% if unused_clocks or unused_resets:
 // Tie off unused clocks and resets
 //VCS coverage off
 // pragma coverage off
-% if not domain_has_clkmgr:
+% if unused_clocks:
   logic [${len(unused_clocks)-1}:0] unused_clocks;
 % for i, clk in enumerate(sorted(unused_clocks)):
   assign unused_clocks[${i}] = ${clk};
@@ -143,7 +182,7 @@ for m in lib.get_all_modules(top, domain=domain):
 
 % endif\
 
-% if not domain_has_rstmgr:
+% if unused_resets:
   logic [${len(unused_resets)-1}:0] unused_resets;
 % for i, rst_path in enumerate(sorted(unused_resets)):
   assign unused_resets[${i}] = ${rst_path};
