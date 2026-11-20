@@ -57,6 +57,8 @@ class DisParser:
         return addresses
 
     def parse_next_instruction(self, pc_address):
+        if isinstance(pc_address, str) and "->" in pc_address:
+            return pc_address.split("->", 1)[1].strip()
         if self._instructions is None:
             self.parse_all_instructions()
         if hasattr(self, "_next_pc_map") and self._next_pc_map:
@@ -257,8 +259,15 @@ class DisParser:
                     c_comment = f"   /* {pending_c_line} */" if pending_c_line else ""
                     pending_c_line = ""
                     in_src_header = False
+                    target_pc = None
+                    if "<" in line.split("#", 1)[0] and operands_raw:
+                        try:
+                            target_pc = int(operands_raw.split(",")[-1].strip(), 16)
+                        except ValueError:
+                            target_pc = None
                     instructions[pc] = {
                         "insn_bits": insn_bits,
+                        "target_pc": target_pc,
                         "mnemonic": mnemonic,
                         "operands": operands_raw,
                         "text": raw_text + c_comment,
@@ -283,3 +292,72 @@ class DisParser:
         except IOError as e:
             print(f"Error reading file: {e}")
         return instructions
+
+    def expand_pc_list(self, pc_list):
+        """Expands a PC trace with 4B/8B fetch-window skips and +/-4B/8B displaced jumps."""
+        if not pc_list:
+            return pc_list
+        insns = self.parse_all_instructions()
+        traced_pcs = {int(p, 16) for p in pc_list if "->" not in str(p)}
+        cache = {}
+        expanded = []
+        for pc_str in pc_list:
+            if "->" in str(pc_str):
+                expanded.append(pc_str)
+                continue
+            if pc_str not in cache:
+                pc = int(pc_str, 16)
+                fn = insns.get(pc, {}).get("func")
+                nxt = self._next_pc_map.get(pc)
+                extra = []
+                if fn and nxt in insns and insns[nxt]["func"] == fn:
+                    cur = nxt
+                    while cur in insns and insns[cur]["func"] == fn:
+                        if insns[cur]["mnemonic"] in (
+                            "ret",
+                            "jr",
+                            "c.jr",
+                            "jalr",
+                            "c.jalr",
+                            "mret",
+                        ):
+                            break
+                        nxt_cur = self._next_pc_map.get(cur)
+                        if (
+                            nxt_cur is None or
+                            nxt_cur not in insns or
+                            insns[nxt_cur]["func"] != fn
+                        ):
+                            break
+                        if nxt_cur - pc <= 8 or (nxt_cur - pc == 10 and cur - pc < 8):
+                            if insns[nxt_cur]["mnemonic"] != "unimp":
+                                extra.append(nxt_cur)
+                            cur = nxt_cur
+                        else:
+                            break
+                    for delta in (-8, -4, 4, 8):
+                        pc_cf = pc + delta
+                        if pc_cf not in traced_pcs:
+                            continue
+                        t_orig = insns.get(pc_cf, {}).get("target_pc")
+                        if (
+                            t_orig and
+                            insns[pc_cf]["func"] == fn and
+                            insns.get(t_orig, {}).get("func") == fn
+                        ):
+                            t_fault = t_orig - delta
+                            if (
+                                t_fault > nxt and
+                                insns.get(t_fault, {}).get("func") == fn and
+                                insns[t_fault]["mnemonic"] != "unimp"
+                            ):
+                                extra.append(t_fault)
+                seen = {nxt}
+                specs = [pc_str]
+                for t in extra:
+                    if t not in seen:
+                        seen.add(t)
+                        specs.append(f"{pc_str}->0x{t:x}")
+                cache[pc_str] = specs
+            expanded.extend(cache[pc_str])
+        return expanded

@@ -44,6 +44,7 @@ py_library(
     name = "gdb_controller",
     srcs = ["gdb_controller.py"],
     deps = [
+        ":dis_parser",
         ":qemu",
     ],
 )

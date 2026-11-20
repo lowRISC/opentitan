@@ -662,6 +662,24 @@ class GDBController:
         except Exception as e:
             print(f"Error reading or parsing trace file: {e}")
 
+        if pc_list and self.elf_file:
+            from sw.host.penetrationtests.python.util.dis_parser import DisParser
+
+            dis_path = re.sub(r"\.elf$", ".dis", str(self.elf_file))
+            if os.path.exists(dis_path):
+                dis_abs = os.path.abspath(dis_path)
+                dis_parser = next(
+                    (
+                        inst
+                        for inst in DisParser._instances
+                        if os.path.abspath(inst.dis_file_path) == dis_abs
+                    ),
+                    None,
+                )
+                if dis_parser is None:
+                    dis_parser = DisParser(dis_path)
+                pc_list = dis_parser.expand_pc_list(pc_list)
+
         shard_status_file = os.environ.get("TEST_SHARD_STATUS_FILE")
         if shard_status_file:
             Path(shard_status_file).touch()
@@ -707,7 +725,12 @@ class GDBController:
         self.dump_output(timeout=0.0)
 
     def apply_instruction_skip(self, pc_address, next_pc_address, count=1):
-        """Arms a single instruction skip at pc_address redirecting to next_pc_address."""
+        """Arms an instruction skip or fetch fault at pc_address redirecting to next_pc_address."""
+        if isinstance(pc_address, str) and "->" in pc_address:
+            bp_pc, explicit_target = pc_address.split("->", 1)
+            pc_address = bp_pc.strip()
+            if not next_pc_address:
+                next_pc_address = explicit_target.strip()
         self._armed_count = count
         self._skip_hit_this_arm = False
         self._prefetched_output = ""
