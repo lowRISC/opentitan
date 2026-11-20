@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::app::StagedProgressBar;
 use crate::io::uart::Uart;
+use crate::transport::ProgressIndicator;
 use anyhow::Result;
-use std::io::{Read, Write};
+use std::io::{Cursor, Read, Write};
 use thiserror::Error;
 
 #[derive(Debug, Error)]
@@ -70,10 +72,11 @@ impl Xmodem {
         crc
     }
 
-    pub fn send(&self, uart: &dyn Uart, data: impl Read) -> Result<()> {
+    pub fn send(&self, uart: &dyn Uart, data_bytes: &[u8]) -> Result<()> {
         self.send_start(uart)?;
-        self.send_data(uart, data)?;
+        self.send_data(uart, data_bytes)?;
         self.send_finish(uart)?;
+
         Ok(())
     }
 
@@ -106,9 +109,16 @@ impl Xmodem {
         }
     }
 
-    fn send_data(&self, uart: &dyn Uart, mut data: impl Read) -> Result<()> {
+    fn send_data(&self, uart: &dyn Uart, data_bytes: &[u8]) -> Result<()> {
         let mut block = 0usize;
         let mut errors = 0usize;
+        let mut transferred = 0usize;
+        let progress = StagedProgressBar::new();
+
+        progress.new_stage("xmodem", data_bytes.len());
+
+        let mut data = Cursor::new(data_bytes);
+
         loop {
             block += 1;
             let mut buf = vec![self.pad_byte; self.block_len as usize + 3];
@@ -116,7 +126,6 @@ impl Xmodem {
             if n == 0 {
                 break;
             }
-
             buf[0] = match self.block_len {
                 XmodemBlock::Block128 => Self::SOH,
                 XmodemBlock::Block1k => Self::STX,
@@ -154,7 +163,10 @@ impl Xmodem {
                     return Err(XmodemError::ExhaustedRetries(errors).into());
                 }
             }
+            transferred += n;
+            progress.progress(transferred);
         }
+        progress.progress(transferred);
         Ok(())
     }
 
