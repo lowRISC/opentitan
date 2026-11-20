@@ -230,6 +230,8 @@ status_t handle_gdb_if_test(ujson_t *uj) {
     HARDENED_CHECK_EQ(if_check, kHardenedBoolFalse);
     // The desired state for the attacker.
     uj_output.result = false;
+    // The designer can potentially re-check the assignment to further harden.
+    HARDENED_CHECK_EQ(uj_output.result, launder32(false));
   }
   // Once the secure execution is finished, set the status to ok (here 0, but a
   // magic value is preferred).

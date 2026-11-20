@@ -306,7 +306,7 @@ class _FICampaign:
             self._current_hit = True
             pc_int, occ = self.current_point
             self.executed_points.append((pc_int, occ))
-            self.results.setdefault(pc_int, {})[occ] = False
+            self.results.setdefault(pc_int, {}).setdefault(occ, False)
             self.outcomes.setdefault((pc_int, occ), "No fault")
 
     def items(self):
@@ -317,7 +317,7 @@ class _FICampaign:
             yield pc, self._iter_occs(pc, occs)
 
     def _iter_occs(self, pc, occs):
-        pc_int = int(pc, 16)
+        pc_int = int(str(pc).split("->", 1)[0], 16)
         for occ in occs:
             if (self.num_skips and self.num_skips > 0 and
                     len(self.executed_points) >= self.num_skips):
@@ -451,7 +451,11 @@ def finish_fi_campaign(dis_parser, successful_faults, args, elf_path=None):
         elf_bin_name = os.path.splitext(os.path.basename(elf_path))[0]
 
     insns = dis_parser.parse_all_instructions() if dis_parser else {}
-    pc_counts = {int(pc, 16): count for pc, count in campaign.pc_count_dict.items()}
+    pc_counts = {
+        int(str(pc).split("->", 1)[0], 16): count
+        for pc, count in campaign.pc_count_dict.items()
+        if "->" not in str(pc)
+    }
     elf_sha256 = _compute_campaign_sha256(insns, pc_counts) or elf_sha256
     touched_funcs = {
         insns[pc]["func"]
