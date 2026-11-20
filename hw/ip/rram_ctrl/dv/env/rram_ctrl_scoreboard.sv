@@ -18,10 +18,18 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   tl_reg_adapter#(tl_seq_item)    m_tl_core_reg_adapter;
   rram_ctrl_reg_predictor_filter  m_tl_core_reg_predictor_filter;
 
+  // Completed scrambling-key handshakes, from the OTP key agent's monitor.
+  uvm_tlm_analysis_fifo #(nvm_otp_key_item) m_otp_key_fifo;
+
+  // The key delivered for each kind since the last reset. The DUT asks for each key once per
+  // initialization. Kept for the data-scrambling checks to use.
+  nvm_otp_key_item m_otp_keys[nvm_otp_key_kind_e];
+
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
 
   // Class specific methods
@@ -33,6 +41,10 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
   extern function void configure_csr_check_exclusions();
+
+  // Records each key handshake and checks that the DUT asks for the address key and then the
+  // data key, once each.
+  extern task process_otp_key_fifo();
   extern function void reset(string kind = "HARD");
 endclass : rram_ctrl_scoreboard
 
@@ -52,6 +64,7 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
   m_tl_core_reg_adapter.cfg = cfg.m_tl_agent_cfgs[ral.get_name()];
   m_tl_core_reg_predictor_filter = rram_ctrl_reg_predictor_filter::type_id::create(
       "m_tl_core_reg_predictor_filter", this);
+  m_otp_key_fifo = new("m_otp_key_fifo", this);
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -61,6 +74,30 @@ function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
   m_tl_core_reg_predictor_filter.ap.connect(m_tl_core_reg_predictor.bus_in);
   configure_csr_check_exclusions();
 endfunction : connect_phase
+
+task rram_ctrl_scoreboard::run_phase(uvm_phase phase);
+  super.run_phase(phase);
+  fork
+    process_otp_key_fifo();
+  join_none
+endtask : run_phase
+
+task rram_ctrl_scoreboard::process_otp_key_fifo();
+  forever begin
+    nvm_otp_key_item item;
+    m_otp_key_fifo.get(item);
+    `uvm_info(`gfn, $sformatf("OTP %0s key delivered:\n%0s", item.kind.name(), item.sprint()),
+              UVM_HIGH)
+
+    `DV_CHECK(!m_otp_keys.exists(item.kind),
+              $sformatf("DUT requested the %0s key twice since reset", item.kind.name()))
+    if (item.kind == NvmOtpKeyData) begin
+      `DV_CHECK(m_otp_keys.exists(NvmOtpKeyAddr),
+                "DUT requested the data key before the address key")
+    end
+    m_otp_keys[item.kind] = item;
+  end
+endtask : process_otp_key_fifo
 
 function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
   uvm_reg regs[$];
@@ -134,6 +171,15 @@ endtask : process_tl_core_access
 
 function void rram_ctrl_scoreboard::on_reg_access(tl_seq_item item, tl_phase_e tl_phase,
                                                   uvm_reg csr);
+  // STATUS.keys_valid is excluded from the RAL check, so check here that the DUT only reports
+  // valid keys once otp_ctrl (the OTP key agent) has delivered both of them.
+  if (csr == ral.status && tl_phase == DataRead && !item.d_error) begin
+    if (get_field_val(ral.status.keys_valid, item.d_data)) begin
+      `DV_CHECK(m_otp_keys.exists(NvmOtpKeyAddr) && m_otp_keys.exists(NvmOtpKeyData),
+                "STATUS.keys_valid read as 1 before both OTP keys were delivered")
+    end
+  end
+
   // Prediction and the read-value check both happen automatically via
   // m_tl_core_reg_predictor (see configure_csr_check_exclusions()). Fields excluded from that
   // check (tagged CsrExclCheck, e.g. PHY_STATUS.init_done) get no check at all today.
@@ -153,6 +199,8 @@ endtask : process_tl_prim_access
 function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   // Reset local fifos queues and variables
+  m_otp_key_fifo.flush();
+  m_otp_keys.delete();
 endfunction : reset
 
 function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);

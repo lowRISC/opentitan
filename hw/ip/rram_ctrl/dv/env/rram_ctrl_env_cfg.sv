@@ -21,6 +21,9 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   int unsigned m_wr_fifo_depth;
   int unsigned m_rd_fifo_depth;
 
+  // Configuration of the agent that plays otp_ctrl on the scrambling-key interface.
+  nvm_otp_key_agent_cfg m_otp_key_agent_cfg;
+
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -43,6 +46,8 @@ function void rram_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
 
   super.initialize(inherit_ral_models);
+
+  m_otp_key_agent_cfg = nvm_otp_key_agent_cfg::type_id::create("m_otp_key_agent_cfg");
 
   // Configure tl agents. Everything defaults to 1 outstanding request, except the
   // host interface (tl_host), which can tolerate up to 2 outstanding read requests.

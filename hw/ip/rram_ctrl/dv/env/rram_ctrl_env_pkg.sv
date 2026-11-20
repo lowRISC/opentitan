@@ -8,6 +8,7 @@ package rram_ctrl_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
+  import nvm_otp_key_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
@@ -36,8 +37,6 @@ package rram_ctrl_env_pkg;
   parameter uint OTP_CLK_FREQ_MHZ = 24;
 
   // Types
-  typedef virtual rram_ctrl_otp_key_if otp_key_vif_t;
-
   typedef enum bit [1:0] {
     AddrRead  = 0,
     AddrWrite = 1,
@@ -66,7 +65,6 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
   `include "rram_ctrl_scoreboard.sv"
-  `include "rram_ctrl_otp_key_driver.sv"
   `include "rram_ctrl_env.sv"
   `include "rram_ctrl_vseq_list.sv"
 endpackage : rram_ctrl_env_pkg
