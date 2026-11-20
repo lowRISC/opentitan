@@ -215,10 +215,15 @@ Instantiation Template
       .data_addr_shadow_o           ( ),
       .data_wdata_shadow_o          ( ),
       .data_wdata_intg_shadow_o     ( ),
+      .data_tag_shadow_o            ( ),
 
       // Shadow core instruction interface outputs
       .instr_req_shadow_o           ( ),
-      .instr_addr_shadow_o          ( )
+      .instr_addr_shadow_o          ( ),
+
+      // Shadow TRVK revocation bitmap interface outputs
+      .trvk_revbm_req_shadow_o      ( ),
+      .trvk_revbm_addr_shadow_o     ( )
 
   `ifdef RVFI
       // RISC-V Formal Interface
@@ -514,21 +519,27 @@ Interfaces
 |                              |                         |     | core comparison is active. Only        |
 |                              |                         |     | relevant when ``SecureIbex == 1``.     |
 +------------------------------+-------------------------+-----+----------------------------------------+
-| ``data_req_shadow_o``        | 1                       | out | Shadow core data outputs. These        |
+| ``data_req_shadow_o``        | 1                       | out | Shadow core bus outputs. These         |
 +------------------------------+-------------------------+     | replicate the corresponding            |
-| ``data_we_shadow_o``         | 1                       |     | ``data_*`` signals from the lockstep   |
-+------------------------------+-------------------------+     | shadow core and can be used by an      |
-| ``data_be_shadow_o``         | 4                       |     | external comparator to detect          |
-+------------------------------+-------------------------+     | divergence. Only relevant when         |
-| ``data_addr_shadow_o``       | 32                      |     | ``SecureIbex == 1``.                   |
-+------------------------------+-------------------------+     |                                        |
-| ``data_wdata_shadow_o``      | 32                      |     |                                        |
-+------------------------------+-------------------------+     |                                        |
-| ``data_wdata_intg_shadow_o`` | 7                       |     |                                        |
-+------------------------------+-------------------------+     |                                        |
+| ``data_we_shadow_o``         | 1                       |     | ``data_*``, ``instr_*`` and            |
++------------------------------+-------------------------+     | ``trvk_revbm_*`` outputs of the        |
+| ``data_be_shadow_o``         | 4                       |     | lockstep shadow core (including its    |
++------------------------------+-------------------------+     | TRVK), ``LockstepOffset`` cycles after |
+| ``data_addr_shadow_o``       | 32                      |     | the ones of the main core, and can be  |
++------------------------------+-------------------------+     | used by an external comparator to      |
+| ``data_wdata_shadow_o``      | 32                      |     | detect divergence.                     |
++------------------------------+-------------------------+     | ``data_tag_shadow_o`` and              |
+| ``data_wdata_intg_shadow_o`` | 7                       |     | ``trvk_revbm_*_shadow_o`` are 0 unless |
++------------------------------+-------------------------+     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
+| ``data_tag_shadow_o``        | 1                       |     | Only relevant when                     |
++------------------------------+-------------------------+     | ``SecureIbex == 1``.                   |
 | ``instr_req_shadow_o``       | 1                       |     |                                        |
 +------------------------------+-------------------------+     |                                        |
 | ``instr_addr_shadow_o``      | 32                      |     |                                        |
++------------------------------+-------------------------+     |                                        |
+| ``trvk_revbm_req_shadow_o``  | 1                       |     |                                        |
++------------------------------+-------------------------+     |                                        |
+| ``trvk_revbm_addr_shadow_o`` | 32                      |     |                                        |
 +------------------------------+-------------------------+-----+----------------------------------------+
 | ``rvfi_*``                   | conditional             | out | RISC-V Formal Interface signals        |
 |                              |                         |     | present only when ``RVFI`` is defined. |

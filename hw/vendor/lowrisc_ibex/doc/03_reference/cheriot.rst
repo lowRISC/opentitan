@@ -47,7 +47,7 @@ CHERIoT support requires two conditions to be met:
   The no-writeback path is not implemented for CHERIoT capability accesses.
 
 * Zcmp instructions (``RV32Zcmp``) are not supported in CHERIoT mode.
-  They may be included at elaboration time when Ibex runs in Rv32I mode ()``cheriot_enable_i``==0), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
+  They may be included at elaboration time when Ibex runs in Rv32I mode (``cheriot_enable_i == 0``), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
 
 When CHERIoT is enabled, ``misa`` reflects the CHERIoT base ISA (bits X=1, I=0, E=1), and ``marchid`` reads as 0xCE1 instead of the standard Ibex value of 0x16 (22).
 CHERIoT mode implies RV32E and uses only 16 registers (x0–x15).
@@ -79,11 +79,14 @@ The data memory interface gains two tag signals:
 Since Ibex only has a 32-bit interface, it reads and writes capabilities in two consecutive transactions.
 The tag bits must be set for both transactions for the capability to be considered a valid one.
 
+.. _cheriot-trvk:
+
 TRVK Revocation Bitmap Interface (``trvk_revbm_*``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TRVK (Temporal Revocation) filter is positioned just outside the LSU.
 It intercepts capability loads and checks whether the loaded capability has been revoked by checking the revocation bitmap.
+With the SecureIbex parameter, the shadow core of the :ref:`dual core lockstep<lockstep>` has its own TRVK.
 
 The revocation bitmap interface is an OBI compliant memory-mapped port.
 Because this port is strictly used for bitmap lookups, it only implements the read channels of the OBI standard, sharing identical handshaking semantics with the instruction and data interfaces:
@@ -262,3 +265,9 @@ They are accessible only in CHERIoT mode.
   Stores to addresses below ``mshwmb`` do not update ``mshwm``.
 
 The CHERIoT SCRs (Special Capability Registers) are described in :ref:`cheriot-scrs`.
+
+Debug Mode
+----------
+
+Ibex does not enforce the CHERIoT protections in Debug Mode, so code running in Debug Mode can access all memory.
+See :ref:`debug-cheriot` for details.

@@ -553,6 +553,10 @@ Details of these configuration bits can be found in the RISC-V Debug Specificati
 Note that **ebreaku** and **prv** are accidentally specified as RW in version 0.13.2 of the RISC-V Debug Specification.
 More recent versions of the specification define these fields correctly as WARL.
 
+When Ibex selects **cause**, a halt request takes priority over an execute trigger match.
+Version 0.13.2 of the specification ranks the trigger first.
+More recent versions rank the halt request above the trigger and allow an implementation to rank it lower.
+
 .. _csr-dpc:
 
 Debug PC Register (dpc)
@@ -603,11 +607,15 @@ Other bit fields read as zero.
 | Bit#  | R/W  | Description                                                      |
 +=======+======+==================================================================+
 | 8     | R    | **ic_scr_key_valid:** The icache scrambling key is valid. A      |
-|       |      | ``fence.i`` instruction is guaranteed to fetch a new key. If     |
-|       |      | the instruction cache has not been configured or the core has    |
-|       |      | not been configured with security features  (ICache parameter    |
-|       |      | == 0 or SecureIbex parameter == 0), this field will always read  |
-|       |      | as zero. (see :ref:`icache-scramble-key`)                        |
+|       |      | ``fence.i`` instruction is guaranteed to fetch a new key. This   |
+|       |      | field reads as one out of reset, while the key is still          |
+|       |      | ``RndCnstIbexKey``. It only reports that the most recent key     |
+|       |      | request handshake has completed, not where the key came from.    |
+|       |      | If the instruction cache has not been configured (ICache         |
+|       |      | parameter == 0), this field will always read as zero. If the     |
+|       |      | instruction cache has been configured without scrambling         |
+|       |      | (ICacheScramble parameter == 0), this field will always read as  |
+|       |      | one. (see :ref:`icache-scramble-key`)                            |
 +-------+------+------------------------------------------------------------------+
 | 7     | RW   | **double_fault_seen:** A synchronous exception was observed when |
 |       |      | the ``sync_exc_seen`` field was set. This field must be manually |
@@ -767,7 +775,8 @@ In CHERIoT mode, the standard ``mtvec`` (0x305) and ``mepc`` (0x341) CSR address
 | 31 | ``mepcc``             | RW    | Machine Exception Program Counter Capability (holds mepc as cap)   |
 +----+-----------------------+-------+--------------------------------------------------------------------+
 
-The following debug-mode SCRs are accessible only in Debug Mode:
+The following debug-mode SCRs are accessible only in Debug Mode.
+They are specific to Ibex and not part of the CHERIoT specification, which does not define Debug Mode (see :ref:`debug-cheriot`):
 
 +----+-----------------------+-------+------------------------------------------------------------------+
 | ID |   Name                | Mode  | Description                                                      |

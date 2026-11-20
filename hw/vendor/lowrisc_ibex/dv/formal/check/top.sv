@@ -122,10 +122,15 @@ module top import ibex_pkg::*; #(
   output logic [31:0]                                                 data_addr_shadow_o,
   output logic [31:0]                                                 data_wdata_shadow_o,
   output logic [6:0]                                                  data_wdata_intg_shadow_o,
+  output logic                                                        data_tag_shadow_o,
 
   // Shadow core instruction interface outputs
   output logic                                                        instr_req_shadow_o,
-  output logic [31:0]                                                 instr_addr_shadow_o
+  output logic [31:0]                                                 instr_addr_shadow_o,
+
+  // Shadow TRVK revocation bitmap interface outputs
+  output logic                                                        trvk_revbm_req_shadow_o,
+  output logic [31:0]                                                 trvk_revbm_addr_shadow_o
 );
 
 // Yosys based tools have no inherent understanding of a reset signal (unlike jasper, which has the

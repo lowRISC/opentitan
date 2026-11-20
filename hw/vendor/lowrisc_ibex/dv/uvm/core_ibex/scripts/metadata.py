@@ -472,6 +472,13 @@ class LockedMetadata():
     is strict dependencies between steps, so aim to only hold this lock
     for as short time as possible.
 
+    The lock only stops a reader from loading a partly written file; it does not
+    order readers and writers. A writer that can run while the per-test steps do
+    (for example compile_tb.py beside compile_test.py) must therefore not change
+    a field those steps read. They rely on the fields they read being written
+    before they start: by create_metadata, or by a step that make runs before
+    them. Nothing enforces this, so keep it in mind when adding a writer.
+
     N.B. When used as follows....
     '''
     with LockedMetadata(args.dir_metadata, __file__) as md:

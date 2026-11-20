@@ -88,6 +88,8 @@ waive -rules HIER_NET_NOT_READ    -location {ibex_core.sv} -regexp {Net 'instr_f
       -comment "Only read by the CHERIoT execution block and RVFI, both absent in RV32I-only configurations"
 waive -rules NOT_READ             -location {ibex_core.sv} -regexp {Signal 'instr_first_cycle_id' is not read from} \
       -comment "Only read by the CHERIoT execution block and RVFI, both absent in RV32I-only configurations"
+waive -rules CONST_FF             -location {ibex_load_store_unit.sv} -regexp {Flip-flop 'cheriot_err_q' is driven by constant zero} \
+      -comment "CHERIoT load/store errors cannot occur in RV32I-only configurations"
 waive -rules HIER_BRANCH_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Net '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} \
       -comment "These signals are only used for assertions inside these three modules"
 waive -rules INPUT_NOT_READ -location {ibex_branch_predict.sv ibex_decoder.sv ibex_compressed_decoder.sv} -regexp {Input port '(clk_i|rst_ni)' is not read from in module '(ibex_branch_predict|ibex_decoder|ibex_compressed_decoder)'.*} \
@@ -137,6 +139,8 @@ waive -rules {CLOCK_USE RESET_USE} -location {ibex_register_file_ff.sv} \
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flop 'enable_cmp_d' is driven by constant 4'b0101} \
       -comment "The only purpose of the flop is to enable the lockstep comparison after reset"
+waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flop 'shadow_outputs_q\.(data_tag|trvk_revbm_req|trvk_revbm_addr)' is driven by constant zero} \
+      -comment "The shadow TRVK outputs are tied to zero in RV32I-only configurations, which have no TRVK"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

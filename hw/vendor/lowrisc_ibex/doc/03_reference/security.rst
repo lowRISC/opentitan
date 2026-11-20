@@ -82,10 +82,12 @@ Dual core lockstep
 ------------------
 
 This configuration option instantiates a second copy of the core logic, referred to as the shadow core.
+With ``BaseIsa == BaseIsaRV32IorCHERIoT``, the core and its :ref:`TRVK filter<cheriot-trvk>` form one unit: the shadow core has its own TRVK, and the inputs and outputs below are the ones of this unit.
 The shadow core executes using a delayed version of all inputs supplied to the main core.
 All outputs of the shadow core are compared against a delayed version of the outputs of the main core.
 Any mismatch between the two sets of outputs will trigger an internal major alert.
-The shadow bus signals (``data_req_shadow_o``, ``data_addr_shadow_o``, etc. and ``instr_req_shadow_o``, ``instr_addr_shadow_o``) are exposed at the ``ibex_top`` level so that users can conduct additional security checks on integration-specific bus protocol conversion modules (see :ref:`core-integration` for the full signal list).
+The alerts of the shadow core, including the revocation bitmap errors of its TRVK, are not compared but signalled like the ones of the main core.
+The shadow bus signals (``data_*_shadow_o``, ``instr_*_shadow_o`` and ``trvk_revbm_*_shadow_o``) are exposed at the ``ibex_top`` level so that users can conduct additional security checks on integration-specific bus protocol conversion modules (see :ref:`core-integration` for the full signal list).
 
 Note that the register file and icache RAMs are not duplicated since these units are covered by other countermeasures.
 
@@ -108,6 +110,8 @@ Instead, two instances of the register file are used.
 The first instance is driven by the main core and holds the data itself.
 The second instance is driven by the shadow core and holds the corresponding ECC.
 ECC checking is conducted inside the shadow core.
+In addition, the register file read addresses and write port (write address, write enable, and write data) of the main core are compared against the ones of the shadow core in the dual core lockstep.
+Relying on the ECC check alone would miss a faulty value whose check bits happen to match those of the correct value, e.g., a bitwise inverted result or a read from a register holding the inverse.
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
 No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
 

@@ -218,8 +218,10 @@
      desc: '''Verify lockstep checking of the Ibex core.
 
               Ensure suitable alerts are triggered when:
-              - Outputs from the lockstep or the main core are corrupted.
+              - Outputs from the lockstep or the main core are corrupted, including the capability
+                tag.
               - Inputs into the lockstep core are corrupted.
+              - Data interface responses that the TRVK passes to the main core are corrupted.
            '''
      stage: V2S
      si_stage: NA
