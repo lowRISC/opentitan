@@ -244,10 +244,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
  * `ciphertext`, which is always either 16 or 0. This function returns an error
  * if the ciphertext or tag buffer is not long enough.
  *
- * Security Warning: This API does not yet check the validity of the tag of the
- * GCM before writing the ciphertext. Please handle the API call with care and
- * release decrypted data only after the tag is verified.
- *
  * @param ctx Context object for the operation.
  * @param tag_len Length of authentication tag to be generated.
  * @param[out] ciphertext Encrypted output data.
@@ -277,6 +273,11 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
  * IMPORTANT: the caller must check both the returned status and the `success`
  * parameter to know if the tag is valid. The returned status may be OK even if
  * the tag check did not succeed, if there were no errors during processing.
+ *
+ * Security Warning: This API does not check the validity of the GCM tag before
+ * writing decrypted data to `plaintext`, and does not zeroize the output buffer
+ * on tag verification failure. Please handle the API call with care and
+ * discard decrypted data unless `success == kHardenedBoolTrue`.
  *
  * @param ctx Context object for the operation.
  * @param auth_tag Authentication tag to check.
