@@ -580,6 +580,26 @@ static hardened_bool_t rom_keymgr_dpe_enabled(void) {
 }
 
 /**
+ * Reads the keymgr_dpe KDF engine selection from the OTP.
+ *
+ * `OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION` selects OTBN if set to
+ * `kHardenedBoolTrue`, all other values select KMAC.
+ *
+ * @return The selected KDF engine.
+ */
+OT_WARN_UNUSED_RESULT
+static sc_keymgr_dpe_kdf_engine_t rom_keymgr_dpe_fetch_kdf_engine(void) {
+  uint32_t keymgr_dpe_kdf_engine_selection = otp_read32(
+      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_OFFSET);
+  if (launder32(keymgr_dpe_kdf_engine_selection) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(keymgr_dpe_kdf_engine_selection, kHardenedBoolTrue);
+    return kScKeymgrDPEKdfEngineOtbn;
+  }
+  HARDENED_CHECK_NE(keymgr_dpe_kdf_engine_selection, kHardenedBoolTrue);
+  return kScKeymgrDPEKdfEngineKmac;
+}
+
+/**
  * Returns whether the SECRET2 OTP partition has been locked.
  */
 OT_WARN_UNUSED_RESULT
@@ -635,6 +655,11 @@ static rom_error_t rom_boot(const manifest_t *manifest,
   // Keymgr_dpe must be in the reset state
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_state_check(kScKeymgrDPEStateReset));
 
+  // Load the KDF engine selection from the OTP OWNER_SW_CFG and write to the
+  // corresponding register.
+  SEC_MMIO_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineSet);
+  sc_keymgr_dpe_kdf_engine_set(rom_keymgr_dpe_fetch_kdf_engine());
+
   // TODO(#30811): Read DISABLE_KEYMGR_DPE field to jump the CreatorRootKey
   // generation in the ROM section.
   hardened_bool_t keymgr_dpe_enabled = rom_keymgr_dpe_enabled();
@@ -648,6 +673,26 @@ static rom_error_t rom_boot(const manifest_t *manifest,
     // let the next stage run.
     if (launder32(secret2_locked) == kHardenedBoolTrue) {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolTrue);
+
+      // Lock the KDF engine selection unless
+      // OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN is
+      // kHardenedBoolFalse.
+      uint32_t keymgr_dpe_kdf_engine_selection_regwen = otp_read32(
+          OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN_OFFSET);
+      if (launder32(keymgr_dpe_kdf_engine_selection_regwen) !=
+          kHardenedBoolFalse) {
+        HARDENED_CHECK_NE(keymgr_dpe_kdf_engine_selection_regwen,
+                          kHardenedBoolFalse);
+        SEC_MMIO_WRITE_INCREMENT(kScKeymgrDPESecMmioKdfEngineLock);
+        sc_keymgr_dpe_kdf_engine_lock();
+      } else {
+        HARDENED_CHECK_EQ(keymgr_dpe_kdf_engine_selection_regwen,
+                          kHardenedBoolFalse);
+      }
+
+      // Verify that the correct KDF engine is selected.
+      HARDENED_RETURN_IF_ERROR(
+          sc_keymgr_dpe_kdf_engine_check(rom_keymgr_dpe_fetch_kdf_engine()));
 
       // `rom_start.S` brings up EDN0 which provides randomness to the
       // keymgr_dpe. Configure here the kmac for keymgr operation.
@@ -729,6 +774,9 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
                                     kScKeymgrDPESecMmioMaxVerSet +
                                     kScKeymgrDPESecMmioSlotPolicy));
+
+      // TODO(#32503): Support HKDF on the OTBN as a KDF
+
       // The driver verifies the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
       // keys with boot stage set to BootStageCreatorInt (1).
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
