@@ -78,10 +78,9 @@ hardened_bool_t otcrypto_integrity_blinded_key_check(
   return kHardenedBoolFalse;
 }
 
-#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
-
 OT_NOINLINE
 hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   uint32_t expected = kOtcryptoInitIntegrityChecksum +
                       (uint32_t)(uintptr_t)buf->data + (uint32_t)buf->len;
 
@@ -90,8 +89,11 @@ hardened_bool_t verify_buf_integrity(const otcrypto_generic_buf_t *buf) {
     return kHardenedBoolTrue;
   }
   return kHardenedBoolFalse;
-}
+#else
+  (void)buf;
+  return kHardenedBoolTrue;
 #endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+}
 
 typedef union {
   otcrypto_generic_buf_t generic;
@@ -105,8 +107,13 @@ static buf_union_t make_buf_locked(const void *data, size_t len) {
   if (locked_state_check().value < 0) {
     // COVERAGE (SW ERR) Only reachable in FIPS_MODE when the cryptolib is in a
     // locked state.
-    return (buf_union_t){
-        .generic = {.data = NULL, .len = 0, .ptr_checksum = 0}};
+    return (buf_union_t){.generic = {
+                             .data = NULL,
+                             .len = 0,
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+                             .ptr_checksum = 0,
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+                         }};
   }
   return (buf_union_t){
       .generic = OTCRYPTO_MAKE_BUF(otcrypto_generic_buf_t, (void *)data, len)};
@@ -136,6 +143,9 @@ static hardened_bool_t check_buf_locked(const otcrypto_generic_buf_t *buf) {
     // locked state.
     return kHardenedBoolFalse;
   }
+#ifdef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+  (void)buf;
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   return OTCRYPTO_CHECK_BUF(buf);
 }
 
