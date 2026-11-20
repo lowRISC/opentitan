@@ -720,6 +720,16 @@
                     '''
                 }
                 {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_LOAD_ROOT_KEY_LOCK_EN",
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM locks the keymgr_dpe `load root key`
+                    operation (LOAD_ROOT_KEY_LOCK) before leaving the ROM. A
+                    value of kHardenedBoolFalse leaves it unlocked, all other
+                    values lock.
+                    '''
+                }
+                {
                     name: "OWNER_SW_CFG_MANUF_STATE",
                     size: "4",
                     desc: '''
@@ -851,7 +861,7 @@
                 }
                 {
                     name: "OWNER_SW_CFG_RESERVED",
-                    size: "88",
+                    size: "84",
                     desc: '''
                     Unused bits in the OWNER_SW_CFG OTP partition. These can be
                     claimed by software as needed.

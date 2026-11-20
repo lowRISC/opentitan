@@ -1182,6 +1182,24 @@
               offset: 1004
             }
             {
+              name: OWNER_SW_CFG_ROM_KEYMGR_LOAD_ROOT_KEY_LOCK_EN
+              size: 4
+              desc:
+                '''
+                Whether or not the ROM locks the keymgr_dpe `load root key`
+                operation (LOAD_ROOT_KEY_LOCK) before leaving the ROM. A
+                value of kHardenedBoolFalse leaves it unlocked, all other
+                values lock.
+                '''
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1008
+            }
+            {
               name: OWNER_SW_CFG_MANUF_STATE
               size: 4
               desc:
@@ -1196,7 +1214,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1008
+              offset: 1012
             }
             {
               name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
@@ -1221,7 +1239,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1012
+              offset: 1016
             }
             {
               name: OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN
@@ -1233,7 +1251,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1016
+              offset: 1020
             }
             {
               name: OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG
@@ -1258,7 +1276,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1020
+              offset: 1024
             }
             {
               name: OWNER_SW_CFG_ROM_SRAM_READBACK_EN
@@ -1279,7 +1297,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1032
+              offset: 1036
             }
             {
               name: OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN
@@ -1298,7 +1316,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1036
+              offset: 1040
             }
             {
               name: OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE
@@ -1320,7 +1338,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1040
+              offset: 1044
             }
             {
               name: OWNER_SW_CFG_ROM_BANNER_EN
@@ -1338,7 +1356,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1044
+              offset: 1048
             }
             {
               name: OWNER_SW_CFG_ROM_NVM_ECC_EXC_HANDLER_EN
@@ -1362,11 +1380,11 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1048
+              offset: 1052
             }
             {
               name: OWNER_SW_CFG_RESERVED
-              size: 88
+              size: 84
               desc:
                 '''
                 Unused bits in the OWNER_SW_CFG OTP partition. These can be
@@ -1378,7 +1396,7 @@
               iskeymgr_creator: false
               iskeymgr_owner: false
               inv_default: 0
-              offset: 1052
+              offset: 1056
             }
             {
               name: OWNER_SW_CFG_DIGEST

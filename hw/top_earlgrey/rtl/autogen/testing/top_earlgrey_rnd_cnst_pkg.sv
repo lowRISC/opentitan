@@ -174,13 +174,14 @@ package top_earlgrey_rnd_cnst_pkg;
     5376'({
       64'hD854345D43D7963A,
       32'h0, // unallocated space
-      704'h0,
+      672'h0,
       32'h0,
       32'h0,
       32'h0,
       32'h0,
       32'h0,
       96'h0,
+      32'h0,
       32'h0,
       32'h0,
       32'h0,
