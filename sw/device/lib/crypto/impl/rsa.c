@@ -769,43 +769,8 @@ static otcrypto_status_t rsa_decrypt_finalize_with_mode(
 
 static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
                                        otcrypto_rsa_padding_t padding_mode) {
-  switch (launder32(padding_mode)) {
-    case kOtcryptoRsaPaddingPkcs:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
-        // COVERAGE (MISSING) We do not cover mismatching key_mode and
-        // padding_modes.
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
-      return OTCRYPTO_OK;
-    case kOtcryptoRsaPaddingPss:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
-      return OTCRYPTO_OK;
-    case kOtcryptoRsaPaddingNull:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingNull);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaRaw) {
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
-      return OTCRYPTO_OK;
-    default:
-      // Invalid padding mode.
-      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-  return OTCRYPTO_FATAL_ERR;
+  return rsa_signature_key_mode_padding_check(
+      key_mode, (rsa_signature_padding_t)padding_mode);
 }
 
 otcrypto_status_t otcrypto_rsa_verify(
@@ -1148,8 +1113,8 @@ static otcrypto_status_t rsa_sign_exp_async_start(
     HARDENED_CHECK_EQ(message_digest.len, num_words * sizeof(uint32_t));
   }
   HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
-      rsa_size, d0, d1, exponent, n, checksum, message_digest,
-      (rsa_signature_padding_t)padding_mode));
+      rsa_size, private_key->config.key_mode, d0, d1, exponent, n, checksum,
+      message_digest, (rsa_signature_padding_t)padding_mode));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -1233,8 +1198,9 @@ static otcrypto_status_t rsa_verify_exp_async_start(
       kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_start(
-      rsa_size, exponent, public_key->key, signature->data));
+  HARDENED_TRY_WIPE_DMEM(
+      rsa_signature_verify_start(rsa_size, public_key->key_mode, exponent,
+                                 public_key->key, signature->data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -1346,6 +1312,8 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
   }
 #endif
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
+
   rsa_size_t rsa_size = (rsa_size_t)0;
   HARDENED_TRY(rsa_size_from_num_words(ciphertext->len, &rsa_size));
   HARDENED_TRY_WIPE_DMEM(rsa_encrypt_finalize(rsa_size, ciphertext->data));
@@ -1364,6 +1332,8 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
 
   // Infer the RSA size from the private key.
   otcrypto_rsa_size_t size;

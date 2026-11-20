@@ -11,24 +11,37 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_datatypes.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
 
 /**
- * Block until a modexp operation is complete and get the result size.
+ * Operation tags packed into bits [31:28] of OTBN's `run_rsa.mode` word
+ * alongside the low 12 bits of `otcrypto_key_mode_t` (bits [27:16]) and the
+ * low 16-bit OTBN `MODE_RSA_*` constant. Values within each exponent family
+ * are bitwise complements (HD = 4).
+ */
+typedef enum rsa_modexp_op {
+  kRsaModexpOpEncrypt = 0x3,
+  kRsaModexpOpSign = 0x5,
+  kRsaModexpOpDecrypt = 0xa,
+  kRsaModexpOpVerify = 0xc,
+} rsa_modexp_op_t;
+
+/**
+ * Block until a modexp operation is complete, verify `expected_op` and exponent
+ * family, and return the result size (and optionally reconstructed `key_mode`).
  *
- * After OTBN finishes processing, this function reads the mode and infers the
- * size of the modulus/signature for the just-finished operation. It then
- * populates the `num_words` parameter with this size (expressed in 32b words).
- * This is designed so that callers can call `rsa_modexp_wait()` and then use
- * the size to select the appropriate `finalize()` call.
- *
+ * @param expected_op Expected RSA modular exponentiation operation.
  * @param[out] num_words Number of words for result buffers.
+ * @param[out] key_mode Optional reconstructed `otcrypto_key_mode_t` value.
  * @return Status of the operation (OK or error).
  */
-status_t rsa_modexp_wait(size_t *num_words);
+OT_WARN_UNUSED_RESULT
+status_t rsa_modexp_wait(rsa_modexp_op_t expected_op, size_t *num_words,
+                         otcrypto_key_mode_t *key_mode);
 
 /**
  * Start a constant-time RSA modular exponentiation.
@@ -54,16 +67,8 @@ status_t rsa_modexp_wait(size_t *num_words);
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
                                     uint32_t pub_exp, const uint32_t *modulus,
-                                    uint32_t checksum, uint32_t key_mode);
-
-/**
- * Reads the RSA `key_mode` preserved in OTBN's `mode` word after modexp.
- *
- * @param[out] key_mode Reconstructed `otcrypto_key_mode_t` value.
- * @return Status of the operation (OK or error).
- */
-OT_WARN_UNUSED_RESULT
-status_t rsa_modexp_key_mode(uint32_t *key_mode);
+                                    uint32_t checksum, rsa_modexp_op_t op,
+                                    otcrypto_key_mode_t key_mode);
 
 /**
  * Start a variable-time RSA modular exponentiation.
@@ -80,7 +85,9 @@ status_t rsa_modexp_key_mode(uint32_t *key_mode);
  * @return Status of the operation (OK or error).
  */
 status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
-                                  uint32_t exp, const uint32_t *modulus);
+                                  uint32_t exp, const uint32_t *modulus,
+                                  rsa_modexp_op_t op,
+                                  otcrypto_key_mode_t key_mode);
 
 /**
  * Waits for an RSA modular exponentiation to complete.
@@ -93,7 +100,8 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
-status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
+status_t rsa_modexp_finalize_size(rsa_modexp_op_t expected_op, rsa_size_t size,
+                                  uint32_t *result);
 
 /**
  * Finalizes a modular exponentiation given the expected word length.
@@ -102,7 +110,8 @@ status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
  * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
  * @return Status of the operation (OK or error).
  */
-status_t rsa_modexp_finalize(size_t num_words, uint32_t *result);
+status_t rsa_modexp_finalize(rsa_modexp_op_t expected_op, size_t num_words,
+                             uint32_t *result);
 
 /**
  * Converts an internal `rsa_size_t` to the corresponding word length.
