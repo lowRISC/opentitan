@@ -94,6 +94,38 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: gen_abort
+      desc: '''
+            Verify that a Generate command in progress can be aborted via GEN_ABORT.
+
+            **Stimulus**:
+            - Start a Generate command on an instance and write GEN_ABORT at a random point of it, including just before and just after the command completes.
+              - For any instance, including the SW instance, halt it via INT_STATE_HALT before the abort and resume it afterwards.
+                Include halting it while its final block is waiting to be read.
+                Include restoring its internal state via INT_STATE_VAL while the abort is pending.
+              - For a HW instance, also abort at a random time without halting it.
+              - For the SW instance, also abort without halting it, after it stops reading GENBITS.
+            - After an abort, clear GEN_ABORT_STATUS and send further commands to the instance.
+              Then instantiate it again and send further commands.
+            - Write GEN_ABORT with GEN_ABORT_REGWEN cleared.
+
+            **Checks**:
+            - Based on when GEN_ABORT was written, predict whether the Generate command is aborted or completes, and check the genbits delivered, GEN_ABORT, GEN_ABORT_STATUS, INT_STATE_STS and the interrupts against it.
+            - For an aborted Generate command:
+              - The instance is zeroed and its unread blocks are discarded.
+              - The command is acknowledged with GEN_ABORTED, reported in HW_EXC_STS for a HW instance and in SW_CMD_STS for the SW instance.
+            - For a halted instance, the abort only takes effect once the instance is resumed.
+              If its final block was waiting to be read, the command is acknowledged only after the instance is resumed.
+              Restoring its internal state while it is halted clears a pending abort.
+            - After an abort, Reseed, Update and Generate commands are rejected until the instance is instantiated again.
+              Once it is instantiated again, further commands succeed.
+            - With GEN_ABORT_REGWEN cleared, GEN_ABORT writes are ignored.
+            - Commands on the other instances complete as normal.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
@@ -205,6 +237,15 @@
       desc: '''
             Covers FIPS/CC bit in genbits_vld register
             genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            '''
+    }
+    {
+      name: csrng_gen_abort_cg
+      desc: '''
+            Covers Generate command aborts per instance:
+            - whether a Generate command was in progress,
+            - whether the instance was halted,
+            - how many blocks were left when the abort was accepted: all, more than one, one, or none.
             '''
     }
   ]
