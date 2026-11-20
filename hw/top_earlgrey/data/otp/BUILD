@@ -132,6 +132,9 @@ otp_json(
                 # Leave the keymgr_dpe KDF engine selection unlocked. Any other
                 # value locks it in the ROM.
                 "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN": otp_hex(CONST.HARDENED_FALSE),
+                # Leave the keymgr_dpe root key load unlocked. Any other value
+                # locks it in the ROM.
+                "OWNER_SW_CFG_ROM_KEYMGR_LOAD_ROOT_KEY_LOCK_EN": otp_hex(CONST.HARDENED_FALSE),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.

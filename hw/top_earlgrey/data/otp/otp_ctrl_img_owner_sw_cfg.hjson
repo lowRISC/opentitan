@@ -40,6 +40,11 @@
                     value: "0x1d4",
                 },
                 {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_LOAD_ROOT_KEY_LOCK_EN",
+                    // Leave the keymgr_dpe root key load unlocked (kHardenedBoolFalse).
+                    value: "0x1d4",
+                },
+                {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASS_EN"
                     // Set the enables to kAlertEnableNone.
                     // See `alert_enable_t`
