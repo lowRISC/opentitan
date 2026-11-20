@@ -365,13 +365,12 @@ status_t curve25519_x25519_sideload_start(
  *
  * Blocks until OTBN is idle.
  *
- * @param[out] share0 First boolean share of the shared secret.
- * @param[out] share1 Second boolean share of the shared secret.
+ * @param shared_secret Output buffer for the computed shared secret.
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t curve25519_x25519_finalize(uint32_t share0[kCurve25519PointWords],
-                                    uint32_t share1[kCurve25519PointWords]);
+status_t curve25519_x25519_finalize(
+    uint32_t shared_secret[kCurve25519MaskedPointWords]);
 
 /**
  * Start an async X25519 keygen operation on OTBN.

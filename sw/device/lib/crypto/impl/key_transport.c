@@ -159,10 +159,9 @@ otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
   // output.
   size_t share_words = launder32(keyblob_share_num_words(key->config));
   if (share_words != kKeymgrOutputShareNumWords ||
-      launder32(key->keyblob_length) != kSwKeyblobHwBackedBytes) {
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(key->keyblob_length, kSwKeyblobHwBackedBytes);
 
   // Extract the diversification data.
   keymgr_diversification_t diversification;
@@ -181,9 +180,18 @@ otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
 
   // Morph the key into a software-backed key.
   key->config.hw_backed = kHardenedBoolFalse;
-  key->keyblob_length = keyblob_num_words(key->config) * sizeof(uint32_t);
-  HARDENED_TRY(keyblob_from_shares(output.share0, output.share1, key->config,
-                                   key->keyblob));
+
+  // Extract pointers to the shares.
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
+
+  // Preload the target key shares with randomness.
+  hardened_memshred(share0, share_words);
+  hardened_memshred(share1, share_words);
+
+  HARDENED_TRY(hardened_memcpy(share0, output.share0, share_words));
+  HARDENED_TRY(hardened_memcpy(share1, output.share1, share_words));
 
   // Wipe the sensitive key material.
   hardened_memshred(output.share0, share_words);
