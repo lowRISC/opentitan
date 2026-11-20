@@ -104,7 +104,8 @@ package chip_env_pkg;
     SwTypeTestSlotB = 2, // Ibex SW - test SW in (flash) slot B.
     SwTypeOtbn      = 3, // Otbn SW
     SwTypeOtp       = 4, // Customized OTP image
-    SwTypeDebug     = 5  // Debug SW - injected into SRAM.
+    SwTypeDebug     = 5, // Debug SW - injected into SRAM.
+    SwTypeMultiSlot = 6  // Ibex SW - multi-slot SW payload.
   } sw_type_e;
 
   // Our dvsim.py configuration always generates five base OTP images (in various lifecycle states)
@@ -120,7 +121,8 @@ package chip_env_pkg;
     OtpTypeLcStTestUnlocked2, // Base OTP image in TestUnlocked2 lifecycle state.
     OtpTypeLcStTestLocked0, // Base OTP image in TestUnlocked0 lifecycle state.
     OtpTypeLcStTestLocked1, // Base OTP image in TestUnlocked0 lifecycle state.
-    OtpTypeCustom             // Custom OTP image specified via `sw_images` plusarg.
+    OtpTypeCustom,            // Custom OTP image specified via `sw_images` plusarg.
+    OtpNone // No image provided or pre-loaded
   } otp_type_e;
 
   // Two status for LC JTAG to identify if LC state transition is successful.
