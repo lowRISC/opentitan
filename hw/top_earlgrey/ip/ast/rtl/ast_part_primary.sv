@@ -212,6 +212,8 @@ io_clk u_io_clk (
   .clk_io_pd_ni ( clk_io_pd_n ),
   .rst_io_clk_ni ( rst_io_clk_n ),
   .clk_src_io_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_io_en ),
+  .ext_beacon_val_i ( usb_ref_val_i ),
+  .ext_beacon_pulse_i ( usb_ref_pulse_i ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
   .io_osc_cal_i ( intraip_s2p_i.sys_io_osc_cal ),
 `ifdef AST_BYPASS_CLK
@@ -227,19 +229,13 @@ assign clk_usb_ext = clk_osc_byp_i.usb;
 `endif
 
 usb_clk u_usb_clk (
-  .vcore_pok_h_i ( intraip_s2p_i.pwr.vcmain_pok_h ),
   .clk_usb_pd_ni ( clk_usb_pd_n ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
   .clk_src_usb_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_usb_en ),
-  .usb_ref_val_i ( usb_ref_val_i ),
-  .usb_ref_pulse_i ( usb_ref_pulse_i ),
-  .clk_ast_usb_i ( clk_ast_usb_i ),
-  .rst_ast_usb_ni ( rst_ast_usb_ni ),
+  .rst_ast_io_ni ( rst_ast_usb_ni ),
+  .clk_src_io_i  ( clk_osc_io ),
+  .clk_src_io_val_i ( clk_osc_io_val ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
-  .usb_osc_cal_i ( intraip_s2p_i.usb_osc_cal ),
-`ifdef AST_BYPASS_CLK
-  .clk_usb_ext_i ( clk_usb_ext ),
-`endif
   .clk_src_usb_o ( clk_osc_usb ),
   .clk_src_usb_val_o ( clk_osc_usb_val )
 );
