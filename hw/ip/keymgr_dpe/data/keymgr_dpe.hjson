@@ -268,12 +268,6 @@
       default: "12",
       local: "true"
     },
-    { name: "NumKeyVersion",
-      desc: "Number of Registers for key version",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
     { name: "NumMaxHwSlot",
       desc: '''
         Number of maximum supported HW slots. If this value is changed then the
@@ -1006,26 +1000,20 @@
       },
     },
 
-    { multireg: {
-        cname: "KEYMGR",
-        name: "KEY_VERSION",
-        regwen: "CFG_REGWEN",
-        desc: '''
-          Version used as part of output generation.
-        ''',
-        count: "NumKeyVersion",
-        swaccess: "rw",
-        hwaccess: "hro",
-        fields: [
-            { bits: "31:0",
-              name: "VAL",
-              desc: '''
-                Key version
-              ''',
-              resval: "0"
-            },
-        ],
-      },
+    { name: "KEY_VERSION",
+      regwen: "CFG_REGWEN",
+      desc: "Version used as part of output generation.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits: "31:0",
+          name: "VAL",
+          desc: '''
+            Key version
+          ''',
+          resval: "0"
+        },
+      ],
     },
 
     { name: "MAX_KEY_VER_REGWEN",

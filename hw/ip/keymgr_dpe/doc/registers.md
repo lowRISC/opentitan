@@ -509,16 +509,10 @@ Salt value used as part of output generation.
 
 ## KEY_VERSION
 Version used as part of output generation.
+- Offset: `0x7c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
-
-### Instances
-
-| Name        | Offset   |
-|:------------|:---------|
-| KEY_VERSION | 0x7c     |
-
 
 ### Fields
 

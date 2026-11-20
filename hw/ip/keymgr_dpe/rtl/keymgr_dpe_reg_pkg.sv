@@ -10,7 +10,6 @@ package keymgr_dpe_reg_pkg;
   parameter int NumSaltReg = 8;
   parameter int NumSwBindingReg = 8;
   parameter int NumOutReg = 12;
-  parameter int NumKeyVersion = 1;
   parameter int NumMaxHwSlot = 8;
   parameter int NumAlerts = 2;
 
@@ -123,7 +122,7 @@ package keymgr_dpe_reg_pkg;
 
   typedef struct packed {
     logic [31:0] q;
-  } keymgr_dpe_reg2hw_key_version_mreg_t;
+  } keymgr_dpe_reg2hw_key_version_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -403,7 +402,7 @@ package keymgr_dpe_reg_pkg;
     keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [609:608]
     keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [607:352]
     keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [351:96]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [95:64]
+    keymgr_dpe_reg2hw_key_version_reg_t key_version; // [95:64]
     keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [63:62]
     keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [61:30]
     keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [29:16]
