@@ -231,21 +231,20 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
 #endif
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
 
-  if (is_even(modulus->data[0])) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, NULL, &num_words));
   if (launderw(public_key->key_length) !=
           launderw(num_words * sizeof(uint32_t)) ||
-      launderw(modulus->len) != launderw(num_words) ||
-      (modulus->data[num_words - 1] >> 31) != 1) {
+      launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad key lengths.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(public_key->key_length, num_words * sizeof(uint32_t));
   HARDENED_CHECK_EQ(modulus->len, num_words);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(hardened_memcpy(public_key->key, modulus->data, num_words));
 
   // Verify the input buffer
@@ -701,21 +700,20 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   // Check the mode and lengths for the private key.
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
-  if (is_even(modulus->data[0])) {
-    // COVERAGE (MISSING) We do not cover even moduli.
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, NULL, &num_words));
-  if (launderw(modulus->len) != launderw(num_words) ||
-      (modulus->data[num_words - 1] >> 31) != 1) {
+  if (launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad key lengths.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(modulus->len, num_words);
   HARDENED_CHECK_EQ(d_share0->len, num_words);
   HARDENED_CHECK_EQ(d_share1->len, num_words);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    // COVERAGE (MISSING) We do not cover even moduli.
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(rsa_private_key_pack(d_share0->data, d_share1->data,
                                     modulus->data, num_words, private_key));
 
@@ -1005,22 +1003,21 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (is_even(modulus->data[0])) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   rsa_size_t rsa_size = (rsa_size_t)0;
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
   if (launderw(cofactor_share0->len) != launderw(num_words / 2) ||
-      launderw(modulus->len) != launderw(num_words) ||
-      (modulus->data[num_words - 1] >> 31) != 1) {
+      launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad size.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(modulus->len, num_words);
   HARDENED_CHECK_EQ(cofactor_share0->len, num_words / 2);
   HARDENED_CHECK_EQ(cofactor_share1->len, num_words / 2);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
       rsa_size, modulus->data, cofactor_share0->data, cofactor_share1->data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
