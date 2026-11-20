@@ -33,7 +33,8 @@ __llvm_prf_cnts : AT(0x0) ALIGN(8) {
   __llvm_prf_cnts_start = .;
   KEEP(*(__llvm_prf_cnts_head))
   __llvm_prf_cnts_head_end = .;
-  KEEP(*(__llvm_prf_cnts))
+  /* Unused profile counters are dropped with their function's section group */
+  *(__llvm_prf_cnts)
   __llvm_prf_cnts_values_end = .;
   . = ALIGN(8);
 

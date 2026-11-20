@@ -151,7 +151,11 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
-        tags = ["manuf"],
+        tags = [
+            "manuf",
+            # Coverage can't fit with the SRAM programs, so we test this instead
+            "provisioning",
+        ],
     ),
     qemu = qemu_params(
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
@@ -162,6 +166,7 @@ opentitan_test(
         ":otp_fields",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/coverage:api",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -222,7 +227,11 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
-        tags = ["manuf"],
+        tags = [
+            "manuf",
+            # Coverage can't fit with the SRAM programs, so we test this instead
+            "provisioning",
+        ],
         test_cmd = """
             --bootstrap={firmware}
         """,
@@ -243,6 +252,7 @@ opentitan_test(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/coverage:api",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
