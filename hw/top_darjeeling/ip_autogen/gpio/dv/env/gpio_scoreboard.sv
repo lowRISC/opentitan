@@ -389,28 +389,29 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // The task monitors the gpio straps enable signal
   // and checks the straps output signal after the first strap trigger
   virtual task monitor_gpio_straps();
+    // Sample strap_en on every clock edge and predict the strap value
+    // whenever the DUT would sample it. The DUT samples the strap pins
+    // when strap_en is high and hw_straps_data_in_valid is low
+    // (sample_trigger = strap_en && !valid), exactly once per reset
+    // cycle. The previous level-sensitive wait(strap_en) could miss a
+    // single-cycle strap_en pulse if this monitor was not yet waiting
+    // for it (e.g. right after a reset in a stress sequence), leaving
+    // the hw_straps_data_in mirror at its reset value (0) while the DUT
+    // had already sampled the strap pins, so a later read of
+    // hw_straps_data_in failed the mirrored-value check. Checking on
+    // every clock edge replicates the DUT's sample condition and cannot
+    // miss the pulse.
     forever begin : monitor_gpio_straps
-      // Wait to leave reset
-      wait(!cfg.under_reset);
-
-      // Now wait until strap_en goes high, dropping out if we go back into reset
-      fork : isolation_fork begin
-        fork
-          wait(cfg.straps_vif_inst.tb_port.strap_en);
-          wait(cfg.under_reset);
-        join_any
-        disable fork;
-      end join
-      if (cfg.under_reset) continue;
-
-      // Sample the pins, storing the value and a validity bit in the register model.
-      if (!ral.hw_straps_data_in.predict(.value(cfg.gpio_vif.pins), .kind(UVM_PREDICT_DIRECT)))
-        `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN prediction.")
-      if (!ral.hw_straps_data_in_valid.predict(.value(1), .kind(UVM_PREDICT_DIRECT)))
-        `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN_VALID prediction.")
-
-      // Wait for the next reset, if it happens.
-      wait(cfg.under_reset);
+      @(posedge cfg.clk_rst_vif.clk);
+      if (!cfg.under_reset && cfg.straps_vif_inst.tb_port.strap_en &&
+          ral.hw_straps_data_in_valid.get_mirrored_value() == 0) begin
+        // Sample the pins, storing the value and a validity bit in the register model.
+        if (!ral.hw_straps_data_in.predict(.value(cfg.gpio_vif.pins),
+                                           .kind(UVM_PREDICT_DIRECT)))
+          `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN prediction.")
+        if (!ral.hw_straps_data_in_valid.predict(.value(1), .kind(UVM_PREDICT_DIRECT)))
+          `uvm_fatal(get_full_name(), "Failed to update HW_STRAPS_DATA_IN_VALID prediction.")
+      end
     end
   endtask : monitor_gpio_straps
 
