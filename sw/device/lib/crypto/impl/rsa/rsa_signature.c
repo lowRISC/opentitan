@@ -220,9 +220,37 @@ static status_t encoded_message_verify(
   return OTCRYPTO_FATAL_ERR;
 }
 
+status_t rsa_signature_key_mode_padding_check(
+    otcrypto_key_mode_t key_mode, const rsa_signature_padding_t padding_mode) {
+  otcrypto_key_mode_t expected = (otcrypto_key_mode_t)0;
+  switch (launder32(padding_mode)) {
+    case kRsaSignaturePaddingPkcs1v15:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPkcs1v15);
+      expected = kOtcryptoKeyModeRsaSignPkcs;
+      break;
+    case kRsaSignaturePaddingPss:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
+      expected = kOtcryptoKeyModeRsaSignPss;
+      break;
+    case kRsaSignaturePaddingNull:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingNull);
+      expected = kOtcryptoKeyModeRsaRaw;
+      break;
+    default:
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      return OTCRYPTO_BAD_ARGS;
+  }
+  if (launder32(key_mode) != expected) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key_mode, expected);
+  return OTCRYPTO_OK;
+}
+
 status_t rsa_signature_generate_start(
-    rsa_size_t size, const uint32_t *d0, const uint32_t *d1, uint32_t e,
-    const uint32_t *n, uint32_t checksum,
+    rsa_size_t size, otcrypto_key_mode_t key_mode, const uint32_t *d0,
+    const uint32_t *d1, uint32_t e, const uint32_t *n, uint32_t checksum,
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode) {
   size_t num_words = 0;
@@ -240,32 +268,37 @@ status_t rsa_signature_generate_start(
 
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_start(size, encoded_message, d0, d1, e, n,
-                                    checksum, /*key_mode=*/0);
+                                    checksum, kRsaModexpOpSign, key_mode);
 }
 
 status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature) {
-  return rsa_modexp_finalize_size(size, signature);
+  return rsa_modexp_finalize_size(kRsaModexpOpSign, size, signature);
 }
 
-status_t rsa_signature_verify_start(rsa_size_t size, uint32_t e,
+status_t rsa_signature_verify_start(rsa_size_t size,
+                                    otcrypto_key_mode_t key_mode, uint32_t e,
                                     const uint32_t *n,
                                     const uint32_t *signature) {
   // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_start(size, signature, e, n);
+  return rsa_modexp_vartime_start(size, signature, e, n, kRsaModexpOpVerify,
+                                  key_mode);
 }
 
 status_t rsa_signature_verify_finalize(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode,
     hardened_bool_t *verification_result) {
-  // Wait for OTBN to complete and get the size for the last RSA operation.
+  // Wait for OTBN to complete and get the size and key_mode for this verify.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_wait(&num_words));
+  otcrypto_key_mode_t key_mode = (otcrypto_key_mode_t)0;
+  HARDENED_TRY(rsa_modexp_wait(kRsaModexpOpVerify, &num_words, &key_mode));
+  HARDENED_TRY(rsa_signature_key_mode_padding_check(key_mode, padding_mode));
 
   // Finalize the modexp operation to get the recovered encoded message.
   HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
   uint32_t recovered_message[kRsa4096NumWords];
-  HARDENED_TRY(rsa_modexp_finalize(num_words, recovered_message));
+  HARDENED_TRY(
+      rsa_modexp_finalize(kRsaModexpOpVerify, num_words, recovered_message));
   return encoded_message_verify(message_digest, padding_mode, recovered_message,
                                 num_words, verification_result);
 }
