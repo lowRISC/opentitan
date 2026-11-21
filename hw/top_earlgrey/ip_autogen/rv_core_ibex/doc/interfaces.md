@@ -16,8 +16,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | rst_cpu_n           | logic                            | uni     | req   | 1           |                                                                  |
 | cheriot_ena         | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable.                                             |
 | cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT memory subsystem.             |
-| cored_tag_h2d       | logic                            | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h. |
-| cored_tag_d2h       | logic                            | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.          |
+| cored_tag_h2d       | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h. |
+| cored_tag_d2h       | prim_mubi_pkg::mubi4             | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.          |
 | corerevbm_tl        | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port.                                |
 | ram_cfg_icache_tag  | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                  |
 | ram_cfg_icache_data | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                  |
@@ -41,12 +41,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                                                                                          |
-|:-------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_sw_err | Software triggered alert for fatal faults                                                                                                                                                                                                            |
-| recov_sw_err | Software triggered Alert for recoverable faults                                                                                                                                                                                                      |
-| fatal_hw_err | Triggered when - Ibex raises `alert_major_internal_o` - Ibex raises `alert_major_bus_o` - A double fault is seen (Ibex raises `double_fault_seen_o`) - A bus integrity error is seen - The ePMP/CHERIoT execution mode switch enters its error state |
-| recov_hw_err | Triggered when Ibex raises `alert_minor_o`                                                                                                                                                                                                           |
+| Alert Name   | Description                                                                                                                                                                                                                                                                                                              |
+|:-------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_sw_err | Software triggered alert for fatal faults                                                                                                                                                                                                                                                                                |
+| recov_sw_err | Software triggered Alert for recoverable faults                                                                                                                                                                                                                                                                          |
+| fatal_hw_err | Triggered when - Ibex raises `alert_major_internal_o` - Ibex raises `alert_major_bus_o` - A double fault is seen (Ibex raises `double_fault_seen_o`) - A bus integrity error is seen - A data response carries an invalid encoding of the capability tag - The ePMP/CHERIoT execution mode switch enters its error state |
+| recov_hw_err | Triggered when Ibex raises `alert_minor_o`                                                                                                                                                                                                                                                                               |
 
 ## Security Countermeasures
 
@@ -71,6 +71,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | RV_CORE_IBEX.TLUL_ADAPTER.LOGIC.SHADOW      | Address translation and TL-UL adapters (data and instruction interface) run in lockstep with shadow logic protecting both interfaces against faults.                                                                                                                                               |
 | RV_CORE_IBEX.MCOUNTEREN_WRITABLE.CTRL.MUBI  | Use MuBI signals for critical control signals such as `mcounteren_writable`.                                                                                                                                                                                                                       |
 | RV_CORE_IBEX.CHERIOT_ENABLE.CTRL.MUBI       | The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.                                                                                                                                                                                                                    |
+| RV_CORE_IBEX.CORED_TAG.INTERSIG.MUBI        | The capability tags of the data interface are multi-bit encoded between Ibex and the CHERIoT memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged, and a data response with an invalid encoding raises the fatal_hw_err alert.                                         |
 
 
 <!-- END CMDGEN -->
@@ -103,8 +104,8 @@ Signal                  | Direction | Type                                      
 `corei_tl_h_i`          | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming instruction tlul response.
 `cored_tl_h_o`          | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request.
 `cored_tl_h_i`          | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response.
-`cored_tag_h2d_o`       | `output`  | `logic`                                               | Outgoing CHERIoT capability tag of the data tlul request.
-`cored_tag_d2h_i`       | `input`   | `logic`                                               | Incoming CHERIoT capability tag of the data tlul response.
+`cored_tag_h2d_o`       | `output`  | `prim_mubi_pkg::mubi4_t`                              | Outgoing CHERIoT capability tag of the data tlul request.
+`cored_tag_d2h_i`       | `input`   | `prim_mubi_pkg::mubi4_t`                              | Incoming CHERIoT capability tag of the data tlul response.
 `corerevbm_tl_o`        | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing TRVK revocation bitmap tlul request.
 `corerevbm_tl_i`        | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming TRVK revocation bitmap tlul response.
 `cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT execution mode enable from the execution mode switch.
