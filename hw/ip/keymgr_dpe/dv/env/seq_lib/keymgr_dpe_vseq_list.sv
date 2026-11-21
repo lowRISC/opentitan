@@ -5,3 +5,4 @@
 `include "keymgr_dpe_base_vseq.sv"
 `include "keymgr_dpe_common_vseq.sv"
 `include "keymgr_dpe_smoke_vseq.sv"
+`include "keymgr_dpe_fault_wipe_vseq.sv"
