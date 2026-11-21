@@ -213,7 +213,7 @@ module i3c_target
 
   // Extension hardware.
   output                    ext_present_o,
-  output             [14:0] ext_info_o,
+  output             [15:0] ext_info_o,
   input  i3c_reg2targ_ext_t ext_reg2hw_i,
   output i3c_targ_ext2reg_t ext_hw2reg_o,
 
@@ -289,7 +289,6 @@ module i3c_target
 
   // Some independent level-sensitive signals may be synchronized in the conventional fashion.
   // - response from the Target Reset Detector; multiple, but independent bits.
-  // TODO: `rstdet_rsp_sync` is currently unused (unread)
   i3c_rstdet_rsp_t rstdet_rsp_sync;
   // - HDR-DDR mode indication, on/off.
   logic ddr_mode_sync;
@@ -330,13 +329,13 @@ module i3c_target
   // Target Reset Detector request.
   // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists; this logic is
   // enough to provide a basic initial configuration for the detector.
-  // TODO(#31337): Note: `RESET_DET_CTRL` register is in the AON clock domain, whereas `enable_i`
+  // TODO(#31337): Note: `RESET_DET_CONTROL` register is in the AON clock domain, whereas `enable_i`
   // and `rstact_i` are on the IP clock.
   assign rstdet_req_o = '{
-    activate:   enable_i & reg2hw_i.reset_det_ctrl.activate.q,
-    deep_sleep: reg2hw_i.reset_det_ctrl.sleep_req.q,
-    rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
-    rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
+    activate:   enable_i & reg2hw_i.reset_det_control.activate.q,
+    deep_sleep: reg2hw_i.reset_det_control.sleep_req.q,
+    rst_periph: reg2hw_i.reset_det_control.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
+    rst_target: reg2hw_i.reset_det_control.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
   };
 
   // Present read data and status information to the transceiver logic for each Target in turn.
@@ -387,6 +386,7 @@ module i3c_target
     .enable_i             (enable_i),
     .sw_reset_i           (sw_reset_i),
     .async_evt_rst_i      (async_evt_rst_i),
+    .target_rst_det_i     (rstdet_rsp_sync.pattern_det),
 
     // Configuration.
     .reg2hw_i             (reg2hw_i),
@@ -691,8 +691,12 @@ module i3c_target
 
   // Signals that the logic does not use (yet).
   // - TODO(#31035): HDR Exit and HDR Restart are not handled yet.
-  // - TODO: `rstdet_rsp_sync` and `buf_wused_i` are not used yet (see above).
+  // - TODO: Most of `rstdet_rsp_sync`, and `buf_wused_i`, are not used yet (see above).
   logic unused_targ_inputs;
-  assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i, rstdet_rsp_sync};
+  assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i,
+                                rstdet_rsp_sync.active, rstdet_rsp_sync.deep_sleep_en,
+                                rstdet_rsp_sync.rst_periph_en, rstdet_rsp_sync.rst_target_en,
+                                rstdet_rsp_sync.wake_up_det, rstdet_rsp_sync.peri_rst_det,
+                                rstdet_rsp_sync.targ_rst_det};
 
 endmodule

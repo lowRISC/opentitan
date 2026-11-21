@@ -32,6 +32,7 @@ module i3c_target_fsm
   input                     enable_i,
   input                     sw_reset_i,
   input                     async_evt_rst_i,
+  input                     target_rst_det_i,
 
   // Configuration.
   input  i3c_reg2hw_t       reg2hw_i,
@@ -199,7 +200,7 @@ module i3c_target_fsm
 
   // Extension hardware.
   output                    ext_present_o,
-  output             [14:0] ext_info_o,
+  output             [15:0] ext_info_o,
   input  i3c_reg2targ_ext_t ext_reg2hw_i,
   output i3c_targ_ext2reg_t ext_hw2reg_o,
 
@@ -353,7 +354,7 @@ module i3c_target_fsm
     assign tx_desc_valid[t] = tx_desc[t].prn.notify ? ~&tx_desc[t].prn.len :
                                                        |tx_desc[t].tx.data_length;
     // TODO(#31337): Aborting is not yet implemented.
-    assign tx_suspended = reg2hw_i.targ_pio_control.suspended.q[t];
+    assign tx_suspended = reg2hw_i.targ_pio_control.tx_suspended.q[t];
     // TODO(#31337): Post response and/or raise error interrupt if not valid.
 
     // Have we enough data available to commence transmission? Fire on either
@@ -467,8 +468,8 @@ module i3c_target_fsm
     // Suspend transmissions from this Virtual Target in the event of an error.
     assign suspend_tx_o[t] = tx_rvalid & !tx_desc_valid[t];
     // Clear the 'Abort' status when resuming.
-    assign abort_clr_o[t]  = reg2hw_i.targ_pio_control.suspended.qe &
-                             reg2hw_i.targ_pio_control.suspended.q[t];
+    assign abort_clr_o[t]  = reg2hw_i.targ_pio_control.tx_suspended.qe &
+                             reg2hw_i.targ_pio_control.tx_suspended.q[t];
   end
 
   // Similarly, we supply data for Direct GET CCCs using another inverting toggle.
@@ -1017,6 +1018,7 @@ module i3c_target_fsm
   assign ibi_dispatch = ibi_desc_rvalid_i & ibi_stat_desc_valid & ibi_got_mdb;
 
   // IBI Transmission suspended.
+  // TODO(#31337): We may want to make the IBI suspension configurable.
   assign ibi_suspend_tx_o = ibi_desc_rvalid_i & !ibi_stat_desc_valid;
   // Clear the 'Abort' status when resuming.
   assign ibi_abort_clr_o  = reg2hw_i.targ_pio_control.ibi_suspended.qe &
@@ -1149,21 +1151,23 @@ module i3c_target_fsm
   end
 
   logic [TTIBusEv_Count-1:0] bus_events;
+  logic target_rst_detected;
   logic bus_becoming_idle;
   always_comb begin
-    bus_events = '0;
+    bus_events = 'b0;
     bus_events[TTIBusEv_ReadNoSCL] = 1'b0;
     bus_events[TTIBusEv_DeadBus]   = 1'b0;
     bus_events[TTIBusEv_Idle]      = bus_becoming_idle;
+    bus_events[TTIBusEv_TargetRst] = target_rst_detected;
   end
 
-  // Report Asynchronous Events for the start of bus condition(s).
-  prim_edge_detector #(.Width(1), .ResetValue('0), .EnSync(1'b0)) u_bus_idle_edge (
+  // Report Asynchronous Events for the leading edge of bus condition(s).
+  prim_edge_detector #(.Width(2), .ResetValue('0), .EnSync(1'b0)) u_bus_event_edge (
     .clk_i            (clk_i),
     .rst_ni           (rst_ni),
-    .d_i              (bus_idle_i),
+    .d_i              ({target_rst_det_i, bus_idle_i}),
     .q_sync_o         (),
-    .q_posedge_pulse_o(bus_becoming_idle),
+    .q_posedge_pulse_o({target_rst_detected, bus_becoming_idle}),
     .q_negedge_pulse_o()
   );
 
@@ -1354,8 +1358,8 @@ module i3c_target_fsm
       // Indicator of hardware extension presence.
       .ext_present_o(ext_present_o),
       // Extension info.
-      .ext_info_qe_i(reg2hw_i.targ_status.ext_info.qe),
-      .ext_info_q_i (reg2hw_i.targ_status.ext_info.q),
+      .ext_info_qe_i(reg2hw_i.targ_ext_status.info.qe),
+      .ext_info_q_i (reg2hw_i.targ_ext_status.info.q),
       .ext_info_o   (ext_info_o),
 
       // Register interface.

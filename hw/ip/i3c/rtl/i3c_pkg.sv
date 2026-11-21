@@ -103,6 +103,7 @@ package i3c_pkg;
   typedef struct packed {
     // The order of these fields is important in connecting to the `i3c_intr` instance.
     logic te;
+    logic internal_err;
     logic [MaxTargets-1:0] tx_desc_ready;
     logic [MaxTargets-1:0] tx_thld;
     logic async_evt_ovf;
@@ -136,10 +137,14 @@ package i3c_pkg;
   } i3c_rstdet_req_t;
 
   typedef struct packed {
-    logic     active;        // Detector is active.
-    logic     wake_up_det;   // Wake from Deep Sleep detected.
-    logic     peri_rst_det;  // Peripheral Reset detected.
-    logic     targ_rst_det;  // Whole Target Reset detected.
+    logic     active;         // Detector is active.
+    logic     deep_sleep_en;  // Wake from Deep Sleep enabled.
+    logic     rst_periph_en;  // Peripheral Reset enabled.
+    logic     rst_target_en;  // Whole Target Reset enabled.
+    logic     pattern_det;    // Target Reset Pattern detected.
+    logic     wake_up_det;    // Wake from Deep Sleep detected.
+    logic     peri_rst_det;   // Peripheral Reset detected.
+    logic     targ_rst_det;   // Whole Target Reset detected.
   } i3c_rstdet_rsp_t;
 
   // Default connectivity, when there is no Target Reset detector.

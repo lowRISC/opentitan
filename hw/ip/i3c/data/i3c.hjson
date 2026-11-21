@@ -451,10 +451,25 @@
 
                     This applies to all Virtual Targets since they share a single physical Target.
                     Software shall set this to '1' to issue the request, and the hardware will clear it when the request has been sent and acknowledged.
+
+                    A request will be sent to the Active Controller only if at least one Virtual Target does not have an assigned dynamic address but is permitted to send Hot-Join requests.
+                    If Standby Controller mode is enabled, then the first Virtual Target does not contribute to this decision since it has its own configuration.
                     ''',
           hwqe:     "true",
           swaccess: "rw",
           hwaccess: "hrw",
+          resval:   "0"
+        }
+        { bits:     "29:28",
+          name:     "IBI_NACK_RETRY_CNT",
+          desc:     '''IBI NACK Retry Count.
+
+                    The number of times to retry an IBI transmission that has been rejected by the Active Controller issuing a NACK response.
+                    If the Active Controller chooses to disable the IBI by issuing a `DISEC` CCC to disable IBIs from the relevant Virtual Target, the IBI transmission will be abandoned immediately without further retries.
+                    This leaves the Target-side logic free to proceed with IBI transmission from other Virtual Targets.
+                    ''',
+          swaccess: "rw",
+          hwaccess: "hro",
           resval:   "0"
         }
         { bits:     "8",
@@ -583,17 +598,37 @@
           resval:   "0"
         }
         { bits:     "15",
-          name:     "EXT_PRESENT",
+          name:     "HJ_REQ_STATUS",
+          desc:     '''Hot-Join Request Status.
+
+                    Indicates the status of a pending or attempted Hot-Join request.
+                    0 = No pending request.
+                    1 = The Target successfully emitted at least one Hot-Join Request.
+                    This bit is cleared when a new request is issued using `TARG_CONTROL.HJ_REQUEST`.
+                    It becomes set when the request is acknowledged by the Active Controller.
+                    ''',
+          hwaccess: "hwo",
+          resval:   "0"
+        }
+      ]
+    }
+    { name:  "TARG_EXT_STATUS"
+      desc:  "Target Extension Status."
+      hwext: "true",
+      fields: [
+        { bits:     "31",
+          name:     "PRESENT",
           desc:     '''Indicates whether one or more additional protocols is implemented in the Target hardware.
 
                     Some protocols require a sufficiently fast response that software involvement is not possible.
                     These may be implemented as an extension within the Target core.
                     '''
+          swaccess: "ro",
           hwaccess: "hwo",
           resval:   "0"
         }
-        { bits:     "14:0",
-          name:     "EXT_INFO",
+        { bits:     "15:0",
+          name:     "INFO",
           desc:     "Extension-specific information."
           swaccess: "rw",
           hwaccess: "hrw",
@@ -693,7 +728,7 @@
     // even though the reset detector logic itself operates on the SCL signal this cannot be used
     // for the register interface because doing so could stall the CPU indefinitely.
     // Therefore `clk_aon_i` for this purpose.
-    { name:     "RESET_DET_CTRL",
+    { name:     "RESET_DET_CONTROL",
       desc:     "Reset detector control.",
       swaccess: "wo",
       hwaccess: "hro",
@@ -729,21 +764,45 @@
       hwaccess: "hwo",
       async:    "clk_aon_i",
       fields: [
-        { bits:   "21",
+        { bits:   "29",
           name:   "RST_TARGET",
           desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
-        { bits:   "20",
+        { bits:   "28",
           name:   "RST_PERIPH",
           desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
-        { bits:   "16",
+        { bits:   "24",
           name:   "WAKE_UP",
           desc:   "Indicates that a Wake Up request was received.",
           resval: "0"
         },
+        { bits:   "21",
+          name:   "RST_TARGET_EN",
+          desc:   '''Response to a Whole Target reset request enabled, when RSTACT has been set accordingly.
+                  This field echoes the field `RESET_DET_CONTROL.RST_TARGET_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0"
+        }
+        { bits:   "20",
+          name:   "RST_PERIPH_EN",
+          desc:   '''Response to a Peripheral reset request enabled, when RSTACT has been set accordingly.
+                  This field echoes the field `RESET_DET_CONTROL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0"
+        }
+        { bits:   "16",
+          name:   "SLEEP_REQ_EN",
+          desc:   '''Wake up signaling enabled.
+                  This field echoes the field `RESET_DET_CONTROL.SLEEP_REQ_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0",
+        }
         { bits:   "0",
           name:   "ACTIVE",
           desc:   "Indicates whether the reset detector is active.",
@@ -1132,6 +1191,71 @@
         }
       ]
     }
+    { name:     "INTERVAL_TIME2",
+      desc:     '''Interval Timers 2 register.
+                Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
+
+                The granularity of the adjustment is timer-dependent and clock frequency-dependent.
+                The weightings given here apply to the base case of an IP clock frequency up to 64 MHz, inclusive.
+                See `INTERVAL_TIME0` for details.
+                '''
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits:   "31:24",
+          name:   "DEAD_TARG",
+          desc:   '''Adjustment to the interval of the Dead Target timer.
+
+                  Default interval: 20 milliseconds.
+                  Base weighting: 0x800 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+        { bits:   "23:16",
+          name:   "DEAD_CTRL",
+          desc:   '''Adjustment to the interval of the Dead Controller timer.
+
+                  Default interval: 20 milliseconds.
+                  Base weighting: 0x800 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+        { bits:   "15:8",
+          name:   "POLL_TARGETS",
+          desc:   '''Adjustment to the interval of the Controller Passive Target polling timer.
+
+                  To support the detection of Passive Hot-Join Targets, the bus must not remain inactive indefinitely.
+                  When enabled in `
+
+                  Default interval: 10 milliseconds.
+                  Base weighting: 0x1000 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+        { bits:   "7:0",
+          name:   "IBI_RETRY",
+          desc:   '''Adjustment to the interval after which NACKed In-Band Interrupt requests are retried.
+
+                  Default interval: 800 microseconds.
+                  Base weighting: 0x100 IP clock cycles.
+                  '''
+          resval: "0"
+        }
+      ]
+    }
+    { name:     "BUS_CONTROL",
+      desc:     "Controller Bus Control Register.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      reinit:   "hci_sw_reinit_i",
+      fields: [
+        { bits:   "31",
+          name:   "PASSIVE_POLL_EN",
+          desc:   "Enable timer-driven polling for Passive Hot-Join Targets when the bus is inactive.",
+          resval: "0"
+        }
+      ]
+    }
     { name:     "PHY_CONFIG",
       desc:     "PHY configuration",
       swaccess: "rw",
@@ -1240,7 +1364,7 @@
         }
       ]
     }
-    { name:     "BUFFER_CTRL",
+    { name:     "BUFFER_CONTROL",
       desc:     "Buffer control",
       hwext:    "true",
       hwqe:     "true",
@@ -2089,7 +2213,7 @@
           name:     "AUTOCMD_DATA_RPT",
           desc:     "Auto-Command Data Report.",
           hwqe:     "true",
-          resval:   "1"
+          resval:   "0"
         },
         { bits:     "0",
           name:     "IBA_INCLUDE",
@@ -2885,17 +3009,18 @@
       desc:     "PIO Interrupt Force.",
       swaccess: "wo",
       hwaccess: "hro",
-      hwqe:     "true",
       reinit:   "hci_sw_reinit_i",
       fields: [
         { bits:   "9",
           name:   "TRANSFER_ERR_FORCE",
           desc:   "Force Transfer Error.",
+          hwqe:   "true",
           resval: "0"
         }
         { bits:   "5",
           name:   "TRANSFER_ABORT_FORCE",
           desc:   "Force Transfer Abort.",
+          hwqe:   "true",
           resval: "0"
         }
         { bits:   "4",
@@ -3828,6 +3953,14 @@
           desc:     "Target Error Status.",
           resval:   "0"
         }
+        { bits:     "30",
+          name:     "INTERNAL_ERR_STAT",
+          desc:     '''Target Internal Error Status.
+                    Asserted when the Target logic encounters an unrecoverable internal error.
+                    To resume operation, software must reset the Target logic, and all Virtual Targets are therefore affected.
+                    '''
+          resval:   "0",
+        }
         { bits:     "19",
           name:     "TX3_DESC_READY_STAT",
           desc:     '''Target 3 Tx Descriptor Queue Ready Status.
@@ -3937,6 +4070,11 @@
           desc:   "Target Error Status Enable.",
           resval: "0"
         }
+        { bits:   "30",
+          name:   "INTERNAL_ERR_STAT_EN",
+          desc:   "Target Internal Error Status Enable.",
+          resval: "0",
+        }
         { bits:   "19",
           name:   "TX3_DESC_READY_STAT_EN",
           desc:   "Target 3 Tx Descriptor Queue Ready Status Enable.",
@@ -4029,6 +4167,11 @@
           name:   "TE_SIGNAL_EN",
           desc:   "Target Error Signal Enable.",
           resval: "0"
+        }
+        { bits:   "30",
+          name:   "INTERNAL_ERR_SIGNAL_EN",
+          desc:   "Target Internal Error Signal Enable.",
+          resval: "0",
         }
         { bits:   "19",
           name:   "TX3_DESC_READY_SIGNAL_EN",
@@ -4124,6 +4267,11 @@
           desc:   "Force Target Error.",
           resval: "0"
         }
+        { bits:   "30",
+          name:   "INTERNAL_ERR_FORCE",
+          desc:   "Force Target Internal Error.",
+          resval: "0",
+        }
         { bits:   "19",
           name:   "TX3_DESC_READY_FORCE",
           desc:   "Force Target 3 Tx Descriptor Queue Ready.",
@@ -4208,21 +4356,21 @@
     }
     { name:     "TARG_PIO_CONTROL",
       desc:     "Target PIO mode Control register.",
-      hwqe:     "true",
       reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "27:24",
-          name:     "ABORT",
+          name:     "TX_ABORT",
           desc:     '''Allows software to abort transmission for each Virtual Target in turn.
                     Writing 1 to the corresponding bit will abort any in-progress transmission from that Virtual Target.
                     Transmission will enter the Suspended state and will not resume until the Suspended state is cleared.
                     ''',
           swaccess: "rw",
           hwaccess: "hrw",
+          hwqe:     "true",
           resval:   "0"
         }
         { bits:     "19:16",
-          name:     "SUSPENDED",
+          name:     "TX_SUSPENDED",
           desc:     '''Indicates, for each Virtual Target in turn, whether transmission has been suspended.
                     If an error occurs during transmission, the corresponding bit will be set automatically by hardware.
                     Software use of the Abort mechanism described above also causes this bit to become set.
@@ -4230,6 +4378,7 @@
                     ''',
           swaccess: "rw1c",
           hwaccess: "hrw",
+          hwqe:     "true",
           resval:   "0"
         }
         { bits:     "15:12",
@@ -4270,6 +4419,19 @@
           hwqe:     "true",
           resval:   "0"
         }
+        { bits:     "2",
+          name:     "IBI_SUSPEND_AUTO",
+          desc:     '''Determines whether IBI transmission is automatically suspended when an IBI request fails.
+
+                    When this bit is set, IBI transmission will automatically be suspended if an IBI transmission attempt fails.
+                    An attempt fails if it has been disabled by the Active Controller using a `DISEC` CCC, or if all retries have been met with a NACK response from the Controller.
+                    Note that suspending IBI transmission affects all Virtual Targets and not just the one that experienced the failed attempt.
+                    Notification of a IBI request failure may be provided by the Asynchronous Event queue.
+                    '''
+          swaccess: "rw",
+          hwaccess: "hro",
+          resval:   "0"
+        }
         { bits:     "1",
           name:     "IBI_ABORT",
           desc:     '''Allows software to abort transmission of In-Band Interrupts.
@@ -4278,6 +4440,7 @@
                     ''',
           swaccess: "rw",
           hwaccess: "hrw",
+          hwqe:     "true",
           resval:   "0"
         }
         { bits:     "0",
@@ -4289,6 +4452,7 @@
                     ''',
           swaccess: "rw1c",
           hwaccess: "hrw",
+          hwqe:     "true",
           resval:   "0"
         }
       ]
@@ -4296,13 +4460,13 @@
     { name:     "TARG_ASYNC_EVT_CONTROL",
       desc:     "Target Asynchronous Event Queue Control.",
       hwaccess: "hro",
-      hwqe:     "true",
       reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
           name:     "QUEUE_RESET",
           desc:     "Write 1 to reset the Asynchronous Event Queue.",
           swaccess: "rw1c",
+          hwqe:     "true",
           resval:   "0",
         }
         { bits:     "7",
@@ -5028,7 +5192,7 @@
     }
     // This window onto the entire message buffer is optionally included based on 'SWDirectMsgBuf'.
     // - Up to 1024 words of the message buffer may be accessed at a time, with any additional upper
-    //   address bits being specified by the `BUFFER_CTRL.SW_ADDR_HI` register field.
+    //   address bits being specified by the `BUFFER_CONTROL.SW_ADDR_HI` register field.
     { skipto: "0x1000" },
     { window: {
         name:       "BUFFER",

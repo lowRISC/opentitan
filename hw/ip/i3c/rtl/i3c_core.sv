@@ -235,6 +235,8 @@ module i3c_core
   // need this information. This augments the `PRESENT` field and reports 0 in the event that
   // PRESENT is clear (no Targets at all).
   assign hw2reg_o.targ_status.targets.d = (Target | SecondaryCtrl) ? 2'(NumTargets - 1) : 2'b00;
+  // TODO(#31337): Target Hot-Join request status; dummy driver.
+  assign hw2reg_o.targ_status.hj_req_status.d = 1'b0;
 
   // We measure tAVAL from the most recent bus activity _and_ the most recent transceiver reset.
   assign targ_rst_bus_avail = targ_bus_active | !targ_trx_rst_n;
@@ -674,17 +676,17 @@ module i3c_core
 
   // Suspend transmission from Virtual Targets.
   logic [NumTargets-1:0] targ_suspend_tx;
-  assign hw2reg_o.targ_pio_control.suspended.de = |targ_suspend_tx;
-  assign hw2reg_o.targ_pio_control.suspended.d  = reg2hw_i.targ_pio_control.suspended.q
-                                                | MaxTargets'(targ_suspend_tx);
+  assign hw2reg_o.targ_pio_control.tx_suspended.de = |targ_suspend_tx;
+  assign hw2reg_o.targ_pio_control.tx_suspended.d  = reg2hw_i.targ_pio_control.tx_suspended.q
+                                                   | MaxTargets'(targ_suspend_tx);
   // Suspend IBI Transmission from target; hardware only ever sets the 'suspended' bit.
   assign hw2reg_o.targ_pio_control.ibi_suspended.d = 1'b1;
   // Abort clearing.
   logic [NumTargets-1:0] targ_abort_clr;
   wire  [MaxTargets-1:0] maxtarg_abort_clr = MaxTargets'(targ_abort_clr);
-  assign hw2reg_o.targ_pio_control.abort.de = |targ_abort_clr;
-  assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q &
-                                             ~maxtarg_abort_clr;
+  assign hw2reg_o.targ_pio_control.tx_abort.de = |targ_abort_clr;
+  assign hw2reg_o.targ_pio_control.tx_abort.d  = reg2hw_i.targ_pio_control.tx_abort.q &
+                                                ~maxtarg_abort_clr;
   assign hw2reg_o.targ_pio_control.ibi_abort.d = 1'b0;  // Hardware only ever clears the 'abort'.
 
   // Shared configuration/status for all Virtual Targets.
@@ -985,8 +987,8 @@ module i3c_core
     .sink_error_o         (hw2reg_o.targ_sink_status.error.d),
 
     // Extension hardware.
-    .ext_present_o        (hw2reg_o.targ_status.ext_present.d),
-    .ext_info_o           (hw2reg_o.targ_status.ext_info.d),
+    .ext_present_o        (hw2reg_o.targ_ext_status.present.d),
+    .ext_info_o           (hw2reg_o.targ_ext_status.info.d),
     .ext_reg2hw_i         ('0),
     .ext_hw2reg_o         (),
 
@@ -1065,11 +1067,12 @@ module i3c_core
 
   // FIFO software reset signals.
   // - when first enabling one or more FIFO use cases, `i3c_buffer` needs to initialize pointers.
-  // - there is also a global reset (`BUFFER_CTRL.CLEAR`) for software use _when the IP block is
+  // - there is also a global reset (`BUFFER_CONTROL.CLEAR`) for software use _when the IP block is
   //   disabled_.
   // - both the HCI and the TTI require that their associated FIFOs be cleared when the software
   //   reset is asserted (`RESET_CONTROL.SOFT_RST` and `TARG_CONTROL.SW_RESET`).
-  wire buffer_clear  = (reg2hw_i.buffer_ctrl.clear.qe & reg2hw_i.buffer_ctrl.clear.q) | enabling;
+  wire buffer_clear  = (reg2hw_i.buffer_control.clear.qe & reg2hw_i.buffer_control.clear.q) |
+                       enabling;
   wire hci_buf_clear = ctrl_sw_reset | buffer_clear;
   wire tti_buf_clear = targ_sw_reset | buffer_clear;
 
@@ -1106,11 +1109,11 @@ module i3c_core
   for (genvar t = 0; t < MaxTargets; t++) begin : gen_targ_fifo_rst
     assign fifo_rst[FIFO_TxTarg0  + t] = &{reg2hw_i.targ_pio_control.txbuf_clear.qe,
                                            reg2hw_i.targ_pio_control.txbuf_clear.q[t],
-                                           reg2hw_i.targ_pio_control.suspended.q[t]} |
+                                           reg2hw_i.targ_pio_control.tx_suspended.q[t]} |
                                          tti_buf_clear;
     assign fifo_rst[FIFO_TxDTarg0 + t] = &{reg2hw_i.targ_pio_control.txbuf_clear.qe,
                                            reg2hw_i.targ_pio_control.txbuf_clear.q[t],
-                                           reg2hw_i.targ_pio_control.suspended.q[t]} |
+                                           reg2hw_i.targ_pio_control.tx_suspended.q[t]} |
                                          tti_buf_clear;
   end
 
@@ -1425,10 +1428,12 @@ module i3c_core
   logic [BufAddrW-1:0] sw_buf_addr;
   logic [1:0] sw_addr_hi_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) sw_addr_hi_q <= I3C_BUFFER_CTRL_SW_ADDR_HI_RESVAL;
-    else if (reg2hw_i.buffer_ctrl.sw_addr_hi.qe) sw_addr_hi_q <= reg2hw_i.buffer_ctrl.sw_addr_hi.q;
+    if (!rst_ni) sw_addr_hi_q <= I3C_BUFFER_CONTROL_SW_ADDR_HI_RESVAL;
+    else if (reg2hw_i.buffer_control.sw_addr_hi.qe) begin
+      sw_addr_hi_q <= reg2hw_i.buffer_control.sw_addr_hi.q;
+    end
   end
-  assign hw2reg_o.buffer_ctrl.sw_addr_hi.d = sw_addr_hi_q;
+  assign hw2reg_o.buffer_control.sw_addr_hi.d = sw_addr_hi_q;
   assign sw_buf_addr = BufAddrW'({sw_addr_hi_q, sw_buf_addr_i});
 
   // Presenting the default FIFO configuration permits the message buffer to initialize the write
@@ -1619,18 +1624,28 @@ module i3c_core
     .te_o             (targ_trx_te)
   );
 
+  // TODO(#31304):Placeholder timer signals on the Controller side.
+  wire ctrl_heart_beat = 1'b1;
+  logic dead_ctrl;
+  logic ctrl_poll_now;
+  // TODO(#31337):Placeholder timer signals on the Target side.
+  wire targ_heart_beat = 1'b1;
+  wire targ_ibi_nacked = 1'b1;
+  logic dead_targ;
+  logic targ_ibi_retry;
+
   // Interval timers driven by the IP block, reporting on timed events related to bus activity or
   // inactivity.
   i3c_timers #(
     .ClkFreq     (ClkFreq),
-    .NumTimers   (8),
+    .NumTimers   (12),
     .MaxDefaultW (16),
     // Shift distances, in bits, for each software-programmed override interval.
-    .TimerShifts (32'he_0_6_0_0_4_6_8),
+    .TimerShifts (48'he_0_6_0_0_4_6_8_0_0_0_0),
     // For each timer, the minimum interval to be measured is specified in microseconds,
     // allocating 16 bits to each timer in turn.
     //               50000, 1,  150, 1,   5,   60,  200, 800us
-    .DefaultInts (128'hc350_0001_0096_0001_0005_003c_00c8_0320)
+    .DefaultInts (192'hc350_0001_0096_0001_0005_003c_00c8_0320_0000_0000_0000_0000)
   ) u_timers (
     .clk_i       (clk_i),
     .rst_ni      (rst_ni),
@@ -1644,7 +1659,11 @@ module i3c_core
                    reg2hw_i.interval_time1.targ_trx_rst.q,
                    reg2hw_i.interval_time1.te0_recov.q,
                    reg2hw_i.interval_time1.targ_bus_idle.q,
-                   reg2hw_i.interval_time1.command_retry.q}),
+                   reg2hw_i.interval_time1.command_retry.q,
+                   reg2hw_i.interval_time2.dead_targ.q,
+                   reg2hw_i.interval_time2.dead_ctrl.q,
+                   reg2hw_i.interval_time2.poll_targets.q,
+                   reg2hw_i.interval_time2.ibi_retry.q}),
 
     // Resets for interval timers.
     .tm_resets_i ({rst_dead_bus,
@@ -1654,7 +1673,11 @@ module i3c_core
                    targ_trx_rst_trig,
                    targ_bus_active,
                    targ_bus_active,
-                   ctrl_cmd_nacked}),
+                   ctrl_cmd_nacked,
+                   targ_heart_beat,
+                   ctrl_heart_beat,
+                   ctrl_bus_active,
+                   targ_ibi_nacked}),
 
     // 'Time interval elapsed' signals.
     .tm_elapsed_o({dead_bus,
@@ -1664,7 +1687,11 @@ module i3c_core
                    targ_trx_prst_n,
                    te0_recov,
                    targ_bus_idle,
-                   ctrl_cmd_retry})
+                   ctrl_cmd_retry,
+                   dead_targ,
+                   dead_ctrl,
+                   ctrl_poll_now,
+                   targ_ibi_retry})
   );
 
   // I3C pattern detector:
@@ -1965,6 +1992,7 @@ module i3c_core
     .event_i    (targ_interrupts),
 
     .status_en_i({reg2hw_i.targ_intr_status_enable.te_stat_en.q,
+                  reg2hw_i.targ_intr_status_enable.internal_err_stat_en.q,
                   reg2hw_i.targ_intr_status_enable.tx3_desc_ready_stat_en.q,
                   reg2hw_i.targ_intr_status_enable.tx2_desc_ready_stat_en.q,
                   reg2hw_i.targ_intr_status_enable.tx1_desc_ready_stat_en.q,
@@ -1982,6 +2010,7 @@ module i3c_core
                   reg2hw_i.targ_intr_status_enable.ibi_status_thld_stat_en.q,
                   reg2hw_i.targ_intr_status_enable.rx_desc_ready_stat_en.q}),
     .status_de_o({hw2reg_o.targ_intr_status.te_stat.de,
+                  hw2reg_o.targ_intr_status.internal_err_stat.de,
                   hw2reg_o.targ_intr_status.tx3_desc_ready_stat.de,
                   hw2reg_o.targ_intr_status.tx2_desc_ready_stat.de,
                   hw2reg_o.targ_intr_status.tx1_desc_ready_stat.de,
@@ -1999,6 +2028,7 @@ module i3c_core
                   hw2reg_o.targ_intr_status.ibi_status_thld_stat.de,
                   hw2reg_o.targ_intr_status.rx_desc_ready_stat.de}),
     .status_d_o ({hw2reg_o.targ_intr_status.te_stat.d,
+                  hw2reg_o.targ_intr_status.internal_err_stat.d,
                   hw2reg_o.targ_intr_status.tx3_desc_ready_stat.d,
                   hw2reg_o.targ_intr_status.tx2_desc_ready_stat.d,
                   hw2reg_o.targ_intr_status.tx1_desc_ready_stat.d,
@@ -2017,6 +2047,7 @@ module i3c_core
                   hw2reg_o.targ_intr_status.rx_desc_ready_stat.d}),
     // These are all Status-type (level-sensitive), so the force is continuous until removed.
     .force_i    ({reg2hw_i.targ_intr_force.te_force.q,
+                  reg2hw_i.targ_intr_force.internal_err_force.q,
                   reg2hw_i.targ_intr_force.tx3_desc_ready_force.q,
                   reg2hw_i.targ_intr_force.tx2_desc_ready_force.q,
                   reg2hw_i.targ_intr_force.tx1_desc_ready_force.q,
@@ -2034,6 +2065,7 @@ module i3c_core
                   reg2hw_i.targ_intr_force.ibi_thld_force.q,
                   reg2hw_i.targ_intr_force.rx_desc_ready_force.q}),
     .status_i   ({reg2hw_i.targ_intr_status.te_stat.q,
+                  reg2hw_i.targ_intr_status.internal_err_stat.q,
                   reg2hw_i.targ_intr_status.tx3_desc_ready_stat.q,
                   reg2hw_i.targ_intr_status.tx2_desc_ready_stat.q,
                   reg2hw_i.targ_intr_status.tx1_desc_ready_stat.q,
@@ -2051,6 +2083,7 @@ module i3c_core
                   reg2hw_i.targ_intr_status.ibi_status_thld_stat.q,
                   reg2hw_i.targ_intr_status.rx_desc_ready_stat.q}),
     .signal_en_i({reg2hw_i.targ_intr_signal_enable.te_signal_en.q,
+                  reg2hw_i.targ_intr_signal_enable.internal_err_signal_en.q,
                   reg2hw_i.targ_intr_signal_enable.tx3_desc_ready_signal_en.q,
                   reg2hw_i.targ_intr_signal_enable.tx2_desc_ready_signal_en.q,
                   reg2hw_i.targ_intr_signal_enable.tx1_desc_ready_signal_en.q,
@@ -2285,8 +2318,17 @@ module i3c_core
     assign hw2reg_o.targ_group[grp].targets.d     = targ_grp_targ_d[grp];
   end
 
+  // Current activation state (delayed echo of requested activation).
   assign hw2reg_o.reset_det_status.active.de     = 1'b1;
   assign hw2reg_o.reset_det_status.active.d      = rstdet_i.active;
+  // Current configuration (delayed echo of requested configuration).
+  assign hw2reg_o.reset_det_status.sleep_req_en.de  = 1'b1;
+  assign hw2reg_o.reset_det_status.sleep_req_en.d   = rstdet_i.deep_sleep_en;
+  assign hw2reg_o.reset_det_status.rst_periph_en.de = 1'b1;
+  assign hw2reg_o.reset_det_status.rst_periph_en.d  = rstdet_i.rst_periph_en;
+  assign hw2reg_o.reset_det_status.rst_target_en.de = 1'b1;
+  assign hw2reg_o.reset_det_status.rst_target_en.d  = rstdet_i.rst_target_en;
+  // Detection status.
   assign hw2reg_o.reset_det_status.wake_up.de    = 1'b1;
   assign hw2reg_o.reset_det_status.wake_up.d     = rstdet_i.wake_up_det;
   assign hw2reg_o.reset_det_status.rst_periph.de = 1'b1;
@@ -2322,25 +2364,20 @@ module i3c_core
     reg2hw_i.ibi_data_abort_ctrl.match_status_type.q, reg2hw_i.ibi_data_abort_ctrl.reinit,
     reg2hw_i.ibi_notify_ctrl.reinit, reg2hw_i.intr_force.reinit,
     reg2hw_i.intr_signal_enable.reinit, reg2hw_i.intr_status.reinit,
-    reg2hw_i.intr_status_enable.reinit, reg2hw_i.mx_error_counters.q, reg2hw_i.phy_config.reinit,
-    reg2hw_i.pio_control.reinit, reg2hw_i.pio_intr_force.cmd_queue_ready_force.qe,
-    reg2hw_i.pio_intr_force.ibi_thld_force.qe, reg2hw_i.pio_intr_force.reinit,
-    reg2hw_i.pio_intr_force.resp_ready_force.qe, reg2hw_i.pio_intr_force.rx_thld_force.qe,
-    reg2hw_i.pio_intr_force.tx_thld_force.qe, reg2hw_i.pio_intr_signal_enable.reinit,
+    reg2hw_i.intr_status_enable.reinit, reg2hw_i.mx_error_counters.q,
+    reg2hw_i.bus_control.q, reg2hw_i.bus_control.reinit, reg2hw_i.phy_config.reinit,
+    reg2hw_i.pio_intr_force.reinit,
+    reg2hw_i.pio_control.reinit, reg2hw_i.pio_intr_signal_enable.reinit,
     reg2hw_i.pio_intr_status.reinit, reg2hw_i.pio_intr_status_enable.reinit,
     reg2hw_i.queue_thld_ctrl.reinit,
     reg2hw_i.stby_cr_ccc_config_rstact_params.rst_action.q,
     reg2hw_i.stby_cr_ccc_config_rstact_params.rst_action.qe, reg2hw_i.stby_cr_intr_force.reinit,
     reg2hw_i.stby_cr_intr_signal_enable.reinit, reg2hw_i.stby_cr_intr_status.reinit,
-    reg2hw_i.targ_async_evt_control.bcst_ccc.qe, reg2hw_i.targ_async_evt_control.bus_events.qe,
-    reg2hw_i.targ_async_evt_control.dir_get_ccc.qe,
-    reg2hw_i.targ_async_evt_control.dir_set_ccc.qe,
-    reg2hw_i.targ_async_evt_control.ibi_notify.qe,
-    reg2hw_i.targ_async_evt_control.ibi_suspend.qe, reg2hw_i.targ_async_evt_control.reinit,
-    reg2hw_i.targ_async_evt_control.tx_notify.qe, reg2hw_i.targ_async_evt_control.tx_suspend.qe,
+    reg2hw_i.targ_async_evt_control.reinit,
     reg2hw_i.targ_buf_thld_ctrl.reinit, reg2hw_i.targ_buf_thld_ctrl.rx_segment_size.q,
     reg2hw_i.targ_buf_thld_ctrl.rx_start_thld.q, reg2hw_i.targ_control.hj_request.q,
-    reg2hw_i.targ_control.hj_request.qe, reg2hw_i.targ_control.reinit,
+    reg2hw_i.targ_control.hj_request.qe, reg2hw_i.targ_control.ibi_nack_retry_cnt.q,
+    reg2hw_i.targ_control.reinit,
     reg2hw_i.targ_error.reinit, reg2hw_i.targ_intr_force.async_evt_ovf_force.qe,
     reg2hw_i.targ_intr_force.async_evt_ready_force.qe,
     reg2hw_i.targ_intr_force.ibi_thld_force.qe, reg2hw_i.targ_intr_force.reinit,
@@ -2352,12 +2389,14 @@ module i3c_core
     reg2hw_i.targ_intr_force.tx1_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx1_thld_force.qe,
     reg2hw_i.targ_intr_force.tx2_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx2_thld_force.qe,
     reg2hw_i.targ_intr_force.tx3_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx3_thld_force.qe,
+    reg2hw_i.targ_intr_force.internal_err_force.qe,
     reg2hw_i.targ_intr_signal_enable.reinit, reg2hw_i.targ_intr_status.reinit,
-    reg2hw_i.targ_intr_status_enable.reinit, reg2hw_i.targ_pio_control.abort.qe,
+    reg2hw_i.targ_intr_status_enable.reinit, reg2hw_i.targ_pio_control.tx_abort.qe,
     reg2hw_i.targ_pio_control.ibi_abort.q, reg2hw_i.targ_pio_control.ibi_abort.qe,
+    reg2hw_i.targ_pio_control.ibi_suspend_auto.q,
     reg2hw_i.targ_pio_control.reinit, reg2hw_i.targ_queue_thld_ctrl.reinit,
-    reg2hw_i.targ_sink_control.reinit, reg2hw_i.targ_status.ext_info.q,
-    reg2hw_i.targ_status.ext_info.qe, reg2hw_i.targ_status.protocol_error.qe,
+    reg2hw_i.targ_sink_control.reinit, reg2hw_i.targ_ext_status.info.q,
+    reg2hw_i.targ_ext_status.info.qe, reg2hw_i.targ_status.protocol_error.qe,
     reg2hw_i.targ_sink_control.buffer.q[2]
   };
   // - register fields of all Virtual Targets.
@@ -2431,6 +2470,9 @@ module i3c_core
   assign unused_hci_addr = ^bufq_addr_i[TL_HCI][3:2];
   // - TODO(#31333): timers whose outputs are not yet routed to the core logic.
   logic unused_timers;
-  assign unused_timers = ^{read_stalled, te0_recov};
+  assign unused_timers = ^{read_stalled, te0_recov, ctrl_poll_now, targ_ibi_retry};
+  // - TODO(#31307): these timers need associated interrupts to inform software drivers.
+  logic unused_timers_dead;
+  assign unused_timers_dead = ^{dead_ctrl, dead_targ};
 
 endmodule

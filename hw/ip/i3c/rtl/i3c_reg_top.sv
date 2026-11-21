@@ -75,9 +75,9 @@ module i3c_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [187:0] reg_we_check;
+  logic [190:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(188)
+    .OneHotWidth(191)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -243,14 +243,13 @@ module i3c_reg_top
   logic targ_control_crhdly1_set_as_wd;
   logic targ_control_en_hdr_ddr_qs;
   logic targ_control_en_hdr_ddr_wd;
+  logic [1:0] targ_control_ibi_nack_retry_cnt_qs;
+  logic [1:0] targ_control_ibi_nack_retry_cnt_wd;
   logic targ_control_hj_request_qs;
   logic targ_control_hj_request_wd;
   logic targ_control_sw_reset_wd;
   logic targ_status_re;
-  logic targ_status_we;
-  logic [14:0] targ_status_ext_info_qs;
-  logic [14:0] targ_status_ext_info_wd;
-  logic targ_status_ext_present_qs;
+  logic targ_status_hj_req_status_qs;
   logic [7:0] targ_status_rstact_qs;
   logic targ_status_rstact_virt_targ_det_qs;
   logic targ_status_vtm_qs;
@@ -259,6 +258,11 @@ module i3c_reg_top
   logic targ_status_connected_qs;
   logic targ_status_active_qs;
   logic targ_status_present_qs;
+  logic targ_ext_status_re;
+  logic targ_ext_status_we;
+  logic [15:0] targ_ext_status_info_qs;
+  logic [15:0] targ_ext_status_info_wd;
+  logic targ_ext_status_present_qs;
   logic targ_sink_control_we;
   logic [3:0] targ_sink_control_buffer_qs;
   logic [3:0] targ_sink_control_buffer_wd;
@@ -269,10 +273,10 @@ module i3c_reg_top
   logic targ_sink_status_active_qs;
   logic targ_sink_status_error_qs;
   logic [10:0] targ_sink_status_length_qs;
-  logic reset_det_ctrl_we;
-  logic [21:0] reset_det_ctrl_qs;
-  logic reset_det_ctrl_busy;
-  logic [21:0] reset_det_status_qs;
+  logic reset_det_control_we;
+  logic [21:0] reset_det_control_qs;
+  logic reset_det_control_busy;
+  logic [29:0] reset_det_status_qs;
   logic reset_det_status_busy;
   logic ctrl_time_sp_we;
   logic [9:0] ctrl_time_sp_tcbp_div2_qs;
@@ -344,6 +348,18 @@ module i3c_reg_top
   logic [7:0] interval_time1_te0_recov_wd;
   logic [7:0] interval_time1_targ_trx_rst_qs;
   logic [7:0] interval_time1_targ_trx_rst_wd;
+  logic interval_time2_we;
+  logic [7:0] interval_time2_ibi_retry_qs;
+  logic [7:0] interval_time2_ibi_retry_wd;
+  logic [7:0] interval_time2_poll_targets_qs;
+  logic [7:0] interval_time2_poll_targets_wd;
+  logic [7:0] interval_time2_dead_ctrl_qs;
+  logic [7:0] interval_time2_dead_ctrl_wd;
+  logic [7:0] interval_time2_dead_targ_qs;
+  logic [7:0] interval_time2_dead_targ_wd;
+  logic bus_control_we;
+  logic bus_control_qs;
+  logic bus_control_wd;
   logic phy_config_we;
   logic phy_config_scl_hk_en_qs;
   logic phy_config_scl_hk_en_wd;
@@ -374,11 +390,11 @@ module i3c_reg_top
   logic [6:0] blocked_addr_addr1_wd;
   logic [6:0] blocked_addr_mask1_qs;
   logic [6:0] blocked_addr_mask1_wd;
-  logic buffer_ctrl_re;
-  logic buffer_ctrl_we;
-  logic [1:0] buffer_ctrl_sw_addr_hi_qs;
-  logic [1:0] buffer_ctrl_sw_addr_hi_wd;
-  logic buffer_ctrl_clear_wd;
+  logic buffer_control_re;
+  logic buffer_control_we;
+  logic [1:0] buffer_control_sw_addr_hi_qs;
+  logic [1:0] buffer_control_sw_addr_hi_wd;
+  logic buffer_control_clear_wd;
   logic buffer_status_we;
   logic buffer_status_ttiq_err_qs;
   logic buffer_status_ttiq_err_wd;
@@ -1003,6 +1019,7 @@ module i3c_reg_top
   logic targ_intr_status_tx1_desc_ready_stat_qs;
   logic targ_intr_status_tx2_desc_ready_stat_qs;
   logic targ_intr_status_tx3_desc_ready_stat_qs;
+  logic targ_intr_status_internal_err_stat_qs;
   logic targ_intr_status_te_stat_qs;
   logic targ_intr_status_enable_we;
   logic targ_intr_status_enable_rx_desc_ready_stat_en_qs;
@@ -1037,6 +1054,8 @@ module i3c_reg_top
   logic targ_intr_status_enable_tx2_desc_ready_stat_en_wd;
   logic targ_intr_status_enable_tx3_desc_ready_stat_en_qs;
   logic targ_intr_status_enable_tx3_desc_ready_stat_en_wd;
+  logic targ_intr_status_enable_internal_err_stat_en_qs;
+  logic targ_intr_status_enable_internal_err_stat_en_wd;
   logic targ_intr_status_enable_te_stat_en_qs;
   logic targ_intr_status_enable_te_stat_en_wd;
   logic targ_intr_signal_enable_we;
@@ -1072,6 +1091,8 @@ module i3c_reg_top
   logic targ_intr_signal_enable_tx2_desc_ready_signal_en_wd;
   logic targ_intr_signal_enable_tx3_desc_ready_signal_en_qs;
   logic targ_intr_signal_enable_tx3_desc_ready_signal_en_wd;
+  logic targ_intr_signal_enable_internal_err_signal_en_qs;
+  logic targ_intr_signal_enable_internal_err_signal_en_wd;
   logic targ_intr_signal_enable_te_signal_en_qs;
   logic targ_intr_signal_enable_te_signal_en_wd;
   logic targ_intr_force_we;
@@ -1091,19 +1112,22 @@ module i3c_reg_top
   logic targ_intr_force_tx1_desc_ready_force_wd;
   logic targ_intr_force_tx2_desc_ready_force_wd;
   logic targ_intr_force_tx3_desc_ready_force_wd;
+  logic targ_intr_force_internal_err_force_wd;
   logic targ_intr_force_te_force_wd;
   logic targ_pio_control_we;
   logic targ_pio_control_ibi_suspended_qs;
   logic targ_pio_control_ibi_suspended_wd;
   logic targ_pio_control_ibi_abort_qs;
   logic targ_pio_control_ibi_abort_wd;
+  logic targ_pio_control_ibi_suspend_auto_qs;
+  logic targ_pio_control_ibi_suspend_auto_wd;
   logic targ_pio_control_rxbuf_clear_wd;
   logic targ_pio_control_ibibuf_clear_wd;
   logic [3:0] targ_pio_control_txbuf_clear_wd;
-  logic [3:0] targ_pio_control_suspended_qs;
-  logic [3:0] targ_pio_control_suspended_wd;
-  logic [3:0] targ_pio_control_abort_qs;
-  logic [3:0] targ_pio_control_abort_wd;
+  logic [3:0] targ_pio_control_tx_suspended_qs;
+  logic [3:0] targ_pio_control_tx_suspended_wd;
+  logic [3:0] targ_pio_control_tx_abort_qs;
+  logic [3:0] targ_pio_control_tx_abort_wd;
   logic targ_async_evt_control_we;
   logic targ_async_evt_control_bcst_ccc_qs;
   logic targ_async_evt_control_bcst_ccc_wd;
@@ -1495,13 +1519,13 @@ module i3c_reg_top
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
-  logic [21:0] aon_reset_det_ctrl_qs;
-  logic [21:0] aon_reset_det_ctrl_wdata;
-  logic aon_reset_det_ctrl_we;
-  logic unused_aon_reset_det_ctrl_wdata;
+  logic [21:0] aon_reset_det_control_qs;
+  logic [21:0] aon_reset_det_control_wdata;
+  logic aon_reset_det_control_we;
+  logic unused_aon_reset_det_control_wdata;
 
   always_comb begin
-    aon_reset_det_ctrl_qs = 22'h0;
+    aon_reset_det_control_qs = 22'h0;
   end
 
   prim_reg_cdc #(
@@ -1509,57 +1533,69 @@ module i3c_reg_top
     .ResetVal(22'h0),
     .BitMask(22'h310001),
     .DstWrReq(0)
-  ) u_reset_det_ctrl_cdc (
+  ) u_reset_det_control_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_regwen_i ('0),
-    .src_we_i     (reset_det_ctrl_we),
+    .src_we_i     (reset_det_control_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[21:0]),
-    .src_busy_o   (reset_det_ctrl_busy),
-    .src_qs_o     (reset_det_ctrl_qs), // for software read back
+    .src_busy_o   (reset_det_control_busy),
+    .src_qs_o     (reset_det_control_qs), // for software read back
     .dst_update_i ('0),
     .dst_ds_i     ('0),
-    .dst_qs_i     (aon_reset_det_ctrl_qs),
-    .dst_we_o     (aon_reset_det_ctrl_we),
+    .dst_qs_i     (aon_reset_det_control_qs),
+    .dst_we_o     (aon_reset_det_control_we),
     .dst_re_o     (),
     .dst_regwen_o (),
-    .dst_wd_o     (aon_reset_det_ctrl_wdata)
+    .dst_wd_o     (aon_reset_det_control_wdata)
   );
-  assign unused_aon_reset_det_ctrl_wdata =
-      ^aon_reset_det_ctrl_wdata;
+  assign unused_aon_reset_det_control_wdata =
+      ^aon_reset_det_control_wdata;
 
   logic  aon_reset_det_status_active_ds_int;
   logic  aon_reset_det_status_active_qs_int;
+  logic  aon_reset_det_status_sleep_req_en_ds_int;
+  logic  aon_reset_det_status_sleep_req_en_qs_int;
+  logic  aon_reset_det_status_rst_periph_en_ds_int;
+  logic  aon_reset_det_status_rst_periph_en_qs_int;
+  logic  aon_reset_det_status_rst_target_en_ds_int;
+  logic  aon_reset_det_status_rst_target_en_qs_int;
   logic  aon_reset_det_status_wake_up_ds_int;
   logic  aon_reset_det_status_wake_up_qs_int;
   logic  aon_reset_det_status_rst_periph_ds_int;
   logic  aon_reset_det_status_rst_periph_qs_int;
   logic  aon_reset_det_status_rst_target_ds_int;
   logic  aon_reset_det_status_rst_target_qs_int;
-  logic [21:0] aon_reset_det_status_ds;
+  logic [29:0] aon_reset_det_status_ds;
   logic aon_reset_det_status_qe;
-  logic [21:0] aon_reset_det_status_qs;
+  logic [29:0] aon_reset_det_status_qs;
 
   always_comb begin
-    aon_reset_det_status_qs = 22'h0;
-    aon_reset_det_status_ds = 22'h0;
+    aon_reset_det_status_qs = 30'h0;
+    aon_reset_det_status_ds = 30'h0;
     aon_reset_det_status_ds[0] = aon_reset_det_status_active_ds_int;
     aon_reset_det_status_qs[0] = aon_reset_det_status_active_qs_int;
-    aon_reset_det_status_ds[16] = aon_reset_det_status_wake_up_ds_int;
-    aon_reset_det_status_qs[16] = aon_reset_det_status_wake_up_qs_int;
-    aon_reset_det_status_ds[20] = aon_reset_det_status_rst_periph_ds_int;
-    aon_reset_det_status_qs[20] = aon_reset_det_status_rst_periph_qs_int;
-    aon_reset_det_status_ds[21] = aon_reset_det_status_rst_target_ds_int;
-    aon_reset_det_status_qs[21] = aon_reset_det_status_rst_target_qs_int;
+    aon_reset_det_status_ds[16] = aon_reset_det_status_sleep_req_en_ds_int;
+    aon_reset_det_status_qs[16] = aon_reset_det_status_sleep_req_en_qs_int;
+    aon_reset_det_status_ds[20] = aon_reset_det_status_rst_periph_en_ds_int;
+    aon_reset_det_status_qs[20] = aon_reset_det_status_rst_periph_en_qs_int;
+    aon_reset_det_status_ds[21] = aon_reset_det_status_rst_target_en_ds_int;
+    aon_reset_det_status_qs[21] = aon_reset_det_status_rst_target_en_qs_int;
+    aon_reset_det_status_ds[24] = aon_reset_det_status_wake_up_ds_int;
+    aon_reset_det_status_qs[24] = aon_reset_det_status_wake_up_qs_int;
+    aon_reset_det_status_ds[28] = aon_reset_det_status_rst_periph_ds_int;
+    aon_reset_det_status_qs[28] = aon_reset_det_status_rst_periph_qs_int;
+    aon_reset_det_status_ds[29] = aon_reset_det_status_rst_target_ds_int;
+    aon_reset_det_status_qs[29] = aon_reset_det_status_rst_target_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(22),
-    .ResetVal(22'h0),
-    .BitMask(22'h310001),
+    .DataWidth(30),
+    .ResetVal(30'h0),
+    .BitMask(30'h31310001),
     .DstWrReq(1)
   ) u_reset_det_status_cdc (
     .clk_src_i    (clk_i),
@@ -1999,7 +2035,7 @@ module i3c_reg_top
 
   // R[targ_control]: V(False)
   logic targ_control_qe;
-  logic [6:0] targ_control_flds_we;
+  logic [7:0] targ_control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -2152,6 +2188,34 @@ module i3c_reg_top
     .qs     (targ_control_en_hdr_ddr_qs)
   );
 
+  //   F[ibi_nack_retry_cnt]: 29:28
+  prim_subreg #(
+    .DW      (2),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (2'h0),
+    .Mubi    (1'b0)
+  ) u_targ_control_ibi_nack_retry_cnt (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_control_we),
+    .wd     (targ_control_ibi_nack_retry_cnt_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_control_flds_we[5]),
+    .q      (reg2hw.targ_control.ibi_nack_retry_cnt.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_control_ibi_nack_retry_cnt_qs)
+  );
+
   //   F[hj_request]: 30:30
   prim_subreg #(
     .DW      (1),
@@ -2172,7 +2236,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_control.hj_request.d),
 
     // to internal hardware
-    .qe     (targ_control_flds_we[5]),
+    .qe     (targ_control_flds_we[6]),
     .q      (reg2hw.targ_control.hj_request.q),
     .ds     (),
 
@@ -2201,7 +2265,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_control_flds_we[6]),
+    .qe     (targ_control_flds_we[7]),
     .q      (reg2hw.targ_control.sw_reset.q),
     .ds     (),
 
@@ -2213,40 +2277,22 @@ module i3c_reg_top
 
   // R[targ_status]: V(True)
   logic targ_status_qe;
-  logic [9:0] targ_status_flds_we;
-  // This ignores QEs that are set to constant 0 due to read-only fields.
-  logic unused_targ_status_flds_we;
-  assign unused_targ_status_flds_we = ^(targ_status_flds_we & 10'h3fe);
-  assign targ_status_qe = &(targ_status_flds_we | 10'h3fe);
-  //   F[ext_info]: 14:0
-  prim_subreg_ext #(
-    .DW    (15)
-  ) u_targ_status_ext_info (
-    .re     (targ_status_re),
-    .we     (targ_status_we),
-    .wd     (targ_status_ext_info_wd),
-    .d      (hw2reg.targ_status.ext_info.d),
-    .qre    (),
-    .qe     (targ_status_flds_we[0]),
-    .q      (reg2hw.targ_status.ext_info.q),
-    .ds     (),
-    .qs     (targ_status_ext_info_qs)
-  );
-  assign reg2hw.targ_status.ext_info.qe = targ_status_qe;
-
-  //   F[ext_present]: 15:15
+  logic [8:0] targ_status_flds_we;
+  // In case all fields are read-only the aggregated register QE will be zero as well.
+  assign targ_status_qe = &targ_status_flds_we;
+  //   F[hj_req_status]: 15:15
   prim_subreg_ext #(
     .DW    (1)
-  ) u_targ_status_ext_present (
+  ) u_targ_status_hj_req_status (
     .re     (targ_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.targ_status.ext_present.d),
+    .d      (hw2reg.targ_status.hj_req_status.d),
     .qre    (),
-    .qe     (targ_status_flds_we[1]),
+    .qe     (targ_status_flds_we[0]),
     .q      (),
     .ds     (),
-    .qs     (targ_status_ext_present_qs)
+    .qs     (targ_status_hj_req_status_qs)
   );
 
   //   F[rstact]: 23:16
@@ -2258,7 +2304,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.rstact.d),
     .qre    (),
-    .qe     (targ_status_flds_we[2]),
+    .qe     (targ_status_flds_we[1]),
     .q      (),
     .ds     (),
     .qs     (targ_status_rstact_qs)
@@ -2273,7 +2319,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.rstact_virt_targ_det.d),
     .qre    (),
-    .qe     (targ_status_flds_we[3]),
+    .qe     (targ_status_flds_we[2]),
     .q      (),
     .ds     (),
     .qs     (targ_status_rstact_virt_targ_det_qs)
@@ -2288,7 +2334,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.vtm.d),
     .qre    (),
-    .qe     (targ_status_flds_we[4]),
+    .qe     (targ_status_flds_we[3]),
     .q      (),
     .ds     (),
     .qs     (targ_status_vtm_qs)
@@ -2303,7 +2349,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.protocol_error.d),
     .qre    (),
-    .qe     (targ_status_flds_we[5]),
+    .qe     (targ_status_flds_we[4]),
     .q      (reg2hw.targ_status.protocol_error.q),
     .ds     (),
     .qs     (targ_status_protocol_error_qs)
@@ -2319,7 +2365,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.targets.d),
     .qre    (),
-    .qe     (targ_status_flds_we[6]),
+    .qe     (targ_status_flds_we[5]),
     .q      (),
     .ds     (),
     .qs     (targ_status_targets_qs)
@@ -2334,7 +2380,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.connected.d),
     .qre    (),
-    .qe     (targ_status_flds_we[7]),
+    .qe     (targ_status_flds_we[6]),
     .q      (),
     .ds     (),
     .qs     (targ_status_connected_qs)
@@ -2349,7 +2395,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.active.d),
     .qre    (),
-    .qe     (targ_status_flds_we[8]),
+    .qe     (targ_status_flds_we[7]),
     .q      (),
     .ds     (),
     .qs     (targ_status_active_qs)
@@ -2364,10 +2410,49 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.present.d),
     .qre    (),
-    .qe     (targ_status_flds_we[9]),
+    .qe     (targ_status_flds_we[8]),
     .q      (),
     .ds     (),
     .qs     (targ_status_present_qs)
+  );
+
+
+  // R[targ_ext_status]: V(True)
+  logic targ_ext_status_qe;
+  logic [1:0] targ_ext_status_flds_we;
+  // This ignores QEs that are set to constant 0 due to read-only fields.
+  logic unused_targ_ext_status_flds_we;
+  assign unused_targ_ext_status_flds_we = ^(targ_ext_status_flds_we & 2'h2);
+  assign targ_ext_status_qe = &(targ_ext_status_flds_we | 2'h2);
+  //   F[info]: 15:0
+  prim_subreg_ext #(
+    .DW    (16)
+  ) u_targ_ext_status_info (
+    .re     (targ_ext_status_re),
+    .we     (targ_ext_status_we),
+    .wd     (targ_ext_status_info_wd),
+    .d      (hw2reg.targ_ext_status.info.d),
+    .qre    (),
+    .qe     (targ_ext_status_flds_we[0]),
+    .q      (reg2hw.targ_ext_status.info.q),
+    .ds     (),
+    .qs     (targ_ext_status_info_qs)
+  );
+  assign reg2hw.targ_ext_status.info.qe = targ_ext_status_qe;
+
+  //   F[present]: 31:31
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_targ_ext_status_present (
+    .re     (targ_ext_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.targ_ext_status.present.d),
+    .qre    (),
+    .qe     (targ_ext_status_flds_we[1]),
+    .q      (),
+    .ds     (),
+    .qs     (targ_ext_status_present_qs)
   );
 
 
@@ -2519,21 +2604,21 @@ module i3c_reg_top
   );
 
 
-  // R[reset_det_ctrl]: V(False)
+  // R[reset_det_control]: V(False)
   //   F[activate]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_activate (
+  ) u_reset_det_control_activate (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[0]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2541,7 +2626,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.activate.q),
+    .q      (reg2hw.reset_det_control.activate.q),
     .ds     (),
 
     // to register interface (read)
@@ -2554,14 +2639,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_sleep_req (
+  ) u_reset_det_control_sleep_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[16]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[16]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2569,7 +2654,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
+    .q      (reg2hw.reset_det_control.sleep_req.q),
     .ds     (),
 
     // to register interface (read)
@@ -2582,14 +2667,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_rst_periph_en (
+  ) u_reset_det_control_rst_periph_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[20]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[20]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2597,7 +2682,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.rst_periph_en.q),
+    .q      (reg2hw.reset_det_control.rst_periph_en.q),
     .ds     (),
 
     // to register interface (read)
@@ -2610,14 +2695,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_rst_target_en (
+  ) u_reset_det_control_rst_target_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[21]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[21]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2625,7 +2710,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.rst_target_en.q),
+    .q      (reg2hw.reset_det_control.rst_target_en.q),
     .ds     (),
 
     // to register interface (read)
@@ -2634,7 +2719,7 @@ module i3c_reg_top
 
 
   // R[reset_det_status]: V(False)
-  logic [3:0] reset_det_status_flds_we;
+  logic [6:0] reset_det_status_flds_we;
   assign aon_reset_det_status_qe = |reset_det_status_flds_we;
   //   F[active]: 0:0
   prim_subreg #(
@@ -2664,7 +2749,91 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_active_qs_int)
   );
 
-  //   F[wake_up]: 16:16
+  //   F[sleep_req_en]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_status_sleep_req_en (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.reset_det_status.sleep_req_en.de),
+    .d      (hw2reg.reset_det_status.sleep_req_en.d),
+
+    // to internal hardware
+    .qe     (reset_det_status_flds_we[1]),
+    .q      (),
+    .ds     (aon_reset_det_status_sleep_req_en_ds_int),
+
+    // to register interface (read)
+    .qs     (aon_reset_det_status_sleep_req_en_qs_int)
+  );
+
+  //   F[rst_periph_en]: 20:20
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_status_rst_periph_en (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.reset_det_status.rst_periph_en.de),
+    .d      (hw2reg.reset_det_status.rst_periph_en.d),
+
+    // to internal hardware
+    .qe     (reset_det_status_flds_we[2]),
+    .q      (),
+    .ds     (aon_reset_det_status_rst_periph_en_ds_int),
+
+    // to register interface (read)
+    .qs     (aon_reset_det_status_rst_periph_en_qs_int)
+  );
+
+  //   F[rst_target_en]: 21:21
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_status_rst_target_en (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.reset_det_status.rst_target_en.de),
+    .d      (hw2reg.reset_det_status.rst_target_en.d),
+
+    // to internal hardware
+    .qe     (reset_det_status_flds_we[3]),
+    .q      (),
+    .ds     (aon_reset_det_status_rst_target_en_ds_int),
+
+    // to register interface (read)
+    .qs     (aon_reset_det_status_rst_target_en_qs_int)
+  );
+
+  //   F[wake_up]: 24:24
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2684,7 +2853,7 @@ module i3c_reg_top
     .d      (hw2reg.reset_det_status.wake_up.d),
 
     // to internal hardware
-    .qe     (reset_det_status_flds_we[1]),
+    .qe     (reset_det_status_flds_we[4]),
     .q      (),
     .ds     (aon_reset_det_status_wake_up_ds_int),
 
@@ -2692,7 +2861,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_wake_up_qs_int)
   );
 
-  //   F[rst_periph]: 20:20
+  //   F[rst_periph]: 28:28
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2712,7 +2881,7 @@ module i3c_reg_top
     .d      (hw2reg.reset_det_status.rst_periph.d),
 
     // to internal hardware
-    .qe     (reset_det_status_flds_we[2]),
+    .qe     (reset_det_status_flds_we[5]),
     .q      (),
     .ds     (aon_reset_det_status_rst_periph_ds_int),
 
@@ -2720,7 +2889,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_rst_periph_qs_int)
   );
 
-  //   F[rst_target]: 21:21
+  //   F[rst_target]: 29:29
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2740,7 +2909,7 @@ module i3c_reg_top
     .d      (hw2reg.reset_det_status.rst_target.d),
 
     // to internal hardware
-    .qe     (reset_det_status_flds_we[3]),
+    .qe     (reset_det_status_flds_we[6]),
     .q      (),
     .ds     (aon_reset_det_status_rst_target_ds_int),
 
@@ -3585,6 +3754,152 @@ module i3c_reg_top
   );
 
 
+  // R[interval_time2]: V(False)
+  //   F[ibi_retry]: 7:0
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time2_ibi_retry (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (interval_time2_we),
+    .wd     (interval_time2_ibi_retry_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time2.ibi_retry.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time2_ibi_retry_qs)
+  );
+
+  //   F[poll_targets]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time2_poll_targets (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (interval_time2_we),
+    .wd     (interval_time2_poll_targets_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time2.poll_targets.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time2_poll_targets_qs)
+  );
+
+  //   F[dead_ctrl]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time2_dead_ctrl (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (interval_time2_we),
+    .wd     (interval_time2_dead_ctrl_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time2.dead_ctrl.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time2_dead_ctrl_qs)
+  );
+
+  //   F[dead_targ]: 31:24
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_interval_time2_dead_targ (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (interval_time2_we),
+    .wd     (interval_time2_dead_targ_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.interval_time2.dead_targ.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (interval_time2_dead_targ_qs)
+  );
+
+
+  // R[bus_control]: V(False)
+  // Reinit
+  assign reg2hw.bus_control.reinit = hci_sw_reinit_i;
+
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_bus_control (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(hci_sw_reinit_i),
+
+    // from register interface
+    .we     (bus_control_we),
+    .wd     (bus_control_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.bus_control.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (bus_control_qs)
+  );
+
+
   // R[phy_config]: V(False)
   //   F[scl_hk_en]: 0:0
   // Reinit
@@ -3984,41 +4299,41 @@ module i3c_reg_top
   );
 
 
-  // R[buffer_ctrl]: V(True)
-  logic buffer_ctrl_qe;
-  logic [1:0] buffer_ctrl_flds_we;
-  assign buffer_ctrl_qe = &buffer_ctrl_flds_we;
+  // R[buffer_control]: V(True)
+  logic buffer_control_qe;
+  logic [1:0] buffer_control_flds_we;
+  assign buffer_control_qe = &buffer_control_flds_we;
   //   F[sw_addr_hi]: 29:28
   prim_subreg_ext #(
     .DW    (2)
-  ) u_buffer_ctrl_sw_addr_hi (
-    .re     (buffer_ctrl_re),
-    .we     (buffer_ctrl_we),
-    .wd     (buffer_ctrl_sw_addr_hi_wd),
-    .d      (hw2reg.buffer_ctrl.sw_addr_hi.d),
+  ) u_buffer_control_sw_addr_hi (
+    .re     (buffer_control_re),
+    .we     (buffer_control_we),
+    .wd     (buffer_control_sw_addr_hi_wd),
+    .d      (hw2reg.buffer_control.sw_addr_hi.d),
     .qre    (),
-    .qe     (buffer_ctrl_flds_we[0]),
-    .q      (reg2hw.buffer_ctrl.sw_addr_hi.q),
+    .qe     (buffer_control_flds_we[0]),
+    .q      (reg2hw.buffer_control.sw_addr_hi.q),
     .ds     (),
-    .qs     (buffer_ctrl_sw_addr_hi_qs)
+    .qs     (buffer_control_sw_addr_hi_qs)
   );
-  assign reg2hw.buffer_ctrl.sw_addr_hi.qe = buffer_ctrl_qe;
+  assign reg2hw.buffer_control.sw_addr_hi.qe = buffer_control_qe;
 
   //   F[clear]: 31:31
   prim_subreg_ext #(
     .DW    (1)
-  ) u_buffer_ctrl_clear (
+  ) u_buffer_control_clear (
     .re     (1'b0),
-    .we     (buffer_ctrl_we),
-    .wd     (buffer_ctrl_clear_wd),
+    .we     (buffer_control_we),
+    .wd     (buffer_control_clear_wd),
     .d      ('0),
     .qre    (),
-    .qe     (buffer_ctrl_flds_we[1]),
-    .q      (reg2hw.buffer_ctrl.clear.q),
+    .qe     (buffer_control_flds_we[1]),
+    .q      (reg2hw.buffer_control.clear.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.buffer_ctrl.clear.qe = buffer_ctrl_qe;
+  assign reg2hw.buffer_control.clear.qe = buffer_control_qe;
 
 
   // R[buffer_status]: V(False)
@@ -9028,7 +9343,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.pio_intr_force.tx_thld_force.qe = pio_intr_force_qe;
 
   //   F[rx_thld_force]: 1:1
   prim_subreg #(
@@ -9057,7 +9371,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.pio_intr_force.rx_thld_force.qe = pio_intr_force_qe;
 
   //   F[ibi_thld_force]: 2:2
   prim_subreg #(
@@ -9086,7 +9399,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.pio_intr_force.ibi_thld_force.qe = pio_intr_force_qe;
 
   //   F[cmd_queue_ready_force]: 3:3
   prim_subreg #(
@@ -9115,7 +9427,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.pio_intr_force.cmd_queue_ready_force.qe = pio_intr_force_qe;
 
   //   F[resp_ready_force]: 4:4
   prim_subreg #(
@@ -9144,7 +9455,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.pio_intr_force.resp_ready_force.qe = pio_intr_force_qe;
 
   //   F[transfer_abort_force]: 5:5
   prim_subreg #(
@@ -11850,6 +12160,34 @@ module i3c_reg_top
     .qs     (targ_intr_status_tx3_desc_ready_stat_qs)
   );
 
+  //   F[internal_err_stat]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_internal_err_stat (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.targ_intr_status.internal_err_stat.de),
+    .d      (hw2reg.targ_intr_status.internal_err_stat.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status.internal_err_stat.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_internal_err_stat_qs)
+  );
+
   //   F[te_stat]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -12329,6 +12667,34 @@ module i3c_reg_top
 
     // to register interface (read)
     .qs     (targ_intr_status_enable_tx3_desc_ready_stat_en_qs)
+  );
+
+  //   F[internal_err_stat_en]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_enable_internal_err_stat_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_status_enable_we),
+    .wd     (targ_intr_status_enable_internal_err_stat_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status_enable.internal_err_stat_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_enable_internal_err_stat_en_qs)
   );
 
   //   F[te_stat_en]: 31:31
@@ -12812,6 +13178,34 @@ module i3c_reg_top
     .qs     (targ_intr_signal_enable_tx3_desc_ready_signal_en_qs)
   );
 
+  //   F[internal_err_signal_en]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_signal_enable_internal_err_signal_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_signal_enable_we),
+    .wd     (targ_intr_signal_enable_internal_err_signal_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_signal_enable.internal_err_signal_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_signal_enable_internal_err_signal_en_qs)
+  );
+
   //   F[te_signal_en]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -12843,7 +13237,7 @@ module i3c_reg_top
 
   // R[targ_intr_force]: V(False)
   logic targ_intr_force_qe;
-  logic [16:0] targ_intr_force_flds_we;
+  logic [17:0] targ_intr_force_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -13320,6 +13714,35 @@ module i3c_reg_top
   );
   assign reg2hw.targ_intr_force.tx3_desc_ready_force.qe = targ_intr_force_qe;
 
+  //   F[internal_err_force]: 30:30
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_force_internal_err_force (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_force_we),
+    .wd     (targ_intr_force_internal_err_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_intr_force_flds_we[16]),
+    .q      (reg2hw.targ_intr_force.internal_err_force.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_intr_force.internal_err_force.qe = targ_intr_force_qe;
+
   //   F[te_force]: 31:31
   prim_subreg #(
     .DW      (1),
@@ -13340,7 +13763,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[16]),
+    .qe     (targ_intr_force_flds_we[17]),
     .q      (reg2hw.targ_intr_force.te_force.q),
     .ds     (),
 
@@ -13352,7 +13775,7 @@ module i3c_reg_top
 
   // R[targ_pio_control]: V(False)
   logic targ_pio_control_qe;
-  logic [6:0] targ_pio_control_flds_we;
+  logic [7:0] targ_pio_control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -13423,6 +13846,34 @@ module i3c_reg_top
   );
   assign reg2hw.targ_pio_control.ibi_abort.qe = targ_pio_control_qe;
 
+  //   F[ibi_suspend_auto]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_ibi_suspend_auto (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_ibi_suspend_auto_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[2]),
+    .q      (reg2hw.targ_pio_control.ibi_suspend_auto.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_pio_control_ibi_suspend_auto_qs)
+  );
+
   //   F[rxbuf_clear]: 10:10
   prim_subreg #(
     .DW      (1),
@@ -13443,7 +13894,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[2]),
+    .qe     (targ_pio_control_flds_we[3]),
     .q      (reg2hw.targ_pio_control.rxbuf_clear.q),
     .ds     (),
 
@@ -13472,7 +13923,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[3]),
+    .qe     (targ_pio_control_flds_we[4]),
     .q      (reg2hw.targ_pio_control.ibibuf_clear.q),
     .ds     (),
 
@@ -13501,7 +13952,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[4]),
+    .qe     (targ_pio_control_flds_we[5]),
     .q      (reg2hw.targ_pio_control.txbuf_clear.q),
     .ds     (),
 
@@ -13510,63 +13961,63 @@ module i3c_reg_top
   );
   assign reg2hw.targ_pio_control.txbuf_clear.qe = targ_pio_control_qe;
 
-  //   F[suspended]: 19:16
+  //   F[tx_suspended]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_targ_pio_control_suspended (
+  ) u_targ_pio_control_tx_suspended (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
     .we     (targ_pio_control_we),
-    .wd     (targ_pio_control_suspended_wd),
+    .wd     (targ_pio_control_tx_suspended_wd),
 
     // from internal hardware
-    .de     (hw2reg.targ_pio_control.suspended.de),
-    .d      (hw2reg.targ_pio_control.suspended.d),
+    .de     (hw2reg.targ_pio_control.tx_suspended.de),
+    .d      (hw2reg.targ_pio_control.tx_suspended.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[5]),
-    .q      (reg2hw.targ_pio_control.suspended.q),
+    .qe     (targ_pio_control_flds_we[6]),
+    .q      (reg2hw.targ_pio_control.tx_suspended.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (targ_pio_control_suspended_qs)
+    .qs     (targ_pio_control_tx_suspended_qs)
   );
-  assign reg2hw.targ_pio_control.suspended.qe = targ_pio_control_qe;
+  assign reg2hw.targ_pio_control.tx_suspended.qe = targ_pio_control_qe;
 
-  //   F[abort]: 27:24
+  //   F[tx_abort]: 27:24
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_targ_pio_control_abort (
+  ) u_targ_pio_control_tx_abort (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
     .we     (targ_pio_control_we),
-    .wd     (targ_pio_control_abort_wd),
+    .wd     (targ_pio_control_tx_abort_wd),
 
     // from internal hardware
-    .de     (hw2reg.targ_pio_control.abort.de),
-    .d      (hw2reg.targ_pio_control.abort.d),
+    .de     (hw2reg.targ_pio_control.tx_abort.de),
+    .d      (hw2reg.targ_pio_control.tx_abort.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[6]),
-    .q      (reg2hw.targ_pio_control.abort.q),
+    .qe     (targ_pio_control_flds_we[7]),
+    .q      (reg2hw.targ_pio_control.tx_abort.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (targ_pio_control_abort_qs)
+    .qs     (targ_pio_control_tx_abort_qs)
   );
-  assign reg2hw.targ_pio_control.abort.qe = targ_pio_control_qe;
+  assign reg2hw.targ_pio_control.tx_abort.qe = targ_pio_control_qe;
 
 
   // R[targ_async_evt_control]: V(False)
@@ -13611,7 +14062,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_bcst_ccc_qs)
   );
-  assign reg2hw.targ_async_evt_control.bcst_ccc.qe = targ_async_evt_control_qe;
 
   //   F[dir_set_ccc]: 1:1
   prim_subreg #(
@@ -13640,7 +14090,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_dir_set_ccc_qs)
   );
-  assign reg2hw.targ_async_evt_control.dir_set_ccc.qe = targ_async_evt_control_qe;
 
   //   F[dir_get_ccc]: 2:2
   prim_subreg #(
@@ -13669,7 +14118,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_dir_get_ccc_qs)
   );
-  assign reg2hw.targ_async_evt_control.dir_get_ccc.qe = targ_async_evt_control_qe;
 
   //   F[tx_notify]: 3:3
   prim_subreg #(
@@ -13698,7 +14146,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_tx_notify_qs)
   );
-  assign reg2hw.targ_async_evt_control.tx_notify.qe = targ_async_evt_control_qe;
 
   //   F[ibi_notify]: 4:4
   prim_subreg #(
@@ -13727,7 +14174,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_ibi_notify_qs)
   );
-  assign reg2hw.targ_async_evt_control.ibi_notify.qe = targ_async_evt_control_qe;
 
   //   F[tx_suspend]: 5:5
   prim_subreg #(
@@ -13756,7 +14202,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_tx_suspend_qs)
   );
-  assign reg2hw.targ_async_evt_control.tx_suspend.qe = targ_async_evt_control_qe;
 
   //   F[ibi_suspend]: 6:6
   prim_subreg #(
@@ -13785,7 +14230,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_ibi_suspend_qs)
   );
-  assign reg2hw.targ_async_evt_control.ibi_suspend.qe = targ_async_evt_control_qe;
 
   //   F[bus_events]: 7:7
   prim_subreg #(
@@ -13814,7 +14258,6 @@ module i3c_reg_top
     // to register interface (read)
     .qs     (targ_async_evt_control_bus_events_qs)
   );
-  assign reg2hw.targ_async_evt_control.bus_events.qe = targ_async_evt_control_qe;
 
   //   F[queue_reset]: 31:31
   prim_subreg #(
@@ -19223,12 +19666,12 @@ module i3c_reg_top
 
 
 
-  logic [187:0] addr_hit;
+  logic [190:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [187:0] racl_addr_hit_read;
-  logic [187:0] racl_addr_hit_write;
+  logic [190:0] racl_addr_hit_read;
+  logic [190:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -19258,188 +19701,191 @@ module i3c_reg_top
     addr_hit[  6] = (reg_addr == I3C_CTRL_ERROR_OFFSET);
     addr_hit[  7] = (reg_addr == I3C_TARG_CONTROL_OFFSET);
     addr_hit[  8] = (reg_addr == I3C_TARG_STATUS_OFFSET);
-    addr_hit[  9] = (reg_addr == I3C_TARG_SINK_CONTROL_OFFSET);
-    addr_hit[ 10] = (reg_addr == I3C_TARG_SINK_STATUS_OFFSET);
-    addr_hit[ 11] = (reg_addr == I3C_RESET_DET_CTRL_OFFSET);
-    addr_hit[ 12] = (reg_addr == I3C_RESET_DET_STATUS_OFFSET);
-    addr_hit[ 13] = (reg_addr == I3C_CTRL_TIME_SP_OFFSET);
-    addr_hit[ 14] = (reg_addr == I3C_CTRL_TIME_OD_OFFSET);
-    addr_hit[ 15] = (reg_addr == I3C_CTRL_TIME_PP_OFFSET);
-    addr_hit[ 16] = (reg_addr == I3C_CTRL_TIME_SDR0_OFFSET);
-    addr_hit[ 17] = (reg_addr == I3C_CTRL_TIME_SDR1_OFFSET);
-    addr_hit[ 18] = (reg_addr == I3C_CTRL_TIME_SDR2_OFFSET);
-    addr_hit[ 19] = (reg_addr == I3C_CTRL_TIME_SDR3_OFFSET);
-    addr_hit[ 20] = (reg_addr == I3C_CTRL_TIME_SDR4_OFFSET);
-    addr_hit[ 21] = (reg_addr == I3C_CTRL_TIME_FMP_OFFSET);
-    addr_hit[ 22] = (reg_addr == I3C_CTRL_TIME_FM_OFFSET);
-    addr_hit[ 23] = (reg_addr == I3C_INTERVAL_TIME0_OFFSET);
-    addr_hit[ 24] = (reg_addr == I3C_INTERVAL_TIME1_OFFSET);
-    addr_hit[ 25] = (reg_addr == I3C_PHY_CONFIG_OFFSET);
-    addr_hit[ 26] = (reg_addr == I3C_BLOCKED_ADDR_OFFSET);
-    addr_hit[ 27] = (reg_addr == I3C_BUFFER_CTRL_OFFSET);
-    addr_hit[ 28] = (reg_addr == I3C_BUFFER_STATUS_OFFSET);
-    addr_hit[ 29] = (reg_addr == I3C_CTRL_TXBUF_CONFIG_OFFSET);
-    addr_hit[ 30] = (reg_addr == I3C_CTRL_TXBUF_STATE_OFFSET);
-    addr_hit[ 31] = (reg_addr == I3C_CTRL_RXBUF_CONFIG_OFFSET);
-    addr_hit[ 32] = (reg_addr == I3C_CTRL_RXBUF_STATE_OFFSET);
-    addr_hit[ 33] = (reg_addr == I3C_COMMAND_QUEUE_CONFIG_OFFSET);
-    addr_hit[ 34] = (reg_addr == I3C_COMMAND_QUEUE_STATE_OFFSET);
-    addr_hit[ 35] = (reg_addr == I3C_RESPONSE_QUEUE_CONFIG_OFFSET);
-    addr_hit[ 36] = (reg_addr == I3C_RESPONSE_QUEUE_STATE_OFFSET);
-    addr_hit[ 37] = (reg_addr == I3C_IBI_CONFIG_OFFSET);
-    addr_hit[ 38] = (reg_addr == I3C_IBI_STATE_OFFSET);
-    addr_hit[ 39] = (reg_addr == I3C_IBI_STAT_CONFIG_OFFSET);
-    addr_hit[ 40] = (reg_addr == I3C_IBI_STAT_STATE_OFFSET);
-    addr_hit[ 41] = (reg_addr == I3C_TARG_TXBUF_CONFIG_0_OFFSET);
-    addr_hit[ 42] = (reg_addr == I3C_TARG_TXBUF_CONFIG_1_OFFSET);
-    addr_hit[ 43] = (reg_addr == I3C_TARG_TXBUF_CONFIG_2_OFFSET);
-    addr_hit[ 44] = (reg_addr == I3C_TARG_TXBUF_CONFIG_3_OFFSET);
-    addr_hit[ 45] = (reg_addr == I3C_TARG_TXBUF_STATE_0_OFFSET);
-    addr_hit[ 46] = (reg_addr == I3C_TARG_TXBUF_STATE_1_OFFSET);
-    addr_hit[ 47] = (reg_addr == I3C_TARG_TXBUF_STATE_2_OFFSET);
-    addr_hit[ 48] = (reg_addr == I3C_TARG_TXBUF_STATE_3_OFFSET);
-    addr_hit[ 49] = (reg_addr == I3C_TARG_RXBUF_CONFIG_OFFSET);
-    addr_hit[ 50] = (reg_addr == I3C_TARG_RXBUF_STATE_OFFSET);
-    addr_hit[ 51] = (reg_addr == I3C_TARG_IBI_CONFIG_OFFSET);
-    addr_hit[ 52] = (reg_addr == I3C_TARG_IBI_STATE_OFFSET);
-    addr_hit[ 53] = (reg_addr == I3C_TARG_TXDESC_CONFIG_0_OFFSET);
-    addr_hit[ 54] = (reg_addr == I3C_TARG_TXDESC_CONFIG_1_OFFSET);
-    addr_hit[ 55] = (reg_addr == I3C_TARG_TXDESC_CONFIG_2_OFFSET);
-    addr_hit[ 56] = (reg_addr == I3C_TARG_TXDESC_CONFIG_3_OFFSET);
-    addr_hit[ 57] = (reg_addr == I3C_TARG_TXDESC_STATE_0_OFFSET);
-    addr_hit[ 58] = (reg_addr == I3C_TARG_TXDESC_STATE_1_OFFSET);
-    addr_hit[ 59] = (reg_addr == I3C_TARG_TXDESC_STATE_2_OFFSET);
-    addr_hit[ 60] = (reg_addr == I3C_TARG_TXDESC_STATE_3_OFFSET);
-    addr_hit[ 61] = (reg_addr == I3C_TARG_RXDESC_CONFIG_OFFSET);
-    addr_hit[ 62] = (reg_addr == I3C_TARG_RXDESC_STATE_OFFSET);
-    addr_hit[ 63] = (reg_addr == I3C_TARG_IBIDESC_CONFIG_OFFSET);
-    addr_hit[ 64] = (reg_addr == I3C_TARG_IBIDESC_STATE_OFFSET);
-    addr_hit[ 65] = (reg_addr == I3C_TARG_ASYNC_CONFIG_OFFSET);
-    addr_hit[ 66] = (reg_addr == I3C_TARG_ASYNC_STATE_OFFSET);
-    addr_hit[ 67] = (reg_addr == I3C_HCI_VERSION_OFFSET);
-    addr_hit[ 68] = (reg_addr == I3C_HC_CONTROL_OFFSET);
-    addr_hit[ 69] = (reg_addr == I3C_CONTROLLER_DEVICE_ADDR_OFFSET);
-    addr_hit[ 70] = (reg_addr == I3C_HC_CAPABILITIES_OFFSET);
-    addr_hit[ 71] = (reg_addr == I3C_RESET_CONTROL_OFFSET);
-    addr_hit[ 72] = (reg_addr == I3C_PRESENT_STATE_OFFSET);
-    addr_hit[ 73] = (reg_addr == I3C_INTR_STATUS_OFFSET);
-    addr_hit[ 74] = (reg_addr == I3C_INTR_STATUS_ENABLE_OFFSET);
-    addr_hit[ 75] = (reg_addr == I3C_INTR_SIGNAL_ENABLE_OFFSET);
-    addr_hit[ 76] = (reg_addr == I3C_INTR_FORCE_OFFSET);
-    addr_hit[ 77] = (reg_addr == I3C_DAT_SECTION_OFFSET_OFFSET);
-    addr_hit[ 78] = (reg_addr == I3C_DCT_SECTION_OFFSET_OFFSET);
-    addr_hit[ 79] = (reg_addr == I3C_RING_HEADERS_SECTION_OFFSET_OFFSET);
-    addr_hit[ 80] = (reg_addr == I3C_PIO_SECTION_OFFSET_OFFSET);
-    addr_hit[ 81] = (reg_addr == I3C_EXT_CAPS_SECTION_OFFSET_OFFSET);
-    addr_hit[ 82] = (reg_addr == I3C_INT_CTRL_CMDS_EN_OFFSET);
-    addr_hit[ 83] = (reg_addr == I3C_IBI_NOTIFY_CTRL_OFFSET);
-    addr_hit[ 84] = (reg_addr == I3C_IBI_DATA_ABORT_CTRL_OFFSET);
-    addr_hit[ 85] = (reg_addr == I3C_DEV_CTX_BASE_LO_OFFSET);
-    addr_hit[ 86] = (reg_addr == I3C_DEV_CTX_BASE_HI_OFFSET);
-    addr_hit[ 87] = (reg_addr == I3C_DEV_CTX_SG_OFFSET);
-    addr_hit[ 88] = (reg_addr == I3C_QUEUE_THLD_CTRL_OFFSET);
-    addr_hit[ 89] = (reg_addr == I3C_DATA_BUFFER_THLD_CTRL_OFFSET);
-    addr_hit[ 90] = (reg_addr == I3C_QUEUE_SIZE_OFFSET);
-    addr_hit[ 91] = (reg_addr == I3C_ALT_QUEUE_SIZE_OFFSET);
-    addr_hit[ 92] = (reg_addr == I3C_PIO_INTR_STATUS_OFFSET);
-    addr_hit[ 93] = (reg_addr == I3C_PIO_INTR_STATUS_ENABLE_OFFSET);
-    addr_hit[ 94] = (reg_addr == I3C_PIO_INTR_SIGNAL_ENABLE_OFFSET);
-    addr_hit[ 95] = (reg_addr == I3C_PIO_INTR_FORCE_OFFSET);
-    addr_hit[ 96] = (reg_addr == I3C_PIO_CONTROL_OFFSET);
-    addr_hit[ 97] = (reg_addr == I3C_ID_EXTCAP_HEADER_OFFSET);
-    addr_hit[ 98] = (reg_addr == I3C_COMP_MANUFACTURER_OFFSET);
-    addr_hit[ 99] = (reg_addr == I3C_COMP_VERSION_OFFSET);
-    addr_hit[100] = (reg_addr == I3C_COMP_TYPE_OFFSET);
-    addr_hit[101] = (reg_addr == I3C_CTRL_CFG_EXTCAP_HEADER_OFFSET);
-    addr_hit[102] = (reg_addr == I3C_CONTROLLER_CONFIG_OFFSET);
-    addr_hit[103] = (reg_addr == I3C_DBR_EXTCAP_HEADER_OFFSET);
-    addr_hit[104] = (reg_addr == I3C_DBR_ENGAGE_OFFSET);
-    addr_hit[105] = (reg_addr == I3C_DEBUG_EXTCAP_HEADER_OFFSET);
-    addr_hit[106] = (reg_addr == I3C_QUEUE_STATUS_LEVEL_OFFSET);
-    addr_hit[107] = (reg_addr == I3C_DATA_BUFFER_STATUS_LEVEL_OFFSET);
-    addr_hit[108] = (reg_addr == I3C_PRESENT_STATE_DEBUG_OFFSET);
-    addr_hit[109] = (reg_addr == I3C_MX_ERROR_COUNTERS_OFFSET);
-    addr_hit[110] = (reg_addr == I3C_SCHED_CMDS_DEBUG_OFFSET);
-    addr_hit[111] = (reg_addr == I3C_STBY_CR_EXTCAP_HEADER_OFFSET);
-    addr_hit[112] = (reg_addr == I3C_STBY_CR_CONTROL_OFFSET);
-    addr_hit[113] = (reg_addr == I3C_STBY_CR_DEVICE_ADDR_OFFSET);
-    addr_hit[114] = (reg_addr == I3C_STBY_CR_CAPABILITIES_OFFSET);
-    addr_hit[115] = (reg_addr == I3C_STBY_CR_STATUS_OFFSET);
-    addr_hit[116] = (reg_addr == I3C_STBY_CR_DEVICE_CHAR_OFFSET);
-    addr_hit[117] = (reg_addr == I3C_STBY_CR_DEVICE_PID_LO_OFFSET);
-    addr_hit[118] = (reg_addr == I3C_STBY_CR_INTR_STATUS_OFFSET);
-    addr_hit[119] = (reg_addr == I3C_STBY_CR_INTR_SIGNAL_ENABLE_OFFSET);
-    addr_hit[120] = (reg_addr == I3C_STBY_CR_INTR_FORCE_OFFSET);
-    addr_hit[121] = (reg_addr == I3C_STBY_CR_CCC_CONFIG_GETCAPS_OFFSET);
-    addr_hit[122] = (reg_addr == I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_OFFSET);
-    addr_hit[123] = (reg_addr == I3C_TTI_EXTCAP_HEADER_OFFSET);
-    addr_hit[124] = (reg_addr == I3C_TARG_INTR_STATUS_OFFSET);
-    addr_hit[125] = (reg_addr == I3C_TARG_INTR_STATUS_ENABLE_OFFSET);
-    addr_hit[126] = (reg_addr == I3C_TARG_INTR_SIGNAL_ENABLE_OFFSET);
-    addr_hit[127] = (reg_addr == I3C_TARG_INTR_FORCE_OFFSET);
-    addr_hit[128] = (reg_addr == I3C_TARG_PIO_CONTROL_OFFSET);
-    addr_hit[129] = (reg_addr == I3C_TARG_ASYNC_EVT_CONTROL_OFFSET);
-    addr_hit[130] = (reg_addr == I3C_TARG_ERROR_OFFSET);
-    addr_hit[131] = (reg_addr == I3C_TARG_QUEUE_THLD_CTRL_OFFSET);
-    addr_hit[132] = (reg_addr == I3C_TARG_QUEUE_STATUS_LEVEL_OFFSET);
-    addr_hit[133] = (reg_addr == I3C_TARG_BUF_THLD_CTRL_OFFSET);
-    addr_hit[134] = (reg_addr == I3C_TARG_BUF_STATUS_LEVEL_OFFSET);
-    addr_hit[135] = (reg_addr == I3C_TARG_RW_LEN_0_OFFSET);
-    addr_hit[136] = (reg_addr == I3C_TARG_RW_LEN_1_OFFSET);
-    addr_hit[137] = (reg_addr == I3C_TARG_RW_LEN_2_OFFSET);
-    addr_hit[138] = (reg_addr == I3C_TARG_RW_LEN_3_OFFSET);
-    addr_hit[139] = (reg_addr == I3C_TARG_IBI_LEN_OFFSET);
-    addr_hit[140] = (reg_addr == I3C_TARG_EVENT_ENABLE_0_OFFSET);
-    addr_hit[141] = (reg_addr == I3C_TARG_EVENT_ENABLE_1_OFFSET);
-    addr_hit[142] = (reg_addr == I3C_TARG_EVENT_ENABLE_2_OFFSET);
-    addr_hit[143] = (reg_addr == I3C_TARG_EVENT_ENABLE_3_OFFSET);
-    addr_hit[144] = (reg_addr == I3C_TARG_STATE_DEBUG_OFFSET);
-    addr_hit[145] = (reg_addr == I3C_TARG_ENABLE_OFFSET);
-    addr_hit[146] = (reg_addr == I3C_TARG_GROUP_0_OFFSET);
-    addr_hit[147] = (reg_addr == I3C_TARG_GROUP_1_OFFSET);
-    addr_hit[148] = (reg_addr == I3C_TARG_GROUP_2_OFFSET);
-    addr_hit[149] = (reg_addr == I3C_TARG_GROUP_3_OFFSET);
-    addr_hit[150] = (reg_addr == I3C_TARG_GROUP_4_OFFSET);
-    addr_hit[151] = (reg_addr == I3C_TARG_GROUP_5_OFFSET);
-    addr_hit[152] = (reg_addr == I3C_TARG_GROUP_6_OFFSET);
-    addr_hit[153] = (reg_addr == I3C_TARG_GROUP_7_OFFSET);
-    addr_hit[154] = (reg_addr == I3C_TARG_TX_THLD_CTRL_0_OFFSET);
-    addr_hit[155] = (reg_addr == I3C_TARG_TX_THLD_CTRL_1_OFFSET);
-    addr_hit[156] = (reg_addr == I3C_TARG_TX_THLD_CTRL_2_OFFSET);
-    addr_hit[157] = (reg_addr == I3C_TARG_TX_THLD_CTRL_3_OFFSET);
-    addr_hit[158] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_OFFSET);
-    addr_hit[159] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_1_OFFSET);
-    addr_hit[160] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_2_OFFSET);
-    addr_hit[161] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_3_OFFSET);
-    addr_hit[162] = (reg_addr == I3C_TARG_ADDR_0_OFFSET);
-    addr_hit[163] = (reg_addr == I3C_TARG_ADDR_1_OFFSET);
-    addr_hit[164] = (reg_addr == I3C_TARG_ADDR_2_OFFSET);
-    addr_hit[165] = (reg_addr == I3C_TARG_ADDR_3_OFFSET);
-    addr_hit[166] = (reg_addr == I3C_TARG_CHAR_0_OFFSET);
-    addr_hit[167] = (reg_addr == I3C_TARG_CHAR_1_OFFSET);
-    addr_hit[168] = (reg_addr == I3C_TARG_CHAR_2_OFFSET);
-    addr_hit[169] = (reg_addr == I3C_TARG_CHAR_3_OFFSET);
-    addr_hit[170] = (reg_addr == I3C_TARG_PID_LO_0_OFFSET);
-    addr_hit[171] = (reg_addr == I3C_TARG_PID_LO_1_OFFSET);
-    addr_hit[172] = (reg_addr == I3C_TARG_PID_LO_2_OFFSET);
-    addr_hit[173] = (reg_addr == I3C_TARG_PID_LO_3_OFFSET);
-    addr_hit[174] = (reg_addr == I3C_TARG_CAPS_0_OFFSET);
-    addr_hit[175] = (reg_addr == I3C_TARG_CAPS_1_OFFSET);
-    addr_hit[176] = (reg_addr == I3C_TARG_CAPS_2_OFFSET);
-    addr_hit[177] = (reg_addr == I3C_TARG_CAPS_3_OFFSET);
-    addr_hit[178] = (reg_addr == I3C_TARG_INFO_0_OFFSET);
-    addr_hit[179] = (reg_addr == I3C_TARG_INFO_1_OFFSET);
-    addr_hit[180] = (reg_addr == I3C_TARG_INFO_2_OFFSET);
-    addr_hit[181] = (reg_addr == I3C_TARG_INFO_3_OFFSET);
-    addr_hit[182] = (reg_addr == I3C_TARG_MAX_RDWR_0_OFFSET);
-    addr_hit[183] = (reg_addr == I3C_TARG_MAX_RDWR_1_OFFSET);
-    addr_hit[184] = (reg_addr == I3C_TARG_MAX_RDWR_2_OFFSET);
-    addr_hit[185] = (reg_addr == I3C_TARG_MAX_RDWR_3_OFFSET);
-    addr_hit[186] = (reg_addr == I3C_TARGEXT_EXTCAP_HEADER_OFFSET);
-    addr_hit[187] = (reg_addr == I3C_TERM_EXTCAP_HEADER_OFFSET);
+    addr_hit[  9] = (reg_addr == I3C_TARG_EXT_STATUS_OFFSET);
+    addr_hit[ 10] = (reg_addr == I3C_TARG_SINK_CONTROL_OFFSET);
+    addr_hit[ 11] = (reg_addr == I3C_TARG_SINK_STATUS_OFFSET);
+    addr_hit[ 12] = (reg_addr == I3C_RESET_DET_CONTROL_OFFSET);
+    addr_hit[ 13] = (reg_addr == I3C_RESET_DET_STATUS_OFFSET);
+    addr_hit[ 14] = (reg_addr == I3C_CTRL_TIME_SP_OFFSET);
+    addr_hit[ 15] = (reg_addr == I3C_CTRL_TIME_OD_OFFSET);
+    addr_hit[ 16] = (reg_addr == I3C_CTRL_TIME_PP_OFFSET);
+    addr_hit[ 17] = (reg_addr == I3C_CTRL_TIME_SDR0_OFFSET);
+    addr_hit[ 18] = (reg_addr == I3C_CTRL_TIME_SDR1_OFFSET);
+    addr_hit[ 19] = (reg_addr == I3C_CTRL_TIME_SDR2_OFFSET);
+    addr_hit[ 20] = (reg_addr == I3C_CTRL_TIME_SDR3_OFFSET);
+    addr_hit[ 21] = (reg_addr == I3C_CTRL_TIME_SDR4_OFFSET);
+    addr_hit[ 22] = (reg_addr == I3C_CTRL_TIME_FMP_OFFSET);
+    addr_hit[ 23] = (reg_addr == I3C_CTRL_TIME_FM_OFFSET);
+    addr_hit[ 24] = (reg_addr == I3C_INTERVAL_TIME0_OFFSET);
+    addr_hit[ 25] = (reg_addr == I3C_INTERVAL_TIME1_OFFSET);
+    addr_hit[ 26] = (reg_addr == I3C_INTERVAL_TIME2_OFFSET);
+    addr_hit[ 27] = (reg_addr == I3C_BUS_CONTROL_OFFSET);
+    addr_hit[ 28] = (reg_addr == I3C_PHY_CONFIG_OFFSET);
+    addr_hit[ 29] = (reg_addr == I3C_BLOCKED_ADDR_OFFSET);
+    addr_hit[ 30] = (reg_addr == I3C_BUFFER_CONTROL_OFFSET);
+    addr_hit[ 31] = (reg_addr == I3C_BUFFER_STATUS_OFFSET);
+    addr_hit[ 32] = (reg_addr == I3C_CTRL_TXBUF_CONFIG_OFFSET);
+    addr_hit[ 33] = (reg_addr == I3C_CTRL_TXBUF_STATE_OFFSET);
+    addr_hit[ 34] = (reg_addr == I3C_CTRL_RXBUF_CONFIG_OFFSET);
+    addr_hit[ 35] = (reg_addr == I3C_CTRL_RXBUF_STATE_OFFSET);
+    addr_hit[ 36] = (reg_addr == I3C_COMMAND_QUEUE_CONFIG_OFFSET);
+    addr_hit[ 37] = (reg_addr == I3C_COMMAND_QUEUE_STATE_OFFSET);
+    addr_hit[ 38] = (reg_addr == I3C_RESPONSE_QUEUE_CONFIG_OFFSET);
+    addr_hit[ 39] = (reg_addr == I3C_RESPONSE_QUEUE_STATE_OFFSET);
+    addr_hit[ 40] = (reg_addr == I3C_IBI_CONFIG_OFFSET);
+    addr_hit[ 41] = (reg_addr == I3C_IBI_STATE_OFFSET);
+    addr_hit[ 42] = (reg_addr == I3C_IBI_STAT_CONFIG_OFFSET);
+    addr_hit[ 43] = (reg_addr == I3C_IBI_STAT_STATE_OFFSET);
+    addr_hit[ 44] = (reg_addr == I3C_TARG_TXBUF_CONFIG_0_OFFSET);
+    addr_hit[ 45] = (reg_addr == I3C_TARG_TXBUF_CONFIG_1_OFFSET);
+    addr_hit[ 46] = (reg_addr == I3C_TARG_TXBUF_CONFIG_2_OFFSET);
+    addr_hit[ 47] = (reg_addr == I3C_TARG_TXBUF_CONFIG_3_OFFSET);
+    addr_hit[ 48] = (reg_addr == I3C_TARG_TXBUF_STATE_0_OFFSET);
+    addr_hit[ 49] = (reg_addr == I3C_TARG_TXBUF_STATE_1_OFFSET);
+    addr_hit[ 50] = (reg_addr == I3C_TARG_TXBUF_STATE_2_OFFSET);
+    addr_hit[ 51] = (reg_addr == I3C_TARG_TXBUF_STATE_3_OFFSET);
+    addr_hit[ 52] = (reg_addr == I3C_TARG_RXBUF_CONFIG_OFFSET);
+    addr_hit[ 53] = (reg_addr == I3C_TARG_RXBUF_STATE_OFFSET);
+    addr_hit[ 54] = (reg_addr == I3C_TARG_IBI_CONFIG_OFFSET);
+    addr_hit[ 55] = (reg_addr == I3C_TARG_IBI_STATE_OFFSET);
+    addr_hit[ 56] = (reg_addr == I3C_TARG_TXDESC_CONFIG_0_OFFSET);
+    addr_hit[ 57] = (reg_addr == I3C_TARG_TXDESC_CONFIG_1_OFFSET);
+    addr_hit[ 58] = (reg_addr == I3C_TARG_TXDESC_CONFIG_2_OFFSET);
+    addr_hit[ 59] = (reg_addr == I3C_TARG_TXDESC_CONFIG_3_OFFSET);
+    addr_hit[ 60] = (reg_addr == I3C_TARG_TXDESC_STATE_0_OFFSET);
+    addr_hit[ 61] = (reg_addr == I3C_TARG_TXDESC_STATE_1_OFFSET);
+    addr_hit[ 62] = (reg_addr == I3C_TARG_TXDESC_STATE_2_OFFSET);
+    addr_hit[ 63] = (reg_addr == I3C_TARG_TXDESC_STATE_3_OFFSET);
+    addr_hit[ 64] = (reg_addr == I3C_TARG_RXDESC_CONFIG_OFFSET);
+    addr_hit[ 65] = (reg_addr == I3C_TARG_RXDESC_STATE_OFFSET);
+    addr_hit[ 66] = (reg_addr == I3C_TARG_IBIDESC_CONFIG_OFFSET);
+    addr_hit[ 67] = (reg_addr == I3C_TARG_IBIDESC_STATE_OFFSET);
+    addr_hit[ 68] = (reg_addr == I3C_TARG_ASYNC_CONFIG_OFFSET);
+    addr_hit[ 69] = (reg_addr == I3C_TARG_ASYNC_STATE_OFFSET);
+    addr_hit[ 70] = (reg_addr == I3C_HCI_VERSION_OFFSET);
+    addr_hit[ 71] = (reg_addr == I3C_HC_CONTROL_OFFSET);
+    addr_hit[ 72] = (reg_addr == I3C_CONTROLLER_DEVICE_ADDR_OFFSET);
+    addr_hit[ 73] = (reg_addr == I3C_HC_CAPABILITIES_OFFSET);
+    addr_hit[ 74] = (reg_addr == I3C_RESET_CONTROL_OFFSET);
+    addr_hit[ 75] = (reg_addr == I3C_PRESENT_STATE_OFFSET);
+    addr_hit[ 76] = (reg_addr == I3C_INTR_STATUS_OFFSET);
+    addr_hit[ 77] = (reg_addr == I3C_INTR_STATUS_ENABLE_OFFSET);
+    addr_hit[ 78] = (reg_addr == I3C_INTR_SIGNAL_ENABLE_OFFSET);
+    addr_hit[ 79] = (reg_addr == I3C_INTR_FORCE_OFFSET);
+    addr_hit[ 80] = (reg_addr == I3C_DAT_SECTION_OFFSET_OFFSET);
+    addr_hit[ 81] = (reg_addr == I3C_DCT_SECTION_OFFSET_OFFSET);
+    addr_hit[ 82] = (reg_addr == I3C_RING_HEADERS_SECTION_OFFSET_OFFSET);
+    addr_hit[ 83] = (reg_addr == I3C_PIO_SECTION_OFFSET_OFFSET);
+    addr_hit[ 84] = (reg_addr == I3C_EXT_CAPS_SECTION_OFFSET_OFFSET);
+    addr_hit[ 85] = (reg_addr == I3C_INT_CTRL_CMDS_EN_OFFSET);
+    addr_hit[ 86] = (reg_addr == I3C_IBI_NOTIFY_CTRL_OFFSET);
+    addr_hit[ 87] = (reg_addr == I3C_IBI_DATA_ABORT_CTRL_OFFSET);
+    addr_hit[ 88] = (reg_addr == I3C_DEV_CTX_BASE_LO_OFFSET);
+    addr_hit[ 89] = (reg_addr == I3C_DEV_CTX_BASE_HI_OFFSET);
+    addr_hit[ 90] = (reg_addr == I3C_DEV_CTX_SG_OFFSET);
+    addr_hit[ 91] = (reg_addr == I3C_QUEUE_THLD_CTRL_OFFSET);
+    addr_hit[ 92] = (reg_addr == I3C_DATA_BUFFER_THLD_CTRL_OFFSET);
+    addr_hit[ 93] = (reg_addr == I3C_QUEUE_SIZE_OFFSET);
+    addr_hit[ 94] = (reg_addr == I3C_ALT_QUEUE_SIZE_OFFSET);
+    addr_hit[ 95] = (reg_addr == I3C_PIO_INTR_STATUS_OFFSET);
+    addr_hit[ 96] = (reg_addr == I3C_PIO_INTR_STATUS_ENABLE_OFFSET);
+    addr_hit[ 97] = (reg_addr == I3C_PIO_INTR_SIGNAL_ENABLE_OFFSET);
+    addr_hit[ 98] = (reg_addr == I3C_PIO_INTR_FORCE_OFFSET);
+    addr_hit[ 99] = (reg_addr == I3C_PIO_CONTROL_OFFSET);
+    addr_hit[100] = (reg_addr == I3C_ID_EXTCAP_HEADER_OFFSET);
+    addr_hit[101] = (reg_addr == I3C_COMP_MANUFACTURER_OFFSET);
+    addr_hit[102] = (reg_addr == I3C_COMP_VERSION_OFFSET);
+    addr_hit[103] = (reg_addr == I3C_COMP_TYPE_OFFSET);
+    addr_hit[104] = (reg_addr == I3C_CTRL_CFG_EXTCAP_HEADER_OFFSET);
+    addr_hit[105] = (reg_addr == I3C_CONTROLLER_CONFIG_OFFSET);
+    addr_hit[106] = (reg_addr == I3C_DBR_EXTCAP_HEADER_OFFSET);
+    addr_hit[107] = (reg_addr == I3C_DBR_ENGAGE_OFFSET);
+    addr_hit[108] = (reg_addr == I3C_DEBUG_EXTCAP_HEADER_OFFSET);
+    addr_hit[109] = (reg_addr == I3C_QUEUE_STATUS_LEVEL_OFFSET);
+    addr_hit[110] = (reg_addr == I3C_DATA_BUFFER_STATUS_LEVEL_OFFSET);
+    addr_hit[111] = (reg_addr == I3C_PRESENT_STATE_DEBUG_OFFSET);
+    addr_hit[112] = (reg_addr == I3C_MX_ERROR_COUNTERS_OFFSET);
+    addr_hit[113] = (reg_addr == I3C_SCHED_CMDS_DEBUG_OFFSET);
+    addr_hit[114] = (reg_addr == I3C_STBY_CR_EXTCAP_HEADER_OFFSET);
+    addr_hit[115] = (reg_addr == I3C_STBY_CR_CONTROL_OFFSET);
+    addr_hit[116] = (reg_addr == I3C_STBY_CR_DEVICE_ADDR_OFFSET);
+    addr_hit[117] = (reg_addr == I3C_STBY_CR_CAPABILITIES_OFFSET);
+    addr_hit[118] = (reg_addr == I3C_STBY_CR_STATUS_OFFSET);
+    addr_hit[119] = (reg_addr == I3C_STBY_CR_DEVICE_CHAR_OFFSET);
+    addr_hit[120] = (reg_addr == I3C_STBY_CR_DEVICE_PID_LO_OFFSET);
+    addr_hit[121] = (reg_addr == I3C_STBY_CR_INTR_STATUS_OFFSET);
+    addr_hit[122] = (reg_addr == I3C_STBY_CR_INTR_SIGNAL_ENABLE_OFFSET);
+    addr_hit[123] = (reg_addr == I3C_STBY_CR_INTR_FORCE_OFFSET);
+    addr_hit[124] = (reg_addr == I3C_STBY_CR_CCC_CONFIG_GETCAPS_OFFSET);
+    addr_hit[125] = (reg_addr == I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_OFFSET);
+    addr_hit[126] = (reg_addr == I3C_TTI_EXTCAP_HEADER_OFFSET);
+    addr_hit[127] = (reg_addr == I3C_TARG_INTR_STATUS_OFFSET);
+    addr_hit[128] = (reg_addr == I3C_TARG_INTR_STATUS_ENABLE_OFFSET);
+    addr_hit[129] = (reg_addr == I3C_TARG_INTR_SIGNAL_ENABLE_OFFSET);
+    addr_hit[130] = (reg_addr == I3C_TARG_INTR_FORCE_OFFSET);
+    addr_hit[131] = (reg_addr == I3C_TARG_PIO_CONTROL_OFFSET);
+    addr_hit[132] = (reg_addr == I3C_TARG_ASYNC_EVT_CONTROL_OFFSET);
+    addr_hit[133] = (reg_addr == I3C_TARG_ERROR_OFFSET);
+    addr_hit[134] = (reg_addr == I3C_TARG_QUEUE_THLD_CTRL_OFFSET);
+    addr_hit[135] = (reg_addr == I3C_TARG_QUEUE_STATUS_LEVEL_OFFSET);
+    addr_hit[136] = (reg_addr == I3C_TARG_BUF_THLD_CTRL_OFFSET);
+    addr_hit[137] = (reg_addr == I3C_TARG_BUF_STATUS_LEVEL_OFFSET);
+    addr_hit[138] = (reg_addr == I3C_TARG_RW_LEN_0_OFFSET);
+    addr_hit[139] = (reg_addr == I3C_TARG_RW_LEN_1_OFFSET);
+    addr_hit[140] = (reg_addr == I3C_TARG_RW_LEN_2_OFFSET);
+    addr_hit[141] = (reg_addr == I3C_TARG_RW_LEN_3_OFFSET);
+    addr_hit[142] = (reg_addr == I3C_TARG_IBI_LEN_OFFSET);
+    addr_hit[143] = (reg_addr == I3C_TARG_EVENT_ENABLE_0_OFFSET);
+    addr_hit[144] = (reg_addr == I3C_TARG_EVENT_ENABLE_1_OFFSET);
+    addr_hit[145] = (reg_addr == I3C_TARG_EVENT_ENABLE_2_OFFSET);
+    addr_hit[146] = (reg_addr == I3C_TARG_EVENT_ENABLE_3_OFFSET);
+    addr_hit[147] = (reg_addr == I3C_TARG_STATE_DEBUG_OFFSET);
+    addr_hit[148] = (reg_addr == I3C_TARG_ENABLE_OFFSET);
+    addr_hit[149] = (reg_addr == I3C_TARG_GROUP_0_OFFSET);
+    addr_hit[150] = (reg_addr == I3C_TARG_GROUP_1_OFFSET);
+    addr_hit[151] = (reg_addr == I3C_TARG_GROUP_2_OFFSET);
+    addr_hit[152] = (reg_addr == I3C_TARG_GROUP_3_OFFSET);
+    addr_hit[153] = (reg_addr == I3C_TARG_GROUP_4_OFFSET);
+    addr_hit[154] = (reg_addr == I3C_TARG_GROUP_5_OFFSET);
+    addr_hit[155] = (reg_addr == I3C_TARG_GROUP_6_OFFSET);
+    addr_hit[156] = (reg_addr == I3C_TARG_GROUP_7_OFFSET);
+    addr_hit[157] = (reg_addr == I3C_TARG_TX_THLD_CTRL_0_OFFSET);
+    addr_hit[158] = (reg_addr == I3C_TARG_TX_THLD_CTRL_1_OFFSET);
+    addr_hit[159] = (reg_addr == I3C_TARG_TX_THLD_CTRL_2_OFFSET);
+    addr_hit[160] = (reg_addr == I3C_TARG_TX_THLD_CTRL_3_OFFSET);
+    addr_hit[161] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_OFFSET);
+    addr_hit[162] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_1_OFFSET);
+    addr_hit[163] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_2_OFFSET);
+    addr_hit[164] = (reg_addr == I3C_TARG_TX_QUEUE_STATUS_LEVEL_3_OFFSET);
+    addr_hit[165] = (reg_addr == I3C_TARG_ADDR_0_OFFSET);
+    addr_hit[166] = (reg_addr == I3C_TARG_ADDR_1_OFFSET);
+    addr_hit[167] = (reg_addr == I3C_TARG_ADDR_2_OFFSET);
+    addr_hit[168] = (reg_addr == I3C_TARG_ADDR_3_OFFSET);
+    addr_hit[169] = (reg_addr == I3C_TARG_CHAR_0_OFFSET);
+    addr_hit[170] = (reg_addr == I3C_TARG_CHAR_1_OFFSET);
+    addr_hit[171] = (reg_addr == I3C_TARG_CHAR_2_OFFSET);
+    addr_hit[172] = (reg_addr == I3C_TARG_CHAR_3_OFFSET);
+    addr_hit[173] = (reg_addr == I3C_TARG_PID_LO_0_OFFSET);
+    addr_hit[174] = (reg_addr == I3C_TARG_PID_LO_1_OFFSET);
+    addr_hit[175] = (reg_addr == I3C_TARG_PID_LO_2_OFFSET);
+    addr_hit[176] = (reg_addr == I3C_TARG_PID_LO_3_OFFSET);
+    addr_hit[177] = (reg_addr == I3C_TARG_CAPS_0_OFFSET);
+    addr_hit[178] = (reg_addr == I3C_TARG_CAPS_1_OFFSET);
+    addr_hit[179] = (reg_addr == I3C_TARG_CAPS_2_OFFSET);
+    addr_hit[180] = (reg_addr == I3C_TARG_CAPS_3_OFFSET);
+    addr_hit[181] = (reg_addr == I3C_TARG_INFO_0_OFFSET);
+    addr_hit[182] = (reg_addr == I3C_TARG_INFO_1_OFFSET);
+    addr_hit[183] = (reg_addr == I3C_TARG_INFO_2_OFFSET);
+    addr_hit[184] = (reg_addr == I3C_TARG_INFO_3_OFFSET);
+    addr_hit[185] = (reg_addr == I3C_TARG_MAX_RDWR_0_OFFSET);
+    addr_hit[186] = (reg_addr == I3C_TARG_MAX_RDWR_1_OFFSET);
+    addr_hit[187] = (reg_addr == I3C_TARG_MAX_RDWR_2_OFFSET);
+    addr_hit[188] = (reg_addr == I3C_TARG_MAX_RDWR_3_OFFSET);
+    addr_hit[189] = (reg_addr == I3C_TARGEXT_EXTCAP_HEADER_OFFSET);
+    addr_hit[190] = (reg_addr == I3C_TERM_EXTCAP_HEADER_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 188; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 191; slice_idx++) begin
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
@@ -19659,7 +20105,10 @@ module i3c_reg_top
                (racl_addr_hit_write[184] & (|(I3C_PERMIT[184] & ~reg_be))) |
                (racl_addr_hit_write[185] & (|(I3C_PERMIT[185] & ~reg_be))) |
                (racl_addr_hit_write[186] & (|(I3C_PERMIT[186] & ~reg_be))) |
-               (racl_addr_hit_write[187] & (|(I3C_PERMIT[187] & ~reg_be)))));
+               (racl_addr_hit_write[187] & (|(I3C_PERMIT[187] & ~reg_be))) |
+               (racl_addr_hit_write[188] & (|(I3C_PERMIT[188] & ~reg_be))) |
+               (racl_addr_hit_write[189] & (|(I3C_PERMIT[189] & ~reg_be))) |
+               (racl_addr_hit_write[190] & (|(I3C_PERMIT[190] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -19701,79 +20150,82 @@ module i3c_reg_top
 
   assign targ_control_en_hdr_ddr_wd = reg_wdata[8];
 
+  assign targ_control_ibi_nack_retry_cnt_wd = reg_wdata[29:28];
+
   assign targ_control_hj_request_wd = reg_wdata[30];
 
   assign targ_control_sw_reset_wd = reg_wdata[31];
   assign targ_status_re = racl_addr_hit_read[8] & reg_re & !reg_error;
-  assign targ_status_we = racl_addr_hit_write[8] & reg_we & !reg_error;
+  assign targ_ext_status_re = racl_addr_hit_read[9] & reg_re & !reg_error;
+  assign targ_ext_status_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
-  assign targ_status_ext_info_wd = reg_wdata[14:0];
-  assign targ_sink_control_we = racl_addr_hit_write[9] & reg_we & !reg_error;
+  assign targ_ext_status_info_wd = reg_wdata[15:0];
+  assign targ_sink_control_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign targ_sink_control_buffer_wd = reg_wdata[15:12];
 
   assign targ_sink_control_length_wd = reg_wdata[26:16];
 
   assign targ_sink_control_start_wd = reg_wdata[31];
-  assign targ_sink_status_re = racl_addr_hit_read[10] & reg_re & !reg_error;
-  assign reset_det_ctrl_we = racl_addr_hit_write[11] & reg_we & !reg_error;
+  assign targ_sink_status_re = racl_addr_hit_read[11] & reg_re & !reg_error;
+  assign reset_det_control_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
 
 
 
-  assign ctrl_time_sp_we = racl_addr_hit_write[13] & reg_we & !reg_error;
+  assign ctrl_time_sp_we = racl_addr_hit_write[14] & reg_we & !reg_error;
 
   assign ctrl_time_sp_tcbp_div2_wd = reg_wdata[9:0];
 
   assign ctrl_time_sp_tcas_div2_wd = reg_wdata[25:16];
-  assign ctrl_time_od_we = racl_addr_hit_write[14] & reg_we & !reg_error;
+  assign ctrl_time_od_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign ctrl_time_od_scllo_div2_wd = reg_wdata[9:0];
 
   assign ctrl_time_od_sclhi_div2_wd = reg_wdata[25:16];
-  assign ctrl_time_pp_we = racl_addr_hit_write[15] & reg_we & !reg_error;
+  assign ctrl_time_pp_we = racl_addr_hit_write[16] & reg_we & !reg_error;
 
   assign ctrl_time_pp_tchh_wd = reg_wdata[9:0];
 
   assign ctrl_time_pp_hcext_wd = reg_wdata[15];
 
   assign ctrl_time_pp_tchs_wd = reg_wdata[25:16];
-  assign ctrl_time_sdr0_we = racl_addr_hit_write[16] & reg_we & !reg_error;
+  assign ctrl_time_sdr0_we = racl_addr_hit_write[17] & reg_we & !reg_error;
 
   assign ctrl_time_sdr0_tclh_wd = reg_wdata[9:0];
 
   assign ctrl_time_sdr0_tcls_wd = reg_wdata[25:16];
-  assign ctrl_time_sdr1_we = racl_addr_hit_write[17] & reg_we & !reg_error;
+  assign ctrl_time_sdr1_we = racl_addr_hit_write[18] & reg_we & !reg_error;
 
   assign ctrl_time_sdr1_tclh_wd = reg_wdata[9:0];
 
   assign ctrl_time_sdr1_tcls_wd = reg_wdata[25:16];
-  assign ctrl_time_sdr2_we = racl_addr_hit_write[18] & reg_we & !reg_error;
+  assign ctrl_time_sdr2_we = racl_addr_hit_write[19] & reg_we & !reg_error;
 
   assign ctrl_time_sdr2_tclh_wd = reg_wdata[9:0];
 
   assign ctrl_time_sdr2_tcls_wd = reg_wdata[25:16];
-  assign ctrl_time_sdr3_we = racl_addr_hit_write[19] & reg_we & !reg_error;
+  assign ctrl_time_sdr3_we = racl_addr_hit_write[20] & reg_we & !reg_error;
 
   assign ctrl_time_sdr3_tclh_wd = reg_wdata[9:0];
 
   assign ctrl_time_sdr3_tcls_wd = reg_wdata[25:16];
-  assign ctrl_time_sdr4_we = racl_addr_hit_write[20] & reg_we & !reg_error;
+  assign ctrl_time_sdr4_we = racl_addr_hit_write[21] & reg_we & !reg_error;
 
   assign ctrl_time_sdr4_tclh_wd = reg_wdata[9:0];
 
   assign ctrl_time_sdr4_tcls_wd = reg_wdata[25:16];
-  assign ctrl_time_fmp_we = racl_addr_hit_write[21] & reg_we & !reg_error;
+  assign ctrl_time_fmp_we = racl_addr_hit_write[22] & reg_we & !reg_error;
 
   assign ctrl_time_fmp_scllo_div2_wd = reg_wdata[9:0];
 
   assign ctrl_time_fmp_sclhi_div2_wd = reg_wdata[25:16];
-  assign ctrl_time_fm_we = racl_addr_hit_write[22] & reg_we & !reg_error;
+  assign ctrl_time_fm_we = racl_addr_hit_write[23] & reg_we & !reg_error;
 
   assign ctrl_time_fm_scllo_div2_wd = reg_wdata[9:0];
 
   assign ctrl_time_fm_sclhi_div2_wd = reg_wdata[25:16];
-  assign interval_time0_we = racl_addr_hit_write[23] & reg_we & !reg_error;
+  assign interval_time0_we = racl_addr_hit_write[24] & reg_we & !reg_error;
 
   assign interval_time0_targ_bus_avail_wd = reg_wdata[7:0];
 
@@ -19782,7 +20234,7 @@ module i3c_reg_top
   assign interval_time0_ctrl_bus_avail_wd = reg_wdata[23:16];
 
   assign interval_time0_dead_bus_wd = reg_wdata[31:24];
-  assign interval_time1_we = racl_addr_hit_write[24] & reg_we & !reg_error;
+  assign interval_time1_we = racl_addr_hit_write[25] & reg_we & !reg_error;
 
   assign interval_time1_command_retry_wd = reg_wdata[7:0];
 
@@ -19791,7 +20243,19 @@ module i3c_reg_top
   assign interval_time1_te0_recov_wd = reg_wdata[23:16];
 
   assign interval_time1_targ_trx_rst_wd = reg_wdata[31:24];
-  assign phy_config_we = racl_addr_hit_write[25] & reg_we & !reg_error;
+  assign interval_time2_we = racl_addr_hit_write[26] & reg_we & !reg_error;
+
+  assign interval_time2_ibi_retry_wd = reg_wdata[7:0];
+
+  assign interval_time2_poll_targets_wd = reg_wdata[15:8];
+
+  assign interval_time2_dead_ctrl_wd = reg_wdata[23:16];
+
+  assign interval_time2_dead_targ_wd = reg_wdata[31:24];
+  assign bus_control_we = racl_addr_hit_write[27] & reg_we & !reg_error;
+
+  assign bus_control_wd = reg_wdata[31];
+  assign phy_config_we = racl_addr_hit_write[28] & reg_we & !reg_error;
 
   assign phy_config_scl_hk_en_wd = reg_wdata[0];
 
@@ -19812,7 +20276,7 @@ module i3c_reg_top
   assign phy_config_ctrl_scl_pp_en_wd = reg_wdata[27];
 
   assign phy_config_ctrl_direct_drive_en_wd = reg_wdata[31];
-  assign blocked_addr_we = racl_addr_hit_write[26] & reg_we & !reg_error;
+  assign blocked_addr_we = racl_addr_hit_write[29] & reg_we & !reg_error;
 
   assign blocked_addr_addr0_wd = reg_wdata[6:0];
 
@@ -19821,144 +20285,144 @@ module i3c_reg_top
   assign blocked_addr_addr1_wd = reg_wdata[22:16];
 
   assign blocked_addr_mask1_wd = reg_wdata[30:24];
-  assign buffer_ctrl_re = racl_addr_hit_read[27] & reg_re & !reg_error;
-  assign buffer_ctrl_we = racl_addr_hit_write[27] & reg_we & !reg_error;
+  assign buffer_control_re = racl_addr_hit_read[30] & reg_re & !reg_error;
+  assign buffer_control_we = racl_addr_hit_write[30] & reg_we & !reg_error;
 
-  assign buffer_ctrl_sw_addr_hi_wd = reg_wdata[29:28];
+  assign buffer_control_sw_addr_hi_wd = reg_wdata[29:28];
 
-  assign buffer_ctrl_clear_wd = reg_wdata[31];
-  assign buffer_status_we = racl_addr_hit_write[28] & reg_we & !reg_error;
+  assign buffer_control_clear_wd = reg_wdata[31];
+  assign buffer_status_we = racl_addr_hit_write[31] & reg_we & !reg_error;
 
   assign buffer_status_ttiq_err_wd = reg_wdata[30];
 
   assign buffer_status_hciq_err_wd = reg_wdata[31];
-  assign ctrl_txbuf_config_we = racl_addr_hit_write[29] & reg_we & !reg_error;
+  assign ctrl_txbuf_config_we = racl_addr_hit_write[32] & reg_we & !reg_error;
 
   assign ctrl_txbuf_config_min_addr_wd = reg_wdata[9:0];
 
   assign ctrl_txbuf_config_max_addr_wd = reg_wdata[25:16];
 
   assign ctrl_txbuf_config_size_val_wd = reg_wdata[30:28];
-  assign ctrl_txbuf_state_re = racl_addr_hit_read[30] & reg_re & !reg_error;
-  assign ctrl_rxbuf_config_we = racl_addr_hit_write[31] & reg_we & !reg_error;
+  assign ctrl_txbuf_state_re = racl_addr_hit_read[33] & reg_re & !reg_error;
+  assign ctrl_rxbuf_config_we = racl_addr_hit_write[34] & reg_we & !reg_error;
 
   assign ctrl_rxbuf_config_min_addr_wd = reg_wdata[9:0];
 
   assign ctrl_rxbuf_config_max_addr_wd = reg_wdata[25:16];
 
   assign ctrl_rxbuf_config_size_val_wd = reg_wdata[30:28];
-  assign ctrl_rxbuf_state_re = racl_addr_hit_read[32] & reg_re & !reg_error;
-  assign command_queue_config_we = racl_addr_hit_write[33] & reg_we & !reg_error;
+  assign ctrl_rxbuf_state_re = racl_addr_hit_read[35] & reg_re & !reg_error;
+  assign command_queue_config_we = racl_addr_hit_write[36] & reg_we & !reg_error;
 
   assign command_queue_config_min_addr_wd = reg_wdata[9:0];
 
   assign command_queue_config_max_addr_wd = reg_wdata[21:12];
 
   assign command_queue_config_size_val_wd = reg_wdata[31:24];
-  assign command_queue_state_re = racl_addr_hit_read[34] & reg_re & !reg_error;
-  assign response_queue_config_we = racl_addr_hit_write[35] & reg_we & !reg_error;
+  assign command_queue_state_re = racl_addr_hit_read[37] & reg_re & !reg_error;
+  assign response_queue_config_we = racl_addr_hit_write[38] & reg_we & !reg_error;
 
   assign response_queue_config_min_addr_wd = reg_wdata[9:0];
 
   assign response_queue_config_max_addr_wd = reg_wdata[21:12];
 
   assign response_queue_config_size_val_wd = reg_wdata[31:24];
-  assign response_queue_state_re = racl_addr_hit_read[36] & reg_re & !reg_error;
-  assign ibi_config_we = racl_addr_hit_write[37] & reg_we & !reg_error;
+  assign response_queue_state_re = racl_addr_hit_read[39] & reg_re & !reg_error;
+  assign ibi_config_we = racl_addr_hit_write[40] & reg_we & !reg_error;
 
   assign ibi_config_min_addr_wd = reg_wdata[9:0];
 
   assign ibi_config_max_addr_wd = reg_wdata[21:12];
 
   assign ibi_config_size_val_wd = reg_wdata[31:24];
-  assign ibi_state_re = racl_addr_hit_read[38] & reg_re & !reg_error;
-  assign ibi_stat_config_we = racl_addr_hit_write[39] & reg_we & !reg_error;
+  assign ibi_state_re = racl_addr_hit_read[41] & reg_re & !reg_error;
+  assign ibi_stat_config_we = racl_addr_hit_write[42] & reg_we & !reg_error;
 
   assign ibi_stat_config_min_addr_wd = reg_wdata[9:0];
 
   assign ibi_stat_config_max_addr_wd = reg_wdata[21:12];
-  assign ibi_stat_state_re = racl_addr_hit_read[40] & reg_re & !reg_error;
-  assign targ_txbuf_config_0_we = racl_addr_hit_write[41] & reg_we & !reg_error;
+  assign ibi_stat_state_re = racl_addr_hit_read[43] & reg_re & !reg_error;
+  assign targ_txbuf_config_0_we = racl_addr_hit_write[44] & reg_we & !reg_error;
 
   assign targ_txbuf_config_0_min_addr_0_wd = reg_wdata[9:0];
 
   assign targ_txbuf_config_0_max_addr_0_wd = reg_wdata[25:16];
-  assign targ_txbuf_config_1_we = racl_addr_hit_write[42] & reg_we & !reg_error;
+  assign targ_txbuf_config_1_we = racl_addr_hit_write[45] & reg_we & !reg_error;
 
   assign targ_txbuf_config_1_min_addr_1_wd = reg_wdata[9:0];
 
   assign targ_txbuf_config_1_max_addr_1_wd = reg_wdata[25:16];
-  assign targ_txbuf_config_2_we = racl_addr_hit_write[43] & reg_we & !reg_error;
+  assign targ_txbuf_config_2_we = racl_addr_hit_write[46] & reg_we & !reg_error;
 
   assign targ_txbuf_config_2_min_addr_2_wd = reg_wdata[9:0];
 
   assign targ_txbuf_config_2_max_addr_2_wd = reg_wdata[25:16];
-  assign targ_txbuf_config_3_we = racl_addr_hit_write[44] & reg_we & !reg_error;
+  assign targ_txbuf_config_3_we = racl_addr_hit_write[47] & reg_we & !reg_error;
 
   assign targ_txbuf_config_3_min_addr_3_wd = reg_wdata[9:0];
 
   assign targ_txbuf_config_3_max_addr_3_wd = reg_wdata[25:16];
-  assign targ_txbuf_state_0_re = racl_addr_hit_read[45] & reg_re & !reg_error;
-  assign targ_txbuf_state_1_re = racl_addr_hit_read[46] & reg_re & !reg_error;
-  assign targ_txbuf_state_2_re = racl_addr_hit_read[47] & reg_re & !reg_error;
-  assign targ_txbuf_state_3_re = racl_addr_hit_read[48] & reg_re & !reg_error;
-  assign targ_rxbuf_config_we = racl_addr_hit_write[49] & reg_we & !reg_error;
+  assign targ_txbuf_state_0_re = racl_addr_hit_read[48] & reg_re & !reg_error;
+  assign targ_txbuf_state_1_re = racl_addr_hit_read[49] & reg_re & !reg_error;
+  assign targ_txbuf_state_2_re = racl_addr_hit_read[50] & reg_re & !reg_error;
+  assign targ_txbuf_state_3_re = racl_addr_hit_read[51] & reg_re & !reg_error;
+  assign targ_rxbuf_config_we = racl_addr_hit_write[52] & reg_we & !reg_error;
 
   assign targ_rxbuf_config_min_addr_wd = reg_wdata[9:0];
 
   assign targ_rxbuf_config_max_addr_wd = reg_wdata[25:16];
-  assign targ_rxbuf_state_re = racl_addr_hit_read[50] & reg_re & !reg_error;
-  assign targ_ibi_config_we = racl_addr_hit_write[51] & reg_we & !reg_error;
+  assign targ_rxbuf_state_re = racl_addr_hit_read[53] & reg_re & !reg_error;
+  assign targ_ibi_config_we = racl_addr_hit_write[54] & reg_we & !reg_error;
 
   assign targ_ibi_config_min_addr_wd = reg_wdata[9:0];
 
   assign targ_ibi_config_max_addr_wd = reg_wdata[25:16];
-  assign targ_ibi_state_re = racl_addr_hit_read[52] & reg_re & !reg_error;
-  assign targ_txdesc_config_0_we = racl_addr_hit_write[53] & reg_we & !reg_error;
+  assign targ_ibi_state_re = racl_addr_hit_read[55] & reg_re & !reg_error;
+  assign targ_txdesc_config_0_we = racl_addr_hit_write[56] & reg_we & !reg_error;
 
   assign targ_txdesc_config_0_min_addr_0_wd = reg_wdata[9:0];
 
   assign targ_txdesc_config_0_max_addr_0_wd = reg_wdata[25:16];
-  assign targ_txdesc_config_1_we = racl_addr_hit_write[54] & reg_we & !reg_error;
+  assign targ_txdesc_config_1_we = racl_addr_hit_write[57] & reg_we & !reg_error;
 
   assign targ_txdesc_config_1_min_addr_1_wd = reg_wdata[9:0];
 
   assign targ_txdesc_config_1_max_addr_1_wd = reg_wdata[25:16];
-  assign targ_txdesc_config_2_we = racl_addr_hit_write[55] & reg_we & !reg_error;
+  assign targ_txdesc_config_2_we = racl_addr_hit_write[58] & reg_we & !reg_error;
 
   assign targ_txdesc_config_2_min_addr_2_wd = reg_wdata[9:0];
 
   assign targ_txdesc_config_2_max_addr_2_wd = reg_wdata[25:16];
-  assign targ_txdesc_config_3_we = racl_addr_hit_write[56] & reg_we & !reg_error;
+  assign targ_txdesc_config_3_we = racl_addr_hit_write[59] & reg_we & !reg_error;
 
   assign targ_txdesc_config_3_min_addr_3_wd = reg_wdata[9:0];
 
   assign targ_txdesc_config_3_max_addr_3_wd = reg_wdata[25:16];
-  assign targ_txdesc_state_0_re = racl_addr_hit_read[57] & reg_re & !reg_error;
-  assign targ_txdesc_state_1_re = racl_addr_hit_read[58] & reg_re & !reg_error;
-  assign targ_txdesc_state_2_re = racl_addr_hit_read[59] & reg_re & !reg_error;
-  assign targ_txdesc_state_3_re = racl_addr_hit_read[60] & reg_re & !reg_error;
-  assign targ_rxdesc_config_we = racl_addr_hit_write[61] & reg_we & !reg_error;
+  assign targ_txdesc_state_0_re = racl_addr_hit_read[60] & reg_re & !reg_error;
+  assign targ_txdesc_state_1_re = racl_addr_hit_read[61] & reg_re & !reg_error;
+  assign targ_txdesc_state_2_re = racl_addr_hit_read[62] & reg_re & !reg_error;
+  assign targ_txdesc_state_3_re = racl_addr_hit_read[63] & reg_re & !reg_error;
+  assign targ_rxdesc_config_we = racl_addr_hit_write[64] & reg_we & !reg_error;
 
   assign targ_rxdesc_config_min_addr_wd = reg_wdata[9:0];
 
   assign targ_rxdesc_config_max_addr_wd = reg_wdata[25:16];
-  assign targ_rxdesc_state_re = racl_addr_hit_read[62] & reg_re & !reg_error;
-  assign targ_ibidesc_config_we = racl_addr_hit_write[63] & reg_we & !reg_error;
+  assign targ_rxdesc_state_re = racl_addr_hit_read[65] & reg_re & !reg_error;
+  assign targ_ibidesc_config_we = racl_addr_hit_write[66] & reg_we & !reg_error;
 
   assign targ_ibidesc_config_min_addr_wd = reg_wdata[9:0];
 
   assign targ_ibidesc_config_max_addr_wd = reg_wdata[25:16];
-  assign targ_ibidesc_state_re = racl_addr_hit_read[64] & reg_re & !reg_error;
-  assign targ_async_config_we = racl_addr_hit_write[65] & reg_we & !reg_error;
+  assign targ_ibidesc_state_re = racl_addr_hit_read[67] & reg_re & !reg_error;
+  assign targ_async_config_we = racl_addr_hit_write[68] & reg_we & !reg_error;
 
   assign targ_async_config_min_addr_wd = reg_wdata[9:0];
 
   assign targ_async_config_max_addr_wd = reg_wdata[25:16];
-  assign targ_async_state_re = racl_addr_hit_read[66] & reg_re & !reg_error;
-  assign hci_version_re = racl_addr_hit_read[67] & reg_re & !reg_error;
-  assign hc_control_re = racl_addr_hit_read[68] & reg_re & !reg_error;
-  assign hc_control_we = racl_addr_hit_write[68] & reg_we & !reg_error;
+  assign targ_async_state_re = racl_addr_hit_read[69] & reg_re & !reg_error;
+  assign hci_version_re = racl_addr_hit_read[70] & reg_re & !reg_error;
+  assign hc_control_re = racl_addr_hit_read[71] & reg_re & !reg_error;
+  assign hc_control_we = racl_addr_hit_write[71] & reg_we & !reg_error;
 
   assign hc_control_iba_include_wd = reg_wdata[0];
 
@@ -19975,14 +20439,14 @@ module i3c_reg_top
   assign hc_control_resume_wd = reg_wdata[30];
 
   assign hc_control_bus_enable_wd = reg_wdata[31];
-  assign controller_device_addr_re = racl_addr_hit_read[69] & reg_re & !reg_error;
-  assign controller_device_addr_we = racl_addr_hit_write[69] & reg_we & !reg_error;
+  assign controller_device_addr_re = racl_addr_hit_read[72] & reg_re & !reg_error;
+  assign controller_device_addr_we = racl_addr_hit_write[72] & reg_we & !reg_error;
 
   assign controller_device_addr_dynamic_addr_wd = reg_wdata[22:16];
 
   assign controller_device_addr_dynamic_addr_valid_wd = reg_wdata[31];
-  assign hc_capabilities_re = racl_addr_hit_read[70] & reg_re & !reg_error;
-  assign reset_control_we = racl_addr_hit_write[71] & reg_we & !reg_error;
+  assign hc_capabilities_re = racl_addr_hit_read[73] & reg_re & !reg_error;
+  assign reset_control_we = racl_addr_hit_write[74] & reg_we & !reg_error;
 
   assign reset_control_soft_rst_wd = reg_wdata[0];
 
@@ -19995,8 +20459,8 @@ module i3c_reg_top
   assign reset_control_rx_fifo_rst_wd = reg_wdata[4];
 
   assign reset_control_ibi_queue_rst_wd = reg_wdata[5];
-  assign present_state_re = racl_addr_hit_read[72] & reg_re & !reg_error;
-  assign intr_status_we = racl_addr_hit_write[73] & reg_we & !reg_error;
+  assign present_state_re = racl_addr_hit_read[75] & reg_re & !reg_error;
+  assign intr_status_we = racl_addr_hit_write[76] & reg_we & !reg_error;
 
   assign intr_status_hc_internal_err_stat_wd = reg_wdata[10];
 
@@ -20007,7 +20471,7 @@ module i3c_reg_top
   assign intr_status_hc_err_cmd_seq_timeout_stat_wd = reg_wdata[13];
 
   assign intr_status_sched_cmd_missed_tick_stat_wd = reg_wdata[14];
-  assign intr_status_enable_we = racl_addr_hit_write[74] & reg_we & !reg_error;
+  assign intr_status_enable_we = racl_addr_hit_write[77] & reg_we & !reg_error;
 
   assign intr_status_enable_hc_internal_err_stat_en_wd = reg_wdata[10];
 
@@ -20018,7 +20482,7 @@ module i3c_reg_top
   assign intr_status_enable_hc_err_cmd_seq_timeout_stat_en_wd = reg_wdata[13];
 
   assign intr_status_enable_sched_cmd_missed_tick_stat_en_wd = reg_wdata[14];
-  assign intr_signal_enable_we = racl_addr_hit_write[75] & reg_we & !reg_error;
+  assign intr_signal_enable_we = racl_addr_hit_write[78] & reg_we & !reg_error;
 
   assign intr_signal_enable_hc_internal_err_signal_en_wd = reg_wdata[10];
 
@@ -20029,7 +20493,7 @@ module i3c_reg_top
   assign intr_signal_enable_hc_err_cmd_seq_timeout_signal_en_wd = reg_wdata[13];
 
   assign intr_signal_enable_sched_cmd_missed_tick_signal_en_wd = reg_wdata[14];
-  assign intr_force_we = racl_addr_hit_write[76] & reg_we & !reg_error;
+  assign intr_force_we = racl_addr_hit_write[79] & reg_we & !reg_error;
 
   assign intr_force_hc_internal_err_force_wd = reg_wdata[10];
 
@@ -20040,23 +20504,23 @@ module i3c_reg_top
   assign intr_force_hc_err_cmd_seq_timeout_force_wd = reg_wdata[13];
 
   assign intr_force_sched_cmd_missed_tick_force_wd = reg_wdata[14];
-  assign dat_section_offset_re = racl_addr_hit_read[77] & reg_re & !reg_error;
-  assign dct_section_offset_re = racl_addr_hit_read[78] & reg_re & !reg_error;
-  assign dct_section_offset_we = racl_addr_hit_write[78] & reg_we & !reg_error;
+  assign dat_section_offset_re = racl_addr_hit_read[80] & reg_re & !reg_error;
+  assign dct_section_offset_re = racl_addr_hit_read[81] & reg_re & !reg_error;
+  assign dct_section_offset_we = racl_addr_hit_write[81] & reg_we & !reg_error;
 
   assign dct_section_offset_table_index_wd = reg_wdata[23:19];
-  assign ring_headers_section_offset_re = racl_addr_hit_read[79] & reg_re & !reg_error;
-  assign pio_section_offset_re = racl_addr_hit_read[80] & reg_re & !reg_error;
-  assign ext_caps_section_offset_re = racl_addr_hit_read[81] & reg_re & !reg_error;
-  assign int_ctrl_cmds_en_re = racl_addr_hit_read[82] & reg_re & !reg_error;
-  assign ibi_notify_ctrl_we = racl_addr_hit_write[83] & reg_we & !reg_error;
+  assign ring_headers_section_offset_re = racl_addr_hit_read[82] & reg_re & !reg_error;
+  assign pio_section_offset_re = racl_addr_hit_read[83] & reg_re & !reg_error;
+  assign ext_caps_section_offset_re = racl_addr_hit_read[84] & reg_re & !reg_error;
+  assign int_ctrl_cmds_en_re = racl_addr_hit_read[85] & reg_re & !reg_error;
+  assign ibi_notify_ctrl_we = racl_addr_hit_write[86] & reg_we & !reg_error;
 
   assign ibi_notify_ctrl_notify_hj_rejected_wd = reg_wdata[0];
 
   assign ibi_notify_ctrl_notify_crr_rejected_wd = reg_wdata[1];
 
   assign ibi_notify_ctrl_notify_ibi_rejected_wd = reg_wdata[3];
-  assign ibi_data_abort_ctrl_we = racl_addr_hit_write[84] & reg_we & !reg_error;
+  assign ibi_data_abort_ctrl_we = racl_addr_hit_write[87] & reg_we & !reg_error;
 
   assign ibi_data_abort_ctrl_match_ibi_id_wd = reg_wdata[15:8];
 
@@ -20065,10 +20529,10 @@ module i3c_reg_top
   assign ibi_data_abort_ctrl_match_status_type_wd = reg_wdata[20:18];
 
   assign ibi_data_abort_ctrl_ibi_data_abort_mon_wd = reg_wdata[31];
-  assign dev_ctx_base_lo_re = racl_addr_hit_read[85] & reg_re & !reg_error;
-  assign dev_ctx_base_hi_re = racl_addr_hit_read[86] & reg_re & !reg_error;
-  assign dev_ctx_sg_re = racl_addr_hit_read[87] & reg_re & !reg_error;
-  assign queue_thld_ctrl_we = racl_addr_hit_write[88] & reg_we & !reg_error;
+  assign dev_ctx_base_lo_re = racl_addr_hit_read[88] & reg_re & !reg_error;
+  assign dev_ctx_base_hi_re = racl_addr_hit_read[89] & reg_re & !reg_error;
+  assign dev_ctx_sg_re = racl_addr_hit_read[90] & reg_re & !reg_error;
+  assign queue_thld_ctrl_we = racl_addr_hit_write[91] & reg_we & !reg_error;
 
   assign queue_thld_ctrl_cmd_empty_buf_thld_wd = reg_wdata[7:0];
 
@@ -20077,7 +20541,7 @@ module i3c_reg_top
   assign queue_thld_ctrl_ibi_data_segment_size_wd = reg_wdata[23:16];
 
   assign queue_thld_ctrl_ibi_status_thld_wd = reg_wdata[31:24];
-  assign data_buffer_thld_ctrl_we = racl_addr_hit_write[89] & reg_we & !reg_error;
+  assign data_buffer_thld_ctrl_we = racl_addr_hit_write[92] & reg_we & !reg_error;
 
   assign data_buffer_thld_ctrl_tx_buf_thld_wd = reg_wdata[2:0];
 
@@ -20086,14 +20550,14 @@ module i3c_reg_top
   assign data_buffer_thld_ctrl_tx_start_thld_wd = reg_wdata[18:16];
 
   assign data_buffer_thld_ctrl_rx_start_thld_wd = reg_wdata[26:24];
-  assign queue_size_re = racl_addr_hit_read[90] & reg_re & !reg_error;
-  assign alt_queue_size_re = racl_addr_hit_read[91] & reg_re & !reg_error;
-  assign pio_intr_status_we = racl_addr_hit_write[92] & reg_we & !reg_error;
+  assign queue_size_re = racl_addr_hit_read[93] & reg_re & !reg_error;
+  assign alt_queue_size_re = racl_addr_hit_read[94] & reg_re & !reg_error;
+  assign pio_intr_status_we = racl_addr_hit_write[95] & reg_we & !reg_error;
 
   assign pio_intr_status_transfer_abort_stat_wd = reg_wdata[5];
 
   assign pio_intr_status_transfer_err_stat_wd = reg_wdata[9];
-  assign pio_intr_status_enable_we = racl_addr_hit_write[93] & reg_we & !reg_error;
+  assign pio_intr_status_enable_we = racl_addr_hit_write[96] & reg_we & !reg_error;
 
   assign pio_intr_status_enable_tx_thld_stat_en_wd = reg_wdata[0];
 
@@ -20108,7 +20572,7 @@ module i3c_reg_top
   assign pio_intr_status_enable_transfer_abort_stat_en_wd = reg_wdata[5];
 
   assign pio_intr_status_enable_transfer_err_stat_en_wd = reg_wdata[9];
-  assign pio_intr_signal_enable_we = racl_addr_hit_write[94] & reg_we & !reg_error;
+  assign pio_intr_signal_enable_we = racl_addr_hit_write[97] & reg_we & !reg_error;
 
   assign pio_intr_signal_enable_tx_thld_signal_en_wd = reg_wdata[0];
 
@@ -20123,7 +20587,7 @@ module i3c_reg_top
   assign pio_intr_signal_enable_transfer_abort_signal_en_wd = reg_wdata[5];
 
   assign pio_intr_signal_enable_transfer_err_signal_en_wd = reg_wdata[9];
-  assign pio_intr_force_we = racl_addr_hit_write[95] & reg_we & !reg_error;
+  assign pio_intr_force_we = racl_addr_hit_write[98] & reg_we & !reg_error;
 
   assign pio_intr_force_tx_thld_force_wd = reg_wdata[0];
 
@@ -20138,21 +20602,21 @@ module i3c_reg_top
   assign pio_intr_force_transfer_abort_force_wd = reg_wdata[5];
 
   assign pio_intr_force_transfer_err_force_wd = reg_wdata[9];
-  assign pio_control_we = racl_addr_hit_write[96] & reg_we & !reg_error;
+  assign pio_control_we = racl_addr_hit_write[99] & reg_we & !reg_error;
 
   assign pio_control_enable_wd = reg_wdata[0];
 
   assign pio_control_rs_wd = reg_wdata[1];
 
   assign pio_control_abort_wd = reg_wdata[2];
-  assign id_extcap_header_re = racl_addr_hit_read[97] & reg_re & !reg_error;
-  assign comp_manufacturer_re = racl_addr_hit_read[98] & reg_re & !reg_error;
-  assign comp_version_re = racl_addr_hit_read[99] & reg_re & !reg_error;
-  assign comp_type_re = racl_addr_hit_read[100] & reg_re & !reg_error;
-  assign ctrl_cfg_extcap_header_re = racl_addr_hit_read[101] & reg_re & !reg_error;
-  assign controller_config_re = racl_addr_hit_read[102] & reg_re & !reg_error;
-  assign dbr_extcap_header_re = racl_addr_hit_read[103] & reg_re & !reg_error;
-  assign dbr_engage_we = racl_addr_hit_write[104] & reg_we & !reg_error;
+  assign id_extcap_header_re = racl_addr_hit_read[100] & reg_re & !reg_error;
+  assign comp_manufacturer_re = racl_addr_hit_read[101] & reg_re & !reg_error;
+  assign comp_version_re = racl_addr_hit_read[102] & reg_re & !reg_error;
+  assign comp_type_re = racl_addr_hit_read[103] & reg_re & !reg_error;
+  assign ctrl_cfg_extcap_header_re = racl_addr_hit_read[104] & reg_re & !reg_error;
+  assign controller_config_re = racl_addr_hit_read[105] & reg_re & !reg_error;
+  assign dbr_extcap_header_re = racl_addr_hit_read[106] & reg_re & !reg_error;
+  assign dbr_engage_we = racl_addr_hit_write[107] & reg_we & !reg_error;
 
   assign dbr_engage_dbr_verif_key_wd = reg_wdata[3:0];
 
@@ -20161,15 +20625,15 @@ module i3c_reg_top
   assign dbr_engage_dbr_asx_timing_wd = reg_wdata[9:8];
 
   assign dbr_engage_dbr_ibi_address_wd = reg_wdata[22:16];
-  assign debug_extcap_header_re = racl_addr_hit_read[105] & reg_re & !reg_error;
-  assign queue_status_level_re = racl_addr_hit_read[106] & reg_re & !reg_error;
-  assign data_buffer_status_level_re = racl_addr_hit_read[107] & reg_re & !reg_error;
-  assign present_state_debug_re = racl_addr_hit_read[108] & reg_re & !reg_error;
-  assign mx_error_counters_re = racl_addr_hit_read[109] & reg_re & !reg_error;
-  assign sched_cmds_debug_re = racl_addr_hit_read[110] & reg_re & !reg_error;
-  assign stby_cr_extcap_header_re = racl_addr_hit_read[111] & reg_re & !reg_error;
-  assign stby_cr_control_re = racl_addr_hit_read[112] & reg_re & !reg_error;
-  assign stby_cr_control_we = racl_addr_hit_write[112] & reg_we & !reg_error;
+  assign debug_extcap_header_re = racl_addr_hit_read[108] & reg_re & !reg_error;
+  assign queue_status_level_re = racl_addr_hit_read[109] & reg_re & !reg_error;
+  assign data_buffer_status_level_re = racl_addr_hit_read[110] & reg_re & !reg_error;
+  assign present_state_debug_re = racl_addr_hit_read[111] & reg_re & !reg_error;
+  assign mx_error_counters_re = racl_addr_hit_read[112] & reg_re & !reg_error;
+  assign sched_cmds_debug_re = racl_addr_hit_read[113] & reg_re & !reg_error;
+  assign stby_cr_extcap_header_re = racl_addr_hit_read[114] & reg_re & !reg_error;
+  assign stby_cr_control_re = racl_addr_hit_read[115] & reg_re & !reg_error;
+  assign stby_cr_control_we = racl_addr_hit_write[115] & reg_we & !reg_error;
 
   assign stby_cr_control_pending_rx_nack_wd = reg_wdata[0];
 
@@ -20196,27 +20660,27 @@ module i3c_reg_top
   assign stby_cr_control_rstact_defbyte_02_wd = reg_wdata[20];
 
   assign stby_cr_control_stby_cr_enable_init_wd = reg_wdata[31:30];
-  assign stby_cr_device_addr_re = racl_addr_hit_read[113] & reg_re & !reg_error;
-  assign stby_cr_device_addr_we = racl_addr_hit_write[113] & reg_we & !reg_error;
+  assign stby_cr_device_addr_re = racl_addr_hit_read[116] & reg_re & !reg_error;
+  assign stby_cr_device_addr_we = racl_addr_hit_write[116] & reg_we & !reg_error;
 
   assign stby_cr_device_addr_static_addr_wd = reg_wdata[6:0];
 
   assign stby_cr_device_addr_static_addr_valid_wd = reg_wdata[15];
-  assign stby_cr_capabilities_re = racl_addr_hit_read[114] & reg_re & !reg_error;
-  assign stby_cr_status_re = racl_addr_hit_read[115] & reg_re & !reg_error;
-  assign stby_cr_device_char_re = racl_addr_hit_read[116] & reg_re & !reg_error;
-  assign stby_cr_device_char_we = racl_addr_hit_write[116] & reg_we & !reg_error;
+  assign stby_cr_capabilities_re = racl_addr_hit_read[117] & reg_re & !reg_error;
+  assign stby_cr_status_re = racl_addr_hit_read[118] & reg_re & !reg_error;
+  assign stby_cr_device_char_re = racl_addr_hit_read[119] & reg_re & !reg_error;
+  assign stby_cr_device_char_we = racl_addr_hit_write[119] & reg_we & !reg_error;
 
   assign stby_cr_device_char_pid_hi_wd = reg_wdata[15:1];
 
   assign stby_cr_device_char_dcr_wd = reg_wdata[23:16];
 
   assign stby_cr_device_char_bcr_var_wd = reg_wdata[28:24];
-  assign stby_cr_device_pid_lo_re = racl_addr_hit_read[117] & reg_re & !reg_error;
-  assign stby_cr_device_pid_lo_we = racl_addr_hit_write[117] & reg_we & !reg_error;
+  assign stby_cr_device_pid_lo_re = racl_addr_hit_read[120] & reg_re & !reg_error;
+  assign stby_cr_device_pid_lo_we = racl_addr_hit_write[120] & reg_we & !reg_error;
 
   assign stby_cr_device_pid_lo_wd = reg_wdata[31:0];
-  assign stby_cr_intr_status_we = racl_addr_hit_write[118] & reg_we & !reg_error;
+  assign stby_cr_intr_status_we = racl_addr_hit_write[121] & reg_we & !reg_error;
 
   assign stby_cr_intr_status_acr_handoff_ok_remain_stat_wd = reg_wdata[0];
 
@@ -20243,7 +20707,7 @@ module i3c_reg_top
   assign stby_cr_intr_status_ccc_unhandled_nack_stat_wd = reg_wdata[18];
 
   assign stby_cr_intr_status_ccc_fatal_rstdaa_err_stat_wd = reg_wdata[19];
-  assign stby_cr_intr_signal_enable_we = racl_addr_hit_write[119] & reg_we & !reg_error;
+  assign stby_cr_intr_signal_enable_we = racl_addr_hit_write[122] & reg_we & !reg_error;
 
   assign stby_cr_intr_signal_enable_acr_handoff_ok_remain_signal_en_wd = reg_wdata[0];
 
@@ -20270,7 +20734,7 @@ module i3c_reg_top
   assign stby_cr_intr_signal_enable_ccc_unhandled_nack_signal_en_wd = reg_wdata[18];
 
   assign stby_cr_intr_signal_enable_ccc_fatal_rstdaa_err_signal_en_wd = reg_wdata[19];
-  assign stby_cr_intr_force_we = racl_addr_hit_write[120] & reg_we & !reg_error;
+  assign stby_cr_intr_force_we = racl_addr_hit_write[123] & reg_we & !reg_error;
 
   assign stby_cr_intr_force_crr_response_force_wd = reg_wdata[10];
 
@@ -20289,22 +20753,22 @@ module i3c_reg_top
   assign stby_cr_intr_force_ccc_unhandled_nack_force_wd = reg_wdata[18];
 
   assign stby_cr_intr_force_ccc_fatal_rstdaa_err_force_wd = reg_wdata[19];
-  assign stby_cr_ccc_config_getcaps_re = racl_addr_hit_read[121] & reg_re & !reg_error;
-  assign stby_cr_ccc_config_getcaps_we = racl_addr_hit_write[121] & reg_we & !reg_error;
+  assign stby_cr_ccc_config_getcaps_re = racl_addr_hit_read[124] & reg_re & !reg_error;
+  assign stby_cr_ccc_config_getcaps_we = racl_addr_hit_write[124] & reg_we & !reg_error;
 
   assign stby_cr_ccc_config_getcaps_f2_crcap1_bus_config_wd = reg_wdata[2:0];
 
   assign stby_cr_ccc_config_getcaps_f2_crcap2_dev_interact_wd = reg_wdata[11:8];
-  assign stby_cr_ccc_config_rstact_params_re = racl_addr_hit_read[122] & reg_re & !reg_error;
-  assign stby_cr_ccc_config_rstact_params_we = racl_addr_hit_write[122] & reg_we & !reg_error;
+  assign stby_cr_ccc_config_rstact_params_re = racl_addr_hit_read[125] & reg_re & !reg_error;
+  assign stby_cr_ccc_config_rstact_params_we = racl_addr_hit_write[125] & reg_we & !reg_error;
 
   assign stby_cr_ccc_config_rstact_params_reset_time_peripheral_wd = reg_wdata[15:8];
 
   assign stby_cr_ccc_config_rstact_params_reset_time_target_wd = reg_wdata[23:16];
 
   assign stby_cr_ccc_config_rstact_params_reset_dynamic_addr_wd = reg_wdata[31];
-  assign tti_extcap_header_re = racl_addr_hit_read[123] & reg_re & !reg_error;
-  assign targ_intr_status_enable_we = racl_addr_hit_write[125] & reg_we & !reg_error;
+  assign tti_extcap_header_re = racl_addr_hit_read[126] & reg_re & !reg_error;
+  assign targ_intr_status_enable_we = racl_addr_hit_write[128] & reg_we & !reg_error;
 
   assign targ_intr_status_enable_rx_desc_ready_stat_en_wd = reg_wdata[0];
 
@@ -20338,8 +20802,10 @@ module i3c_reg_top
 
   assign targ_intr_status_enable_tx3_desc_ready_stat_en_wd = reg_wdata[19];
 
+  assign targ_intr_status_enable_internal_err_stat_en_wd = reg_wdata[30];
+
   assign targ_intr_status_enable_te_stat_en_wd = reg_wdata[31];
-  assign targ_intr_signal_enable_we = racl_addr_hit_write[126] & reg_we & !reg_error;
+  assign targ_intr_signal_enable_we = racl_addr_hit_write[129] & reg_we & !reg_error;
 
   assign targ_intr_signal_enable_rx_desc_ready_signal_en_wd = reg_wdata[0];
 
@@ -20373,8 +20839,10 @@ module i3c_reg_top
 
   assign targ_intr_signal_enable_tx3_desc_ready_signal_en_wd = reg_wdata[19];
 
+  assign targ_intr_signal_enable_internal_err_signal_en_wd = reg_wdata[30];
+
   assign targ_intr_signal_enable_te_signal_en_wd = reg_wdata[31];
-  assign targ_intr_force_we = racl_addr_hit_write[127] & reg_we & !reg_error;
+  assign targ_intr_force_we = racl_addr_hit_write[130] & reg_we & !reg_error;
 
   assign targ_intr_force_rx_desc_ready_force_wd = reg_wdata[0];
 
@@ -20408,12 +20876,16 @@ module i3c_reg_top
 
   assign targ_intr_force_tx3_desc_ready_force_wd = reg_wdata[19];
 
+  assign targ_intr_force_internal_err_force_wd = reg_wdata[30];
+
   assign targ_intr_force_te_force_wd = reg_wdata[31];
-  assign targ_pio_control_we = racl_addr_hit_write[128] & reg_we & !reg_error;
+  assign targ_pio_control_we = racl_addr_hit_write[131] & reg_we & !reg_error;
 
   assign targ_pio_control_ibi_suspended_wd = reg_wdata[0];
 
   assign targ_pio_control_ibi_abort_wd = reg_wdata[1];
+
+  assign targ_pio_control_ibi_suspend_auto_wd = reg_wdata[2];
 
   assign targ_pio_control_rxbuf_clear_wd = reg_wdata[10];
 
@@ -20421,10 +20893,10 @@ module i3c_reg_top
 
   assign targ_pio_control_txbuf_clear_wd = reg_wdata[15:12];
 
-  assign targ_pio_control_suspended_wd = reg_wdata[19:16];
+  assign targ_pio_control_tx_suspended_wd = reg_wdata[19:16];
 
-  assign targ_pio_control_abort_wd = reg_wdata[27:24];
-  assign targ_async_evt_control_we = racl_addr_hit_write[129] & reg_we & !reg_error;
+  assign targ_pio_control_tx_abort_wd = reg_wdata[27:24];
+  assign targ_async_evt_control_we = racl_addr_hit_write[132] & reg_we & !reg_error;
 
   assign targ_async_evt_control_bcst_ccc_wd = reg_wdata[0];
 
@@ -20443,7 +20915,7 @@ module i3c_reg_top
   assign targ_async_evt_control_bus_events_wd = reg_wdata[7];
 
   assign targ_async_evt_control_queue_reset_wd = reg_wdata[31];
-  assign targ_error_we = racl_addr_hit_write[130] & reg_we & !reg_error;
+  assign targ_error_we = racl_addr_hit_write[133] & reg_we & !reg_error;
 
   assign targ_error_te0_wd = reg_wdata[3:0];
 
@@ -20460,39 +20932,39 @@ module i3c_reg_top
   assign targ_error_te6_wd = reg_wdata[27:24];
 
   assign targ_error_dbr_wd = reg_wdata[31:28];
-  assign targ_queue_thld_ctrl_we = racl_addr_hit_write[131] & reg_we & !reg_error;
+  assign targ_queue_thld_ctrl_we = racl_addr_hit_write[134] & reg_we & !reg_error;
 
   assign targ_queue_thld_ctrl_rx_desc_thld_wd = reg_wdata[15:8];
 
   assign targ_queue_thld_ctrl_ibi_status_thld_wd = reg_wdata[31:24];
-  assign targ_queue_status_level_re = racl_addr_hit_read[132] & reg_re & !reg_error;
-  assign targ_buf_thld_ctrl_we = racl_addr_hit_write[133] & reg_we & !reg_error;
+  assign targ_queue_status_level_re = racl_addr_hit_read[135] & reg_re & !reg_error;
+  assign targ_buf_thld_ctrl_we = racl_addr_hit_write[136] & reg_we & !reg_error;
 
   assign targ_buf_thld_ctrl_rx_segment_size_wd = reg_wdata[11:0];
 
   assign targ_buf_thld_ctrl_rx_start_thld_wd = reg_wdata[30:28];
-  assign targ_buf_status_level_re = racl_addr_hit_read[134] & reg_re & !reg_error;
-  assign targ_rw_len_0_we = racl_addr_hit_write[135] & reg_we & !reg_error;
+  assign targ_buf_status_level_re = racl_addr_hit_read[137] & reg_re & !reg_error;
+  assign targ_rw_len_0_we = racl_addr_hit_write[138] & reg_we & !reg_error;
 
   assign targ_rw_len_0_mrl_0_wd = reg_wdata[15:0];
 
   assign targ_rw_len_0_mwl_0_wd = reg_wdata[31:16];
-  assign targ_rw_len_1_we = racl_addr_hit_write[136] & reg_we & !reg_error;
+  assign targ_rw_len_1_we = racl_addr_hit_write[139] & reg_we & !reg_error;
 
   assign targ_rw_len_1_mrl_1_wd = reg_wdata[15:0];
 
   assign targ_rw_len_1_mwl_1_wd = reg_wdata[31:16];
-  assign targ_rw_len_2_we = racl_addr_hit_write[137] & reg_we & !reg_error;
+  assign targ_rw_len_2_we = racl_addr_hit_write[140] & reg_we & !reg_error;
 
   assign targ_rw_len_2_mrl_2_wd = reg_wdata[15:0];
 
   assign targ_rw_len_2_mwl_2_wd = reg_wdata[31:16];
-  assign targ_rw_len_3_we = racl_addr_hit_write[138] & reg_we & !reg_error;
+  assign targ_rw_len_3_we = racl_addr_hit_write[141] & reg_we & !reg_error;
 
   assign targ_rw_len_3_mrl_3_wd = reg_wdata[15:0];
 
   assign targ_rw_len_3_mwl_3_wd = reg_wdata[31:16];
-  assign targ_ibi_len_we = racl_addr_hit_write[139] & reg_we & !reg_error;
+  assign targ_ibi_len_we = racl_addr_hit_write[142] & reg_we & !reg_error;
 
   assign targ_ibi_len_ibi_len_0_wd = reg_wdata[7:0];
 
@@ -20501,8 +20973,8 @@ module i3c_reg_top
   assign targ_ibi_len_ibi_len_2_wd = reg_wdata[23:16];
 
   assign targ_ibi_len_ibi_len_3_wd = reg_wdata[31:24];
-  assign targ_state_debug_re = racl_addr_hit_read[144] & reg_re & !reg_error;
-  assign targ_enable_we = racl_addr_hit_write[145] & reg_we & !reg_error;
+  assign targ_state_debug_re = racl_addr_hit_read[147] & reg_re & !reg_error;
+  assign targ_enable_we = racl_addr_hit_write[148] & reg_we & !reg_error;
 
   assign targ_enable_enable_0_wd = reg_wdata[0];
 
@@ -20511,79 +20983,79 @@ module i3c_reg_top
   assign targ_enable_enable_2_wd = reg_wdata[2];
 
   assign targ_enable_enable_3_wd = reg_wdata[3];
-  assign targ_group_0_we = racl_addr_hit_write[146] & reg_we & !reg_error;
+  assign targ_group_0_we = racl_addr_hit_write[149] & reg_we & !reg_error;
 
   assign targ_group_0_group_addr_0_wd = reg_wdata[6:0];
 
   assign targ_group_0_targets_0_wd = reg_wdata[11:8];
-  assign targ_group_1_we = racl_addr_hit_write[147] & reg_we & !reg_error;
+  assign targ_group_1_we = racl_addr_hit_write[150] & reg_we & !reg_error;
 
   assign targ_group_1_group_addr_1_wd = reg_wdata[6:0];
 
   assign targ_group_1_targets_1_wd = reg_wdata[11:8];
-  assign targ_group_2_we = racl_addr_hit_write[148] & reg_we & !reg_error;
+  assign targ_group_2_we = racl_addr_hit_write[151] & reg_we & !reg_error;
 
   assign targ_group_2_group_addr_2_wd = reg_wdata[6:0];
 
   assign targ_group_2_targets_2_wd = reg_wdata[11:8];
-  assign targ_group_3_we = racl_addr_hit_write[149] & reg_we & !reg_error;
+  assign targ_group_3_we = racl_addr_hit_write[152] & reg_we & !reg_error;
 
   assign targ_group_3_group_addr_3_wd = reg_wdata[6:0];
 
   assign targ_group_3_targets_3_wd = reg_wdata[11:8];
-  assign targ_group_4_we = racl_addr_hit_write[150] & reg_we & !reg_error;
+  assign targ_group_4_we = racl_addr_hit_write[153] & reg_we & !reg_error;
 
   assign targ_group_4_group_addr_4_wd = reg_wdata[6:0];
 
   assign targ_group_4_targets_4_wd = reg_wdata[11:8];
-  assign targ_group_5_we = racl_addr_hit_write[151] & reg_we & !reg_error;
+  assign targ_group_5_we = racl_addr_hit_write[154] & reg_we & !reg_error;
 
   assign targ_group_5_group_addr_5_wd = reg_wdata[6:0];
 
   assign targ_group_5_targets_5_wd = reg_wdata[11:8];
-  assign targ_group_6_we = racl_addr_hit_write[152] & reg_we & !reg_error;
+  assign targ_group_6_we = racl_addr_hit_write[155] & reg_we & !reg_error;
 
   assign targ_group_6_group_addr_6_wd = reg_wdata[6:0];
 
   assign targ_group_6_targets_6_wd = reg_wdata[11:8];
-  assign targ_group_7_we = racl_addr_hit_write[153] & reg_we & !reg_error;
+  assign targ_group_7_we = racl_addr_hit_write[156] & reg_we & !reg_error;
 
   assign targ_group_7_group_addr_7_wd = reg_wdata[6:0];
 
   assign targ_group_7_targets_7_wd = reg_wdata[11:8];
-  assign targ_tx_thld_ctrl_0_we = racl_addr_hit_write[154] & reg_we & !reg_error;
+  assign targ_tx_thld_ctrl_0_we = racl_addr_hit_write[157] & reg_we & !reg_error;
 
   assign targ_tx_thld_ctrl_0_tx_buf_free_thld_0_wd = reg_wdata[11:0];
 
   assign targ_tx_thld_ctrl_0_tx_desc_empty_thld_0_wd = reg_wdata[23:16];
 
   assign targ_tx_thld_ctrl_0_tx_start_thld_0_wd = reg_wdata[31:28];
-  assign targ_tx_thld_ctrl_1_we = racl_addr_hit_write[155] & reg_we & !reg_error;
+  assign targ_tx_thld_ctrl_1_we = racl_addr_hit_write[158] & reg_we & !reg_error;
 
   assign targ_tx_thld_ctrl_1_tx_buf_free_thld_1_wd = reg_wdata[11:0];
 
   assign targ_tx_thld_ctrl_1_tx_desc_empty_thld_1_wd = reg_wdata[23:16];
 
   assign targ_tx_thld_ctrl_1_tx_start_thld_1_wd = reg_wdata[31:28];
-  assign targ_tx_thld_ctrl_2_we = racl_addr_hit_write[156] & reg_we & !reg_error;
+  assign targ_tx_thld_ctrl_2_we = racl_addr_hit_write[159] & reg_we & !reg_error;
 
   assign targ_tx_thld_ctrl_2_tx_buf_free_thld_2_wd = reg_wdata[11:0];
 
   assign targ_tx_thld_ctrl_2_tx_desc_empty_thld_2_wd = reg_wdata[23:16];
 
   assign targ_tx_thld_ctrl_2_tx_start_thld_2_wd = reg_wdata[31:28];
-  assign targ_tx_thld_ctrl_3_we = racl_addr_hit_write[157] & reg_we & !reg_error;
+  assign targ_tx_thld_ctrl_3_we = racl_addr_hit_write[160] & reg_we & !reg_error;
 
   assign targ_tx_thld_ctrl_3_tx_buf_free_thld_3_wd = reg_wdata[11:0];
 
   assign targ_tx_thld_ctrl_3_tx_desc_empty_thld_3_wd = reg_wdata[23:16];
 
   assign targ_tx_thld_ctrl_3_tx_start_thld_3_wd = reg_wdata[31:28];
-  assign targ_tx_queue_status_level_0_re = racl_addr_hit_read[158] & reg_re & !reg_error;
-  assign targ_tx_queue_status_level_1_re = racl_addr_hit_read[159] & reg_re & !reg_error;
-  assign targ_tx_queue_status_level_2_re = racl_addr_hit_read[160] & reg_re & !reg_error;
-  assign targ_tx_queue_status_level_3_re = racl_addr_hit_read[161] & reg_re & !reg_error;
-  assign targ_addr_0_we = racl_addr_hit_write[162] & reg_we & !reg_error;
+  assign targ_tx_queue_status_level_0_re = racl_addr_hit_read[161] & reg_re & !reg_error;
+  assign targ_tx_queue_status_level_1_re = racl_addr_hit_read[162] & reg_re & !reg_error;
+  assign targ_tx_queue_status_level_2_re = racl_addr_hit_read[163] & reg_re & !reg_error;
+  assign targ_tx_queue_status_level_3_re = racl_addr_hit_read[164] & reg_re & !reg_error;
+  assign targ_addr_0_we = racl_addr_hit_write[165] & reg_we & !reg_error;
 
   assign targ_addr_0_static_addr_0_wd = reg_wdata[6:0];
 
@@ -20592,7 +21064,7 @@ module i3c_reg_top
   assign targ_addr_0_dynamic_addr_0_wd = reg_wdata[22:16];
 
   assign targ_addr_0_dynamic_addr_valid_0_wd = reg_wdata[31];
-  assign targ_addr_1_we = racl_addr_hit_write[163] & reg_we & !reg_error;
+  assign targ_addr_1_we = racl_addr_hit_write[166] & reg_we & !reg_error;
 
   assign targ_addr_1_static_addr_1_wd = reg_wdata[6:0];
 
@@ -20601,7 +21073,7 @@ module i3c_reg_top
   assign targ_addr_1_dynamic_addr_1_wd = reg_wdata[22:16];
 
   assign targ_addr_1_dynamic_addr_valid_1_wd = reg_wdata[31];
-  assign targ_addr_2_we = racl_addr_hit_write[164] & reg_we & !reg_error;
+  assign targ_addr_2_we = racl_addr_hit_write[167] & reg_we & !reg_error;
 
   assign targ_addr_2_static_addr_2_wd = reg_wdata[6:0];
 
@@ -20610,7 +21082,7 @@ module i3c_reg_top
   assign targ_addr_2_dynamic_addr_2_wd = reg_wdata[22:16];
 
   assign targ_addr_2_dynamic_addr_valid_2_wd = reg_wdata[31];
-  assign targ_addr_3_we = racl_addr_hit_write[165] & reg_we & !reg_error;
+  assign targ_addr_3_we = racl_addr_hit_write[168] & reg_we & !reg_error;
 
   assign targ_addr_3_static_addr_3_wd = reg_wdata[6:0];
 
@@ -20619,47 +21091,47 @@ module i3c_reg_top
   assign targ_addr_3_dynamic_addr_3_wd = reg_wdata[22:16];
 
   assign targ_addr_3_dynamic_addr_valid_3_wd = reg_wdata[31];
-  assign targ_char_0_we = racl_addr_hit_write[166] & reg_we & !reg_error;
+  assign targ_char_0_we = racl_addr_hit_write[169] & reg_we & !reg_error;
 
   assign targ_char_0_pid_hi_0_wd = reg_wdata[15:0];
 
   assign targ_char_0_dcr_0_wd = reg_wdata[23:16];
 
   assign targ_char_0_bcr_0_wd = reg_wdata[31:24];
-  assign targ_char_1_we = racl_addr_hit_write[167] & reg_we & !reg_error;
+  assign targ_char_1_we = racl_addr_hit_write[170] & reg_we & !reg_error;
 
   assign targ_char_1_pid_hi_1_wd = reg_wdata[15:0];
 
   assign targ_char_1_dcr_1_wd = reg_wdata[23:16];
 
   assign targ_char_1_bcr_1_wd = reg_wdata[31:24];
-  assign targ_char_2_we = racl_addr_hit_write[168] & reg_we & !reg_error;
+  assign targ_char_2_we = racl_addr_hit_write[171] & reg_we & !reg_error;
 
   assign targ_char_2_pid_hi_2_wd = reg_wdata[15:0];
 
   assign targ_char_2_dcr_2_wd = reg_wdata[23:16];
 
   assign targ_char_2_bcr_2_wd = reg_wdata[31:24];
-  assign targ_char_3_we = racl_addr_hit_write[169] & reg_we & !reg_error;
+  assign targ_char_3_we = racl_addr_hit_write[172] & reg_we & !reg_error;
 
   assign targ_char_3_pid_hi_3_wd = reg_wdata[15:0];
 
   assign targ_char_3_dcr_3_wd = reg_wdata[23:16];
 
   assign targ_char_3_bcr_3_wd = reg_wdata[31:24];
-  assign targ_pid_lo_0_we = racl_addr_hit_write[170] & reg_we & !reg_error;
+  assign targ_pid_lo_0_we = racl_addr_hit_write[173] & reg_we & !reg_error;
 
   assign targ_pid_lo_0_wd = reg_wdata[31:0];
-  assign targ_pid_lo_1_we = racl_addr_hit_write[171] & reg_we & !reg_error;
+  assign targ_pid_lo_1_we = racl_addr_hit_write[174] & reg_we & !reg_error;
 
   assign targ_pid_lo_1_wd = reg_wdata[31:0];
-  assign targ_pid_lo_2_we = racl_addr_hit_write[172] & reg_we & !reg_error;
+  assign targ_pid_lo_2_we = racl_addr_hit_write[175] & reg_we & !reg_error;
 
   assign targ_pid_lo_2_wd = reg_wdata[31:0];
-  assign targ_pid_lo_3_we = racl_addr_hit_write[173] & reg_we & !reg_error;
+  assign targ_pid_lo_3_we = racl_addr_hit_write[176] & reg_we & !reg_error;
 
   assign targ_pid_lo_3_wd = reg_wdata[31:0];
-  assign targ_caps_0_we = racl_addr_hit_write[174] & reg_we & !reg_error;
+  assign targ_caps_0_we = racl_addr_hit_write[177] & reg_we & !reg_error;
 
   assign targ_caps_0_vtcap1_type_0_wd = reg_wdata[2:0];
 
@@ -20672,7 +21144,7 @@ module i3c_reg_top
   assign targ_caps_0_vtcap2_addr_remap_0_wd = reg_wdata[10];
 
   assign targ_caps_0_vtcap2_bus_ctx_0_wd = reg_wdata[12:11];
-  assign targ_caps_1_we = racl_addr_hit_write[175] & reg_we & !reg_error;
+  assign targ_caps_1_we = racl_addr_hit_write[178] & reg_we & !reg_error;
 
   assign targ_caps_1_vtcap1_type_1_wd = reg_wdata[2:0];
 
@@ -20685,7 +21157,7 @@ module i3c_reg_top
   assign targ_caps_1_vtcap2_addr_remap_1_wd = reg_wdata[10];
 
   assign targ_caps_1_vtcap2_bus_ctx_1_wd = reg_wdata[12:11];
-  assign targ_caps_2_we = racl_addr_hit_write[176] & reg_we & !reg_error;
+  assign targ_caps_2_we = racl_addr_hit_write[179] & reg_we & !reg_error;
 
   assign targ_caps_2_vtcap1_type_2_wd = reg_wdata[2:0];
 
@@ -20698,7 +21170,7 @@ module i3c_reg_top
   assign targ_caps_2_vtcap2_addr_remap_2_wd = reg_wdata[10];
 
   assign targ_caps_2_vtcap2_bus_ctx_2_wd = reg_wdata[12:11];
-  assign targ_caps_3_we = racl_addr_hit_write[177] & reg_we & !reg_error;
+  assign targ_caps_3_we = racl_addr_hit_write[180] & reg_we & !reg_error;
 
   assign targ_caps_3_vtcap1_type_3_wd = reg_wdata[2:0];
 
@@ -20711,7 +21183,7 @@ module i3c_reg_top
   assign targ_caps_3_vtcap2_addr_remap_3_wd = reg_wdata[10];
 
   assign targ_caps_3_vtcap2_bus_ctx_3_wd = reg_wdata[12:11];
-  assign targ_max_rdwr_0_we = racl_addr_hit_write[182] & reg_we & !reg_error;
+  assign targ_max_rdwr_0_we = racl_addr_hit_write[185] & reg_we & !reg_error;
 
   assign targ_max_rdwr_0_maxrd_0_wd = reg_wdata[6:0];
 
@@ -20720,7 +21192,7 @@ module i3c_reg_top
   assign targ_max_rdwr_0_rdturn_val_0_wd = reg_wdata[27:16];
 
   assign targ_max_rdwr_0_rdturn_scale_0_wd = reg_wdata[31:28];
-  assign targ_max_rdwr_1_we = racl_addr_hit_write[183] & reg_we & !reg_error;
+  assign targ_max_rdwr_1_we = racl_addr_hit_write[186] & reg_we & !reg_error;
 
   assign targ_max_rdwr_1_maxrd_1_wd = reg_wdata[6:0];
 
@@ -20729,7 +21201,7 @@ module i3c_reg_top
   assign targ_max_rdwr_1_rdturn_val_1_wd = reg_wdata[27:16];
 
   assign targ_max_rdwr_1_rdturn_scale_1_wd = reg_wdata[31:28];
-  assign targ_max_rdwr_2_we = racl_addr_hit_write[184] & reg_we & !reg_error;
+  assign targ_max_rdwr_2_we = racl_addr_hit_write[187] & reg_we & !reg_error;
 
   assign targ_max_rdwr_2_maxrd_2_wd = reg_wdata[6:0];
 
@@ -20738,7 +21210,7 @@ module i3c_reg_top
   assign targ_max_rdwr_2_rdturn_val_2_wd = reg_wdata[27:16];
 
   assign targ_max_rdwr_2_rdturn_scale_2_wd = reg_wdata[31:28];
-  assign targ_max_rdwr_3_we = racl_addr_hit_write[185] & reg_we & !reg_error;
+  assign targ_max_rdwr_3_we = racl_addr_hit_write[188] & reg_we & !reg_error;
 
   assign targ_max_rdwr_3_maxrd_3_wd = reg_wdata[6:0];
 
@@ -20747,8 +21219,8 @@ module i3c_reg_top
   assign targ_max_rdwr_3_rdturn_val_3_wd = reg_wdata[27:16];
 
   assign targ_max_rdwr_3_rdturn_scale_3_wd = reg_wdata[31:28];
-  assign targext_extcap_header_re = racl_addr_hit_read[186] & reg_re & !reg_error;
-  assign term_extcap_header_re = racl_addr_hit_read[187] & reg_re & !reg_error;
+  assign targext_extcap_header_re = racl_addr_hit_read[189] & reg_re & !reg_error;
+  assign term_extcap_header_re = racl_addr_hit_read[190] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -20760,186 +21232,189 @@ module i3c_reg_top
     reg_we_check[5] = 1'b0;
     reg_we_check[6] = ctrl_error_we;
     reg_we_check[7] = targ_control_we;
-    reg_we_check[8] = targ_status_we;
-    reg_we_check[9] = targ_sink_control_we;
-    reg_we_check[10] = 1'b0;
-    reg_we_check[11] = reset_det_ctrl_we;
-    reg_we_check[12] = 1'b0;
-    reg_we_check[13] = ctrl_time_sp_we;
-    reg_we_check[14] = ctrl_time_od_we;
-    reg_we_check[15] = ctrl_time_pp_we;
-    reg_we_check[16] = ctrl_time_sdr0_we;
-    reg_we_check[17] = ctrl_time_sdr1_we;
-    reg_we_check[18] = ctrl_time_sdr2_we;
-    reg_we_check[19] = ctrl_time_sdr3_we;
-    reg_we_check[20] = ctrl_time_sdr4_we;
-    reg_we_check[21] = ctrl_time_fmp_we;
-    reg_we_check[22] = ctrl_time_fm_we;
-    reg_we_check[23] = interval_time0_we;
-    reg_we_check[24] = interval_time1_we;
-    reg_we_check[25] = phy_config_we;
-    reg_we_check[26] = blocked_addr_we;
-    reg_we_check[27] = buffer_ctrl_we;
-    reg_we_check[28] = buffer_status_we;
-    reg_we_check[29] = ctrl_txbuf_config_we;
-    reg_we_check[30] = 1'b0;
-    reg_we_check[31] = ctrl_rxbuf_config_we;
-    reg_we_check[32] = 1'b0;
-    reg_we_check[33] = command_queue_config_we;
-    reg_we_check[34] = 1'b0;
-    reg_we_check[35] = response_queue_config_we;
-    reg_we_check[36] = 1'b0;
-    reg_we_check[37] = ibi_config_we;
-    reg_we_check[38] = 1'b0;
-    reg_we_check[39] = ibi_stat_config_we;
-    reg_we_check[40] = 1'b0;
-    reg_we_check[41] = targ_txbuf_config_0_we;
-    reg_we_check[42] = targ_txbuf_config_1_we;
-    reg_we_check[43] = targ_txbuf_config_2_we;
-    reg_we_check[44] = targ_txbuf_config_3_we;
-    reg_we_check[45] = 1'b0;
-    reg_we_check[46] = 1'b0;
-    reg_we_check[47] = 1'b0;
+    reg_we_check[8] = 1'b0;
+    reg_we_check[9] = targ_ext_status_we;
+    reg_we_check[10] = targ_sink_control_we;
+    reg_we_check[11] = 1'b0;
+    reg_we_check[12] = reset_det_control_we;
+    reg_we_check[13] = 1'b0;
+    reg_we_check[14] = ctrl_time_sp_we;
+    reg_we_check[15] = ctrl_time_od_we;
+    reg_we_check[16] = ctrl_time_pp_we;
+    reg_we_check[17] = ctrl_time_sdr0_we;
+    reg_we_check[18] = ctrl_time_sdr1_we;
+    reg_we_check[19] = ctrl_time_sdr2_we;
+    reg_we_check[20] = ctrl_time_sdr3_we;
+    reg_we_check[21] = ctrl_time_sdr4_we;
+    reg_we_check[22] = ctrl_time_fmp_we;
+    reg_we_check[23] = ctrl_time_fm_we;
+    reg_we_check[24] = interval_time0_we;
+    reg_we_check[25] = interval_time1_we;
+    reg_we_check[26] = interval_time2_we;
+    reg_we_check[27] = bus_control_we;
+    reg_we_check[28] = phy_config_we;
+    reg_we_check[29] = blocked_addr_we;
+    reg_we_check[30] = buffer_control_we;
+    reg_we_check[31] = buffer_status_we;
+    reg_we_check[32] = ctrl_txbuf_config_we;
+    reg_we_check[33] = 1'b0;
+    reg_we_check[34] = ctrl_rxbuf_config_we;
+    reg_we_check[35] = 1'b0;
+    reg_we_check[36] = command_queue_config_we;
+    reg_we_check[37] = 1'b0;
+    reg_we_check[38] = response_queue_config_we;
+    reg_we_check[39] = 1'b0;
+    reg_we_check[40] = ibi_config_we;
+    reg_we_check[41] = 1'b0;
+    reg_we_check[42] = ibi_stat_config_we;
+    reg_we_check[43] = 1'b0;
+    reg_we_check[44] = targ_txbuf_config_0_we;
+    reg_we_check[45] = targ_txbuf_config_1_we;
+    reg_we_check[46] = targ_txbuf_config_2_we;
+    reg_we_check[47] = targ_txbuf_config_3_we;
     reg_we_check[48] = 1'b0;
-    reg_we_check[49] = targ_rxbuf_config_we;
+    reg_we_check[49] = 1'b0;
     reg_we_check[50] = 1'b0;
-    reg_we_check[51] = targ_ibi_config_we;
-    reg_we_check[52] = 1'b0;
-    reg_we_check[53] = targ_txdesc_config_0_we;
-    reg_we_check[54] = targ_txdesc_config_1_we;
-    reg_we_check[55] = targ_txdesc_config_2_we;
-    reg_we_check[56] = targ_txdesc_config_3_we;
-    reg_we_check[57] = 1'b0;
-    reg_we_check[58] = 1'b0;
-    reg_we_check[59] = 1'b0;
+    reg_we_check[51] = 1'b0;
+    reg_we_check[52] = targ_rxbuf_config_we;
+    reg_we_check[53] = 1'b0;
+    reg_we_check[54] = targ_ibi_config_we;
+    reg_we_check[55] = 1'b0;
+    reg_we_check[56] = targ_txdesc_config_0_we;
+    reg_we_check[57] = targ_txdesc_config_1_we;
+    reg_we_check[58] = targ_txdesc_config_2_we;
+    reg_we_check[59] = targ_txdesc_config_3_we;
     reg_we_check[60] = 1'b0;
-    reg_we_check[61] = targ_rxdesc_config_we;
+    reg_we_check[61] = 1'b0;
     reg_we_check[62] = 1'b0;
-    reg_we_check[63] = targ_ibidesc_config_we;
-    reg_we_check[64] = 1'b0;
-    reg_we_check[65] = targ_async_config_we;
-    reg_we_check[66] = 1'b0;
+    reg_we_check[63] = 1'b0;
+    reg_we_check[64] = targ_rxdesc_config_we;
+    reg_we_check[65] = 1'b0;
+    reg_we_check[66] = targ_ibidesc_config_we;
     reg_we_check[67] = 1'b0;
-    reg_we_check[68] = hc_control_we;
-    reg_we_check[69] = controller_device_addr_we;
+    reg_we_check[68] = targ_async_config_we;
+    reg_we_check[69] = 1'b0;
     reg_we_check[70] = 1'b0;
-    reg_we_check[71] = reset_control_we;
-    reg_we_check[72] = 1'b0;
-    reg_we_check[73] = intr_status_we;
-    reg_we_check[74] = intr_status_enable_we;
-    reg_we_check[75] = intr_signal_enable_we;
-    reg_we_check[76] = intr_force_we;
-    reg_we_check[77] = 1'b0;
-    reg_we_check[78] = dct_section_offset_we;
-    reg_we_check[79] = 1'b0;
+    reg_we_check[71] = hc_control_we;
+    reg_we_check[72] = controller_device_addr_we;
+    reg_we_check[73] = 1'b0;
+    reg_we_check[74] = reset_control_we;
+    reg_we_check[75] = 1'b0;
+    reg_we_check[76] = intr_status_we;
+    reg_we_check[77] = intr_status_enable_we;
+    reg_we_check[78] = intr_signal_enable_we;
+    reg_we_check[79] = intr_force_we;
     reg_we_check[80] = 1'b0;
-    reg_we_check[81] = 1'b0;
+    reg_we_check[81] = dct_section_offset_we;
     reg_we_check[82] = 1'b0;
-    reg_we_check[83] = ibi_notify_ctrl_we;
-    reg_we_check[84] = ibi_data_abort_ctrl_we;
+    reg_we_check[83] = 1'b0;
+    reg_we_check[84] = 1'b0;
     reg_we_check[85] = 1'b0;
-    reg_we_check[86] = 1'b0;
-    reg_we_check[87] = 1'b0;
-    reg_we_check[88] = queue_thld_ctrl_we;
-    reg_we_check[89] = data_buffer_thld_ctrl_we;
+    reg_we_check[86] = ibi_notify_ctrl_we;
+    reg_we_check[87] = ibi_data_abort_ctrl_we;
+    reg_we_check[88] = 1'b0;
+    reg_we_check[89] = 1'b0;
     reg_we_check[90] = 1'b0;
-    reg_we_check[91] = 1'b0;
-    reg_we_check[92] = pio_intr_status_we;
-    reg_we_check[93] = pio_intr_status_enable_we;
-    reg_we_check[94] = pio_intr_signal_enable_we;
-    reg_we_check[95] = pio_intr_force_we;
-    reg_we_check[96] = pio_control_we;
-    reg_we_check[97] = 1'b0;
-    reg_we_check[98] = 1'b0;
-    reg_we_check[99] = 1'b0;
+    reg_we_check[91] = queue_thld_ctrl_we;
+    reg_we_check[92] = data_buffer_thld_ctrl_we;
+    reg_we_check[93] = 1'b0;
+    reg_we_check[94] = 1'b0;
+    reg_we_check[95] = pio_intr_status_we;
+    reg_we_check[96] = pio_intr_status_enable_we;
+    reg_we_check[97] = pio_intr_signal_enable_we;
+    reg_we_check[98] = pio_intr_force_we;
+    reg_we_check[99] = pio_control_we;
     reg_we_check[100] = 1'b0;
     reg_we_check[101] = 1'b0;
     reg_we_check[102] = 1'b0;
     reg_we_check[103] = 1'b0;
-    reg_we_check[104] = dbr_engage_we;
+    reg_we_check[104] = 1'b0;
     reg_we_check[105] = 1'b0;
     reg_we_check[106] = 1'b0;
-    reg_we_check[107] = 1'b0;
+    reg_we_check[107] = dbr_engage_we;
     reg_we_check[108] = 1'b0;
     reg_we_check[109] = 1'b0;
     reg_we_check[110] = 1'b0;
     reg_we_check[111] = 1'b0;
-    reg_we_check[112] = stby_cr_control_we;
-    reg_we_check[113] = stby_cr_device_addr_we;
+    reg_we_check[112] = 1'b0;
+    reg_we_check[113] = 1'b0;
     reg_we_check[114] = 1'b0;
-    reg_we_check[115] = 1'b0;
-    reg_we_check[116] = stby_cr_device_char_we;
-    reg_we_check[117] = stby_cr_device_pid_lo_we;
-    reg_we_check[118] = stby_cr_intr_status_we;
-    reg_we_check[119] = stby_cr_intr_signal_enable_we;
-    reg_we_check[120] = stby_cr_intr_force_we;
-    reg_we_check[121] = stby_cr_ccc_config_getcaps_we;
-    reg_we_check[122] = stby_cr_ccc_config_rstact_params_we;
-    reg_we_check[123] = 1'b0;
-    reg_we_check[124] = 1'b0;
-    reg_we_check[125] = targ_intr_status_enable_we;
-    reg_we_check[126] = targ_intr_signal_enable_we;
-    reg_we_check[127] = targ_intr_force_we;
-    reg_we_check[128] = targ_pio_control_we;
-    reg_we_check[129] = targ_async_evt_control_we;
-    reg_we_check[130] = targ_error_we;
-    reg_we_check[131] = targ_queue_thld_ctrl_we;
-    reg_we_check[132] = 1'b0;
-    reg_we_check[133] = targ_buf_thld_ctrl_we;
-    reg_we_check[134] = 1'b0;
-    reg_we_check[135] = targ_rw_len_0_we;
-    reg_we_check[136] = targ_rw_len_1_we;
-    reg_we_check[137] = targ_rw_len_2_we;
-    reg_we_check[138] = targ_rw_len_3_we;
-    reg_we_check[139] = targ_ibi_len_we;
-    reg_we_check[140] = 1'b0;
-    reg_we_check[141] = 1'b0;
-    reg_we_check[142] = 1'b0;
+    reg_we_check[115] = stby_cr_control_we;
+    reg_we_check[116] = stby_cr_device_addr_we;
+    reg_we_check[117] = 1'b0;
+    reg_we_check[118] = 1'b0;
+    reg_we_check[119] = stby_cr_device_char_we;
+    reg_we_check[120] = stby_cr_device_pid_lo_we;
+    reg_we_check[121] = stby_cr_intr_status_we;
+    reg_we_check[122] = stby_cr_intr_signal_enable_we;
+    reg_we_check[123] = stby_cr_intr_force_we;
+    reg_we_check[124] = stby_cr_ccc_config_getcaps_we;
+    reg_we_check[125] = stby_cr_ccc_config_rstact_params_we;
+    reg_we_check[126] = 1'b0;
+    reg_we_check[127] = 1'b0;
+    reg_we_check[128] = targ_intr_status_enable_we;
+    reg_we_check[129] = targ_intr_signal_enable_we;
+    reg_we_check[130] = targ_intr_force_we;
+    reg_we_check[131] = targ_pio_control_we;
+    reg_we_check[132] = targ_async_evt_control_we;
+    reg_we_check[133] = targ_error_we;
+    reg_we_check[134] = targ_queue_thld_ctrl_we;
+    reg_we_check[135] = 1'b0;
+    reg_we_check[136] = targ_buf_thld_ctrl_we;
+    reg_we_check[137] = 1'b0;
+    reg_we_check[138] = targ_rw_len_0_we;
+    reg_we_check[139] = targ_rw_len_1_we;
+    reg_we_check[140] = targ_rw_len_2_we;
+    reg_we_check[141] = targ_rw_len_3_we;
+    reg_we_check[142] = targ_ibi_len_we;
     reg_we_check[143] = 1'b0;
     reg_we_check[144] = 1'b0;
-    reg_we_check[145] = targ_enable_we;
-    reg_we_check[146] = targ_group_0_we;
-    reg_we_check[147] = targ_group_1_we;
-    reg_we_check[148] = targ_group_2_we;
-    reg_we_check[149] = targ_group_3_we;
-    reg_we_check[150] = targ_group_4_we;
-    reg_we_check[151] = targ_group_5_we;
-    reg_we_check[152] = targ_group_6_we;
-    reg_we_check[153] = targ_group_7_we;
-    reg_we_check[154] = targ_tx_thld_ctrl_0_we;
-    reg_we_check[155] = targ_tx_thld_ctrl_1_we;
-    reg_we_check[156] = targ_tx_thld_ctrl_2_we;
-    reg_we_check[157] = targ_tx_thld_ctrl_3_we;
-    reg_we_check[158] = 1'b0;
-    reg_we_check[159] = 1'b0;
-    reg_we_check[160] = 1'b0;
+    reg_we_check[145] = 1'b0;
+    reg_we_check[146] = 1'b0;
+    reg_we_check[147] = 1'b0;
+    reg_we_check[148] = targ_enable_we;
+    reg_we_check[149] = targ_group_0_we;
+    reg_we_check[150] = targ_group_1_we;
+    reg_we_check[151] = targ_group_2_we;
+    reg_we_check[152] = targ_group_3_we;
+    reg_we_check[153] = targ_group_4_we;
+    reg_we_check[154] = targ_group_5_we;
+    reg_we_check[155] = targ_group_6_we;
+    reg_we_check[156] = targ_group_7_we;
+    reg_we_check[157] = targ_tx_thld_ctrl_0_we;
+    reg_we_check[158] = targ_tx_thld_ctrl_1_we;
+    reg_we_check[159] = targ_tx_thld_ctrl_2_we;
+    reg_we_check[160] = targ_tx_thld_ctrl_3_we;
     reg_we_check[161] = 1'b0;
-    reg_we_check[162] = targ_addr_0_we;
-    reg_we_check[163] = targ_addr_1_we;
-    reg_we_check[164] = targ_addr_2_we;
-    reg_we_check[165] = targ_addr_3_we;
-    reg_we_check[166] = targ_char_0_we;
-    reg_we_check[167] = targ_char_1_we;
-    reg_we_check[168] = targ_char_2_we;
-    reg_we_check[169] = targ_char_3_we;
-    reg_we_check[170] = targ_pid_lo_0_we;
-    reg_we_check[171] = targ_pid_lo_1_we;
-    reg_we_check[172] = targ_pid_lo_2_we;
-    reg_we_check[173] = targ_pid_lo_3_we;
-    reg_we_check[174] = targ_caps_0_we;
-    reg_we_check[175] = targ_caps_1_we;
-    reg_we_check[176] = targ_caps_2_we;
-    reg_we_check[177] = targ_caps_3_we;
-    reg_we_check[178] = 1'b0;
-    reg_we_check[179] = 1'b0;
-    reg_we_check[180] = 1'b0;
+    reg_we_check[162] = 1'b0;
+    reg_we_check[163] = 1'b0;
+    reg_we_check[164] = 1'b0;
+    reg_we_check[165] = targ_addr_0_we;
+    reg_we_check[166] = targ_addr_1_we;
+    reg_we_check[167] = targ_addr_2_we;
+    reg_we_check[168] = targ_addr_3_we;
+    reg_we_check[169] = targ_char_0_we;
+    reg_we_check[170] = targ_char_1_we;
+    reg_we_check[171] = targ_char_2_we;
+    reg_we_check[172] = targ_char_3_we;
+    reg_we_check[173] = targ_pid_lo_0_we;
+    reg_we_check[174] = targ_pid_lo_1_we;
+    reg_we_check[175] = targ_pid_lo_2_we;
+    reg_we_check[176] = targ_pid_lo_3_we;
+    reg_we_check[177] = targ_caps_0_we;
+    reg_we_check[178] = targ_caps_1_we;
+    reg_we_check[179] = targ_caps_2_we;
+    reg_we_check[180] = targ_caps_3_we;
     reg_we_check[181] = 1'b0;
-    reg_we_check[182] = targ_max_rdwr_0_we;
-    reg_we_check[183] = targ_max_rdwr_1_we;
-    reg_we_check[184] = targ_max_rdwr_2_we;
-    reg_we_check[185] = targ_max_rdwr_3_we;
-    reg_we_check[186] = 1'b0;
-    reg_we_check[187] = 1'b0;
+    reg_we_check[182] = 1'b0;
+    reg_we_check[183] = 1'b0;
+    reg_we_check[184] = 1'b0;
+    reg_we_check[185] = targ_max_rdwr_0_we;
+    reg_we_check[186] = targ_max_rdwr_1_we;
+    reg_we_check[187] = targ_max_rdwr_2_we;
+    reg_we_check[188] = targ_max_rdwr_3_we;
+    reg_we_check[189] = 1'b0;
+    reg_we_check[190] = 1'b0;
   end
 
   // Read data return
@@ -20991,13 +21466,13 @@ module i3c_reg_top
         reg_rdata_next[3:2] = targ_control_crhdly1_as_qs;
         reg_rdata_next[4] = targ_control_crhdly1_set_as_qs;
         reg_rdata_next[8] = targ_control_en_hdr_ddr_qs;
+        reg_rdata_next[29:28] = targ_control_ibi_nack_retry_cnt_qs;
         reg_rdata_next[30] = targ_control_hj_request_qs;
         reg_rdata_next[31] = '0;
       end
 
       racl_addr_hit_read[8]: begin
-        reg_rdata_next[14:0] = targ_status_ext_info_qs;
-        reg_rdata_next[15] = targ_status_ext_present_qs;
+        reg_rdata_next[15] = targ_status_hj_req_status_qs;
         reg_rdata_next[23:16] = targ_status_rstact_qs;
         reg_rdata_next[24] = targ_status_rstact_virt_targ_det_qs;
         reg_rdata_next[25] = targ_status_vtm_qs;
@@ -21009,89 +21484,105 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[9]: begin
+        reg_rdata_next[15:0] = targ_ext_status_info_qs;
+        reg_rdata_next[31] = targ_ext_status_present_qs;
+      end
+
+      racl_addr_hit_read[10]: begin
         reg_rdata_next[15:12] = targ_sink_control_buffer_qs;
         reg_rdata_next[26:16] = targ_sink_control_length_qs;
         reg_rdata_next[31] = '0;
       end
 
-      racl_addr_hit_read[10]: begin
+      racl_addr_hit_read[11]: begin
         reg_rdata_next[0] = targ_sink_status_active_qs;
         reg_rdata_next[1] = targ_sink_status_error_qs;
         reg_rdata_next[26:16] = targ_sink_status_length_qs;
       end
 
-      racl_addr_hit_read[11]: begin
-        reg_rdata_next = DW'(reset_det_ctrl_qs);
-      end
       racl_addr_hit_read[12]: begin
-        reg_rdata_next = DW'(reset_det_status_qs);
+        reg_rdata_next = DW'(reset_det_control_qs);
       end
       racl_addr_hit_read[13]: begin
+        reg_rdata_next = DW'(reset_det_status_qs);
+      end
+      racl_addr_hit_read[14]: begin
         reg_rdata_next[9:0] = ctrl_time_sp_tcbp_div2_qs;
         reg_rdata_next[25:16] = ctrl_time_sp_tcas_div2_qs;
       end
 
-      racl_addr_hit_read[14]: begin
+      racl_addr_hit_read[15]: begin
         reg_rdata_next[9:0] = ctrl_time_od_scllo_div2_qs;
         reg_rdata_next[25:16] = ctrl_time_od_sclhi_div2_qs;
       end
 
-      racl_addr_hit_read[15]: begin
+      racl_addr_hit_read[16]: begin
         reg_rdata_next[9:0] = ctrl_time_pp_tchh_qs;
         reg_rdata_next[15] = ctrl_time_pp_hcext_qs;
         reg_rdata_next[25:16] = ctrl_time_pp_tchs_qs;
       end
 
-      racl_addr_hit_read[16]: begin
+      racl_addr_hit_read[17]: begin
         reg_rdata_next[9:0] = ctrl_time_sdr0_tclh_qs;
         reg_rdata_next[25:16] = ctrl_time_sdr0_tcls_qs;
       end
 
-      racl_addr_hit_read[17]: begin
+      racl_addr_hit_read[18]: begin
         reg_rdata_next[9:0] = ctrl_time_sdr1_tclh_qs;
         reg_rdata_next[25:16] = ctrl_time_sdr1_tcls_qs;
       end
 
-      racl_addr_hit_read[18]: begin
+      racl_addr_hit_read[19]: begin
         reg_rdata_next[9:0] = ctrl_time_sdr2_tclh_qs;
         reg_rdata_next[25:16] = ctrl_time_sdr2_tcls_qs;
       end
 
-      racl_addr_hit_read[19]: begin
+      racl_addr_hit_read[20]: begin
         reg_rdata_next[9:0] = ctrl_time_sdr3_tclh_qs;
         reg_rdata_next[25:16] = ctrl_time_sdr3_tcls_qs;
       end
 
-      racl_addr_hit_read[20]: begin
+      racl_addr_hit_read[21]: begin
         reg_rdata_next[9:0] = ctrl_time_sdr4_tclh_qs;
         reg_rdata_next[25:16] = ctrl_time_sdr4_tcls_qs;
       end
 
-      racl_addr_hit_read[21]: begin
+      racl_addr_hit_read[22]: begin
         reg_rdata_next[9:0] = ctrl_time_fmp_scllo_div2_qs;
         reg_rdata_next[25:16] = ctrl_time_fmp_sclhi_div2_qs;
       end
 
-      racl_addr_hit_read[22]: begin
+      racl_addr_hit_read[23]: begin
         reg_rdata_next[9:0] = ctrl_time_fm_scllo_div2_qs;
         reg_rdata_next[25:16] = ctrl_time_fm_sclhi_div2_qs;
       end
 
-      racl_addr_hit_read[23]: begin
+      racl_addr_hit_read[24]: begin
         reg_rdata_next[7:0] = interval_time0_targ_bus_avail_qs;
         reg_rdata_next[15:8] = interval_time0_read_stalled_qs;
         reg_rdata_next[23:16] = interval_time0_ctrl_bus_avail_qs;
         reg_rdata_next[31:24] = interval_time0_dead_bus_qs;
       end
 
-      racl_addr_hit_read[24]: begin
+      racl_addr_hit_read[25]: begin
         reg_rdata_next[7:0] = interval_time1_command_retry_qs;
         reg_rdata_next[15:8] = interval_time1_targ_bus_idle_qs;
         reg_rdata_next[23:16] = interval_time1_te0_recov_qs;
         reg_rdata_next[31:24] = interval_time1_targ_trx_rst_qs;
       end
 
-      racl_addr_hit_read[25]: begin
+      racl_addr_hit_read[26]: begin
+        reg_rdata_next[7:0] = interval_time2_ibi_retry_qs;
+        reg_rdata_next[15:8] = interval_time2_poll_targets_qs;
+        reg_rdata_next[23:16] = interval_time2_dead_ctrl_qs;
+        reg_rdata_next[31:24] = interval_time2_dead_targ_qs;
+      end
+
+      racl_addr_hit_read[27]: begin
+        reg_rdata_next[31] = bus_control_qs;
+      end
+
+      racl_addr_hit_read[28]: begin
         reg_rdata_next[0] = phy_config_scl_hk_en_qs;
         reg_rdata_next[1] = phy_config_sda_hk_en_qs;
         reg_rdata_next[20] = phy_config_ctrl_sda_qs;
@@ -21104,261 +21595,261 @@ module i3c_reg_top
         reg_rdata_next[31] = phy_config_ctrl_direct_drive_en_qs;
       end
 
-      racl_addr_hit_read[26]: begin
+      racl_addr_hit_read[29]: begin
         reg_rdata_next[6:0] = blocked_addr_addr0_qs;
         reg_rdata_next[14:8] = blocked_addr_mask0_qs;
         reg_rdata_next[22:16] = blocked_addr_addr1_qs;
         reg_rdata_next[30:24] = blocked_addr_mask1_qs;
       end
 
-      racl_addr_hit_read[27]: begin
-        reg_rdata_next[29:28] = buffer_ctrl_sw_addr_hi_qs;
+      racl_addr_hit_read[30]: begin
+        reg_rdata_next[29:28] = buffer_control_sw_addr_hi_qs;
         reg_rdata_next[31] = '0;
       end
 
-      racl_addr_hit_read[28]: begin
+      racl_addr_hit_read[31]: begin
         reg_rdata_next[30] = buffer_status_ttiq_err_qs;
         reg_rdata_next[31] = buffer_status_hciq_err_qs;
       end
 
-      racl_addr_hit_read[29]: begin
+      racl_addr_hit_read[32]: begin
         reg_rdata_next[9:0] = ctrl_txbuf_config_min_addr_qs;
         reg_rdata_next[25:16] = ctrl_txbuf_config_max_addr_qs;
         reg_rdata_next[30:28] = ctrl_txbuf_config_size_val_qs;
       end
 
-      racl_addr_hit_read[30]: begin
+      racl_addr_hit_read[33]: begin
         reg_rdata_next[9:0] = ctrl_txbuf_state_wptr_qs;
         reg_rdata_next[25:16] = ctrl_txbuf_state_rptr_qs;
         reg_rdata_next[30] = ctrl_txbuf_state_pre_qs;
         reg_rdata_next[31] = ctrl_txbuf_state_full_qs;
       end
 
-      racl_addr_hit_read[31]: begin
+      racl_addr_hit_read[34]: begin
         reg_rdata_next[9:0] = ctrl_rxbuf_config_min_addr_qs;
         reg_rdata_next[25:16] = ctrl_rxbuf_config_max_addr_qs;
         reg_rdata_next[30:28] = ctrl_rxbuf_config_size_val_qs;
       end
 
-      racl_addr_hit_read[32]: begin
+      racl_addr_hit_read[35]: begin
         reg_rdata_next[9:0] = ctrl_rxbuf_state_wptr_qs;
         reg_rdata_next[25:16] = ctrl_rxbuf_state_rptr_qs;
         reg_rdata_next[30] = ctrl_rxbuf_state_pre_qs;
         reg_rdata_next[31] = ctrl_rxbuf_state_full_qs;
       end
 
-      racl_addr_hit_read[33]: begin
+      racl_addr_hit_read[36]: begin
         reg_rdata_next[9:0] = command_queue_config_min_addr_qs;
         reg_rdata_next[21:12] = command_queue_config_max_addr_qs;
         reg_rdata_next[31:24] = command_queue_config_size_val_qs;
       end
 
-      racl_addr_hit_read[34]: begin
+      racl_addr_hit_read[37]: begin
         reg_rdata_next[9:0] = command_queue_state_wptr_qs;
         reg_rdata_next[25:16] = command_queue_state_rptr_qs;
         reg_rdata_next[30] = command_queue_state_pre_qs;
         reg_rdata_next[31] = command_queue_state_full_qs;
       end
 
-      racl_addr_hit_read[35]: begin
+      racl_addr_hit_read[38]: begin
         reg_rdata_next[9:0] = response_queue_config_min_addr_qs;
         reg_rdata_next[21:12] = response_queue_config_max_addr_qs;
         reg_rdata_next[31:24] = response_queue_config_size_val_qs;
       end
 
-      racl_addr_hit_read[36]: begin
+      racl_addr_hit_read[39]: begin
         reg_rdata_next[9:0] = response_queue_state_wptr_qs;
         reg_rdata_next[25:16] = response_queue_state_rptr_qs;
         reg_rdata_next[30] = response_queue_state_pre_qs;
         reg_rdata_next[31] = response_queue_state_full_qs;
       end
 
-      racl_addr_hit_read[37]: begin
+      racl_addr_hit_read[40]: begin
         reg_rdata_next[9:0] = ibi_config_min_addr_qs;
         reg_rdata_next[21:12] = ibi_config_max_addr_qs;
         reg_rdata_next[31:24] = ibi_config_size_val_qs;
       end
 
-      racl_addr_hit_read[38]: begin
+      racl_addr_hit_read[41]: begin
         reg_rdata_next[9:0] = ibi_state_wptr_qs;
         reg_rdata_next[25:16] = ibi_state_rptr_qs;
         reg_rdata_next[30] = ibi_state_pre_qs;
         reg_rdata_next[31] = ibi_state_full_qs;
       end
 
-      racl_addr_hit_read[39]: begin
+      racl_addr_hit_read[42]: begin
         reg_rdata_next[9:0] = ibi_stat_config_min_addr_qs;
         reg_rdata_next[21:12] = ibi_stat_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[40]: begin
+      racl_addr_hit_read[43]: begin
         reg_rdata_next[9:0] = ibi_stat_state_wptr_qs;
         reg_rdata_next[25:16] = ibi_stat_state_rptr_qs;
         reg_rdata_next[30] = ibi_stat_state_pre_qs;
         reg_rdata_next[31] = ibi_stat_state_full_qs;
       end
 
-      racl_addr_hit_read[41]: begin
+      racl_addr_hit_read[44]: begin
         reg_rdata_next[9:0] = targ_txbuf_config_0_min_addr_0_qs;
         reg_rdata_next[25:16] = targ_txbuf_config_0_max_addr_0_qs;
       end
 
-      racl_addr_hit_read[42]: begin
+      racl_addr_hit_read[45]: begin
         reg_rdata_next[9:0] = targ_txbuf_config_1_min_addr_1_qs;
         reg_rdata_next[25:16] = targ_txbuf_config_1_max_addr_1_qs;
       end
 
-      racl_addr_hit_read[43]: begin
+      racl_addr_hit_read[46]: begin
         reg_rdata_next[9:0] = targ_txbuf_config_2_min_addr_2_qs;
         reg_rdata_next[25:16] = targ_txbuf_config_2_max_addr_2_qs;
       end
 
-      racl_addr_hit_read[44]: begin
+      racl_addr_hit_read[47]: begin
         reg_rdata_next[9:0] = targ_txbuf_config_3_min_addr_3_qs;
         reg_rdata_next[25:16] = targ_txbuf_config_3_max_addr_3_qs;
       end
 
-      racl_addr_hit_read[45]: begin
+      racl_addr_hit_read[48]: begin
         reg_rdata_next[9:0] = targ_txbuf_state_0_wptr_0_qs;
         reg_rdata_next[25:16] = targ_txbuf_state_0_rptr_0_qs;
         reg_rdata_next[30] = targ_txbuf_state_0_pre_0_qs;
         reg_rdata_next[31] = targ_txbuf_state_0_full_0_qs;
       end
 
-      racl_addr_hit_read[46]: begin
+      racl_addr_hit_read[49]: begin
         reg_rdata_next[9:0] = targ_txbuf_state_1_wptr_1_qs;
         reg_rdata_next[25:16] = targ_txbuf_state_1_rptr_1_qs;
         reg_rdata_next[30] = targ_txbuf_state_1_pre_1_qs;
         reg_rdata_next[31] = targ_txbuf_state_1_full_1_qs;
       end
 
-      racl_addr_hit_read[47]: begin
+      racl_addr_hit_read[50]: begin
         reg_rdata_next[9:0] = targ_txbuf_state_2_wptr_2_qs;
         reg_rdata_next[25:16] = targ_txbuf_state_2_rptr_2_qs;
         reg_rdata_next[30] = targ_txbuf_state_2_pre_2_qs;
         reg_rdata_next[31] = targ_txbuf_state_2_full_2_qs;
       end
 
-      racl_addr_hit_read[48]: begin
+      racl_addr_hit_read[51]: begin
         reg_rdata_next[9:0] = targ_txbuf_state_3_wptr_3_qs;
         reg_rdata_next[25:16] = targ_txbuf_state_3_rptr_3_qs;
         reg_rdata_next[30] = targ_txbuf_state_3_pre_3_qs;
         reg_rdata_next[31] = targ_txbuf_state_3_full_3_qs;
       end
 
-      racl_addr_hit_read[49]: begin
+      racl_addr_hit_read[52]: begin
         reg_rdata_next[9:0] = targ_rxbuf_config_min_addr_qs;
         reg_rdata_next[25:16] = targ_rxbuf_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[50]: begin
+      racl_addr_hit_read[53]: begin
         reg_rdata_next[9:0] = targ_rxbuf_state_wptr_qs;
         reg_rdata_next[25:16] = targ_rxbuf_state_rptr_qs;
         reg_rdata_next[30] = targ_rxbuf_state_pre_qs;
         reg_rdata_next[31] = targ_rxbuf_state_full_qs;
       end
 
-      racl_addr_hit_read[51]: begin
+      racl_addr_hit_read[54]: begin
         reg_rdata_next[9:0] = targ_ibi_config_min_addr_qs;
         reg_rdata_next[25:16] = targ_ibi_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[52]: begin
+      racl_addr_hit_read[55]: begin
         reg_rdata_next[9:0] = targ_ibi_state_wptr_qs;
         reg_rdata_next[25:16] = targ_ibi_state_rptr_qs;
         reg_rdata_next[30] = targ_ibi_state_pre_qs;
         reg_rdata_next[31] = targ_ibi_state_full_qs;
       end
 
-      racl_addr_hit_read[53]: begin
+      racl_addr_hit_read[56]: begin
         reg_rdata_next[9:0] = targ_txdesc_config_0_min_addr_0_qs;
         reg_rdata_next[25:16] = targ_txdesc_config_0_max_addr_0_qs;
       end
 
-      racl_addr_hit_read[54]: begin
+      racl_addr_hit_read[57]: begin
         reg_rdata_next[9:0] = targ_txdesc_config_1_min_addr_1_qs;
         reg_rdata_next[25:16] = targ_txdesc_config_1_max_addr_1_qs;
       end
 
-      racl_addr_hit_read[55]: begin
+      racl_addr_hit_read[58]: begin
         reg_rdata_next[9:0] = targ_txdesc_config_2_min_addr_2_qs;
         reg_rdata_next[25:16] = targ_txdesc_config_2_max_addr_2_qs;
       end
 
-      racl_addr_hit_read[56]: begin
+      racl_addr_hit_read[59]: begin
         reg_rdata_next[9:0] = targ_txdesc_config_3_min_addr_3_qs;
         reg_rdata_next[25:16] = targ_txdesc_config_3_max_addr_3_qs;
       end
 
-      racl_addr_hit_read[57]: begin
+      racl_addr_hit_read[60]: begin
         reg_rdata_next[9:0] = targ_txdesc_state_0_wptr_0_qs;
         reg_rdata_next[25:16] = targ_txdesc_state_0_rptr_0_qs;
         reg_rdata_next[30] = targ_txdesc_state_0_pre_0_qs;
         reg_rdata_next[31] = targ_txdesc_state_0_full_0_qs;
       end
 
-      racl_addr_hit_read[58]: begin
+      racl_addr_hit_read[61]: begin
         reg_rdata_next[9:0] = targ_txdesc_state_1_wptr_1_qs;
         reg_rdata_next[25:16] = targ_txdesc_state_1_rptr_1_qs;
         reg_rdata_next[30] = targ_txdesc_state_1_pre_1_qs;
         reg_rdata_next[31] = targ_txdesc_state_1_full_1_qs;
       end
 
-      racl_addr_hit_read[59]: begin
+      racl_addr_hit_read[62]: begin
         reg_rdata_next[9:0] = targ_txdesc_state_2_wptr_2_qs;
         reg_rdata_next[25:16] = targ_txdesc_state_2_rptr_2_qs;
         reg_rdata_next[30] = targ_txdesc_state_2_pre_2_qs;
         reg_rdata_next[31] = targ_txdesc_state_2_full_2_qs;
       end
 
-      racl_addr_hit_read[60]: begin
+      racl_addr_hit_read[63]: begin
         reg_rdata_next[9:0] = targ_txdesc_state_3_wptr_3_qs;
         reg_rdata_next[25:16] = targ_txdesc_state_3_rptr_3_qs;
         reg_rdata_next[30] = targ_txdesc_state_3_pre_3_qs;
         reg_rdata_next[31] = targ_txdesc_state_3_full_3_qs;
       end
 
-      racl_addr_hit_read[61]: begin
+      racl_addr_hit_read[64]: begin
         reg_rdata_next[9:0] = targ_rxdesc_config_min_addr_qs;
         reg_rdata_next[25:16] = targ_rxdesc_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[62]: begin
+      racl_addr_hit_read[65]: begin
         reg_rdata_next[9:0] = targ_rxdesc_state_wptr_qs;
         reg_rdata_next[25:16] = targ_rxdesc_state_rptr_qs;
         reg_rdata_next[30] = targ_rxdesc_state_pre_qs;
         reg_rdata_next[31] = targ_rxdesc_state_full_qs;
       end
 
-      racl_addr_hit_read[63]: begin
+      racl_addr_hit_read[66]: begin
         reg_rdata_next[9:0] = targ_ibidesc_config_min_addr_qs;
         reg_rdata_next[25:16] = targ_ibidesc_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[64]: begin
+      racl_addr_hit_read[67]: begin
         reg_rdata_next[9:0] = targ_ibidesc_state_wptr_qs;
         reg_rdata_next[25:16] = targ_ibidesc_state_rptr_qs;
         reg_rdata_next[30] = targ_ibidesc_state_pre_qs;
         reg_rdata_next[31] = targ_ibidesc_state_full_qs;
       end
 
-      racl_addr_hit_read[65]: begin
+      racl_addr_hit_read[68]: begin
         reg_rdata_next[9:0] = targ_async_config_min_addr_qs;
         reg_rdata_next[25:16] = targ_async_config_max_addr_qs;
       end
 
-      racl_addr_hit_read[66]: begin
+      racl_addr_hit_read[69]: begin
         reg_rdata_next[9:0] = targ_async_state_wptr_qs;
         reg_rdata_next[25:16] = targ_async_state_rptr_qs;
         reg_rdata_next[30] = targ_async_state_pre_qs;
         reg_rdata_next[31] = targ_async_state_full_qs;
       end
 
-      racl_addr_hit_read[67]: begin
+      racl_addr_hit_read[70]: begin
         reg_rdata_next[31:0] = hci_version_qs;
       end
 
-      racl_addr_hit_read[68]: begin
+      racl_addr_hit_read[71]: begin
         reg_rdata_next[0] = hc_control_iba_include_qs;
         reg_rdata_next[3] = hc_control_autocmd_data_rpt_qs;
         reg_rdata_next[4] = hc_control_data_byte_order_mode_qs;
@@ -21371,12 +21862,12 @@ module i3c_reg_top
         reg_rdata_next[31] = hc_control_bus_enable_qs;
       end
 
-      racl_addr_hit_read[69]: begin
+      racl_addr_hit_read[72]: begin
         reg_rdata_next[22:16] = controller_device_addr_dynamic_addr_qs;
         reg_rdata_next[31] = controller_device_addr_dynamic_addr_valid_qs;
       end
 
-      racl_addr_hit_read[70]: begin
+      racl_addr_hit_read[73]: begin
         reg_rdata_next[2] = hc_capabilities_combo_command_qs;
         reg_rdata_next[3] = hc_capabilities_auto_command_qs;
         reg_rdata_next[5] = hc_capabilities_standby_cr_cap_qs;
@@ -21392,7 +21883,7 @@ module i3c_reg_top
         reg_rdata_next[30] = hc_capabilities_sg_capability_dc_en_qs;
       end
 
-      racl_addr_hit_read[71]: begin
+      racl_addr_hit_read[74]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -21401,11 +21892,11 @@ module i3c_reg_top
         reg_rdata_next[5] = '0;
       end
 
-      racl_addr_hit_read[72]: begin
+      racl_addr_hit_read[75]: begin
         reg_rdata_next[2] = present_state_qs;
       end
 
-      racl_addr_hit_read[73]: begin
+      racl_addr_hit_read[76]: begin
         reg_rdata_next[10] = intr_status_hc_internal_err_stat_qs;
         reg_rdata_next[11] = intr_status_hc_seq_cancel_stat_qs;
         reg_rdata_next[12] = intr_status_hc_warn_cmd_seq_stall_stat_qs;
@@ -21413,7 +21904,7 @@ module i3c_reg_top
         reg_rdata_next[14] = intr_status_sched_cmd_missed_tick_stat_qs;
       end
 
-      racl_addr_hit_read[74]: begin
+      racl_addr_hit_read[77]: begin
         reg_rdata_next[10] = intr_status_enable_hc_internal_err_stat_en_qs;
         reg_rdata_next[11] = intr_status_enable_hc_seq_cancel_stat_en_qs;
         reg_rdata_next[12] = intr_status_enable_hc_warn_cmd_seq_stall_stat_en_qs;
@@ -21421,7 +21912,7 @@ module i3c_reg_top
         reg_rdata_next[14] = intr_status_enable_sched_cmd_missed_tick_stat_en_qs;
       end
 
-      racl_addr_hit_read[75]: begin
+      racl_addr_hit_read[78]: begin
         reg_rdata_next[10] = intr_signal_enable_hc_internal_err_signal_en_qs;
         reg_rdata_next[11] = intr_signal_enable_hc_seq_cancel_signal_en_qs;
         reg_rdata_next[12] = intr_signal_enable_hc_warn_cmd_seq_stall_signal_en_qs;
@@ -21429,7 +21920,7 @@ module i3c_reg_top
         reg_rdata_next[14] = intr_signal_enable_sched_cmd_missed_tick_signal_en_qs;
       end
 
-      racl_addr_hit_read[76]: begin
+      racl_addr_hit_read[79]: begin
         reg_rdata_next[10] = '0;
         reg_rdata_next[11] = '0;
         reg_rdata_next[12] = '0;
@@ -21437,90 +21928,90 @@ module i3c_reg_top
         reg_rdata_next[14] = '0;
       end
 
-      racl_addr_hit_read[77]: begin
+      racl_addr_hit_read[80]: begin
         reg_rdata_next[11:0] = dat_section_offset_table_offset_qs;
         reg_rdata_next[18:12] = dat_section_offset_table_size_qs;
         reg_rdata_next[31:28] = dat_section_offset_entry_size_qs;
       end
 
-      racl_addr_hit_read[78]: begin
+      racl_addr_hit_read[81]: begin
         reg_rdata_next[11:0] = dct_section_offset_table_offset_qs;
         reg_rdata_next[18:12] = dct_section_offset_table_size_qs;
         reg_rdata_next[23:19] = dct_section_offset_table_index_qs;
         reg_rdata_next[31:28] = dct_section_offset_entry_size_qs;
       end
 
-      racl_addr_hit_read[79]: begin
+      racl_addr_hit_read[82]: begin
         reg_rdata_next[15:0] = ring_headers_section_offset_qs;
       end
 
-      racl_addr_hit_read[80]: begin
+      racl_addr_hit_read[83]: begin
         reg_rdata_next[15:0] = pio_section_offset_qs;
       end
 
-      racl_addr_hit_read[81]: begin
+      racl_addr_hit_read[84]: begin
         reg_rdata_next[15:0] = ext_caps_section_offset_qs;
       end
 
-      racl_addr_hit_read[82]: begin
+      racl_addr_hit_read[85]: begin
         reg_rdata_next[0] = int_ctrl_cmds_en_icc_support_qs;
         reg_rdata_next[15:1] = int_ctrl_cmds_en_mipi_cmds_supported_qs;
       end
 
-      racl_addr_hit_read[83]: begin
+      racl_addr_hit_read[86]: begin
         reg_rdata_next[0] = ibi_notify_ctrl_notify_hj_rejected_qs;
         reg_rdata_next[1] = ibi_notify_ctrl_notify_crr_rejected_qs;
         reg_rdata_next[3] = ibi_notify_ctrl_notify_ibi_rejected_qs;
       end
 
-      racl_addr_hit_read[84]: begin
+      racl_addr_hit_read[87]: begin
         reg_rdata_next[15:8] = '0;
         reg_rdata_next[17:16] = '0;
         reg_rdata_next[20:18] = '0;
         reg_rdata_next[31] = ibi_data_abort_ctrl_ibi_data_abort_mon_qs;
       end
 
-      racl_addr_hit_read[85]: begin
+      racl_addr_hit_read[88]: begin
         reg_rdata_next[31:0] = dev_ctx_base_lo_qs;
       end
 
-      racl_addr_hit_read[86]: begin
+      racl_addr_hit_read[89]: begin
         reg_rdata_next[31:0] = dev_ctx_base_hi_qs;
       end
 
-      racl_addr_hit_read[87]: begin
+      racl_addr_hit_read[90]: begin
         reg_rdata_next[15:0] = dev_ctx_sg_list_size_qs;
         reg_rdata_next[31] = dev_ctx_sg_blp_qs;
       end
 
-      racl_addr_hit_read[88]: begin
+      racl_addr_hit_read[91]: begin
         reg_rdata_next[7:0] = queue_thld_ctrl_cmd_empty_buf_thld_qs;
         reg_rdata_next[15:8] = queue_thld_ctrl_resp_buf_thld_qs;
         reg_rdata_next[23:16] = queue_thld_ctrl_ibi_data_segment_size_qs;
         reg_rdata_next[31:24] = queue_thld_ctrl_ibi_status_thld_qs;
       end
 
-      racl_addr_hit_read[89]: begin
+      racl_addr_hit_read[92]: begin
         reg_rdata_next[2:0] = data_buffer_thld_ctrl_tx_buf_thld_qs;
         reg_rdata_next[10:8] = data_buffer_thld_ctrl_rx_buf_thld_qs;
         reg_rdata_next[18:16] = data_buffer_thld_ctrl_tx_start_thld_qs;
         reg_rdata_next[26:24] = data_buffer_thld_ctrl_rx_start_thld_qs;
       end
 
-      racl_addr_hit_read[90]: begin
+      racl_addr_hit_read[93]: begin
         reg_rdata_next[7:0] = queue_size_cr_queue_size_qs;
         reg_rdata_next[15:8] = queue_size_ibi_status_size_qs;
         reg_rdata_next[23:16] = queue_size_rx_data_buffer_size_qs;
         reg_rdata_next[31:24] = queue_size_tx_data_buffer_size_qs;
       end
 
-      racl_addr_hit_read[91]: begin
+      racl_addr_hit_read[94]: begin
         reg_rdata_next[7:0] = alt_queue_size_alt_resp_queue_size_qs;
         reg_rdata_next[24] = alt_queue_size_alt_resp_queue_en_qs;
         reg_rdata_next[28] = alt_queue_size_ext_ibi_queue_en_qs;
       end
 
-      racl_addr_hit_read[92]: begin
+      racl_addr_hit_read[95]: begin
         reg_rdata_next[0] = pio_intr_status_tx_thld_stat_qs;
         reg_rdata_next[1] = pio_intr_status_rx_thld_stat_qs;
         reg_rdata_next[2] = pio_intr_status_ibi_status_thld_stat_qs;
@@ -21530,7 +22021,7 @@ module i3c_reg_top
         reg_rdata_next[9] = pio_intr_status_transfer_err_stat_qs;
       end
 
-      racl_addr_hit_read[93]: begin
+      racl_addr_hit_read[96]: begin
         reg_rdata_next[0] = pio_intr_status_enable_tx_thld_stat_en_qs;
         reg_rdata_next[1] = pio_intr_status_enable_rx_thld_stat_en_qs;
         reg_rdata_next[2] = pio_intr_status_enable_ibi_status_thld_stat_en_qs;
@@ -21540,7 +22031,7 @@ module i3c_reg_top
         reg_rdata_next[9] = pio_intr_status_enable_transfer_err_stat_en_qs;
       end
 
-      racl_addr_hit_read[94]: begin
+      racl_addr_hit_read[97]: begin
         reg_rdata_next[0] = pio_intr_signal_enable_tx_thld_signal_en_qs;
         reg_rdata_next[1] = pio_intr_signal_enable_rx_thld_signal_en_qs;
         reg_rdata_next[2] = pio_intr_signal_enable_ibi_status_thld_signal_en_qs;
@@ -21550,7 +22041,7 @@ module i3c_reg_top
         reg_rdata_next[9] = pio_intr_signal_enable_transfer_err_signal_en_qs;
       end
 
-      racl_addr_hit_read[95]: begin
+      racl_addr_hit_read[98]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -21560,68 +22051,68 @@ module i3c_reg_top
         reg_rdata_next[9] = '0;
       end
 
-      racl_addr_hit_read[96]: begin
+      racl_addr_hit_read[99]: begin
         reg_rdata_next[0] = pio_control_enable_qs;
         reg_rdata_next[1] = pio_control_rs_qs;
         reg_rdata_next[2] = pio_control_abort_qs;
       end
 
-      racl_addr_hit_read[97]: begin
+      racl_addr_hit_read[100]: begin
         reg_rdata_next[7:0] = id_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = id_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[98]: begin
+      racl_addr_hit_read[101]: begin
         reg_rdata_next[31:0] = comp_manufacturer_qs;
       end
 
-      racl_addr_hit_read[99]: begin
+      racl_addr_hit_read[102]: begin
         reg_rdata_next[31:0] = comp_version_qs;
       end
 
-      racl_addr_hit_read[100]: begin
+      racl_addr_hit_read[103]: begin
         reg_rdata_next[31:0] = comp_type_qs;
       end
 
-      racl_addr_hit_read[101]: begin
+      racl_addr_hit_read[104]: begin
         reg_rdata_next[7:0] = ctrl_cfg_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = ctrl_cfg_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[102]: begin
+      racl_addr_hit_read[105]: begin
         reg_rdata_next[5:4] = controller_config_qs;
       end
 
-      racl_addr_hit_read[103]: begin
+      racl_addr_hit_read[106]: begin
         reg_rdata_next[7:0] = dbr_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = dbr_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[104]: begin
+      racl_addr_hit_read[107]: begin
         reg_rdata_next[3:0] = '0;
         reg_rdata_next[6:4] = '0;
         reg_rdata_next[9:8] = '0;
         reg_rdata_next[22:16] = '0;
       end
 
-      racl_addr_hit_read[105]: begin
+      racl_addr_hit_read[108]: begin
         reg_rdata_next[7:0] = debug_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = debug_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[106]: begin
+      racl_addr_hit_read[109]: begin
         reg_rdata_next[7:0] = queue_status_level_cmd_queue_free_lvl_qs;
         reg_rdata_next[15:8] = queue_status_level_response_buffer_lvl_qs;
         reg_rdata_next[23:16] = queue_status_level_ibi_buffer_lvl_qs;
         reg_rdata_next[28:24] = queue_status_level_ibi_status_cnt_qs;
       end
 
-      racl_addr_hit_read[107]: begin
+      racl_addr_hit_read[110]: begin
         reg_rdata_next[7:0] = data_buffer_status_level_tx_buf_free_lvl_qs;
         reg_rdata_next[15:8] = data_buffer_status_level_rx_buf_lvl_qs;
       end
 
-      racl_addr_hit_read[108]: begin
+      racl_addr_hit_read[111]: begin
         reg_rdata_next[0] = present_state_debug_scl_line_signal_level_qs;
         reg_rdata_next[1] = present_state_debug_sda_line_signal_level_qs;
         reg_rdata_next[13:8] = present_state_debug_bcl_tfr_status_qs;
@@ -21629,11 +22120,11 @@ module i3c_reg_top
         reg_rdata_next[27:24] = present_state_debug_cmd_tid_qs;
       end
 
-      racl_addr_hit_read[109]: begin
+      racl_addr_hit_read[112]: begin
         reg_rdata_next[7:0] = mx_error_counters_qs;
       end
 
-      racl_addr_hit_read[110]: begin
+      racl_addr_hit_read[113]: begin
         reg_rdata_next[3:0] = sched_cmds_debug_sched_handler_qs;
         reg_rdata_next[6:4] = sched_cmds_debug_inst_id_qs;
         reg_rdata_next[7] = sched_cmds_debug_err_type_qs;
@@ -21642,12 +22133,12 @@ module i3c_reg_top
         reg_rdata_next[21] = sched_cmds_debug_err_occurred_qs;
       end
 
-      racl_addr_hit_read[111]: begin
+      racl_addr_hit_read[114]: begin
         reg_rdata_next[7:0] = stby_cr_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = stby_cr_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[112]: begin
+      racl_addr_hit_read[115]: begin
         reg_rdata_next[0] = stby_cr_control_pending_rx_nack_qs;
         reg_rdata_next[1] = stby_cr_control_handoff_delay_nack_qs;
         reg_rdata_next[2] = stby_cr_control_acr_fsm_op_select_qs;
@@ -21663,14 +22154,14 @@ module i3c_reg_top
         reg_rdata_next[31:30] = stby_cr_control_stby_cr_enable_init_qs;
       end
 
-      racl_addr_hit_read[113]: begin
+      racl_addr_hit_read[116]: begin
         reg_rdata_next[6:0] = stby_cr_device_addr_static_addr_qs;
         reg_rdata_next[15] = stby_cr_device_addr_static_addr_valid_qs;
         reg_rdata_next[22:16] = stby_cr_device_addr_dynamic_addr_qs;
         reg_rdata_next[31] = stby_cr_device_addr_dynamic_addr_valid_qs;
       end
 
-      racl_addr_hit_read[114]: begin
+      racl_addr_hit_read[117]: begin
         reg_rdata_next[5] = stby_cr_capabilities_simple_crr_support_qs;
         reg_rdata_next[12] = stby_cr_capabilities_target_xact_support_qs;
         reg_rdata_next[13] = stby_cr_capabilities_daa_setaasa_support_qs;
@@ -21678,24 +22169,24 @@ module i3c_reg_top
         reg_rdata_next[15] = stby_cr_capabilities_daa_entdaa_support_qs;
       end
 
-      racl_addr_hit_read[115]: begin
+      racl_addr_hit_read[118]: begin
         reg_rdata_next[2] = stby_cr_status_ac_current_own_qs;
         reg_rdata_next[7:5] = stby_cr_status_simple_crr_status_qs;
         reg_rdata_next[8] = stby_cr_status_hj_req_status_qs;
       end
 
-      racl_addr_hit_read[116]: begin
+      racl_addr_hit_read[119]: begin
         reg_rdata_next[15:1] = stby_cr_device_char_pid_hi_qs;
         reg_rdata_next[23:16] = stby_cr_device_char_dcr_qs;
         reg_rdata_next[28:24] = stby_cr_device_char_bcr_var_qs;
         reg_rdata_next[31:29] = stby_cr_device_char_bcr_fixed_qs;
       end
 
-      racl_addr_hit_read[117]: begin
+      racl_addr_hit_read[120]: begin
         reg_rdata_next[31:0] = stby_cr_device_pid_lo_qs;
       end
 
-      racl_addr_hit_read[118]: begin
+      racl_addr_hit_read[121]: begin
         reg_rdata_next[0] = stby_cr_intr_status_acr_handoff_ok_remain_stat_qs;
         reg_rdata_next[1] = stby_cr_intr_status_acr_handoff_ok_primed_stat_qs;
         reg_rdata_next[2] = stby_cr_intr_status_acr_handoff_err_fail_stat_qs;
@@ -21711,7 +22202,7 @@ module i3c_reg_top
         reg_rdata_next[19] = stby_cr_intr_status_ccc_fatal_rstdaa_err_stat_qs;
       end
 
-      racl_addr_hit_read[119]: begin
+      racl_addr_hit_read[122]: begin
         reg_rdata_next[0] = stby_cr_intr_signal_enable_acr_handoff_ok_remain_signal_en_qs;
         reg_rdata_next[1] = stby_cr_intr_signal_enable_acr_handoff_ok_primed_signal_en_qs;
         reg_rdata_next[2] = stby_cr_intr_signal_enable_acr_handoff_err_fail_signal_en_qs;
@@ -21727,7 +22218,7 @@ module i3c_reg_top
         reg_rdata_next[19] = stby_cr_intr_signal_enable_ccc_fatal_rstdaa_err_signal_en_qs;
       end
 
-      racl_addr_hit_read[120]: begin
+      racl_addr_hit_read[123]: begin
         reg_rdata_next[10] = '0;
         reg_rdata_next[11] = '0;
         reg_rdata_next[12] = '0;
@@ -21739,24 +22230,24 @@ module i3c_reg_top
         reg_rdata_next[19] = '0;
       end
 
-      racl_addr_hit_read[121]: begin
+      racl_addr_hit_read[124]: begin
         reg_rdata_next[2:0] = stby_cr_ccc_config_getcaps_f2_crcap1_bus_config_qs;
         reg_rdata_next[11:8] = stby_cr_ccc_config_getcaps_f2_crcap2_dev_interact_qs;
       end
 
-      racl_addr_hit_read[122]: begin
+      racl_addr_hit_read[125]: begin
         reg_rdata_next[7:0] = stby_cr_ccc_config_rstact_params_rst_action_qs;
         reg_rdata_next[15:8] = stby_cr_ccc_config_rstact_params_reset_time_peripheral_qs;
         reg_rdata_next[23:16] = stby_cr_ccc_config_rstact_params_reset_time_target_qs;
         reg_rdata_next[31] = stby_cr_ccc_config_rstact_params_reset_dynamic_addr_qs;
       end
 
-      racl_addr_hit_read[123]: begin
+      racl_addr_hit_read[126]: begin
         reg_rdata_next[7:0] = tti_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = tti_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[124]: begin
+      racl_addr_hit_read[127]: begin
         reg_rdata_next[0] = targ_intr_status_rx_desc_ready_stat_qs;
         reg_rdata_next[1] = targ_intr_status_ibi_status_thld_stat_qs;
         reg_rdata_next[2] = targ_intr_status_async_evt_ready_stat_qs;
@@ -21773,10 +22264,11 @@ module i3c_reg_top
         reg_rdata_next[17] = targ_intr_status_tx1_desc_ready_stat_qs;
         reg_rdata_next[18] = targ_intr_status_tx2_desc_ready_stat_qs;
         reg_rdata_next[19] = targ_intr_status_tx3_desc_ready_stat_qs;
+        reg_rdata_next[30] = targ_intr_status_internal_err_stat_qs;
         reg_rdata_next[31] = targ_intr_status_te_stat_qs;
       end
 
-      racl_addr_hit_read[125]: begin
+      racl_addr_hit_read[128]: begin
         reg_rdata_next[0] = targ_intr_status_enable_rx_desc_ready_stat_en_qs;
         reg_rdata_next[1] = targ_intr_status_enable_ibi_status_thld_stat_en_qs;
         reg_rdata_next[2] = targ_intr_status_enable_async_evt_ready_stat_en_qs;
@@ -21793,10 +22285,11 @@ module i3c_reg_top
         reg_rdata_next[17] = targ_intr_status_enable_tx1_desc_ready_stat_en_qs;
         reg_rdata_next[18] = targ_intr_status_enable_tx2_desc_ready_stat_en_qs;
         reg_rdata_next[19] = targ_intr_status_enable_tx3_desc_ready_stat_en_qs;
+        reg_rdata_next[30] = targ_intr_status_enable_internal_err_stat_en_qs;
         reg_rdata_next[31] = targ_intr_status_enable_te_stat_en_qs;
       end
 
-      racl_addr_hit_read[126]: begin
+      racl_addr_hit_read[129]: begin
         reg_rdata_next[0] = targ_intr_signal_enable_rx_desc_ready_signal_en_qs;
         reg_rdata_next[1] = targ_intr_signal_enable_ibi_status_thld_signal_en_qs;
         reg_rdata_next[2] = targ_intr_signal_enable_async_evt_ready_signal_en_qs;
@@ -21813,10 +22306,11 @@ module i3c_reg_top
         reg_rdata_next[17] = targ_intr_signal_enable_tx1_desc_ready_signal_en_qs;
         reg_rdata_next[18] = targ_intr_signal_enable_tx2_desc_ready_signal_en_qs;
         reg_rdata_next[19] = targ_intr_signal_enable_tx3_desc_ready_signal_en_qs;
+        reg_rdata_next[30] = targ_intr_signal_enable_internal_err_signal_en_qs;
         reg_rdata_next[31] = targ_intr_signal_enable_te_signal_en_qs;
       end
 
-      racl_addr_hit_read[127]: begin
+      racl_addr_hit_read[130]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -21833,20 +22327,22 @@ module i3c_reg_top
         reg_rdata_next[17] = '0;
         reg_rdata_next[18] = '0;
         reg_rdata_next[19] = '0;
+        reg_rdata_next[30] = '0;
         reg_rdata_next[31] = '0;
       end
 
-      racl_addr_hit_read[128]: begin
+      racl_addr_hit_read[131]: begin
         reg_rdata_next[0] = targ_pio_control_ibi_suspended_qs;
         reg_rdata_next[1] = targ_pio_control_ibi_abort_qs;
+        reg_rdata_next[2] = targ_pio_control_ibi_suspend_auto_qs;
         reg_rdata_next[10] = '0;
         reg_rdata_next[11] = '0;
         reg_rdata_next[15:12] = '0;
-        reg_rdata_next[19:16] = targ_pio_control_suspended_qs;
-        reg_rdata_next[27:24] = targ_pio_control_abort_qs;
+        reg_rdata_next[19:16] = targ_pio_control_tx_suspended_qs;
+        reg_rdata_next[27:24] = targ_pio_control_tx_abort_qs;
       end
 
-      racl_addr_hit_read[129]: begin
+      racl_addr_hit_read[132]: begin
         reg_rdata_next[0] = targ_async_evt_control_bcst_ccc_qs;
         reg_rdata_next[1] = targ_async_evt_control_dir_set_ccc_qs;
         reg_rdata_next[2] = targ_async_evt_control_dir_get_ccc_qs;
@@ -21858,7 +22354,7 @@ module i3c_reg_top
         reg_rdata_next[31] = targ_async_evt_control_queue_reset_qs;
       end
 
-      racl_addr_hit_read[130]: begin
+      racl_addr_hit_read[133]: begin
         reg_rdata_next[3:0] = targ_error_te0_qs;
         reg_rdata_next[7:4] = targ_error_te1_qs;
         reg_rdata_next[11:8] = targ_error_te2_qs;
@@ -21869,78 +22365,78 @@ module i3c_reg_top
         reg_rdata_next[31:28] = targ_error_dbr_qs;
       end
 
-      racl_addr_hit_read[131]: begin
+      racl_addr_hit_read[134]: begin
         reg_rdata_next[15:8] = targ_queue_thld_ctrl_rx_desc_thld_qs;
         reg_rdata_next[31:24] = targ_queue_thld_ctrl_ibi_status_thld_qs;
       end
 
-      racl_addr_hit_read[132]: begin
+      racl_addr_hit_read[135]: begin
         reg_rdata_next[7:0] = targ_queue_status_level_rx_desc_lvl_qs;
         reg_rdata_next[27:16] = targ_queue_status_level_async_evt_lvl_qs;
       end
 
-      racl_addr_hit_read[133]: begin
+      racl_addr_hit_read[136]: begin
         reg_rdata_next[11:0] = targ_buf_thld_ctrl_rx_segment_size_qs;
         reg_rdata_next[30:28] = targ_buf_thld_ctrl_rx_start_thld_qs;
       end
 
-      racl_addr_hit_read[134]: begin
+      racl_addr_hit_read[137]: begin
         reg_rdata_next[11:0] = targ_buf_status_level_rx_buf_lvl_qs;
         reg_rdata_next[27:16] = targ_buf_status_level_ibi_free_lvl_qs;
       end
 
-      racl_addr_hit_read[135]: begin
+      racl_addr_hit_read[138]: begin
         reg_rdata_next[15:0] = targ_rw_len_0_mrl_0_qs;
         reg_rdata_next[31:16] = targ_rw_len_0_mwl_0_qs;
       end
 
-      racl_addr_hit_read[136]: begin
+      racl_addr_hit_read[139]: begin
         reg_rdata_next[15:0] = targ_rw_len_1_mrl_1_qs;
         reg_rdata_next[31:16] = targ_rw_len_1_mwl_1_qs;
       end
 
-      racl_addr_hit_read[137]: begin
+      racl_addr_hit_read[140]: begin
         reg_rdata_next[15:0] = targ_rw_len_2_mrl_2_qs;
         reg_rdata_next[31:16] = targ_rw_len_2_mwl_2_qs;
       end
 
-      racl_addr_hit_read[138]: begin
+      racl_addr_hit_read[141]: begin
         reg_rdata_next[15:0] = targ_rw_len_3_mrl_3_qs;
         reg_rdata_next[31:16] = targ_rw_len_3_mwl_3_qs;
       end
 
-      racl_addr_hit_read[139]: begin
+      racl_addr_hit_read[142]: begin
         reg_rdata_next[7:0] = targ_ibi_len_ibi_len_0_qs;
         reg_rdata_next[15:8] = targ_ibi_len_ibi_len_1_qs;
         reg_rdata_next[23:16] = targ_ibi_len_ibi_len_2_qs;
         reg_rdata_next[31:24] = targ_ibi_len_ibi_len_3_qs;
       end
 
-      racl_addr_hit_read[140]: begin
+      racl_addr_hit_read[143]: begin
         reg_rdata_next[0] = targ_event_enable_0_enint_0_qs;
         reg_rdata_next[1] = targ_event_enable_0_encr_0_qs;
         reg_rdata_next[2] = targ_event_enable_0_enhj_0_qs;
       end
 
-      racl_addr_hit_read[141]: begin
+      racl_addr_hit_read[144]: begin
         reg_rdata_next[0] = targ_event_enable_1_enint_1_qs;
         reg_rdata_next[1] = targ_event_enable_1_encr_1_qs;
         reg_rdata_next[2] = targ_event_enable_1_enhj_1_qs;
       end
 
-      racl_addr_hit_read[142]: begin
+      racl_addr_hit_read[145]: begin
         reg_rdata_next[0] = targ_event_enable_2_enint_2_qs;
         reg_rdata_next[1] = targ_event_enable_2_encr_2_qs;
         reg_rdata_next[2] = targ_event_enable_2_enhj_2_qs;
       end
 
-      racl_addr_hit_read[143]: begin
+      racl_addr_hit_read[146]: begin
         reg_rdata_next[0] = targ_event_enable_3_enint_3_qs;
         reg_rdata_next[1] = targ_event_enable_3_encr_3_qs;
         reg_rdata_next[2] = targ_event_enable_3_enhj_3_qs;
       end
 
-      racl_addr_hit_read[144]: begin
+      racl_addr_hit_read[147]: begin
         reg_rdata_next[0] = targ_state_debug_scl_line_signal_level_qs;
         reg_rdata_next[1] = targ_state_debug_sda_line_signal_level_qs;
         reg_rdata_next[8] = targ_state_debug_bus_avail_qs;
@@ -21950,166 +22446,166 @@ module i3c_reg_top
         reg_rdata_next[31:24] = targ_state_debug_trx_state_qs;
       end
 
-      racl_addr_hit_read[145]: begin
+      racl_addr_hit_read[148]: begin
         reg_rdata_next[0] = targ_enable_enable_0_qs;
         reg_rdata_next[1] = targ_enable_enable_1_qs;
         reg_rdata_next[2] = targ_enable_enable_2_qs;
         reg_rdata_next[3] = targ_enable_enable_3_qs;
       end
 
-      racl_addr_hit_read[146]: begin
+      racl_addr_hit_read[149]: begin
         reg_rdata_next[6:0] = targ_group_0_group_addr_0_qs;
         reg_rdata_next[11:8] = targ_group_0_targets_0_qs;
       end
 
-      racl_addr_hit_read[147]: begin
+      racl_addr_hit_read[150]: begin
         reg_rdata_next[6:0] = targ_group_1_group_addr_1_qs;
         reg_rdata_next[11:8] = targ_group_1_targets_1_qs;
       end
 
-      racl_addr_hit_read[148]: begin
+      racl_addr_hit_read[151]: begin
         reg_rdata_next[6:0] = targ_group_2_group_addr_2_qs;
         reg_rdata_next[11:8] = targ_group_2_targets_2_qs;
       end
 
-      racl_addr_hit_read[149]: begin
+      racl_addr_hit_read[152]: begin
         reg_rdata_next[6:0] = targ_group_3_group_addr_3_qs;
         reg_rdata_next[11:8] = targ_group_3_targets_3_qs;
       end
 
-      racl_addr_hit_read[150]: begin
+      racl_addr_hit_read[153]: begin
         reg_rdata_next[6:0] = targ_group_4_group_addr_4_qs;
         reg_rdata_next[11:8] = targ_group_4_targets_4_qs;
       end
 
-      racl_addr_hit_read[151]: begin
+      racl_addr_hit_read[154]: begin
         reg_rdata_next[6:0] = targ_group_5_group_addr_5_qs;
         reg_rdata_next[11:8] = targ_group_5_targets_5_qs;
       end
 
-      racl_addr_hit_read[152]: begin
+      racl_addr_hit_read[155]: begin
         reg_rdata_next[6:0] = targ_group_6_group_addr_6_qs;
         reg_rdata_next[11:8] = targ_group_6_targets_6_qs;
       end
 
-      racl_addr_hit_read[153]: begin
+      racl_addr_hit_read[156]: begin
         reg_rdata_next[6:0] = targ_group_7_group_addr_7_qs;
         reg_rdata_next[11:8] = targ_group_7_targets_7_qs;
       end
 
-      racl_addr_hit_read[154]: begin
+      racl_addr_hit_read[157]: begin
         reg_rdata_next[11:0] = targ_tx_thld_ctrl_0_tx_buf_free_thld_0_qs;
         reg_rdata_next[23:16] = targ_tx_thld_ctrl_0_tx_desc_empty_thld_0_qs;
         reg_rdata_next[31:28] = targ_tx_thld_ctrl_0_tx_start_thld_0_qs;
       end
 
-      racl_addr_hit_read[155]: begin
+      racl_addr_hit_read[158]: begin
         reg_rdata_next[11:0] = targ_tx_thld_ctrl_1_tx_buf_free_thld_1_qs;
         reg_rdata_next[23:16] = targ_tx_thld_ctrl_1_tx_desc_empty_thld_1_qs;
         reg_rdata_next[31:28] = targ_tx_thld_ctrl_1_tx_start_thld_1_qs;
       end
 
-      racl_addr_hit_read[156]: begin
+      racl_addr_hit_read[159]: begin
         reg_rdata_next[11:0] = targ_tx_thld_ctrl_2_tx_buf_free_thld_2_qs;
         reg_rdata_next[23:16] = targ_tx_thld_ctrl_2_tx_desc_empty_thld_2_qs;
         reg_rdata_next[31:28] = targ_tx_thld_ctrl_2_tx_start_thld_2_qs;
       end
 
-      racl_addr_hit_read[157]: begin
+      racl_addr_hit_read[160]: begin
         reg_rdata_next[11:0] = targ_tx_thld_ctrl_3_tx_buf_free_thld_3_qs;
         reg_rdata_next[23:16] = targ_tx_thld_ctrl_3_tx_desc_empty_thld_3_qs;
         reg_rdata_next[31:28] = targ_tx_thld_ctrl_3_tx_start_thld_3_qs;
       end
 
-      racl_addr_hit_read[158]: begin
+      racl_addr_hit_read[161]: begin
         reg_rdata_next[11:0] = targ_tx_queue_status_level_0_tx_buf_free_lvl_0_qs;
         reg_rdata_next[23:16] = targ_tx_queue_status_level_0_tx_desc_free_lvl_0_qs;
       end
 
-      racl_addr_hit_read[159]: begin
+      racl_addr_hit_read[162]: begin
         reg_rdata_next[11:0] = targ_tx_queue_status_level_1_tx_buf_free_lvl_1_qs;
         reg_rdata_next[23:16] = targ_tx_queue_status_level_1_tx_desc_free_lvl_1_qs;
       end
 
-      racl_addr_hit_read[160]: begin
+      racl_addr_hit_read[163]: begin
         reg_rdata_next[11:0] = targ_tx_queue_status_level_2_tx_buf_free_lvl_2_qs;
         reg_rdata_next[23:16] = targ_tx_queue_status_level_2_tx_desc_free_lvl_2_qs;
       end
 
-      racl_addr_hit_read[161]: begin
+      racl_addr_hit_read[164]: begin
         reg_rdata_next[11:0] = targ_tx_queue_status_level_3_tx_buf_free_lvl_3_qs;
         reg_rdata_next[23:16] = targ_tx_queue_status_level_3_tx_desc_free_lvl_3_qs;
       end
 
-      racl_addr_hit_read[162]: begin
+      racl_addr_hit_read[165]: begin
         reg_rdata_next[6:0] = targ_addr_0_static_addr_0_qs;
         reg_rdata_next[15] = targ_addr_0_static_addr_valid_0_qs;
         reg_rdata_next[22:16] = targ_addr_0_dynamic_addr_0_qs;
         reg_rdata_next[31] = targ_addr_0_dynamic_addr_valid_0_qs;
       end
 
-      racl_addr_hit_read[163]: begin
+      racl_addr_hit_read[166]: begin
         reg_rdata_next[6:0] = targ_addr_1_static_addr_1_qs;
         reg_rdata_next[15] = targ_addr_1_static_addr_valid_1_qs;
         reg_rdata_next[22:16] = targ_addr_1_dynamic_addr_1_qs;
         reg_rdata_next[31] = targ_addr_1_dynamic_addr_valid_1_qs;
       end
 
-      racl_addr_hit_read[164]: begin
+      racl_addr_hit_read[167]: begin
         reg_rdata_next[6:0] = targ_addr_2_static_addr_2_qs;
         reg_rdata_next[15] = targ_addr_2_static_addr_valid_2_qs;
         reg_rdata_next[22:16] = targ_addr_2_dynamic_addr_2_qs;
         reg_rdata_next[31] = targ_addr_2_dynamic_addr_valid_2_qs;
       end
 
-      racl_addr_hit_read[165]: begin
+      racl_addr_hit_read[168]: begin
         reg_rdata_next[6:0] = targ_addr_3_static_addr_3_qs;
         reg_rdata_next[15] = targ_addr_3_static_addr_valid_3_qs;
         reg_rdata_next[22:16] = targ_addr_3_dynamic_addr_3_qs;
         reg_rdata_next[31] = targ_addr_3_dynamic_addr_valid_3_qs;
       end
 
-      racl_addr_hit_read[166]: begin
+      racl_addr_hit_read[169]: begin
         reg_rdata_next[15:0] = targ_char_0_pid_hi_0_qs;
         reg_rdata_next[23:16] = targ_char_0_dcr_0_qs;
         reg_rdata_next[31:24] = targ_char_0_bcr_0_qs;
       end
 
-      racl_addr_hit_read[167]: begin
+      racl_addr_hit_read[170]: begin
         reg_rdata_next[15:0] = targ_char_1_pid_hi_1_qs;
         reg_rdata_next[23:16] = targ_char_1_dcr_1_qs;
         reg_rdata_next[31:24] = targ_char_1_bcr_1_qs;
       end
 
-      racl_addr_hit_read[168]: begin
+      racl_addr_hit_read[171]: begin
         reg_rdata_next[15:0] = targ_char_2_pid_hi_2_qs;
         reg_rdata_next[23:16] = targ_char_2_dcr_2_qs;
         reg_rdata_next[31:24] = targ_char_2_bcr_2_qs;
       end
 
-      racl_addr_hit_read[169]: begin
+      racl_addr_hit_read[172]: begin
         reg_rdata_next[15:0] = targ_char_3_pid_hi_3_qs;
         reg_rdata_next[23:16] = targ_char_3_dcr_3_qs;
         reg_rdata_next[31:24] = targ_char_3_bcr_3_qs;
       end
 
-      racl_addr_hit_read[170]: begin
+      racl_addr_hit_read[173]: begin
         reg_rdata_next[31:0] = targ_pid_lo_0_qs;
       end
 
-      racl_addr_hit_read[171]: begin
+      racl_addr_hit_read[174]: begin
         reg_rdata_next[31:0] = targ_pid_lo_1_qs;
       end
 
-      racl_addr_hit_read[172]: begin
+      racl_addr_hit_read[175]: begin
         reg_rdata_next[31:0] = targ_pid_lo_2_qs;
       end
 
-      racl_addr_hit_read[173]: begin
+      racl_addr_hit_read[176]: begin
         reg_rdata_next[31:0] = targ_pid_lo_3_qs;
       end
 
-      racl_addr_hit_read[174]: begin
+      racl_addr_hit_read[177]: begin
         reg_rdata_next[2:0] = targ_caps_0_vtcap1_type_0_qs;
         reg_rdata_next[4] = targ_caps_0_vtcap1_side_fx_0_qs;
         reg_rdata_next[5] = targ_caps_0_vtcap1_shared_det_0_qs;
@@ -22118,7 +22614,7 @@ module i3c_reg_top
         reg_rdata_next[12:11] = targ_caps_0_vtcap2_bus_ctx_0_qs;
       end
 
-      racl_addr_hit_read[175]: begin
+      racl_addr_hit_read[178]: begin
         reg_rdata_next[2:0] = targ_caps_1_vtcap1_type_1_qs;
         reg_rdata_next[4] = targ_caps_1_vtcap1_side_fx_1_qs;
         reg_rdata_next[5] = targ_caps_1_vtcap1_shared_det_1_qs;
@@ -22127,7 +22623,7 @@ module i3c_reg_top
         reg_rdata_next[12:11] = targ_caps_1_vtcap2_bus_ctx_1_qs;
       end
 
-      racl_addr_hit_read[176]: begin
+      racl_addr_hit_read[179]: begin
         reg_rdata_next[2:0] = targ_caps_2_vtcap1_type_2_qs;
         reg_rdata_next[4] = targ_caps_2_vtcap1_side_fx_2_qs;
         reg_rdata_next[5] = targ_caps_2_vtcap1_shared_det_2_qs;
@@ -22136,7 +22632,7 @@ module i3c_reg_top
         reg_rdata_next[12:11] = targ_caps_2_vtcap2_bus_ctx_2_qs;
       end
 
-      racl_addr_hit_read[177]: begin
+      racl_addr_hit_read[180]: begin
         reg_rdata_next[2:0] = targ_caps_3_vtcap1_type_3_qs;
         reg_rdata_next[4] = targ_caps_3_vtcap1_side_fx_3_qs;
         reg_rdata_next[5] = targ_caps_3_vtcap1_shared_det_3_qs;
@@ -22145,7 +22641,7 @@ module i3c_reg_top
         reg_rdata_next[12:11] = targ_caps_3_vtcap2_bus_ctx_3_qs;
       end
 
-      racl_addr_hit_read[178]: begin
+      racl_addr_hit_read[181]: begin
         reg_rdata_next[1:0] = targ_info_0_as_0_qs;
         reg_rdata_next[3] = targ_info_0_endxfer_wr_nack_0_qs;
         reg_rdata_next[4] = targ_info_0_endxfer_wr_early_term_0_qs;
@@ -22155,7 +22651,7 @@ module i3c_reg_top
         reg_rdata_next[13] = targ_info_0_endxfer_cand_crc_early_0_qs;
       end
 
-      racl_addr_hit_read[179]: begin
+      racl_addr_hit_read[182]: begin
         reg_rdata_next[1:0] = targ_info_1_as_1_qs;
         reg_rdata_next[3] = targ_info_1_endxfer_wr_nack_1_qs;
         reg_rdata_next[4] = targ_info_1_endxfer_wr_early_term_1_qs;
@@ -22165,7 +22661,7 @@ module i3c_reg_top
         reg_rdata_next[13] = targ_info_1_endxfer_cand_crc_early_1_qs;
       end
 
-      racl_addr_hit_read[180]: begin
+      racl_addr_hit_read[183]: begin
         reg_rdata_next[1:0] = targ_info_2_as_2_qs;
         reg_rdata_next[3] = targ_info_2_endxfer_wr_nack_2_qs;
         reg_rdata_next[4] = targ_info_2_endxfer_wr_early_term_2_qs;
@@ -22175,7 +22671,7 @@ module i3c_reg_top
         reg_rdata_next[13] = targ_info_2_endxfer_cand_crc_early_2_qs;
       end
 
-      racl_addr_hit_read[181]: begin
+      racl_addr_hit_read[184]: begin
         reg_rdata_next[1:0] = targ_info_3_as_3_qs;
         reg_rdata_next[3] = targ_info_3_endxfer_wr_nack_3_qs;
         reg_rdata_next[4] = targ_info_3_endxfer_wr_early_term_3_qs;
@@ -22185,40 +22681,40 @@ module i3c_reg_top
         reg_rdata_next[13] = targ_info_3_endxfer_cand_crc_early_3_qs;
       end
 
-      racl_addr_hit_read[182]: begin
+      racl_addr_hit_read[185]: begin
         reg_rdata_next[6:0] = targ_max_rdwr_0_maxrd_0_qs;
         reg_rdata_next[15:8] = targ_max_rdwr_0_maxwr_0_qs;
         reg_rdata_next[27:16] = targ_max_rdwr_0_rdturn_val_0_qs;
         reg_rdata_next[31:28] = targ_max_rdwr_0_rdturn_scale_0_qs;
       end
 
-      racl_addr_hit_read[183]: begin
+      racl_addr_hit_read[186]: begin
         reg_rdata_next[6:0] = targ_max_rdwr_1_maxrd_1_qs;
         reg_rdata_next[15:8] = targ_max_rdwr_1_maxwr_1_qs;
         reg_rdata_next[27:16] = targ_max_rdwr_1_rdturn_val_1_qs;
         reg_rdata_next[31:28] = targ_max_rdwr_1_rdturn_scale_1_qs;
       end
 
-      racl_addr_hit_read[184]: begin
+      racl_addr_hit_read[187]: begin
         reg_rdata_next[6:0] = targ_max_rdwr_2_maxrd_2_qs;
         reg_rdata_next[15:8] = targ_max_rdwr_2_maxwr_2_qs;
         reg_rdata_next[27:16] = targ_max_rdwr_2_rdturn_val_2_qs;
         reg_rdata_next[31:28] = targ_max_rdwr_2_rdturn_scale_2_qs;
       end
 
-      racl_addr_hit_read[185]: begin
+      racl_addr_hit_read[188]: begin
         reg_rdata_next[6:0] = targ_max_rdwr_3_maxrd_3_qs;
         reg_rdata_next[15:8] = targ_max_rdwr_3_maxwr_3_qs;
         reg_rdata_next[27:16] = targ_max_rdwr_3_rdturn_val_3_qs;
         reg_rdata_next[31:28] = targ_max_rdwr_3_rdturn_scale_3_qs;
       end
 
-      racl_addr_hit_read[186]: begin
+      racl_addr_hit_read[189]: begin
         reg_rdata_next[7:0] = targext_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = targext_extcap_header_cap_length_qs;
       end
 
-      racl_addr_hit_read[187]: begin
+      racl_addr_hit_read[190]: begin
         reg_rdata_next[7:0] = term_extcap_header_cap_id_qs;
         reg_rdata_next[23:8] = term_extcap_header_cap_length_qs;
       end
@@ -22239,10 +22735,10 @@ module i3c_reg_top
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
-      addr_hit[11]: begin
-        reg_busy_sel = reset_det_ctrl_busy;
-      end
       addr_hit[12]: begin
+        reg_busy_sel = reset_det_control_busy;
+      end
+      addr_hit[13]: begin
         reg_busy_sel = reset_det_status_busy;
       end
       default: begin
