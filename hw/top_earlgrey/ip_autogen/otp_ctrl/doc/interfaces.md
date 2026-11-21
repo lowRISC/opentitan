@@ -1,19 +1,18 @@
 # Hardware Interfaces
 
-## Parameters
+## Clocks and Resets
 
-The following table lists the instantiation parameters of OTP.
-Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
+- `clk_i`/`rst_ni` clock the whole controller apart from the EDN interface.
+  The macro interface and the life cycle controller interfaces are synchronous to `clk_i`, so the macro interface backend (`rram_ctrl` in this top) and `lc_ctrl` must be clocked and reset by the same clock and reset.
+- `clk_edn_i`/`rst_edn_ni` clock the EDN interface and must be the clock and reset of the EDN.
 
-Parameter                   | Default (Max) | Top Earlgrey | Description
-----------------------------|---------------|--------------|---------------
-`AlertAsyncOn`              | 2'b11         | 2'b11        |
-`RndCnstLfsrSeed`           | (see RTL)     | (see RTL)    | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-`RndCnstLfsrPerm`           | (see RTL)     | (see RTL)    | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
-`RndCnstKey`                | (see RTL)     | (see RTL)    | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstDigestConst`        | (see RTL)     | (see RTL)    | Random digest finalization constants, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstDigestIV`           | (see RTL)     | (see RTL)    | Random digest initialization vectors, to be used in the [scrambling datapath](#scrambling-datapath).
-`RndCnstRawUnlockToken`     | (see RTL)     | (see RTL)    | Global RAW unlock token to be used for the first life cycle transition. See also [conditional life cycle transitions](../../../../ip/lc_ctrl/doc/theory_of_operation.md#conditional-transitions).
+All crossings into `clk_i` use synchronization primitives.
+The EDN interface is crossed with `prim_edn_req`.
+The initialization request from the power manager is synchronized with `prim_flop_2sync`.
+The life cycle inputs are synchronized with `prim_lc_sync`.
+The key interfaces to the SRAM, OTBN and NVM scramblers and the key manager outputs are synchronous to `clk_i`, and the receiving IP synchronizes them, as described below.
+
+## Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`otp_ctrl`** has the following hardware interfaces defined
