@@ -1,18 +1,21 @@
 # Hardware Interfaces
 
-### Parameters
+### Clocks and Resets
 
-Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
+The life cycle controller has two clock domains, plus the JTAG clock when the JTAG TAP is used.
 
-Parameter                        | Default (Max)  | Top Earlgrey   | Description
----------------------------------|----------------|----------------|---------------
-`AlertAsyncOn`                   | 2'b11          | 2'b11          |
-`IdcodeValue`                    | `32'h00000001` | `32'h00000001` | Idcode for the LC JTAG TAP.
-`RndCnstLcKeymgrDivInvalid`      | (see RTL)      | (see RTL)      | Diversification value used for all invalid life cycle states.
-`RndCnstLcKeymgrDivTestUnlocked` | (see RTL)      | (see RTL)      | Diversification value used for the TEST_UNLOCKED* life cycle states.
-`RndCnstLcKeymgrDivDev`          | (see RTL)      | (see RTL)      | Diversification value used for the DEV life cycle state.
-`RndCnstLcKeymgrDivProduction`   | (see RTL)      | (see RTL)      | Diversification value used for the PROD/PROD_END life cycle states.
-`RndCnstLcKeymgrDivRma`          | (see RTL)      | (see RTL)      | Diversification value used for the RMA life cycle state.
+- `clk_i`/`rst_ni` clock the whole controller apart from the KMAC interface.
+  The `otp_ctrl` interfaces and the escalation receivers are synchronous to `clk_i`, so `otp_ctrl` and the alert handler must be clocked and reset by the same clock and reset.
+  Earl Grey uses the `io_div4` clock and its life cycle reset (`lc_io_div4`).
+- `clk_kmac_i`/`rst_kmac_ni` clock the KMAC interface and must be the clock and reset of KMAC.
+  Earl Grey uses the `main` clock and its life cycle reset (`lc`).
+- `jtag_i.tck` clocks the JTAG TAP if `UseDmiInterface = 1'b0`.
+
+All crossings into `clk_i` use synchronization primitives.
+The KMAC interface is crossed with `prim_sync_reqack_data`.
+The JTAG TAP is crossed inside `dmi_jtag` with `prim_fifo_async_simple`.
+The initialization request from the power manager is synchronized with `prim_flop_2sync`.
+The life cycle inputs, such as the clock bypass and the RMA acknowledgements, are synchronized with `prim_lc_sync`.
 
 ### Signals
 

@@ -2,8 +2,8 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/lc_ctrl/data/lc_ctrl.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`lc_ctrl_volatile_unlock_enabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.1.1 | D3, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/code.svg) |
- [`lc_ctrl_volatile_unlock_disabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.1.1 | D3, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/code.svg) |
+ [`lc_ctrl_volatile_unlock_enabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.2.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_enabled/code.svg) |
+ [`lc_ctrl_volatile_unlock_disabled`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.2.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/lc_ctrl_volatile_unlock_disabled/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/lc_ctrl/index.html).
 
@@ -32,6 +32,39 @@ The life cycle controller provides the following features:
 - Dedicated concurrent decoding of the redundant life cycle state and broadcasting of redundantly encoded life cycle qualification signals (e.g., to enable DFT features or the main processor).
 - A token hashing and matching mechanism to guard important life cycle transitions.
 - An escalation receiver for the alert subsystem, which allows to invalidate the life cycle state as part of an escalation sequence (see also alert handler subsystem).
+
+## Supported Parameter Sets
+
+The following table lists the instantiation parameters of the life cycle controller.
+Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
+
+Parameter                        | Default             | Top Earlgrey                       | Description
+---------------------------------|---------------------|------------------------------------|---------------
+`AlertAsyncOn`                   | `{NumAlerts{1'b1}}` | Set by topgen                      | Adds synchronizers to the alert senders for an alert handler on another clock.
+`AlertSkewCycles`                | `1`                 | `1`                                | Cycles of skew tolerated on the differential alert signals, set by topgen.
+`SiliconCreatorId`               | `'0`                | `16'h4001`                         | Silicon creator ID exposed in the `HW_REVISION0` CSR.
+`ProductId`                      | `'0`                | `16'h0010`                         | Product ID exposed in the `HW_REVISION0` CSR.
+`RevisionId`                     | `'0`                | `8'h01`                            | Revision ID exposed in the `HW_REVISION1` CSR.
+`IdcodeValue`                    | `32'h00000001`      | `jtag_id_pkg::LC_CTRL_JTAG_IDCODE` | Idcode for the LC JTAG TAP.
+`UseDmiInterface`                | `1'b0`              | `1'b0`                             | Selects the TL-UL DMI port (`dmi_tl`) instead of the JTAG TAP to access the CSRs from the debug side.
+`NumRmaAckSigs`                  | `2`                 | `2`                                | Number of RMA acknowledge inputs, set by topgen.
+`SecVolatileRawUnlockEn`         | `0`                 | `0`                                | Enables the volatile RAW unlock feature. This is a feature for test chips only and must be disabled in production devices.
+`EscNumSeverities`               | `4`                 | `4`                                | Number of escalation severities of the alert handler, set by topgen.
+`EscPingCountWidth`              | `16`                | `16`                               | Width of the escalation ping counter of the alert handler, set by topgen.
+`RndCnstLcKeymgrDivInvalid`      | (see RTL)           | (see RTL)                          | Diversification value used for all invalid life cycle states.
+`RndCnstLcKeymgrDivTestUnlocked` | (see RTL)           | (see RTL)                          | Diversification value used for the TEST_UNLOCKED* life cycle states.
+`RndCnstLcKeymgrDivDev`          | (see RTL)           | (see RTL)                          | Diversification value used for the DEV life cycle state.
+`RndCnstLcKeymgrDivProduction`   | (see RTL)           | (see RTL)                          | Diversification value used for the PROD/PROD_END life cycle states.
+`RndCnstLcKeymgrDivRma`          | (see RTL)           | (see RTL)                          | Diversification value used for the RMA life cycle state.
+`RndCnstInvalidTokens`           | (see RTL)           | (see RTL)                          | Random values used for the invalid entries of the token mux.
+
+The block-level testbench verifies the following parameter sets, which are signed off.
+
+- `UseDmiInterface = 1'b0` and `NumRmaAckSigs = 2`, with `SecVolatileRawUnlockEn` set to `0` and to `1`.
+  This is the configuration of Earl Grey, which uses `SecVolatileRawUnlockEn = 0`.
+- `UseDmiInterface = 1'b1` and `NumRmaAckSigs = 1`, with `SecVolatileRawUnlockEn` set to `0` and to `1`.
+
+The ID, IDCODE and random netlist constant parameters do not change the architecture, so any value of them is supported.
 
 ## Prelude - Why Not Software?
 
