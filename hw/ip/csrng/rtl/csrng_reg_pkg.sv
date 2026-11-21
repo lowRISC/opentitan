@@ -143,6 +143,10 @@ package csrng_reg_pkg;
   } csrng_reg2hw_gen_abort_mreg_t;
 
   typedef struct packed {
+    logic [15:0] q;
+  } csrng_reg2hw_hw_exc_sts_reg_t;
+
+  typedef struct packed {
     logic [4:0]  q;
     logic        qe;
   } csrng_reg2hw_err_code_test_reg_t;
@@ -369,19 +373,20 @@ package csrng_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [211:208]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [207:204]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [203:196]
-    csrng_reg2hw_alert_test_reg_t alert_test; // [195:192]
-    csrng_reg2hw_ctrl_reg_t ctrl; // [191:172]
-    csrng_reg2hw_cmd_req_reg_t cmd_req; // [171:139]
-    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [138:106]
-    csrng_reg2hw_genbits_reg_t genbits; // [105:73]
-    csrng_reg2hw_int_state_read_enable_reg_t int_state_read_enable; // [72:70]
-    csrng_reg2hw_int_state_num_reg_t int_state_num; // [69:65]
-    csrng_reg2hw_int_state_val_reg_t int_state_val; // [64:31]
-    csrng_reg2hw_fips_force_reg_t fips_force; // [30:28]
-    csrng_reg2hw_gen_abort_mreg_t [2:0] gen_abort; // [27:16]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [227:224]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [223:220]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [219:212]
+    csrng_reg2hw_alert_test_reg_t alert_test; // [211:208]
+    csrng_reg2hw_ctrl_reg_t ctrl; // [207:188]
+    csrng_reg2hw_cmd_req_reg_t cmd_req; // [187:155]
+    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [154:122]
+    csrng_reg2hw_genbits_reg_t genbits; // [121:89]
+    csrng_reg2hw_int_state_read_enable_reg_t int_state_read_enable; // [88:86]
+    csrng_reg2hw_int_state_num_reg_t int_state_num; // [85:81]
+    csrng_reg2hw_int_state_val_reg_t int_state_val; // [80:47]
+    csrng_reg2hw_fips_force_reg_t fips_force; // [46:44]
+    csrng_reg2hw_gen_abort_mreg_t [2:0] gen_abort; // [43:32]
+    csrng_reg2hw_hw_exc_sts_reg_t hw_exc_sts; // [31:16]
     csrng_reg2hw_err_code_test_reg_t err_code_test; // [15:10]
     csrng_reg2hw_int_state_write_enable_reg_t int_state_write_enable; // [9:7]
     csrng_reg2hw_int_state_halt_enable_reg_t int_state_halt_enable; // [6:4]
