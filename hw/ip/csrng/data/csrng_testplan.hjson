@@ -94,6 +94,24 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: gen_additional_data
+      desc: '''
+            Verify that a Generate command updates the internal state with its additional data
+            before generating, only when additional data is provided (clen is not zero).
+
+            **Stimulus**:
+            - For each instance, send Generate commands with clen = 0 and with clen > 0, using
+              random and all-zero additional data, and with glen = 1 and glen > 1.
+
+            **Checks**:
+            - The generated bits and the internal state after the command match the model,
+              which runs the initial update only when clen is not zero, including when the
+              additional data is all-zero.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
@@ -205,6 +223,16 @@
       desc: '''
             Covers FIPS/CC bit in genbits_vld register
             genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            '''
+    }
+    {
+      name: csrng_gen_additional_data_cg
+      desc: '''
+            Covers Generate commands per instance by their additional data:
+            - clen zero
+            - clen non-zero with random additional data
+            - clen non-zero with all-zero additional data
+            Crossed with glen = 1 and glen > 1.
             '''
     }
   ]
