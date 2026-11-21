@@ -18,6 +18,8 @@
 //               a miss match an integrity error is signalled
 //
 
+`include "prim_assert.sv"
+
 module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
   input  logic                                       clk_i,
   input  logic                                       rst_ni,
