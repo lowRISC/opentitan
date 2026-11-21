@@ -88,8 +88,8 @@ Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
 Security      | [SEC_CM_RND_CNST][]          | Done        |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
 Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
+Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
