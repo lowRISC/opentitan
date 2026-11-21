@@ -174,6 +174,9 @@ static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
                                       ? kTopEarlgreyPinmuxInselIob7
                                       : kTopEarlgreyPinmuxInselIoc0;
+  dif_pinmux_index_t wakeup_pad = kDeviceType == kDeviceSimDV
+                                      ? kTopEarlgreyMuxedPadsIob7
+                                      : kTopEarlgreyMuxedPadsIoc0;
 #else
 #error Unsupported top, please provide a pin configuration
 #endif
@@ -193,7 +196,7 @@ static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
                      ? kDifPinmuxPadAttrPullResistorEnable
                      : 0};
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
-        &pinmux, wakeup_pin, kDifPinmuxPadKindMio, in_attr, &out_attr));
+        &pinmux, wakeup_pad, kDifPinmuxPadKindMio, in_attr, &out_attr));
   }
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, kPinmuxWkupDetector5,
                                                  detector_cfg));
