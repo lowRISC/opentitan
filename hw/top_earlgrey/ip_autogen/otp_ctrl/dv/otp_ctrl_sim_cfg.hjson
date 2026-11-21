@@ -108,6 +108,12 @@
     }
 
     {
+      name: otp_ctrl_sw_window_access
+      uvm_test_seq: otp_ctrl_sw_window_access_vseq
+      reseed: 5
+    }
+
+    {
       name: otp_ctrl_init_fail
       uvm_test_seq: otp_ctrl_init_fail_vseq
       reseed: 300

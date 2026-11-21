@@ -331,6 +331,8 @@ It then proceeds to reading out the digest value (if available and without ECC c
 Write access through the DAI will be locked in case the digest is set to a non-zero value.
 Also, read access through the DAI and the CSR window can be locked at runtime via a CSR.
 Read transactions through the CSR window will error out if they are out of bounds, or if read access is locked.
+The CSR window only maps the unbuffered partitions.
+A read through the window at an address in a buffered partition, in the life cycle partition or past the last partition gets a bus error, and does not change any status or error state.
 
 Note that unrecoverable OTP errors, ECC failures in the digest register or external escalation via `lc_escalate_en` will move the partition controller into a terminal error state.
 
