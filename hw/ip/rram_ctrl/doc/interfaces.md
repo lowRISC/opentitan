@@ -1,5 +1,44 @@
 # Interfaces
 
+## Parameters
+
+The following table lists the instantiation parameters of the RRAM controller.
+
+Parameter         | Default             | Top Earlgrey        | Description
+------------------|---------------------|---------------------|---------------
+`AlertAsyncOn`    | `{NumAlerts{1'b1}}` | Set by topgen       | Adds synchronizers to the alert senders for an alert handler on another clock.
+`AlertSkewCycles` | `1`                 | `1`                 | Cycles of skew tolerated on the differential alert signals, set by topgen.
+`RndCnstAddrKey`  | Random              | Random              | Default address scrambling key, used until the key from `otp_ctrl` is loaded.
+`RndCnstDataKey`  | Random              | Random              | Default data scrambling key, used until the key from `otp_ctrl` is loaded.
+`RndCnstAllSeeds` | Random              | Random              | Default creator and owner seeds, used until the seeds are read from the info pages.
+`RndCnstLfsrSeed` | Random              | Random              | Initial seed of the LFSR.
+`RndCnstLfsrPerm` | Random              | Random              | Permutation applied to the LFSR output.
+`SecScrambleEn`   | `1'b1`              | `1'b1`              | Enables the RRAM scrambling logic.
+`WrFifoDepth`     | `16`                | `4`                 | Depth of the controller write FIFO. Must not exceed `MaxFifoDepth` (16).
+`RdFifoDepth`     | `16`                | `16`                | Depth of the controller read FIFO. Must not exceed `MaxFifoDepth` (16).
+
+## Supported Parameter Sets
+
+Only the parameter set that Earl Grey instantiates, listed in the Top Earlgrey column above, is verified and signed off.
+The block-level testbench instantiates the design with `WrFifoDepth = 4` and `RdFifoDepth = 16` and leaves `SecScrambleEn` at its default, so it verifies the same set.
+The random netlist constants do not change the architecture, so any value of them is supported.
+
+## Clocks and Resets
+
+The RRAM controller has two clock domains.
+
+- `clk_i`/`rst_ni` clock the whole controller apart from the `otp_ctrl` interfaces.
+  The `rram_macro_o`/`rram_macro_i` interface is synchronous to `clk_i`, so `rram_macro` must be clocked and reset by the same clock and reset as `rram_ctrl`.
+  Earl Grey uses the `main` clock and its life cycle reset (`lc`).
+- `clk_otp_i`/`rst_otp_ni` clock the `otp_macro_i`/`otp_macro_o` and `otp_key_o`/`otp_key_i` interfaces.
+  They must be the clock and reset of `otp_ctrl`.
+  Earl Grey uses the `io_div4` clock and its life cycle reset (`lc_io_div4`).
+
+All crossings between the two domains use synchronization primitives.
+`rram_ctrl_otp` crosses the OTP macro interface with a `prim_fifo_async` in each direction.
+`rram_ctrl_lcmgr` crosses the OTP key requests with a `prim_sync_reqack` for the address key and another one for the data key.
+The life cycle inputs are asynchronous to `clk_i` and are synchronized with `prim_lc_sync`.
+
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/rram_ctrl/data/rram_ctrl.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rram_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
