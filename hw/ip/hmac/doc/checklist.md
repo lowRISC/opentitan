@@ -35,24 +35,24 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Done        | Livestream was added
-Documentation | [BLOCK_DIAGRAM][]         | Done        |
-Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [NEW_FEATURES][]          | Done        | `keymgr_dpe` key sideloading (#31047, #31204, #31388, #31367).
+Documentation | [BLOCK_DIAGRAM][]         | Done        | Added new sideloading port to the block diagrams.
+Documentation | [DOC_INTERFACE][]         | Done        | Added comportability integration documentation for the new sideloading port.
 Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
 Documentation | [MISSING_FUNC][]          | N/A         |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
-RTL           | [PORT_FROZEN][]           | Done        | Interrupt port was revised.
-RTL           | [ARCHITECTURE_FROZEN][]   | Done        | Livestream was added
-RTL           | [REVIEW_TODO][]           | Done        | Removed irrelevant TODOs and create [#761][]
+RTL           | [PORT_FROZEN][]           | Done        | `keymgr_dpe` sideloading port was added
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        |
 RTL           | [STYLE_X][]               | Done        |
 RTL           | [CDC_SYNCMACRO][]         | N/A         |
 Code Quality  | [LINT_PASS][]             | Done        |
-Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [AREA_CHECK][]            | Done        |
-Code Quality  | [TIMING_CHECK][]          | Done        | Fmax @ 50MHz on NexysVideo
-Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
+Code Quality  | [CDC_SETUP][]             | N/A         |
+Code Quality  | [RDC_SETUP][]             | N/A         |
+Code Quality  | [AREA_CHECK][]            | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [TIMING_CHECK][]          | Waived      | No block-level flow available - waived to top-level signoff.
+Security      | [SEC_CM_DOCUMENTED][]     | DONE        | New `KEY.SIDELOAD` countermeasure is documented.
 
 [#761]: https://github.com/loWRISC/opentitan/issues/761
 

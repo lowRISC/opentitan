@@ -48,9 +48,10 @@
     {
       version:            "2.1.0",
       life_stage:         "L1",
-      design_stage:       "D1",
+      design_stage:       "D2",
       verification_stage: "V1",
       dif_stage:          "S1",
+      commit_id:          "b4c9102e5f29cc6191eea9e8559b8816c39da013",
       notes:              "",
     }
   ]
