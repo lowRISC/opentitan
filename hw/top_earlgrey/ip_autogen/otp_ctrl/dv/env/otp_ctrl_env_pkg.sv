@@ -289,6 +289,23 @@ package otp_ctrl_env_pkg;
     return dai_addr + SW_WINDOW_BASE_ADDR;
   endfunction
 
+  // Return the OTP byte address just past the end of a partition
+  //
+  // The sum is widened to 32 bits because the end of the last partition can be the size of the
+  // OTP, which does not fit in the OtpByteAddrWidth bits of the offset and size fields.
+  function automatic int unsigned get_part_end_addr(int unsigned part_idx);
+    return 32'(PartInfo[part_idx].offset + PartInfo[part_idx].size);
+  endfunction : get_part_end_addr
+
+  // Return true if the software window maps dai_addr to a partition
+  //
+  // Only the unbuffered partitions are reachable through the window. An address in a buffered
+  // partition, in the life cycle partition or past the last partition is not mapped, and a read
+  // there gets an error response.
+  function automatic bit is_sw_window_mapped(bit [TL_AW-1:0] dai_addr);
+    return dai_addr < get_part_end_addr(NumPart - 1) && is_sw_part(dai_addr);
+  endfunction : is_sw_window_mapped
+
   function automatic bit [TL_DW-1:0] normalize_dai_addr(bit [TL_DW-1:0] dai_addr);
     normalize_dai_addr = (is_secret(dai_addr) || is_digest(dai_addr)) ? dai_addr >> 3 << 3 :
                                                                         dai_addr >> 2 << 2;
