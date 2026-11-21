@@ -5,7 +5,7 @@
 load("@bazel_skylib//lib:types.bzl", "types")
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "OpenTitanBinaryInfo", "get_one_binary_file")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files")
-load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "rram_otp_image")
+load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "TransformInfo", "rram_otp_image")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 # ExecEnvInfo provider fields and whether the field is required.
@@ -37,6 +37,9 @@ _FIELDS = {
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
     "slot_spec": ("attr.slot_spec", False),
+    # FIXME: maybe those should not here unconditionally but be an argument to exec_env_as_dict.
+    "kind_transform": ("attr.kind_transform", False),
+    "transform_hook": ("attr.transform_hook", False),
 }
 
 _NESTED_FIELDS = {
@@ -90,7 +93,7 @@ def exec_env_as_dict(ctx):
         "_opentitantool": tc.tools.opentitantool,
     }
     for field, (path, required) in _FIELDS.items():
-        val = getattr_path(ctx, path)
+        val = getattr_path(ctx, path, None)
         if _NESTED_FIELDS.get(field, False) and base:
             merged_val = dict(getattr(base, field) or {})
             merged_val.update(val or {})
