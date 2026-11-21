@@ -83,7 +83,7 @@ enum {
  * @return OK if the lengths match, BAD_ARGS otherwise.
  */
 static status_t check_length(size_t len, size_t expected_len) {
-  if (launder32(len) != expected_len) {
+  if (launderw(len) != launderw(expected_len)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(len, expected_len);
@@ -101,7 +101,7 @@ static status_t check_length(size_t len, size_t expected_len) {
  */
 static status_t check_shared_secret_length(
     const otcrypto_blinded_key_t *shared_secret) {
-  if (launder32(shared_secret->keyblob_length) < kMlkem1024SharedSecretBytes) {
+  if (launderw(shared_secret->keyblob_length) < kMlkem1024SharedSecretBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GE(shared_secret->keyblob_length, kMlkem1024SharedSecretBytes);

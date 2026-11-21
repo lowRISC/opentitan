@@ -71,7 +71,7 @@ static otcrypto_status_t check_unblinded_key(
                     kHardenedBoolTrue);
 
   // Length check.
-  if (key->key_length != kOtcryptoMldsa87PkBytes) {
+  if (launderw(key->key_length) != kOtcryptoMldsa87PkBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->key_length, kOtcryptoMldsa87PkBytes);
@@ -89,7 +89,7 @@ static otcrypto_status_t check_blinded_key(const otcrypto_blinded_key_t *key) {
                     kHardenedBoolTrue);
 
   // Length check.
-  if (key->keyblob_length != kOtcryptoMldsa87SkBytes) {
+  if (launderw(key->keyblob_length) != kOtcryptoMldsa87SkBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->keyblob_length, kOtcryptoMldsa87SkBytes);
@@ -106,10 +106,10 @@ static otcrypto_status_t check_byte_buf(const otcrypto_const_byte_buf_t *buf,
   HARDENED_CHECK_EQ(otcrypto_check_const_byte_buf(buf), kHardenedBoolTrue);
 
   // Length check.
-  if (buf->len > max_len) {
+  if (launderw(buf->len) > launderw(max_len)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_NE(buf->len <= max_len, 0);
+  HARDENED_CHECK_LE(buf->len, max_len);
   return OTCRYPTO_OK;
 }
 
@@ -122,16 +122,16 @@ static otcrypto_status_t check_word32_buf(
   }
   HARDENED_CHECK_EQ(otcrypto_check_const_word32_buf(buf), kHardenedBoolTrue);
   // Length check.
-  if (buf->len != len) {
+  if (launderw(buf->len) != launderw(len)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_NE(buf->len == len, 0);
+  HARDENED_CHECK_EQ(buf->len, len);
   return OTCRYPTO_OK;
 }
 
 // Check the length of the message hash mu.
 static otcrypto_status_t check_mu(const otcrypto_hash_digest_t *mu) {
-  if (mu->len != kOtcryptoMldsa87MuWords) {
+  if (launderw(mu->len) != kOtcryptoMldsa87MuWords) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(mu->len, kOtcryptoMldsa87MuWords);
@@ -190,7 +190,7 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
 
     otcrypto_status_t (*hash)(const otcrypto_const_byte_buf_t *,
                               otcrypto_hash_digest_t *) = hashes[oid_suf];
-    if (hash == NULL) {
+    if (launderw((ot_word_t)hash) == 0) {
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_NE(hash, NULL);
@@ -225,7 +225,7 @@ otcrypto_status_t compute_mu(const otcrypto_hash_digest_t *tr,
   // Absorb M'[2 : 2 + len(ctx)] = ctx.
   HARDENED_TRY(otcrypto_sha3_update(&sha3_ctx, context));
 
-  if (hash_mode == kOtcryptoMldsaHashModePure) {
+  if (launder32(hash_mode) == kOtcryptoMldsaHashModePure) {
     HARDENED_CHECK_EQ(hash_mode, kOtcryptoMldsaHashModePure);
 
     // Absorb M'[2 + len(ctx) : 2 + len(ctx) + len(msg)] = msg.
