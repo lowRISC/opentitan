@@ -94,6 +94,33 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: gen_abort
+      desc: '''
+            Verify that a Generate command in progress can be aborted via GEN_ABORT.
+
+            **Stimulus**:
+            - Start a Generate command on an instance and write GEN_ABORT at a random point of
+              it: for the SW instance after it stops reading GENBITS, for a HW instance either
+              while it is halted via INT_STATE_HALT or at a random time without halting it.
+            - After an abort, clear GEN_ABORT_STATUS, send further commands to the instance, then
+              instantiate it again.
+            - Write GEN_ABORT with no Generate command in progress, with invalid kMultiBitBool
+              values, and with GEN_ABORT_REGWEN cleared.
+
+            **Checks**:
+            - Based on when GEN_ABORT was written, predict whether the Generate command is
+              aborted or completes, and check the response status, the genbits delivered,
+              GEN_ABORT, GEN_ABORT_STATUS, INT_STATE_STS, HW_EXC_STS and the interrupts against
+              it.
+            - An aborted instance rejects commands until it is instantiated again.
+            - GEN_ABORT writes that cannot abort a Generate command are ignored and raise the
+              corresponding recoverable alert, if any.
+            - Commands on the other instances complete as normal.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
@@ -205,6 +232,14 @@
       desc: '''
             Covers FIPS/CC bit in genbits_vld register
             genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            '''
+    }
+    {
+      name: csrng_gen_abort_cg
+      desc: '''
+            Covers Generate command aborts: the instance, whether a Generate command was in
+            progress, whether the instance was halted, and how many blocks were left (all, some,
+            none) when the abort was accepted.
             '''
     }
   ]
