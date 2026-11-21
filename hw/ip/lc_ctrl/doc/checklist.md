@@ -41,7 +41,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Done        |
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [DOC_INTEGRATION_D2][]    | Done        |
 Documentation | [MISSING_FUNC][]          | Done        |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
@@ -60,7 +60,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         ../../../../doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: ../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    ../../../../doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          ../../../../doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        ../../../../doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      ../../../../doc/project_governance/checklist/README.md#feature_complete
