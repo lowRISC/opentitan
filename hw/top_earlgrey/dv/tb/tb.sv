@@ -486,35 +486,22 @@ module tb;
    localparam bit RomIntegrityCheckDisabled = 0;
 `endif
 
-    wire clk, rst_n;
-    assign clk = `ROM_CTRL_PATH.clk_i;
-    assign rst_n = `ROM_CTRL_PATH.rst_ni;
-
-    clk_rst_if  clk_rst_if (.clk(clk), .rst_n(rst_n));
-    tl_if       rom_tl_if (.clk(clk), .rst_n(rst_n));
-    tl_if       regs_tl_if (.clk(clk), .rst_n(rst_n));
-
-    assign rom_tl_if.if_mode = Monitor;
-    assign rom_tl_if.h2d = `ROM_CTRL_PATH.rom_tl_i;
-    assign rom_tl_if.d2h = `ROM_CTRL_PATH.rom_tl_o;
-
-    assign regs_tl_if.if_mode = Monitor;
-    assign regs_tl_if.h2d = `ROM_CTRL_PATH.regs_tl_i;
-    assign regs_tl_if.d2h = `ROM_CTRL_PATH.regs_tl_o;
-
-    wire kmac_pkg::app_rsp_t kmac_data_in;
-    wire kmac_pkg::app_req_t kmac_data_out;
-    assign kmac_data_in  = `ROM_CTRL_PATH.kmac_data_i;
-    assign kmac_data_out = `ROM_CTRL_PATH.kmac_data_o;
-
-    // Note: The req and rsp inout ports get driven with kmac_data_in/kmac_data_out from the design,
-    //       and the interface should be in Monitor mode. We don't assign kmac_app_if.if_mode here:
-    //       this will be set by the build phase of the kmac_app_*_agent that we instantiate.
-    kmac_app_if u_app_if (.clk_i (clk), .rst_ni (rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
-
     bind `PD_MAIN_PATH.u_rom_ctrl
       rom_ctrl_bound_if #(.Bound(1), .SecDisableScrambling(SecDisableScrambling))
-      u_bound_if (.clk_i, .rst_ni);
+      u_bound_if (
+        .clk           (clk_i),
+        .rst_n         (rst_ni),
+        .rom_h2d       (rom_tl_i),
+        .rom_d2h       (rom_tl_o),
+        .regs_h2d      (regs_tl_i),
+        .regs_d2h      (regs_tl_o),
+        .alert_rx      (alert_rx_i),
+        .alert_tx      (alert_tx_o),
+        .pwrmgr_data   (pwrmgr_data_o),
+        .keymgr_data   (keymgr_data_o),
+        .kmac_req_data (kmac_data_o),
+        .kmac_rsp_data (kmac_data_i)
+      );
 
     // We only bind in the FSM interface if scrambling is enabled (otherwise there won't actually be
     // an FSM module). If DISABLE_ROM_INTEGRITY_CHECK is not defined, the
@@ -547,23 +534,8 @@ module tb;
       automatic string rom_reg_block_name = "rom_ctrl_rom_reg_block";
       automatic string regs_reg_block_name = "rom_ctrl_regs_reg_block";
 
-      uvm_config_db#(virtual clk_rst_if)::set(null, EnvPath, "clk_rst_vif", clk_rst_if);
       uvm_config_db#(virtual rom_ctrl_if)::set(null, EnvPath, "rom_ctrl_vif",
                                                `ROM_CTRL_PATH.u_bound_if.gen_bound.u_rom_ctrl_if);
-
-      uvm_config_db#(virtual tl_if)::set(null, {EnvPath, ".m_tl_agent_", rom_reg_block_name},
-                                         "vif", rom_tl_if);
-      uvm_config_db#(virtual tl_if)::set(null, {EnvPath, ".m_tl_agent_", regs_reg_block_name},
-                                         "vif", regs_tl_if);
-      uvm_config_db#(virtual clk_rst_if)::set(null, EnvPath, {"clk_rst_vif_", rom_reg_block_name},
-                                              clk_rst_if);
-
-      uvm_config_db#(virtual kmac_app_if)::set(null, {EnvPath, ".m_kmac_agent"}, "vif", u_app_if);
-
-      // Connect rom_ctrl's alert interface to the passive environment (which will instantiate an
-      // extra alert agent and run it in passive mode).
-      uvm_config_db#(virtual alert_if)::set(null, {EnvPath, ".m_alert_agent_fatal"},
-                                            "vif", alert_if[TopEarlgreyAlertIdRomCtrlFatal]);
 
       // Pass a flag that tells the environment whether to expect rom_ctrl_fsm_vif.
       uvm_config_db#(bit)::set(null, EnvPath,

@@ -17,23 +17,6 @@ module tb;
   // for this build.
   `include "rom_ctrl_bkdr_util_hier.svh"
 
-  wire                        clk, rst_n;
-  bit                         digest_cal_done;
-  wire kmac_pkg::app_rsp_t    kmac_data_in;
-  wire kmac_pkg::app_req_t    kmac_data_out;
-  rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data;
-  rom_ctrl_pkg::keymgr_data_t keymgr_data;
-  logic after_kmac_handshake;
-
-  // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
-  clk_rst_if rom_clk_rst_if(.clk(), .rst_n()); // dummy clk_rst_vif for second RAL
-  tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
-  tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req (kmac_data_out), .rsp (kmac_data_in));
-
-  `DV_ALERT_IF_CONNECT()
-
   // dut
   rom_ctrl #(
     .RndCnstScrNonce      (RND_CNST_SCR_NONCE),
@@ -41,33 +24,49 @@ module tb;
     // ROM size in bytes
     .MemSizeRom           (ROM_SIZE_BYTES)
    ) dut (
-    .clk_i                (clk),
-    .rst_ni               (rst_n),
+    // Interaction with these ports is through u_bound_if
+    .clk_i                (),
+    .rst_ni               (),
 
     .rom_cfg_i            (prim_rom_pkg::ROM_CFG_REQ_DEFAULT),
     .rom_cfg_o            (),
 
-    .rom_tl_i             (tl_rom_if.h2d),
-    .rom_tl_o             (tl_rom_if.d2h),
-
-    .regs_tl_i            (tl_if.h2d),
-    .regs_tl_o            (tl_if.d2h),
-
-    .alert_rx_i           (alert_rx),
-    .alert_tx_o           (alert_tx),
-
-    .pwrmgr_data_o        (pwrmgr_data),
-    .keymgr_data_o        (keymgr_data),
-
-    .kmac_data_i          (kmac_data_in),
-    .kmac_data_o          (kmac_data_out)
+    // Interaction with these ports is through u_bound_if
+    .rom_tl_i             (),
+    .rom_tl_o             (),
+    .regs_tl_i            (),
+    .regs_tl_o            (),
+    .alert_rx_i           (),
+    .alert_tx_o           (),
+    .pwrmgr_data_o        (),
+    .keymgr_data_o        (),
+    .kmac_data_i          (),
+    .kmac_data_o          ()
   );
 
-  // Bind rom_ctrl_bound_if next to rom_ctrl_if. This is parameterised and able to access more of
-  // the internals of the design (without needing to parameterise the environment).
+  // Bind rom_ctrl_bound_if into the instance of rom_ctrl.
+  //
+  // It is active in this tb, which means that the rom_ctrl_if inside is also active and drives the
+  // rom_ctrl input ports (which are not explicitly connected above).
+  //
+  // The two-layer design allows the bound interface depend on parameters and be able to access more
+  // of the internals of the design (without needing to parameterise the environment).
   bind dut
     rom_ctrl_bound_if #(.Bound(1), .SecDisableScrambling(SecDisableScrambling))
-    u_bound_if (.clk_i, .rst_ni);
+    u_bound_if (
+      .clk           (clk_i),
+      .rst_n         (rst_ni),
+      .rom_h2d       (rom_tl_i),
+      .rom_d2h       (rom_tl_o),
+      .regs_h2d      (regs_tl_i),
+      .regs_d2h      (regs_tl_o),
+      .alert_rx      (alert_rx_i),
+      .alert_tx      (alert_tx_o),
+      .pwrmgr_data   (pwrmgr_data_o),
+      .keymgr_data   (keymgr_data_o),
+      .kmac_req_data (kmac_data_o),
+      .kmac_rsp_data (kmac_data_i)
+    );
 
   // Bind a rom_ctrl_fsm_if into the fsm module (allowing DV to get its internal values and
   // parameters)
@@ -113,21 +112,11 @@ module tb;
                                .tiling_suffix_fmt_str(`ROM_MEM_TILING_FMT),
                                .tile_depth($size(`ROM_CTRL_MEM_TILE_HIER)));
 
-    // drive clk and rst_n from clk_if
-    clk_rst_if.set_active();
-    rom_clk_rst_if.set_active();
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null,
-        "*.env", "clk_rst_vif_rom_ctrl_prim_reg_block", rom_clk_rst_if);
-    uvm_config_db#(virtual tl_if)::set(null,
-        "*.env.m_tl_agent_rom_ctrl_prim_reg_block*", "vif", tl_rom_if);
-    uvm_config_db#(virtual tl_if)::set(null,
-        "*.env.m_tl_agent_rom_ctrl_regs_reg_block*", "vif", tl_if);
-    uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env", "rom_ctrl_bkdr_util",
-        m_rom_ctrl_bkdr_util);
-    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
+    // Pass interfaces to the environment
     uvm_config_db#(rom_ctrl_vif)::set(null, "*.env", "rom_ctrl_vif",
                                       dut.u_bound_if.gen_bound.u_rom_ctrl_if);
+    uvm_config_db#(rom_ctrl_bkdr_util)::set(null, "*.env", "rom_ctrl_bkdr_util",
+                                            m_rom_ctrl_bkdr_util);
     uvm_config_db#(virtual rom_ctrl_fsm_if)::set(
         null, "*.env", "rom_ctrl_fsm_vif",
         dut.gen_fsm_scramble_enabled.u_checker_fsm.u_bound_if.gen_bound.u_fsm_if);
@@ -142,25 +131,7 @@ module tb;
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
-  // Only get one KMAC response
-  `ASSERT(JustOneKmacResponse_A,
-          kmac_data_in.rsp_valid |=> always !kmac_data_in.rsp_valid, clk, rst_n)
-  // Once we signal done to pwrmgr, the done signal stays high and the good signal stays stable.
-  `ASSERT(PwrmgrDoneOneWay_A,
-          $rose(pwrmgr_data.done == prim_mubi_pkg::MuBi4True) |=> always $stable(pwrmgr_data),
-          clk, rst_n)
-  // Don't send any KMAC requests once we've had the response
-  `ASSERT(KmacNotOutAfterIn_A,
-          kmac_data_in.rsp_valid |=> always !kmac_data_out.req_valid,
-          clk, rst_n)
-  always_comb begin
-    if (!rst_n) after_kmac_handshake = 0;
-    else if (kmac_data_in.rsp_valid) after_kmac_handshake = 1;
-  end
-  // We see a response from KMAC before we assert that we're done to pwrmgr
-  `ASSERT(KmacResponseBeforePwmgrDone_A,
-          pwrmgr_data.done != prim_mubi_pkg::MuBi4False |-> after_kmac_handshake,
-          clk, rst_n)
+
   `undef ROM_CTRL_MEM_TILE_HIER
   `undef ROM_CTRL_MEM_HIER
 
