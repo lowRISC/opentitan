@@ -27,16 +27,19 @@
               latch the root key into slot x). Update the SLOT_POLICY register field with the
               default root key policy i.e. allow_keygen=0, retain_parent=0, exportable=0, and
               allow_child=1.
+            - After the root key is loaded, randomize the KDF engine selection before each
+              operation. Make sure that the top-level parameter KdfEngineSel is set to
+              KdfEngineBoth.
             - Request another Advance operation for the same slot (due to retain_parent=0 of the
               root key slot). Set allow_child and allow_keygen policy bits to true. Randomly set
               retain_parent field. Use random values for HW / SW bindings.
             - If retain_parent policy of the previously advanced slot is true, then issue an erase
               command on a random selection.
-            - To generate version keys for HW sideload ports, issue Generate HW Output command to a
-              random dest_sel inside {AES, HMAC, KMAC, OTBN}.
+            - To generate versioned keys for HW sideload ports, issue Generate HW Output command to
+              a random dest_sel inside {AES, HMAC, KMAC, OTBN}.
             - To generate version keys for SW CSRs, issue Generate SW Output command. The results
               are going to be loaded in SW_SHARE0_OUTPUT and SW_SHARE1_OUTPUT.
-            - Repeat the above steps a couple of times with randomly picking a valid parent slot. If
+            - Repeat the above steps a couple of times by randomly picking a valid parent slot. If
               retain_parent policy bit of the parent slot is true then randomly choose a different
               invalid child slot. Otherwise derive the secrets to the parent slot.
             - Issue the Disable command at the end which will wipe all the slots.
@@ -50,8 +53,8 @@
               operation.
             - Check that the HW sideload key slots and SW_SHARE*_OUTPUT registers are updated
               correctly.
-            - Before issuing Disable operation, check that the METADATA_* register fields for slots
-              greater than or equal to NumInstHwSlot are read back to 0.
+            - Before issuing the Disable operation, check that the METADATA_* register fields for
+              slots greater than or equal to NumInstHwSlot are read back to 0.
             - After the Disable operation, check that HW sideload and SW keys are preserved.
             '''
 
@@ -61,7 +64,7 @@
     {
       name: load_key_command
       desc: '''
-            Similar to smoke test but it also issues Load Root Key and Load Secondary Root Key
+            Similar to the smoke test but it also issues Load Root Key and Load Secondary Root Key
             commands.
 
             Stimulus:
@@ -83,9 +86,9 @@
             Issue random commands to keymgr_dpe.
 
             Stimulus:
-            - Send random operations to keymgr_dpe in available state.
+            - Send random operations to keymgr_dpe in the available state.
             - To request LOAD_*_KEY commands multiple times within the test, avoid setting the
-              corresponding root key's LOAD_*_KEY_LOCK registers.
+              corresponding LOAD_*_KEY_LOCK registers.
 
             Checks:
             Same as smoke test.
@@ -101,12 +104,14 @@
             particular CSR.
 
             Stimulus:
-            - Randomly set the fields in ENFORCE_SW_BINDING and LOAD_*_LOCK registers.
-            - If LOAD_*_LOCK and ENFORCE_SW_BINDING registers are set, then they are locked until
-              the next reset. Write them when they are locked to check if the access is ignored.
-            - Randomly set the fields in SIDELOAD_CLEAR, and RESEED_INTERVAL_SHADOWED registers.
+            - Randomly set the fields in ENFORCE_SW_BINDING, LOAD_*_LOCK, and METADATA_READ_LOCK
+              registers. Every encoding except MuBi4False will be treated as locked.
+            - If ENFORCE_SW_BINDING, LOAD_*_LOCK, and METADATA_READ_LOCK registers are set, then
+              they are locked until the next reset. Write them when they are locked to check that
+              the access is ignored.
+            - Randomly set the fields in SIDELOAD_CLEAR and RESEED_INTERVAL_SHADOWED registers.
             - Issue regular operations via random_commands test.
-            - Keep on updating SIDELOAD_CLEAR, and RESEED_INTERVAL_SHADOWED registers after few
+            - Keep on updating SIDELOAD_CLEAR and RESEED_INTERVAL_SHADOWED registers after a few
               operations.
 
             Checks:
@@ -119,6 +124,8 @@
             - Check that the LOAD_*_KEY operation is rejected when the corresponding LOAD_*_LOCK
               register is set. In this scenario, check ERR_CODE.invalid_op field is set and the
               fields in corresponding METADATA_* registers are unchanged.
+            - Check that the METADATA_* register read back as zero once the lock field in the
+              METADATA_READ_LOCK register is set.
             - Check that a seed is requested after RESEED_INTERVAL_SHADOWED.val counter hits in
               keymgr_dpe.
             - Check that writes to LOAD_*_LOCK and ENFORCE_SW_BINDING registers are ignored once
@@ -135,9 +142,10 @@
             affecting the operation are unmodifiable once they are locked.
 
             Stimulus:
-            - Program and lock all the registers gated by *REGWEN registers.
-            - During an operation, attempt to write them to verify that their accesses are blocked.
-            - Randomly enable / disable the *REGWEN register and request accesses to their
+            - Program and lock all the registers gated by *REGWEN.
+            - During an operation, attempt to write to them to verify that their accesses are
+              blocked.
+            - Randomly enable / disable the *REGWEN register and request accesses to its
               corresponding register
 
             Checks:
@@ -155,12 +163,12 @@
     {
       name: lc_disable
       desc: '''
-            Inject disable through life cycle control at random durations while running the
+            Inject a disable through life cycle control at random durations while running the
             random_commands test in parallel.
 
             Checks:
             - Expect to see DEBUG.inactive_lc_en set.
-            - Expect state to be INVALID in WORKING_STATE register.
+            - Expect the state to be INVALID in WORKING_STATE register.
             - Expect to see all the HW sideload ports, SW keys in SW_SHARE*_OUTPUT registers and all
               the slots wiped in an INVALID state.
             '''
@@ -181,14 +189,16 @@
     {
       name: invalid_hw_bindings
       desc: '''
-            Issue all-ones or all-zeros as HW binding or drive their valid bit low.
+            Issue all-ones or all-zeros as HW bindings or drive their valid bit low.
 
             Stimulus:
             - Once the keymgr_dpe comes into an available state, request an Advance operation and
               do the following:
-            - Drive all-ones, all-zeros, or combination of them as HW bindings for key derivation
-              function.
-            - Alternatively, drive the valid bit of any of the HW binding inputs to low.
+            - Drive all-ones, all-zeros, or a combination of them as HW bindings for the key
+              derivation function.
+            - Alternatively, drive the valid bit of any of the HW binding inputs to low. Note that
+              field_entropy_i is an exception here as in this case, a 256-bit netlist constant
+              "RndCnstFieldEntropySeed" is used instead.
 
             Checks:
             - Check INTR_STATE.op_done field to check the completion of the operation.
@@ -207,9 +217,10 @@
 
             Stimulus:
             Do the following to drive bad SW input.
-            - Generate version key when KEY_VERSION > MAX_KEY_VERSION.
+            - Generate a versioned key when KEY_VERSION > MAX_KEY_VERSION.
             - Derive a non-existing slot such that CONTROL_SHADOWED.slot_src_sel and
-              CONTROL_SHADOWED.slot_dst_sel are greater than or equal to NumInstHwSlot parameter.
+              CONTROL_SHADOWED.slot_dst_sel are greater than or equal to the NumInstHwSlot
+              parameter.
             - Send an undefined command.
             - Write CONTROL_SHADOWED.dest_sel with an undefined enumerated value.
 
@@ -234,7 +245,7 @@
 
             Checks:
             - Check ERR_CODE.invalid_op field is set.
-            - Verify that the METADATA_* registers fields and sideload HW / SW keys are unchanged.
+            - Verify that the METADATA_* register fields and sideload HW / SW keys are unchanged.
             '''
 
       stage: V2
@@ -243,10 +254,9 @@
     {
       name: invalid_parent_policy_operations
       desc: '''
-            The parent policy of a DPE context determines how the operation to derive the child
-            would be carried out. Whether a parent slot can derive secrets, generate a version key,
-            derive a secret to its own slot or a different slot, etc depends on the parent's policy
-            bits.
+            The parent's policy governs which operations are possible from a parent slot. These
+            include generating a versioned key, advancing a slot (or not), and advancing a slot to
+            either a different slot or the same source slot.
 
             Stimulus:
             To request an operation that mismatches with the parent's slot policy bits, do the
@@ -314,7 +324,7 @@
             (LOAD_ROOT_KEY_LOCK and LOAD_SECONDARY_ROOT_KEY_LOCK) are set.
 
             Stimulus:
-            - Set the lock register, then attempt to issue the load command.
+            - Set the lock register and then attempt to issue the load command.
 
             Checks:
             - Check ERR_CODE.invalid_op field is set.
@@ -328,7 +338,7 @@
       name: invalid_root_key
       desc: '''
             Verify keymgr_dpe behavior when either of the root keys contains all-zeros / all-ones or
-            have their respective valid bits driven low in the HW when loading them. This should
+            has their respective valid bits driven low in the HW when loading them. This should
             cover both scenarios of latching the root key when WORKING_STATE.state = RESET or
             reloading root / secondary root key via their respective commands in
             WORKING_STATE.state=AVAILABLE state.
@@ -336,14 +346,14 @@
             Stimulus:
             To invalidate the root key, do the following:
             - Drive all-zeros / all-ones to the root key during the latching cycle or either of
-              the root keys between a reloading operation.
+              the root keys during a reloading operation.
             - Deassert the valid bit of either of the root keys.
 
             Checks:
-            - Expect to see DEBUG.invalid_root_key or DEBUG.invalid_secondary_root_key fields be
+            - Expect to see DEBUG.invalid_root_key or DEBUG.invalid_secondary_root_key fields to be
               set.
             - Verify the METADATA_* register fields are unchanged.
-            - Check that WORKING_STATE.state reads back to INVALID.
+            - Check that WORKING_STATE.state reads back as INVALID.
             '''
 
       stage: V2
@@ -360,7 +370,18 @@
             - Alternatively, drive all-zeros or all-ones to the KMAC digest in KMAC response.
 
             Checks:
-            - Expect to see FAULT_STATUS.kmac_op and FAULT_STATUS.kmac_out field set.
+            - Expect to see FAULT_STATUS.kmac_op and FAULT_STATUS.kmac_out fields to set.
+            '''
+
+      stage: V2
+      tests: []
+    }
+    {
+      name: otbn_error_response
+      desc: '''
+            Verify keymgr_dpe behavior when an error response is received from OTBN after
+            an operation. Since both KMAC and OTBN use the same KMAC req / rsp protocol, the
+            stimulus and checks sections should be the same as in the kmac_error_response testpoint.
             '''
 
       stage: V2
@@ -402,15 +423,15 @@
               - requesting a versioned key generation from a root key slot.
               - Advance a slot having boot_stage<=2 with CONTROL_SHADOWED.sw_binding_only=0 when
                 ENFORCE_SW_BINDING.enforce is set.
-            - Send an invalid KMAC input. One example can be "invalid_hw_bindings" testpoint.
+            - Send an invalid KMAC / OTBN input. One example can be "invalid_hw_bindings" testpoint.
             - After an operation, overwrite a *shadowed register and expect to see
               ERR_CODE.invalid_shadow_update.
-            - Issue operations when WORKING_STATE.state inside {RESET, DISABLED, INVALID}. Note that
-              Advance operation in RESET state is acceptable.
+            - Issue operations when WORKING_STATE.state is inside {RESET, DISABLED, INVALID}. Note
+              that Advance operation in RESET state is acceptable.
 
             Checks:
-            - Expect to see the corresponding field in the ERR_CODE register be set.
-            - For rejected operations, check that the METADATA_* register fields, and sideload
+            - Expect to see the corresponding field in the ERR_CODE register to set.
+            - For rejected operations, check that the METADATA_* register fields and sideload
               HW / SW keys are unchanged.
             '''
 
@@ -445,9 +466,9 @@
     {
       name: operation_cg
       desc: '''
-            - Cover all operations crossed with all slots picked as source and destination, all
-              boot stages included, slot policy bits set with both true / false values, and all
-              working states.
+            - Cover all operations crossed with all slots picked as source and destination, both
+              KDF engines, all boot stages included, slot policy bits set with both true / false
+              values, and all working states.
             - Generate versioned key for all the HW sideload ports crossed with
               CONTROL_SHADOWED.dest_sel.
             - Sample with both DONE_SUCCESS and DONE_ERROR statuses in OP_STATUS.status.
@@ -573,12 +594,12 @@
       name: invalid_sw_input_cg
       desc: '''
             Write SW registers such as CONTROL_SHADOWED, MAX_KEY_VER_SHADOWED, KEY_VERSION, and
-            SLOT_POLICY with invalid contents. Example:
-            - Generating version key when KEY_VERSION > MAX_KEY_VERSION.
+            SLOT_POLICY with invalid contents.
+            - Generating a version key when KEY_VERSION > MAX_KEY_VERSION.
             - CONTROL_SHADOWED.slot_src_sel / CONTROL_SHADOWED.slot_dst_sel >= NumInstHwSlot.
             - Set an invalid operation in CONTROL_SHADOWED.operation.
             - Set SLOT_POLICY fields with invalid contents.
-            - Write CONTROL_SHADOWED.dest_sel with undefined enumerated value.
+            - Write CONTROL_SHADOWED.dest_sel with an undefined enumerated value.
             '''
     }
     {
@@ -592,15 +613,15 @@
     {
       name: invalid_kmac_command_cg
       desc: '''
-            On KMAC interface, the commands issued by keymgr_dpe are onehot encoded. Send a
-            non-onehot command to KMAC interface inside keymgr_dpe.
+            On the KMAC interface, the commands issued by keymgr_dpe are onehot encoded. Send a
+            non-onehot command to the KMAC interface inside keymgr_dpe.
             '''
     }
     {
       name: invalid_root_key_cg
       desc: '''
             - Cover the root keys (both root and secondary root) with either containing all-zeros /
-              all-ones or their respective valid bit is low.
+              all-ones or having its valid bit low.
             - Cross it with WORKING_STATE.state inside {RESET, AVAILABLE} and operations inside
               {Advance, Load Root Key, Load Secondary Root Key}.
             '''
