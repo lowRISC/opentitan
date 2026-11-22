@@ -33,27 +33,27 @@ module rom_ctrl
   // want to spend area on unused scrambling.
   parameter bit                   SecDisableScrambling = 1'b0
 ) (
-  input  clk_i,
-  input  rst_ni,
+  input  wire clk_i,
+  input  wire rst_ni,
 
   // ROM configuration parameters
-  input  rom_cfg_req_t rom_cfg_i,
-  output rom_cfg_rsp_t rom_cfg_o,
+  input  wire rom_cfg_req_t rom_cfg_i,
+  output rom_cfg_rsp_t      rom_cfg_o,
 
-  input  tlul_pkg::tl_h2d_t rom_tl_i,
-  output tlul_pkg::tl_d2h_t rom_tl_o,
+  input  wire tlul_pkg::tl_h2d_t rom_tl_i,
+  output tlul_pkg::tl_d2h_t      rom_tl_o,
 
-  input  tlul_pkg::tl_h2d_t regs_tl_i,
-  output tlul_pkg::tl_d2h_t regs_tl_o,
+  input  wire tlul_pkg::tl_h2d_t regs_tl_i,
+  output tlul_pkg::tl_d2h_t      regs_tl_o,
 
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+  input  wire prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]      alert_tx_o,
 
   // Connections to other blocks
   output rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data_o,
   output rom_ctrl_pkg::keymgr_data_t keymgr_data_o,
-  input  kmac_pkg::app_rsp_t         kmac_data_i,
+  input  wire kmac_pkg::app_rsp_t    kmac_data_i,
   output kmac_pkg::app_req_t         kmac_data_o
 );
 
