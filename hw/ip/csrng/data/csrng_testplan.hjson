@@ -87,8 +87,14 @@
     {
       name: life cycle
       desc: '''
-            Verify lifecycle hardware debug mode.
-            When lc_hw_debug_en_i is set to on, the seed from the entropy source must be xor'ed with the diversification value.
+            Verify that lc_hw_debug_en_i selects the seed diversification value.
+
+            **Stimulus**:
+            - Drive lc_hw_debug_en_i to On, Off and invalid values, and send Instantiate and Reseed commands with flag0 cleared.
+
+            **Checks**:
+            - When lc_hw_debug_en_i is On, the seed from the entropy source interface is XORed with RndCnstCsKeymgrDivNonProduction.
+            - When lc_hw_debug_en_i is not On, the seed from the entropy source interface is XORed with RndCnstCsKeymgrDivProduction.
             '''
       stage: V2
       tests: ["csrng_cmds"]
