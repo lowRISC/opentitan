@@ -19,8 +19,6 @@ class cheriot_mem_sys_scoreboard extends cip_base_scoreboard #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    // TODO: remove once alert checking is supported
-    do_alert_check = 0;
   endfunction
 
   function void connect_phase(uvm_phase phase);
@@ -43,6 +41,8 @@ class cheriot_mem_sys_scoreboard extends cip_base_scoreboard #(
     bit addr_phase_write  = (write && channel == AddrChannel);
     bit data_phase_read   = (!write && channel == DataChannel);
     bit data_phase_write  = (write && channel == DataChannel);
+    // ALERT_TEST.regwen as it was before this write
+    bit alert_test_wen    = ral.alert_test.regwen.get_mirrored_value();
 
     csr = cfg.ral_models[ral_name].get_default_map().get_reg_by_offset(csr_addr);
     if (csr == null) begin
@@ -60,14 +60,15 @@ class cheriot_mem_sys_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       // add individual case item for each csr
       "alert_test": begin
-        // do_alert_check is disabled above, so no set_exp_alert() call here yet.
+        // Writing 1 raises the alert, unless regwen was already clear
+        if (addr_phase_write && alert_test_wen && item.a_data[0]) set_exp_alert("fatal_fault");
       end
       "tbre_base_addr", "tbre_num_caps", "tbre_start": begin
       end
       "intr_enable", "intr_test": begin
         // The interrupt test sequence checks the interrupt pin and INTR_STATE itself.
       end
-      "intr_state", "tbre_regwen", "tbre_status": begin
+      "intr_state", "tbre_regwen", "tbre_status", "tbre_epoch": begin
         // Driven by the revocation engine, which this environment does not model yet.
         do_read_check = 1'b0;
       end

@@ -17,10 +17,17 @@
     {
       name: smoke
       desc: '''
-            Bring the subsystem out of reset in ePMP mode with the CSR interface connected. The
-            checks that no host port (`cored_tl_h`, `tbre_tl_h`, `meta_sram_tl`) transacts and that
-            `fatal_fault` stays low are not implemented yet: the testbench leaves those ports
-            unconnected.
+            Bring the subsystem out of reset in ePMP mode with the CSR interface connected.
+            - Check the reset state of the revocation engine: TBRE_REGWEN set, TBRE_STATUS and
+              TBRE_EPOCH zero.
+            - In random rounds, program TBRE_BASE_ADDR and TBRE_NUM_CAPS, mostly with a sweep that
+              CHERIoT mode would accept, read them back and write TBRE_START.
+            - Check that the start is ignored: TBRE_STATUS.start_err set, busy and sweep_err clear,
+              TBRE_REGWEN still set, TBRE_EPOCH unchanged, no `tbre_done` interrupt. Clear
+              start_err.
+            - Check that `fatal_fault` stays low throughout.
+            - The testbench checks, in every test, that no host port (`cored_tl_h`, `tbre_tl_h`,
+              `meta_sram_tl`) makes a request.
             '''
       stage: V1
       tests: ["cheriot_mem_sys_smoke"]

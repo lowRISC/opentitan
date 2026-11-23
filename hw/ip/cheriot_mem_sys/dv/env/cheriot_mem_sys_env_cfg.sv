@@ -6,6 +6,9 @@ class cheriot_mem_sys_env_cfg extends cip_base_env_cfg #(.RAL_T(cheriot_mem_sys_
 
   // ext component cfgs
 
+  // The DUT's tagged regions (from tb.sv)
+  tagged_regions_t tagged_regions;
+
   `uvm_object_utils_begin(cheriot_mem_sys_env_cfg)
   `uvm_object_utils_end
 

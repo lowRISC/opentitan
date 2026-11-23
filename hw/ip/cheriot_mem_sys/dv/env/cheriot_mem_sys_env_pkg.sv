@@ -24,6 +24,13 @@ package cheriot_mem_sys_env_pkg;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
 
   // types
+  // The DUT's tagged regions, set by tb.sv from its parameters
+  typedef struct packed {
+    logic [TL_AW-1:0] main_sram_base;  // MainSramBaseAddr
+    logic [TL_AW-1:0] main_sram_top;   // MainSramTopAddr
+    logic [TL_AW-1:0] nvm_base;        // NvmBaseAddr
+    logic [TL_AW-1:0] nvm_top;         // NvmTopAddr
+  } tagged_regions_t;
 
   // functions
 
