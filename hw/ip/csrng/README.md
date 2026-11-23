@@ -54,6 +54,19 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
 - In addition to the approved DRNG mode, any instance can also operate in "Fully Deterministic mode", meaning the seed depends entirely on application inputs or personalization strings.
     - This provides an approved means of seed construction in FIPS 140-2 as described in the [FIPS 140-2 Implementation Guidance](https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/fips140-2/fips1402ig.pdf), section 7.14, resolution point 2(a).
 
+## Supported Parameter Sets
+
+CSRNG has the following configurable parameters:
+- `SBoxImpl` selects the S-Box implementation of the unmasked AES cipher core.
+  Both supported variants are logically equivalent.
+  `SBoxImplCanright` has the smallest area and is recommended for ASICs; it is also the variant used in verification.
+  `SBoxImplLut` is preferable for FPGAs in terms of logic utilization and timing.
+- `RndCnstCsKeymgrDivNonProduction` and `RndCnstCsKeymgrDivProduction` are the seed diversification values, which are randomized per top.
+- `AlertAsyncOn` and `AlertSkewCycles` configure the alert senders, as for any comportable IP.
+
+The number of application interfaces (`NumApps`) is currently fixed at 3 in `csrng.hjson`: two hardware instances and one software instance.
+Other values haven't been verified to work yet.
+
 ## Description
 
 Though the recommendations in AIS31 are based around broad functional requirements, the recommendations in SP 800-90 are very prescriptive in nature, outlining the exact constructs needed for approval.

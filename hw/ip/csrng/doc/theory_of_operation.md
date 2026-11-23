@@ -461,16 +461,3 @@ The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled C
 
 The `cs_fatal_err` interrupt will assert when any of the CSRNG FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
-
-## Supported Parameter Sets
-
-CSRNG has the following configurable parameters:
-- `SBoxImpl` selects the S-Box implementation of the unmasked AES cipher core.
-  Both supported variants are logically equivalent.
-  `SBoxImplCanright` has the smallest area and is recommended for ASICs; it is also the variant used in verification.
-  `SBoxImplLut` is preferable for FPGAs in terms of logic utilization and timing.
-- `RndCnstCsKeymgrDivNonProduction` and `RndCnstCsKeymgrDivProduction` are the seed diversification values, which are randomized per top.
-- `AlertAsyncOn` and `AlertSkewCycles` configure the alert senders, as for any comportable IP.
-
-The number of application interfaces (`NumApps`) is currently fixed at 3 in `csrng.hjson`: two hardware instances and one software instance.
-Other values haven't been verified to work yet.
