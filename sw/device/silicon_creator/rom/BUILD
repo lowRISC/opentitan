@@ -136,6 +136,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
     ],
 )
 

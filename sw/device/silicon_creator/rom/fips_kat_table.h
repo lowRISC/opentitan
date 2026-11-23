@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/memory.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -25,19 +26,41 @@ enum {
    */
   kFipsKatDescriptorVersion1 = 1,
   /**
-   * Fixed offset from the top of ROM to the start of the 32 KiB NAPOT-aligned
-   * FIPS KAT region: `[rom_end - kFipsKatRomEndOffset, rom_end - 0x8000)`.
+   * Fixed offset from the top of ROM to the start of the 8 KiB NAPOT-aligned
+   * FIPS KAT region: `[rom_end - kFipsKatRomEndOffset, rom_end)`.
    *
    * On Earl Grey Gen2 (192 KiB ROM at `[0x40000, 0x70000)`), this places the
-   * descriptor table directly at `0x60000` within the 32 KiB NAPOT window
-   * `[0x60000, 0x68000)`, staying 32 KiB below the ECC-poisoned `rom_ctrl`
-   * digest words in `[0x6FFE0, 0x70000)`.
+   * descriptor table directly at `0x6E000` within the 8 KiB NAPOT window
+   * `[0x6E000, 0x70000)`, leaving 184 KiB below for Mask ROM code and
+   * read-only data with zero dead gap.
+   *
+   * Transient BL0 ePMP maps `kFipsKatRegionSize` (8 KiB NAPOT) read-only,
+   * while descriptor/data helpers take `kFipsKatMaxTableSize` (`0x1F80`) so
+   * valid offsets never enter `.chip_info` (`[0x6FF80, 0x6FFE0)`) or the
+   * ECC-poisoned `rom_ctrl` digest words (`[0x6FFE0, 0x70000)`).
    */
-  kFipsKatRomEndOffset = 0x10000,
+  kFipsKatRomEndOffset = 0x2000,
   /**
-   * Fixed size of the NAPOT-aligned FIPS KAT ROM window (32 KiB).
+   * Fixed size of the NAPOT-aligned FIPS KAT ROM ePMP window (8 KiB).
    */
-  kFipsKatRegionSize = 0x8000,
+  kFipsKatRegionSize = 0x2000,
+  /**
+   * Reserved bytes at the top of ROM for `.chip_info` (`[0x6FF80, 0x6FFE0)`)
+   * and the ECC-poisoned `rom_ctrl` digest words (`[0x6FFE0, 0x70000)`).
+   */
+  kFipsKatChipInfoReservedBytes = 128,
+  /**
+   * Maximum usable size of the FIPS KAT descriptor table and payloads within
+   * the 8 KiB NAPOT window (`0x1F80` = 8,064 bytes). Pass this bound (not
+   * `kFipsKatRegionSize`) to descriptor/data helpers so valid offsets never
+   * enter `.chip_info` or `[0x6FFE0, 0x70000)`.
+   */
+  kFipsKatMaxTableSize = kFipsKatRegionSize - kFipsKatChipInfoReservedBytes,
+  /**
+   * Fixed payload size (in bytes) of each sparse signature chunk in
+   * `fips_kat_sparse_chunk_t` (matches SLH-DSA-SHA2-128s hash size `n = 16`).
+   */
+  kFipsKatSparseChunkBytes = 16,
 };
 
 /**
@@ -82,8 +105,8 @@ typedef enum fips_kat_alg_id {
 
   // RSA Asymmetric (2048 & 4096, PKCS#1 v1.5)
   kFipsKatAlgRsa2048Verify = 12,
-  kFipsKatAlgRsa4096Sign = 13,
-  kFipsKatAlgRsa4096Verify = 14,
+  kFipsKatAlgRsa4096 = 13,  // Shared RSA-4096 Sign & Verify
+  // ID 14 reserved (merged into kFipsKatAlgRsa4096).
 
   // Elliptic Curve Signatures (ECDSA & Ed25519)
   kFipsKatAlgEcdsaP256Sign = 15,
@@ -109,7 +132,10 @@ typedef enum fips_kat_alg_id {
   // Authenticated Encryption (AES-256-GCM)
   kFipsKatAlgAesGcm256Encrypt = 28,
 
-  // NIST Round 3 SPHINCS+-SHA2-128s-simple Verification (pre-FIPS 205)
+  // FIPS 205 SLH-DSA-SHA2-128s / SPHINCS+-SHA2-128s-simple Verification
+  // (compact sparse-signature format via `sparse_verify_kat_data_t`; FIPS 205
+  // pure-mode `ctx = ""`, compatible with OpenTitan `sigverify/sphincsplus`
+  // using `msg_prefix_1 = {0x00, 0x00}`).
   kFipsKatAlgSphincsPlusSha2_128sVerify = 29,
 
   // Key Derivation (HKDF-SHA2-384 - RFC 5869 / SP 800-56Cr2)
@@ -123,15 +149,17 @@ typedef enum fips_kat_alg_id {
  * Entry describing the location of a single algorithm test vector payload.
  */
 typedef struct fips_kat_entry {
-  uint32_t algorithm_id;  // fips_kat_alg_id_t
-  uint32_t offset;        // Byte offset from start of descriptor table
-  uint32_t size;          // Byte size of serialized payload block (4B-aligned)
+  uint16_t algorithm_id;  // fips_kat_alg_id_t
+  uint16_t reserved;      // Must be 0
+  uint16_t offset;  // Byte offset from start of descriptor table (4B-aligned)
+  uint16_t size;    // Byte size of serialized payload block (4B-aligned)
 } fips_kat_entry_t;
 
-OT_ASSERT_SIZE(fips_kat_entry_t, 12);
+OT_ASSERT_SIZE(fips_kat_entry_t, 8);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_entry_t, algorithm_id, 0);
+OT_ASSERT_MEMBER_OFFSET(fips_kat_entry_t, reserved, 2);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_entry_t, offset, 4);
-OT_ASSERT_MEMBER_OFFSET(fips_kat_entry_t, size, 8);
+OT_ASSERT_MEMBER_OFFSET(fips_kat_entry_t, size, 6);
 
 /**
  * Root table pinned at the start of the `.fips_kat` ROM region describing all
@@ -156,6 +184,10 @@ OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entries, 16);
  * ============================================================================
  * Vector Payload Schemas (Uniform 4-byte Sub-Field Alignment)
  * ============================================================================
+ * All payload schema length fields are uniformly `uint16_t` with explicit
+ * `uint16_t reserved` (= 0) padding on odd-field schemas so every `data[]`
+ * array begins strictly at `0 mod 4`.
+ *
  * All variable-length byte slices inside `data[]` are individually padded to
  * `FIPS_KAT_ALIGN4(len)`. Use the inline accessors below to resolve sub-fields
  * and verify `entry->size`.
@@ -163,102 +195,106 @@ OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entries, 16);
 
 // 1. Hash / HMAC / SHAKE / Entropy Conditioning
 typedef struct hmac_kat_data {
-  uint32_t key_len;
-  uint32_t msg_len;
-  uint32_t digest_len;
-  uint8_t data[];  // pad4(key) || pad4(msg) || pad4(expected_digest)
+  uint16_t key_len;
+  uint16_t msg_len;
+  uint16_t digest_len;
+  uint16_t reserved;  // Must be 0
+  uint8_t data[];     // pad4(key) || pad4(msg) || pad4(expected_digest)
 } hmac_kat_data_t;
 
-OT_ASSERT_SIZE(hmac_kat_data_t, 12);
-OT_ASSERT_MEMBER_OFFSET(hmac_kat_data_t, data, 12);
+OT_ASSERT_SIZE(hmac_kat_data_t, 8);
+OT_ASSERT_MEMBER_OFFSET(hmac_kat_data_t, data, 8);
 
 // 2. KMAC / SP 800-108r1 KDF (KMAC-256, KDF-CTR-HMAC-SHA256, KDF-KMAC-256)
 typedef struct kdf_kat_data {
-  uint32_t key_len;
-  uint32_t label_len;    // KMAC customization string S or SP 800-108r1 Label
-  uint32_t context_len;  // KMAC input message or SP 800-108r1 Context
-  uint32_t out_len;      // Expected MAC tag or derived keying material
+  uint16_t key_len;
+  uint16_t label_len;    // KMAC customization string S or SP 800-108r1 Label
+  uint16_t context_len;  // KMAC input message or SP 800-108r1 Context
+  uint16_t out_len;      // Expected MAC tag or derived keying material
   uint8_t data[];  // pad4(key) || pad4(label) || pad4(context) || pad4(out)
 } kdf_kat_data_t;
 
-OT_ASSERT_SIZE(kdf_kat_data_t, 16);
-OT_ASSERT_MEMBER_OFFSET(kdf_kat_data_t, data, 16);
+OT_ASSERT_SIZE(kdf_kat_data_t, 8);
+OT_ASSERT_MEMBER_OFFSET(kdf_kat_data_t, data, 8);
 
 // 3. Symmetric Block Cipher / AEAD / Key Wrap (AES-256 ECB, CBC, KWP, GCM)
 typedef struct aes_kat_data {
-  uint32_t key_len;
-  uint32_t iv_len;
-  uint32_t aad_len;
-  uint32_t pt_len;
-  uint32_t ct_len;
-  uint32_t tag_len;
+  uint16_t key_len;
+  uint16_t iv_len;
+  uint16_t aad_len;
+  uint16_t pt_len;
+  uint16_t ct_len;
+  uint16_t tag_len;
   uint8_t
       data[];  // pad4(key)||pad4(iv)||pad4(aad)||pad4(pt)||pad4(ct)||pad4(tag)
 } aes_kat_data_t;
 
-OT_ASSERT_SIZE(aes_kat_data_t, 24);
-OT_ASSERT_MEMBER_OFFSET(aes_kat_data_t, data, 24);
+OT_ASSERT_SIZE(aes_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(aes_kat_data_t, data, 12);
 
-// 4. Asymmetric Verification (RSA, ECDSA, Ed25519, Round 3 SPHINCS+)
-// Endianness conventions (matching OpenTitan cryptolib / OTBN / sigverify):
-// - RSA-2048/4096: pub_key1 = N (LE words), pub_key2 = e (LE u32), msg = raw,
+// 4. Asymmetric Verification (RSA-2048, ECDSA, Ed25519)
+// Endianness conventions (matching OpenTitan cryptolib / OTBN):
+// - RSA-2048: pub_key1 = N (LE words), pub_key2 = e (LE u32), msg = raw,
 //   sig1 = S (LE words), sig2 = empty.
 // - ECDSA P-256/P-384: pub_key1 = Qx (LE), pub_key2 = Qy (LE), msg = raw CAVP
 //   message (hashed with SHA-256 for P-256, SHA-384 for P-384),
 //   sig1 = R (LE), sig2 = S (LE).
 // - Ed25519: pub_key1 = pk (RFC 8032), pub_key2 = empty, msg = raw,
 //   sig1 = R (RFC 8032), sig2 = S (RFC 8032).
-// - SPHINCS+-SHA2-128s-simple (NIST Round 3): pub_key1 = pk (32 B),
-//   pub_key2 = empty, msg = raw (33 B), sig1 = sig (7856 B), sig2 = empty.
+// (RSA-4096 Sign & Verify shares Schema 5; SLH-DSA / SPHINCS+ uses Schema 11
+// `sparse_verify_kat_data_t`.)
 typedef struct asymmetric_verify_kat_data {
-  uint32_t pub_key_len1;
-  uint32_t pub_key_len2;
-  uint32_t msg_len;
-  uint32_t sig_len1;
-  uint32_t sig_len2;
-  uint8_t data[];  // pad4(pk1)||pad4(pk2)||pad4(msg)||pad4(sig1)||pad4(sig2)
+  uint16_t pub_key_len1;
+  uint16_t pub_key_len2;
+  uint16_t msg_len;
+  uint16_t sig_len1;
+  uint16_t sig_len2;
+  uint16_t reserved;  // Must be 0
+  uint8_t data[];     // pad4(pk1)||pad4(pk2)||pad4(msg)||pad4(sig1)||pad4(sig2)
 } asymmetric_verify_kat_data_t;
 
-OT_ASSERT_SIZE(asymmetric_verify_kat_data_t, 20);
-OT_ASSERT_MEMBER_OFFSET(asymmetric_verify_kat_data_t, data, 20);
+OT_ASSERT_SIZE(asymmetric_verify_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(asymmetric_verify_kat_data_t, data, 12);
 
-// 5. Asymmetric Signing (RSA-4096, ECDSA P-256/P-384, Ed25519)
+// 5. Asymmetric Signing & Combined Keypair (RSA-4096, ECDSA P-256/P-384,
+// Ed25519)
 // Endianness conventions:
-// - RSA-4096: priv_key = N || D (LE words), ephemeral = empty, msg = raw,
-//   sig1 = S (LE words), sig2 = empty.
+// - RSA-4096 (Sign & Verify): priv_key = N (512 B) || D (512 B) in LE words,
+//   ephemeral = e (4 B LE u32, 65537), msg = raw, sig1 = S (512 B LE words),
+//   sig2 = empty.
 // - ECDSA P-256/P-384: priv_key = d (LE), ephemeral = k (LE), msg = raw CAVP
 //   message (hashed with SHA-256 / SHA-384), sig1 = R (LE), sig2 = S (LE).
 // - Ed25519: priv_key = seed (RFC 8032), ephemeral = empty, msg = raw,
 //   sig1 = R (RFC 8032), sig2 = S (RFC 8032).
 typedef struct asymmetric_sign_kat_data {
-  uint32_t priv_key_len;
-  uint32_t ephemeral_len;
-  uint32_t msg_len;
-  uint32_t sig_len1;
-  uint32_t sig_len2;
+  uint16_t priv_key_len;
+  uint16_t ephemeral_len;
+  uint16_t msg_len;
+  uint16_t sig_len1;
+  uint16_t sig_len2;
+  uint16_t reserved;  // Must be 0
   uint8_t data[];  // pad4(priv)||pad4(eph)||pad4(msg)||pad4(sig1)||pad4(sig2)
 } asymmetric_sign_kat_data_t;
 
-OT_ASSERT_SIZE(asymmetric_sign_kat_data_t, 20);
-OT_ASSERT_MEMBER_OFFSET(asymmetric_sign_kat_data_t, data, 20);
+OT_ASSERT_SIZE(asymmetric_sign_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(asymmetric_sign_kat_data_t, data, 12);
 
 // 6. Key Agreement (ECDH P-256/P-384, X25519)
 // Endianness conventions:
 // - ECDH P-256/P-384: priv_key = d (LE), pub_key1 = Qx (LE), pub_key2 = Qy
-// (LE),
-//   shared_secret = Zx (LE).
+//   (LE), shared_secret = Zx (LE).
 // - X25519: priv_key = sk (RFC 7748), pub_key1 = peer_pk, pub_key2 = empty,
 //   shared_secret = ss (RFC 7748).
 typedef struct ecdh_kat_data {
-  uint32_t priv_key_len;
-  uint32_t pub_key_len1;
-  uint32_t pub_key_len2;
-  uint32_t shared_secret_len;
+  uint16_t priv_key_len;
+  uint16_t pub_key_len1;
+  uint16_t pub_key_len2;
+  uint16_t shared_secret_len;
   uint8_t data[];  // pad4(priv)||pad4(pk1)||pad4(pk2)||pad4(shared_secret)
 } ecdh_kat_data_t;
 
-OT_ASSERT_SIZE(ecdh_kat_data_t, 16);
-OT_ASSERT_MEMBER_OFFSET(ecdh_kat_data_t, data, 16);
+OT_ASSERT_SIZE(ecdh_kat_data_t, 8);
+OT_ASSERT_MEMBER_OFFSET(ecdh_kat_data_t, data, 8);
 
 // 7. Post-Quantum Signatures (ML-DSA-87 ACVP Dynamic Rejection Cases)
 typedef struct fips_kat_mldsa87_case {
@@ -270,7 +306,8 @@ typedef struct fips_kat_mldsa87_case {
 OT_ASSERT_SIZE(fips_kat_mldsa87_case_t, 96);
 
 typedef struct mldsa_kat_data {
-  uint32_t num_cases; /**< Number of test cases in `cases[]` */
+  uint16_t num_cases; /**< Number of test cases in `cases[]` */
+  uint16_t reserved;  /**< Must be 0 */
   fips_kat_mldsa87_case_t cases[];
 } mldsa_kat_data_t;
 
@@ -292,8 +329,8 @@ typedef struct drbg_kat_state {
 OT_ASSERT_SIZE(drbg_kat_state_t, 52);
 
 typedef struct drbg_kat_data {
-  uint32_t seed_len;             // 48 bytes (12 words) per seed
-  uint32_t expected_output_len;  // 64 bytes (16 words)
+  uint16_t seed_len;             // 48 bytes (12 words) per seed
+  uint16_t expected_output_len;  // 64 bytes (16 words)
   uint32_t seed_instantiate[12];
   uint32_t seed_reseed1[12];
   uint32_t seed_reseed2[12];
@@ -305,35 +342,66 @@ typedef struct drbg_kat_data {
   uint32_t expected_output[16];
 } drbg_kat_data_t;
 
-OT_ASSERT_SIZE(drbg_kat_data_t, 476);
+OT_ASSERT_SIZE(drbg_kat_data_t, 472);
+OT_ASSERT_MEMBER_OFFSET(drbg_kat_data_t, seed_instantiate, 4);
 
 // 9. Key Encapsulation (FIPS 203 ML-KEM-1024 DKG + DED + OH)
 typedef struct kem_kat_data {
-  uint32_t seed_d_len;
-  uint32_t seed_z_len;
-  uint32_t seed_m_len;
-  uint32_t exp_pk_hash_len;
-  uint32_t exp_ct_hash_len;
-  uint32_t exp_ss_len;
+  uint16_t seed_d_len;
+  uint16_t seed_z_len;
+  uint16_t seed_m_len;
+  uint16_t exp_pk_hash_len;
+  uint16_t exp_ct_hash_len;
+  uint16_t exp_ss_len;
   uint8_t
       data[];  // pad4(d)||pad4(z)||pad4(m)||pad4(pk_h)||pad4(ct_h)||pad4(ss)
 } kem_kat_data_t;
 
-OT_ASSERT_SIZE(kem_kat_data_t, 24);
-OT_ASSERT_MEMBER_OFFSET(kem_kat_data_t, data, 24);
+OT_ASSERT_SIZE(kem_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(kem_kat_data_t, data, 12);
 
 // 10. Key Derivation (HKDF - RFC 5869 / SP 800-56Cr2)
 typedef struct hkdf_kat_data {
-  uint32_t ikm_len;
-  uint32_t salt_len;
-  uint32_t info_len;
-  uint32_t prk_len;
-  uint32_t okm_len;
-  uint8_t data[];  // pad4(ikm)||pad4(salt)||pad4(info)||pad4(prk)||pad4(okm)
+  uint16_t ikm_len;
+  uint16_t salt_len;
+  uint16_t info_len;
+  uint16_t prk_len;
+  uint16_t okm_len;
+  uint16_t reserved;  // Must be 0
+  uint8_t data[];     // pad4(ikm)||pad4(salt)||pad4(info)||pad4(prk)||pad4(okm)
 } hkdf_kat_data_t;
 
-OT_ASSERT_SIZE(hkdf_kat_data_t, 20);
-OT_ASSERT_MEMBER_OFFSET(hkdf_kat_data_t, data, 20);
+OT_ASSERT_SIZE(hkdf_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(hkdf_kat_data_t, data, 12);
+
+// 11. Sparse-Signature Asymmetric Verification
+// (FIPS 205 SLH-DSA-SHA2-128s / SPHINCS+-SHA2-128s-simple)
+//
+// Encodes a large predominantly-zero signature as a sequence of strictly
+// ascending, non-overlapping fixed 16-byte chunks placed at 16-byte-aligned
+// offsets over a zero-initialized output buffer. Every chunk struct is 20 B
+// (4-byte aligned).
+typedef struct fips_kat_sparse_chunk {
+  uint16_t offset;    // 16-byte-aligned byte offset into output signature
+  uint16_t reserved;  // Must be 0
+  uint8_t data[kFipsKatSparseChunkBytes];
+} fips_kat_sparse_chunk_t;
+
+OT_ASSERT_SIZE(fips_kat_sparse_chunk_t, 20);
+OT_ASSERT_MEMBER_OFFSET(fips_kat_sparse_chunk_t, offset, 0);
+OT_ASSERT_MEMBER_OFFSET(fips_kat_sparse_chunk_t, reserved, 2);
+OT_ASSERT_MEMBER_OFFSET(fips_kat_sparse_chunk_t, data, 4);
+
+typedef struct sparse_verify_kat_data {
+  uint16_t pub_key_len;
+  uint16_t msg_len;
+  uint16_t sig_len;     // Expanded signature length in bytes (e.g. 7856)
+  uint16_t num_chunks;  // Number of fixed 16-byte sparse signature chunks
+  uint8_t data[];       // pad4(pk) || pad4(msg) || sparse_chunks[num_chunks]
+} sparse_verify_kat_data_t;
+
+OT_ASSERT_SIZE(sparse_verify_kat_data_t, 8);
+OT_ASSERT_MEMBER_OFFSET(sparse_verify_kat_data_t, data, 8);
 
 /**
  * ============================================================================
@@ -345,11 +413,13 @@ OT_ASSERT_MEMBER_OFFSET(hkdf_kat_data_t, data, 20);
  * Validates a FIPS KAT descriptor table bounded by `region_size`.
  *
  * @param table Pointer to descriptor table.
- * @param region_size Size in bytes of the mapped ROM/buffer region containing
- *                    `table` (e.g., `kFipsKatRegionSize`).
+ * @param region_size Maximum valid byte size of the table + payloads region
+ *                    (e.g., `kFipsKatMaxTableSize`, excluding `.chip_info` and
+ *                    `rom_ctrl` digest words).
  * @return True if table passes alignment, magic, version, size, and entry
  *         count checks.
  */
+OT_WARN_UNUSED_RESULT
 static inline bool validate_fips_descriptor_table(
     const fips_kat_descriptor_table_t *table, size_t region_size) {
   if (table == NULL || ((uintptr_t)table & 0x3u) != 0 ||
@@ -378,7 +448,10 @@ static inline bool validate_fips_descriptor_table(
  *
  * @param region_base Base address of the mapped FIPS KAT region (e.g.,
  *                    `rom_base + rom_size - kFipsKatRomEndOffset`).
- * @param region_size Size of the mapped FIPS KAT region in bytes.
+ * @param region_size Usable table bound in bytes. Callers should pass
+ *                    `kFipsKatMaxTableSize` (`0x1F80`, excluding `.chip_info`
+ *                    and ECC-poisoned `rom_ctrl` digest words) rather than the
+ *                    full ePMP NAPOT window `kFipsKatRegionSize` (`0x2000`).
  * @return Pointer to validated table, or NULL if invalid/absent.
  */
 static inline const fips_kat_descriptor_table_t *
@@ -396,19 +469,23 @@ get_fips_descriptor_table_from_region(const void *region_base,
  * Searches a validated descriptor table for an entry matching `alg_id`.
  *
  * @param table Pointer to descriptor table.
- * @param region_size Size in bytes of the region containing `table`.
+ * @param region_size Usable table bound in bytes. Callers should pass
+ *                    `kFipsKatMaxTableSize` (`0x1F80`, excluding `.chip_info`
+ *                    and ECC-poisoned `rom_ctrl` digest words) rather than the
+ *                    full ePMP NAPOT window `kFipsKatRegionSize` (`0x2000`).
  * @param alg_id Algorithm identifier to search for.
  * @return Pointer to entry if found, NULL otherwise.
  */
 static inline const fips_kat_entry_t *find_fips_entry(
     const fips_kat_descriptor_table_t *table, size_t region_size,
     fips_kat_alg_id_t alg_id) {
-  if (!validate_fips_descriptor_table(table, region_size)) {
+  if (alg_id == kFipsKatAlgNone ||
+      !validate_fips_descriptor_table(table, region_size)) {
     return NULL;
   }
   const uint32_t entry_count = table->entry_count;
   for (uint32_t i = 0; i < entry_count; ++i) {
-    if (table->entries[i].algorithm_id == (uint32_t)alg_id) {
+    if ((uint32_t)table->entries[i].algorithm_id == (uint32_t)alg_id) {
       return &table->entries[i];
     }
   }
@@ -419,13 +496,17 @@ static inline const fips_kat_entry_t *find_fips_entry(
  * Resolves a pointer to the serialized payload for `entry`, enforcing:
  * - Full descriptor table validation against `region_size`,
  * - `entry` is an exact element of `table->entries[0 .. entry_count - 1]`,
+ * - `entry->reserved == 0` (defense-in-depth),
  * - 4-byte alignment of `entry->offset` and `entry->size`,
  * - `entry->size > 0`,
  * - No overlap with the table header/entries (`offset >= header_size`),
  * - Strict bounds within `[header_size, total_size)` without integer overflow.
  *
  * @param table Pointer to descriptor table.
- * @param region_size Size in bytes of the region containing `table`.
+ * @param region_size Usable table bound in bytes. Callers should pass
+ *                    `kFipsKatMaxTableSize` (`0x1F80`, excluding `.chip_info`
+ *                    and ECC-poisoned `rom_ctrl` digest words) rather than the
+ *                    full ePMP NAPOT window `kFipsKatRegionSize` (`0x2000`).
  * @param entry Pointer to an entry within `table->entries[]`.
  * @return Pointer to 4-byte aligned data payload, or NULL if invalid.
  */
@@ -443,10 +524,14 @@ static inline const void *get_fips_data(
       sizeof(fips_kat_descriptor_table_t) + entries_bytes;
 
   const uintptr_t entries_start = (uintptr_t)&table->entries[0];
-  const uintptr_t entries_end = entries_start + entries_bytes;
   const uintptr_t entry_addr = (uintptr_t)entry;
-  if (entry_addr < entries_start || entry_addr >= entries_end ||
+  if (entry_addr < entries_start ||
+      (entry_addr - entries_start) >= entries_bytes ||
       ((entry_addr - entries_start) % sizeof(fips_kat_entry_t)) != 0) {
+    return NULL;
+  }
+
+  if (entry->reserved != 0) {
     return NULL;
   }
 
@@ -696,6 +781,85 @@ static inline size_t fips_kat_hkdf_expected_size(const hkdf_kat_data_t *kat) {
   return sizeof(hkdf_kat_data_t) + FIPS_KAT_ALIGN4(kat->ikm_len) +
          FIPS_KAT_ALIGN4(kat->salt_len) + FIPS_KAT_ALIGN4(kat->info_len) +
          FIPS_KAT_ALIGN4(kat->prk_len) + FIPS_KAT_ALIGN4(kat->okm_len);
+}
+
+// --- sparse_verify_kat_data_t ---
+static inline const uint8_t *fips_kat_sparse_verify_pub_key(
+    const sparse_verify_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_sparse_verify_msg(
+    const sparse_verify_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->pub_key_len);
+}
+static inline const fips_kat_sparse_chunk_t *fips_kat_sparse_verify_chunks(
+    const sparse_verify_kat_data_t *kat) {
+  return (const fips_kat_sparse_chunk_t *)(const void *)(kat->data +
+                                                         FIPS_KAT_ALIGN4(
+                                                             kat->pub_key_len) +
+                                                         FIPS_KAT_ALIGN4(
+                                                             kat->msg_len));
+}
+static inline size_t fips_kat_sparse_verify_expected_size(
+    const sparse_verify_kat_data_t *kat) {
+  return sizeof(sparse_verify_kat_data_t) + FIPS_KAT_ALIGN4(kat->pub_key_len) +
+         FIPS_KAT_ALIGN4(kat->msg_len) +
+         (size_t)kat->num_chunks * sizeof(fips_kat_sparse_chunk_t);
+}
+
+/**
+ * Unpacks a fixed-16-byte-chunk sparse-encoded signature from `kat` into
+ * `out_sig`.
+ *
+ * Enforces strict bounds, alignment, `entry_size == expected_size`, zero
+ * `chunk->reserved`, 16-byte-aligned offsets, and strictly ascending
+ * non-overlapping chunk offsets.
+ *
+ * @param kat Pointer to 4-byte aligned `sparse_verify_kat_data_t` payload.
+ * @param entry_size Byte size of the serialized payload (`entry->size`).
+ * @param[out] out_sig Destination buffer for the expanded signature.
+ * @param out_sig_len Length of `out_sig` in bytes (must equal `kat->sig_len`).
+ * @return True if all chunks were validated and unpacked cleanly; false
+ *         otherwise (with `out_sig` zeroed if touched).
+ */
+OT_WARN_UNUSED_RESULT
+static inline bool fips_kat_sparse_sig_unpack(
+    const sparse_verify_kat_data_t *kat, size_t entry_size, uint8_t *out_sig,
+    size_t out_sig_len) {
+  if (kat == NULL || out_sig == NULL || ((uintptr_t)kat & 0x3u) != 0 ||
+      entry_size < sizeof(sparse_verify_kat_data_t) || out_sig_len == 0 ||
+      out_sig_len != (size_t)kat->sig_len ||
+      entry_size != fips_kat_sparse_verify_expected_size(kat)) {
+    return false;
+  }
+
+  memset(out_sig, 0, out_sig_len);
+
+  const fips_kat_sparse_chunk_t *chunks = fips_kat_sparse_verify_chunks(kat);
+  size_t prev_end = 0;
+
+  for (uint32_t i = 0; i < (uint32_t)kat->num_chunks; ++i) {
+    const fips_kat_sparse_chunk_t *chunk = &chunks[i];
+    if (chunk->reserved != 0) {
+      memset(out_sig, 0, out_sig_len);
+      return false;
+    }
+    const size_t chunk_off = chunk->offset;
+    if ((chunk_off & (kFipsKatSparseChunkBytes - 1u)) != 0 ||
+        chunk_off > out_sig_len ||
+        kFipsKatSparseChunkBytes > out_sig_len - chunk_off) {
+      memset(out_sig, 0, out_sig_len);
+      return false;
+    }
+    if (i > 0 && chunk_off < prev_end) {
+      memset(out_sig, 0, out_sig_len);
+      return false;
+    }
+    memcpy(out_sig + chunk_off, chunk->data, kFipsKatSparseChunkBytes);
+    prev_end = chunk_off + kFipsKatSparseChunkBytes;
+  }
+
+  return true;
 }
 
 #ifdef __cplusplus
