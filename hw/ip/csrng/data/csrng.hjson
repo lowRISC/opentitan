@@ -22,7 +22,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_csrng",
   version:            "3.0.0",
   life_stage:         "L1",
-  design_stage:       "D1",
+  design_stage:       "D2",
   verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
