@@ -52,6 +52,17 @@
       tests: ["{name}_regwen"]
     }
     {
+      name: sec_cm_rmw_intg_check_config_regwen
+      desc: '''Verify the countermeasure(s) RMW_INTG_CHECK.CONFIG.REGWEN.
+
+            The `rmw_intg_check` CSR is excluded in CSR tests, add another test to verify:
+             - When `rmw_intg_check_regwen` is 1, writing to `rmw_intg_check` can take effect.
+             - When `rmw_intg_check_regwen` is 0, writing to `rmw_intg_check` has no effect.
+            '''
+      stage: V2S
+      tests: ["{name}_regwen"]
+    }
+    {
       name: sec_cm_exec_config_regwen
       desc: "Verify the countermeasure(s) EXEC.CONFIG.REGWEN."
       stage: V2S
