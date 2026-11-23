@@ -541,7 +541,11 @@
     {
       name: "RRAM_CTRL.OP.PROTOCOL_CTRL"
       desc: '''As opposed to the host, the RRAM controller can read and write both data and info partitions.
-            It has lower priority than host requests.
+            Simultaneous host and controller requests are arbitrated round-robin.
+            Only one controller operation can be outstanding at a time.
+            While a controller write is in progress, host reads are held off until it completes.
+            While a controller read is outstanding, host reads can still be issued and are interleaved with it.
+            Read responses are returned in the order the requests were issued.
             While an operation is in progress, other HW-initiated requests, i.e. RMA, are held until the operation is finished.
             '''
     }
