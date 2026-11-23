@@ -91,7 +91,6 @@ hw/ip/entropy_src/data/entropy_src.hjson
 hw/ip/aes/data/aes.hjson
 hw/ip/i2c/data/i2c.hjson
 hw/ip/cheriot_mem_sys/data/cheriot_mem_sys.hjson
-hw/top_earlgrey/data/otp/otp_ctrl.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_rma.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson
 hw/top_earlgrey/data/otp/otp_ctrl_img_test_locked0.hjson
