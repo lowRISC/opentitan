@@ -311,6 +311,44 @@ status_t otbn_dmem_sec_wipe(void) {
   return otbn_run_cmd_sync(kOtbnCmdSecWipeDmem);
 }
 
+status_t otbn_cancel_async(void) {
+  // Mask OTBN interrupts while draining so the cancelled operation does not
+  // trigger a spurious external `otbn_done` interrupt.
+  uint32_t intr_enable = abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET);
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, 0);
+
+  status_t done_status = otbn_busy_wait_for_done();
+  status_t wipe_status = OTCRYPTO_OK;
+  if (status_ok(done_status)) {
+    wipe_status = otbn_dmem_sec_wipe();
+  } else {
+    // COVERAGE (HW ERR) Only reached when the cancelled OTBN run encountered an
+    // error or locked OTBN.
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL) {
+      state->imem_cache = 0;
+    }
+
+    // If OTBN is still idle (not locked), clear stale ERR_BITS before issuing
+    // SEC_WIPE_DMEM because SEC_WIPE_DMEM does not clear ERR_BITS in RTL.
+    if (abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET) == kOtbnStatusIdle) {
+      abs_mmio_write32(kBase + OTBN_ERR_BITS_REG_OFFSET, 0);
+      wipe_status = otbn_dmem_sec_wipe();
+    }
+  }
+
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, intr_enable);
+
+  if (status_err(done_status) == kFailedPrecondition ||
+      status_err(wipe_status) == kFailedPrecondition) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  if (!status_ok(done_status)) {
+    return done_status;
+  }
+  return wipe_status;
+}
+
 status_t otbn_set_ctrl_software_errs_fatal(bool enable) {
   // Ensure OTBN is idle (otherwise CTRL writes will be ignored).
   HARDENED_TRY(otbn_assert_idle());

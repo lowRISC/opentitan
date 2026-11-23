@@ -807,6 +807,9 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:config",
