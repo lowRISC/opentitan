@@ -200,8 +200,9 @@ proc sdc_summary {tag} {
 # peripheral.
 #
 #   pinmux       path to the pinmux instance
-#   assignments  list of {periph_in_idx periph_out_idx pad_idx}, where
-#                periph_out_idx may be `-` for an input-only peripheral signal
+#   assignments  list of {periph_in_idx periph_out_idx pad_idx}, where either
+#                index may be `-` for an output-only or an input-only
+#                peripheral signal
 #
 # Mux encodings (pinmux.sv):
 #   mio_mux         = {mio_in, 1'b1, 1'b0}        -> insel  = pad_idx + 2
@@ -212,9 +213,11 @@ proc sdc_pinmux_case_analysis {pinmux assignments} {
     lassign $entry periph_in periph_out pad
     lappend pads $pad
 
-    # Input: the peripheral input reads this pad.
-    sdc_case_reg "${pinmux}/u_reg/u_mio_periph_insel_${periph_in}" 6 [expr {$pad + 2}]
-    # Output: this pad is driven by the peripheral output, where there is one.
+    # Input: the peripheral input reads this pad, if there is one.
+    if {$periph_in ne "-"} {
+      sdc_case_reg "${pinmux}/u_reg/u_mio_periph_insel_${periph_in}" 6 [expr {$pad + 2}]
+    }
+    # Output: this pad is driven by the peripheral output, if there is one.
     if {$periph_out ne "-"} {
       sdc_case_reg "${pinmux}/u_reg/u_mio_outsel_${pad}" 7 [expr {$periph_out + 3}]
     }
