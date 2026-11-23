@@ -170,9 +170,7 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
   logic               cpu_lsu_cheriot_err, cpu_lsu_is_cap;
 
   logic               illegal_scr_addr;
-  // verilator lint_off UNOPTFLAT
   logic               scr_legalization;
-  // verilator lint_on UNOPTFLAT
 
   decoded_cap_t       tfcap;
   perms_t             pmask;
@@ -868,8 +866,10 @@ module ibex_cheriot_ex import ibex_cheriot_pkg::*; import ibex_pkg::*; #(
   assign cheriot_ex_err_info_o = 12'h0;           // no ex stage cheriot error currently
   assign cheriot_wb_err_info_o = cheriot_wb_err_info_q;
 
+  // CHERIoT faults are masked in debug mode, but illegal SCR accesses still trap. This is the same
+  // behavior as RV32I mode CSR accesses.
   assign cheriot_wb_err_d      = cheriot_wb_err_raw & cheriot_exec_id_i
-                                 & cheriot_ex_valid_raw & ~debug_mode_i;
+                                 & cheriot_ex_valid_raw & (~debug_mode_i | illegal_scr_addr);
 
   // addr_bound_vio is the timing optimized version (gating data_req)
   // However we need to generate full version of addr_bound_vio to match the sail exception

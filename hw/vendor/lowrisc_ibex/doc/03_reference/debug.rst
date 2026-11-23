@@ -53,3 +53,28 @@ If the ``DbgTriggerEn`` parameter is set, debug trigger registers are available.
 See :ref:`csr-tselect`, :ref:`csr-tdata1` and :ref:`csr-tdata2` for details.
 All those registers are accessible from Debug Mode only.
 If software tries to access them without the core being in Debug Mode, an illegal instruction exception is triggered.
+
+.. _debug-cheriot:
+
+Debug Mode in CHERIoT
+---------------------
+
+The CHERIoT specification does not define Debug Mode, so the behaviour described in this section is specific to Ibex.
+
+In CHERIoT mode (see :ref:`cheriot`), Ibex does not enforce the CHERIoT protections in Debug Mode:
+
+* Instruction fetch is not checked against the bounds, tag, seal and permissions of PCC.
+* Loads and stores, including ``CLC`` and ``CSC``, are not checked against the bounds, tag, seal and permissions of the authorizing capability.
+* ``CLC`` does not clear the tag or reduce the permissions of the loaded capability based on the permissions of the authorizing capability.
+* Capability instructions do not raise CHERIoT exceptions.
+  ``CSpecialRW`` with an unimplemented SCR index still raises an illegal instruction exception.
+
+Code executed in Debug Mode, such as the debug ROM, the program buffer and the abstract commands of the Debug Module, can therefore read and write all memory and read every capability stored in it.
+
+.. important::
+   Debug Mode bypasses the memory protection of CHERIoT.
+   A system that relies on CHERIoT to protect production assets must not give untrusted parties access to the Debug Module.
+
+Ibex adds the debug SCRs ``depcc``, ``dscratchc0`` and ``dscratchc1``, which are not part of the CHERIoT specification (see :ref:`cheriot-scrs`).
+On entry into Debug Mode, PCC is saved in ``depcc`` and replaced by ``mtcc``, as when taking a trap, and ``dret`` restores PCC from ``depcc``.
+CSR and SCR accesses in Debug Mode therefore still require the SR permission in ``mtcc``.

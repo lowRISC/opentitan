@@ -10,5 +10,6 @@
 `include "ibex_icache_back_line_vseq.sv"
 `include "ibex_icache_many_errors_vseq.sv"
 `include "ibex_icache_ecc_vseq.sv"
+`include "ibex_icache_ecc_back_line_vseq.sv"
 `include "ibex_icache_combo_vseq.sv"
 `include "ibex_icache_reset_vseq.sv"

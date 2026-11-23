@@ -195,7 +195,7 @@ To do so, we would just need to monitor fetches in the memory agent as well as s
 
 ## Building and running tests
 
-Tests are built and run with the [`dvsim`](https://github.com/lowRISC/ibex/tree/master/vendor/lowrisc_ip/util/dvsim) tool (vendored in from the OpenTitan project).
+Tests are built and run with the [`dvsim`](https://github.com/lowRISC/dvsim) tool, which is installed with the Python requirements in `python-requirements.txt`.
 To ensure output files end up in the right place without ugly command lines, this is wrapped up in a Makefile.
 To run the test suite, run:
 

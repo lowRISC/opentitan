@@ -108,6 +108,8 @@ Instead, two instances of the register file are used.
 The first instance is driven by the main core and holds the data itself.
 The second instance is driven by the shadow core and holds the corresponding ECC.
 ECC checking is conducted inside the shadow core.
+In addition, the register file read addresses and write port (write address, write enable, and write data) of the main core are compared against the ones of the shadow core in the dual core lockstep.
+Relying on the ECC check alone would miss a faulty value whose check bits happen to match those of the correct value, e.g., a bitwise inverted result or a read from a register holding the inverse.
 This can be useful to detect fault injection attacks since the register file covers a reasonably large area.
 No attempt is made to correct detected errors, but an internal major alert is signaled for the system to take action.
 
@@ -138,6 +140,15 @@ This adds a check that the PC driven from the IF stage has not been modified.
 A check is asserted that the current IF stage PC equals the previous PC plus the correct increment.
 The check is disabled after branches and after reset.
 If a mismatch is detected, an internal major alert is signaled.
+
+Clock gate check
+----------------
+
+When Ibex is configured with the SecureIbex parameter, the core clock gate is checked.
+A fault on the clock enable logic or on the clock gate could stop the core clock while the core should be running.
+As both cores of the dual core lockstep and the lockstep comparison are clocked by the gated clock, the lockstep cannot detect this.
+To mitigate this threat, the clock enable is recomputed from an independent copy of the core busy register and the gated clock is observed using a toggle flop that is sampled in the ungated clock domain.
+If the gated clock did not toggle although it was enabled, an internal major alert is signaled.
 
 Shadow CSRs
 -----------

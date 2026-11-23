@@ -29,9 +29,9 @@ class ibex_icache_env_cfg extends dv_base_env_cfg;
     super.new(name);
   endfunction
 
-  virtual function void initialize(bit [BUS_AW-1:0] csr_base_addr = '1);
-    ral_model_names = {}; // The ICache has no RAL model
-    super.initialize(csr_base_addr);
+  virtual function void initialize(bit inherit_ral_models = 1'b0);
+    // The ICache has no RAL model, so skip initialize_ral() and just mark the object as initialized
+    is_initialized = 1'b1;
 
     core_agent_cfg     = ibex_icache_core_agent_cfg::type_id::create("core_agent_cfg");
     mem_agent_cfg      = ibex_icache_mem_agent_cfg::type_id::create ("mem_agent_cfg");
