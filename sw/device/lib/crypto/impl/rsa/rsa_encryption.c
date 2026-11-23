@@ -102,6 +102,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_len) {
+  *plaintext_len = 0;
+
   // Wait for OTBN to complete and get the size and key_mode.
   size_t num_words;
   otcrypto_key_mode_t stored_key_mode = (otcrypto_key_mode_t)0;
@@ -177,8 +179,12 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                                      num_words, plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
+      HARDENED_CHECK_GE(max_plaintext_bytelen, 11);
+      if (plaintext_max_bytelen < max_plaintext_bytelen - 11) {
+        hardened_memshred(recovered_message, num_words);
+        return OTCRYPTO_BAD_ARGS;
+      }
       return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
-                                                 plaintext_max_bytelen,
                                                  plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
