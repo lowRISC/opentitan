@@ -23,13 +23,27 @@
     {
       name: interrupts
       desc: '''
-            This test verifies the behavior of the Interrupt State Register.
-            Verify cs_cmd_req_done interrupt asserts when glen number of genbit words have been generated.
-            Verify cs_entropy_req interrupt asserts when instantiate or reseed is called with flag0
-            set to false.
-            Verify cs_hw_inst_exc interrupt asserts when any of the application interfaces responds with a CSRNG_ERROR response status signal.
-            Verify cs_fatal_err interrupt asserts when any bit of err_code register is set.
-            Verify that each interrupt clears back to 0 after writing the corresponding interrupt state bit.
+            Verify the interrupts and HW_EXC_STS.
+
+            **Stimulus**:
+            - Send commands to each instance that complete, including Generate commands (CS_CMD_REQ_DONE for the SW instance).
+            - Send Instantiate and Reseed commands with flag0 cleared to each instance (CS_ENTROPY_REQ).
+            - Send commands to each instance that are refused with an error status (CS_CMD_REQ_DONE for the SW instance, CS_HW_INST_EXC for HW instances).
+            - Halt an instance via INT_STATE_HALT (CS_CMD_REQ_DONE).
+            - Cause each kind of fatal error: a FIFO error, an illegal state machine state, a mismatch in a hardened counter and an AES fatal alert (CS_FATAL_ERR).
+            - Read HW_EXC_STS after a HW instance acknowledges a command with an error status, then write zero to it.
+            - Clear each interrupt by writing one to its INTR_STATE bit.
+            - Disable the module after a fatal error, then write one to INTR_STATE.CS_FATAL_ERR.
+
+            **Checks**:
+            - For each command the SW instance acknowledges, with any status, INTR_STATE.CS_CMD_REQ_DONE is set when SW_CMD_STS.CMD_ACK is set.
+            - When a halted instance has quiesced, INTR_STATE.CS_CMD_REQ_DONE is set.
+            - For each Instantiate or Reseed command with flag0 cleared, INTR_STATE.CS_ENTROPY_REQ is set.
+            - For each command a HW instance acknowledges with an error status, INTR_STATE.CS_HW_INST_EXC is set and the instance's HW_EXC_STS bit is set until software writes zero to it.
+              For the SW instance, neither is set.
+            - For each fatal error, INTR_STATE.CS_FATAL_ERR is set and the corresponding ERR_CODE bit is set.
+            - When one is written to an INTR_STATE bit whose source is inactive, the bit clears to 0.
+            - When one is written to INTR_STATE.CS_FATAL_ERR with the module disabled, the bit is set again for a state machine or hardened counter error, and clears to 0 for a FIFO error.
             '''
       stage: V2
       tests: ["csrng_intr"]
