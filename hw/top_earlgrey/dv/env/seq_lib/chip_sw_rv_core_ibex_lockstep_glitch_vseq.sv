@@ -72,6 +72,19 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     )
   endtask
 
+  // Name of the ibex_lockstep input that receives the same signal as an input of the main core, or
+  // an empty string if there is none. The TRVK sits between the data interface of ibex_top, which
+  // the lockstep taps, and the data interface of the main core, so the data interface responses of
+  // the main core have no counterpart.
+  function automatic string lockstep_inp_name(string core_inp_name);
+    case (core_inp_name)
+      "data_gnt_i", "data_rvalid_i", "data_rdata_i", "data_err_i": return "";
+      "rf_rdata_a_ecc_i": return "rf_rdata_a_i";
+      "rf_rdata_b_ecc_i": return "rf_rdata_b_i";
+      default: return core_inp_name;
+    endcase
+  endfunction
+
   function automatic bit core_rf_read_used(string rf_port, bit lockstep_core);
     logic used, rf_ren, rf_rd_wb_match, rf_write_wb;
     rf_ren = hdl_read_core_signal($sformatf("rf_ren_%s", rf_port), lockstep_core, 1);
@@ -179,10 +192,12 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     string port_width_path;
     bit glitch_lockstep_core;
     string port_name;
+    string lockstep_port_name;
     string glitch_core_path;
     string glitch_path;
     string glitch_path_lockstep;
     bit glitched_port_is_inp;
+    bit glitch_encoded_tag;
     int unsigned unpacked_idx;
     val_t orig_val;
     val_t orig_val_cmp;
@@ -208,7 +223,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     // List of all ports and their bit widths (or the name of the parameter that defines the width
     // and/or the unpacked dimension). The fourth field allows enabling an offset from where the
     // fault will be injected.
-    ports = new[45];
+    ports = new[46];
     ports = '{
       // `hart_id_i` and `boot_addr_i` are not glitch-protected by the lockstep core.
       // '{"hart_id_i",               1, "", 0, 0},
@@ -226,6 +241,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       '{"data_be_o",               1, "", 0, 0},
       '{"data_addr_o",            32, "", 0, 0},
       '{"data_wdata_o",            0, "MemDataWidth", 0, 0},
+      '{"data_tag_o",              1, "", 0, 0},
       '{"data_rdata_i",            0, "MemDataWidth", 0, 0},
       '{"data_err_i",              1, "", 0, 0},
       '{"dummy_instr_id_o",        1, "", 0, 0},
@@ -276,13 +292,13 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
       // Although the shadow core drives all RegFileDataEccWidth bits of rf_wdata_wb_ecc_o, only
       // bits RegFileDataEccWidth-1:RegFileDataWidth are forwarded to the shadow register file.
       // As a fault in the lower bits have no effect, use an offset of RegFileDataWidth.
-      ports[42] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataEccWidth", 0, "RegFileDataWidth"};
-      ports[43] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
-      ports[44] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
+      ports[43] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataEccWidth", 0, "RegFileDataWidth"};
+      ports[44] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
+      ports[45] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataEccWidth", 0, 0};
     end else begin
-      ports[42] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0, 0};
-      ports[43] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0, 0};
-      ports[44] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0, 0};
+      ports[43] = '{"rf_wdata_wb_ecc_o",       0, "RegFileDataWidth", 0, 0};
+      ports[44] = '{"rf_rdata_a_ecc_i",        0, "RegFileDataWidth", 0, 0};
+      ports[45] = '{"rf_rdata_b_ecc_i",        0, "RegFileDataWidth", 0, 0};
     end
 
     // Randomly pick a port (of either the lockstep core or the regular core) to glitch.
@@ -299,19 +315,36 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
     glitch_core_path = glitch_lockstep_core ? lockstep_core_path : core_path;
     port_name = ports[port_idx].name;
     glitch_path = $sformatf("%s.%s", glitch_core_path, port_name);
-    glitch_path_lockstep = $sformatf("%s.%s", lockstep_path, port_name);
+    lockstep_port_name = lockstep_inp_name(port_name);
+    glitch_path_lockstep = $sformatf("%s.%s", lockstep_path, lockstep_port_name);
     glitched_port_is_inp = (uvm_re_match("*_i", port_name) == 0);
+
+    // The request tag leaves ibex_top multi-bit encoded, and the lockstep compares the encoded
+    // value. With the same odds as each port, flip one bit of that encoded tag instead, which gives
+    // an invalid encoding, like a fault in or after the encoder. +glitch_encoded_tag=1 forces this
+    // choice.
+    glitch_encoded_tag = ($urandom_range(ports.size()) == 0);
+    void'($value$plusargs("glitch_encoded_tag=%0b", glitch_encoded_tag));
+    if (glitch_encoded_tag) begin
+      glitch_lockstep_core = 1'b0;
+      port_name = "data_tag_o";
+      port_width = $bits(ibex_pkg::ibex_mubi_t);
+      glitch_path = $sformatf("%s.%s", ibex_top_path, port_name);
+      lockstep_port_name = "";
+      glitched_port_is_inp = 1'b0;
+    end
 
     // If the port is an unpacked array, pick an index of the unpacked dimension to glitch and apply
     // that to the glitched signal path.
-    if (ports[port_idx].unpacked_dim_width > 0) begin
+    if (!glitch_encoded_tag && ports[port_idx].unpacked_dim_width > 0) begin
       unpacked_idx = $urandom_range(ports[port_idx].unpacked_dim_width - 1);
       glitch_path = $sformatf("%s[%0d]", glitch_path, unpacked_idx);
       glitch_path_lockstep = $sformatf("%s[%0d]", glitch_path_lockstep, unpacked_idx);
     end
 
     // Pick one bit to glitch in the port.
-    bit_idx = $urandom_range(port_width - 1 - ports[port_idx].offset) + ports[port_idx].offset;
+    bit_idx = glitch_encoded_tag ? $urandom_range(port_width - 1) :
+              $urandom_range(port_width - 1 - ports[port_idx].offset) + ports[port_idx].offset;
 
     // Wait until the CPU is executing code, except if glitching the I$ scramble key valid port.
     // The reason is that the scramble key is provided shortly after reset and then not again until
@@ -642,7 +675,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
         end
       end : monitor_alert_major_internal
       begin : determine_response
-        if (!glitch_lockstep_core && glitched_port_is_inp) begin
+        if (!glitch_lockstep_core && glitched_port_is_inp && lockstep_port_name != "") begin
           // The input ports of the ibex_core module are defined as `logic` without an explicit net
           // type. According to the standard, simulation tools are thus supposed to model these inputs
           // using a `var` type. However, it turns out that some tools collapse input ports into a
@@ -654,7 +687,9 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           // To avoid this, we also glitch the corresponding input of the ibex_lockstep instance to
           // the opposite value. The ibex_lockstep instance is embedded inside prim_buf cells across
           // which glitches don't propagate back. Also, the delay lines are embedded inside the
-          // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously.
+          // ibex_lockstep instance. It's thus fine to apply the glitch simultaneously. The data
+          // interface responses of the main core come from the TRVK, which does not feed the
+          // ibex_lockstep instance, so they need no such counterpart.
           //
           // It's further worth noting that:
           //
@@ -680,7 +715,7 @@ class chip_sw_rv_core_ibex_lockstep_glitch_vseq extends chip_sw_base_vseq;
           // release the forcing at this point.
           `DV_CHECK_FATAL(uvm_hdl_release(glitch_path));
           `uvm_info(`gfn, $sformatf("Releasing force of %s.", glitch_path), UVM_LOW)
-          if (!glitch_lockstep_core && glitched_port_is_inp) begin
+          if (!glitch_lockstep_core && glitched_port_is_inp && lockstep_port_name != "") begin
             // In case we glitched an input port of the non-lockstep core, we must now also release
             // the force applied to the corresponding port of the ibex_lockstep instance.
             `DV_CHECK_FATAL(uvm_hdl_release(glitch_path_lockstep));
