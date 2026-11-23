@@ -233,15 +233,34 @@ module cheriot_mem_sys_core
   // SEC_CM: CORED_TAG.INTERSIG.MUBI
   // The capability tags of the core data port are multi-bit encoded between Ibex and this
   // subsystem. Only MuBi4True reads as tagged, and an invalid tag on a request raises the fatal
-  // alert.
+  // alert. The decoder and the check get one buffered copy of the request tag each, so synthesis
+  // cannot share logic between them. With AsyncOn(0) the receiver adds no flop.
+  typedef enum logic [1:0] {
+    TagDecIdx,
+    TagCheckIdx,
+    TagLast
+  } cored_tag_pos_e;
+
+  prim_mubi_pkg::mubi4_t [TagLast-1:0] cored_tag_h2d_buf;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_cored_tag_h2d_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cored_tag_h2d_i),
+    .mubi_o(cored_tag_h2d_buf)
+  );
+
   prim_mubi4_dec u_prim_mubi4_dec_cored_tag (
-    .mubi_i    (cored_tag_h2d_i),
+    .mubi_i    (cored_tag_h2d_buf[TagDecIdx]),
     .mubi_dec_o(cored_tag_h2d)
   );
 
   // The tag only carries a value with a request, so only then is an invalid encoding a fault.
-  assign cheriot_fatal_error.cored_tag_intg = cored_tl_d_i.a_valid &&
-                                              prim_mubi_pkg::mubi4_test_invalid(cored_tag_h2d_i);
+  assign cheriot_fatal_error.cored_tag_intg =
+      cored_tl_d_i.a_valid && prim_mubi_pkg::mubi4_test_invalid(cored_tag_h2d_buf[TagCheckIdx]);
 
   prim_mubi4_sender #(
     .AsyncOn (1'b0),

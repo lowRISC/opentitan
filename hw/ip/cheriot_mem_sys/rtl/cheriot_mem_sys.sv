@@ -100,6 +100,46 @@ module cheriot_mem_sys
   );
 
 
+  /////////////////////
+  // Capability tags //
+  /////////////////////
+
+  // SEC_CM: CORED_TAG.INTERSIG.MUBI
+  // The request tag and the main copy's response tag get one buffered copy each for the main copy
+  // or the port and one for the lockstep, so synthesis cannot share logic between the two. With
+  // AsyncOn(0) the receivers add no flop.
+  typedef enum logic [1:0] {
+    TagMainIdx,
+    TagLockstepIdx,
+    TagLast
+  } cored_tag_pos_e;
+
+  prim_mubi_pkg::mubi4_t [TagLast-1:0] cored_tag_h2d_buf, cored_tag_d2h_buf;
+  prim_mubi_pkg::mubi4_t               core_cored_tag_d2h;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_cored_tag_h2d_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cored_tag_h2d_i),
+    .mubi_o(cored_tag_h2d_buf)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_cored_tag_d2h_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(core_cored_tag_d2h),
+    .mubi_o(cored_tag_d2h_buf)
+  );
+
+  assign cored_tag_d2h_o = cored_tag_d2h_buf[TagMainIdx];
+
+
   //////////
   // Core //
   //////////
@@ -124,9 +164,9 @@ module cheriot_mem_sys
     .tbre_done_o        (tbre_done),
     .alert_fatal_fault_o(core_alert_fatal_fault),
     .cored_tl_d_i,
-    .cored_tag_h2d_i,
+    .cored_tag_h2d_i    (cored_tag_h2d_buf[TagMainIdx]),
     .cored_tl_d_o,
-    .cored_tag_d2h_o,
+    .cored_tag_d2h_o    (core_cored_tag_d2h),
     .corerevbm_tl_i,
     .corerevbm_tl_o,
     .revbm_tl_d_i,
@@ -169,9 +209,9 @@ module cheriot_mem_sys
       .tbre_done_i        (tbre_done),
       .alert_fatal_fault_o(lockstep_alert_fatal_fault),
       .cored_tl_d_h2d_i   (cored_tl_d_i),
-      .cored_tag_h2d_i,
+      .cored_tag_h2d_i    (cored_tag_h2d_buf[TagLockstepIdx]),
       .cored_tl_d_d2h_i   (cored_tl_d_o),
-      .cored_tag_d2h_i    (cored_tag_d2h_o),
+      .cored_tag_d2h_i    (cored_tag_d2h_buf[TagLockstepIdx]),
       .corerevbm_tl_h2d_i (corerevbm_tl_i),
       .corerevbm_tl_d2h_i (corerevbm_tl_o),
       .revbm_tl_d_h2d_i   (revbm_tl_d_i),
@@ -186,9 +226,11 @@ module cheriot_mem_sys
   end else begin : gen_no_lockstep
     assign lockstep_alert_fatal_fault = 1'b0;
 
-    // The scan inputs only bypass the reset of the second copy.
-    logic unused_scan;
-    assign unused_scan = ^{scanmode_i, scan_rst_ni};
+    // The scan inputs only bypass the reset of the second copy, and the tag copies only serve
+    // the lockstep.
+    logic unused_lockstep_inputs;
+    assign unused_lockstep_inputs = ^{scanmode_i, scan_rst_ni, cored_tag_h2d_buf[TagLockstepIdx],
+                                      cored_tag_d2h_buf[TagLockstepIdx]};
   end
 
 
