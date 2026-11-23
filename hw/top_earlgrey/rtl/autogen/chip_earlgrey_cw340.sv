@@ -132,8 +132,8 @@ module chip_earlgrey_cw340 #(
     dio_pad_type: {
       BidirStr, // DIO spi_host0_csb
       BidirStr, // DIO spi_host0_sck
-      InputStd, // DIO spi_device_csb
-      InputStd, // DIO spi_device_sck
+      BidirStd, // DIO spi_device_csb
+      BidirStd, // DIO spi_device_sck
       BidirStd, // DIO sysrst_ctrl_flash_wp_l
       BidirStd, // DIO sysrst_ctrl_ec_rst_l
       BidirStr, // DIO spi_device_sd
@@ -364,8 +364,8 @@ module chip_earlgrey_cw340 #(
       InputStd, // IO_CLK
       BidirStd, // IOR9
       BidirStd, // IOR8
-      InputStd, // SPI_DEV_CS_L
-      InputStd, // SPI_DEV_CLK
+      BidirStd, // SPI_DEV_CS_L
+      BidirStd, // SPI_DEV_CLK
       BidirStr, // SPI_DEV_D3
       BidirStr, // SPI_DEV_D2
       BidirStr, // SPI_DEV_D1

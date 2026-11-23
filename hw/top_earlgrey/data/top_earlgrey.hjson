@@ -1668,8 +1668,8 @@
       { name: 'SPI_DEV_D1'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
       { name: 'SPI_DEV_D2'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
       { name: 'SPI_DEV_D3'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_CLK'     , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
-      { name: 'SPI_DEV_CS_L'    , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
+      { name: 'SPI_DEV_CLK'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
+      { name: 'SPI_DEV_CS_L'    , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
       // IOA
       { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},

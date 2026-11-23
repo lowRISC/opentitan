@@ -16109,7 +16109,7 @@
       }
       {
         name: SPI_DEV_CLK
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI device clock
@@ -16118,7 +16118,7 @@
       }
       {
         name: SPI_DEV_CS_L
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI device chip select
@@ -16676,7 +16676,7 @@
           SPI_DEV_CLK
         ]
         desc: ""
-        attr: InputStd
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -16687,7 +16687,7 @@
           SPI_DEV_CS_L
         ]
         desc: ""
-        attr: InputStd
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -18114,7 +18114,7 @@
         [
           SPI_DEV_CLK
         ]
-        attr: InputStd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Main
@@ -18129,7 +18129,7 @@
         [
           SPI_DEV_CS_L
         ]
-        attr: InputStd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Main
