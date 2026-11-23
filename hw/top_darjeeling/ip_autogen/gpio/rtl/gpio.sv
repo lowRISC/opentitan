@@ -336,6 +336,14 @@ module gpio
     end
   end
 
+  // The mask and data fields of the MASKED_OUT_* and MASKED_OE_* registers are written together,
+  // so the qe of the data field is used for the whole register.
+  logic unused_masked_mask_qe;
+  assign unused_masked_mask_qe = ^{reg2hw.masked_out_upper.mask.qe,
+                                   reg2hw.masked_out_lower.mask.qe,
+                                   reg2hw.masked_oe_upper.mask.qe,
+                                   reg2hw.masked_oe_lower.mask.qe};
+
   logic [NumIOs-1:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
   logic [NumIOs-1:0] event_intr_combined;
 
