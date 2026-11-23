@@ -25,27 +25,52 @@
   testpoints: [
     {
       name: sec_cm_bus_integrity
-      desc: "Verify the countermeasure(s) BUS.INTEGRITY."
+      desc: '''
+            Verify the countermeasure(s) BUS.INTEGRITY.
+
+            Integrity faults on the register port, the meta SRAM responses, the revocation
+            engine's reads and bitmap lookups, and the commands of capability stores to the NVM
+            are detected and raise `fatal_fault` as documented. End-to-end protection also relies
+            on LOGIC.SHADOW.
+            '''
       stage: V2S
-      tests: []
+      tests: ["cheriot_mem_sys_tl_intg_err", "cheriot_mem_sys_err_csr_intg",
+              "cheriot_mem_sys_err_meta_intg", "cheriot_mem_sys_err_tbre_read",
+              "cheriot_mem_sys_err_tbre_revbm", "cheriot_mem_sys_err_cmd_intg"]
     }
     {
       name: sec_cm_logic_shadow
-      desc: "Verify the countermeasure(s) LOGIC.SHADOW."
+      desc: '''
+            Verify the countermeasure(s) LOGIC.SHADOW.
+
+            Not implemented yet (#30572). Once it is, a fault in either copy must raise
+            `fatal_fault`. Until then, the trvk_fault testpoint shows what a single fault in the
+            revocation engine's TRVK filter does.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_sw_noaccess
-      desc: "Verify the countermeasure(s) MEM.SW_NOACCESS."
+      desc: '''
+            Verify the countermeasure(s) MEM.SW_NOACCESS.
+
+            Both bitmap ports and unmapped register offsets refuse every access to the tag regions,
+            and the tags and the meta SRAM are unchanged afterwards.
+            '''
       stage: V2S
-      tests: []
+      tests: ["cheriot_mem_sys_access_check"]
     }
     {
       name: sec_cm_intersig_mubi
-      desc: "Verify the countermeasure(s) INTERSIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) INTERSIG.MUBI.
+
+            All 15 `cheriot_ena_i` values other than MuBi4True select ePMP mode: no tag lookup, no
+            meta SRAM access, starts ignored.
+            '''
       stage: V2S
-      tests: []
+      tests: ["cheriot_mem_sys_mode_gating"]
     }
     {
       name: sec_cm_cored_tag_intersig_mubi
@@ -56,9 +81,8 @@
             check that it reads as untagged and raises the `fatal_fault` alert.
             '''
       stage: V2S
-      // The core data port is not driven in this testbench, so the chip-level testpoint
-      // chip_sw_cheriot_cored_tag_mubi is to cover this.
-      tests: []
+      // The chip-level testpoint chip_sw_cheriot_cored_tag_mubi covers the same at the top level.
+      tests: ["cheriot_mem_sys_cored_tag_mubi"]
     }
   ]
 }

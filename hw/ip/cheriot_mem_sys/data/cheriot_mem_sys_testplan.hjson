@@ -13,6 +13,11 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "cheriot_mem_sys_sec_cm_testplan.hjson"]
 
+  // Checking, for every test past the smoke test: the environment has an agent on each port and
+  // predicts from what it sees on the ports alone, with a reference model of the subsystem written
+  // from its documentation. It checks every completed access on the core data port, both bitmap
+  // ports and `regs` (data, tag and error), and at the end of each test compares the meta SRAM
+  // word by word. Each test's sequence describes its stimulus in full.
   testpoints: [
     {
       name: smoke
@@ -32,14 +37,343 @@
       stage: V1
       tests: ["cheriot_mem_sys_smoke"]
     }
+    {
+      name: tag_smoke
+      desc: '''
+            In CHERIoT mode, a capability store sets a tag, a capability load returns it and a data
+            store clears it. In ePMP mode, no access reaches the meta SRAM and no tag is returned.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tag_smoke"]
+    }
+    {
+      name: tag_store_load
+      desc: '''
+            Capability stores set the tag of their granule and capability loads return it, in the
+            main SRAM and the NVM, at the region boundaries and at random granules. Untagged memory
+            has no tag and never reaches the meta SRAM.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tag_store_load"]
+    }
+    {
+      name: tag_clear_subword
+      desc: '''
+            Every non-capability write (byte, halfword, word, partial word) clears the tag of the
+            granule it touches and of no other.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tag_clear_subword"]
+    }
+    {
+      name: cap_load_hint
+      desc: '''
+            Only a hinted, 64-bit aligned load in CHERIoT mode to tagged memory looks its tag up.
+            The second word of a capability carries the first word's tag. Two outstanding accesses
+            under back-pressure.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_cap_load_hint"]
+    }
+    {
+      name: access_check
+      desc: '''
+            The bitmap window and the core's TRVK port reach only the revocation bitmap, with
+            full-word, word-aligned Get and PutFullData. The tag regions are not mapped. No alert.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_access_check"]
+    }
+    {
+      name: mode_gating
+      desc: '''
+            Every `cheriot_ena_i` value other than MuBi4True (MuBi4False and the 14 invalid
+            encodings) blocks the meta SRAM from every port, makes no tag lookup and ignores
+            TBRE_START.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_mode_gating"]
+    }
+    {
+      name: core_matrix
+      desc: '''
+            Every core access shape (opcode, size, alignment, tag or hint) in every mode and
+            region: main SRAM, NVM, untagged memory and addresses outside the map.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_core_matrix"]
+    }
+    {
+      name: rmw
+      desc: '''
+            A tag write changes exactly its bit of the meta word under heavy traffic to one word,
+            and skips the write-back when the bit already has the value. The core and the
+            revocation engine writing bits of the same word at once lose no update.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_rmw_same_word", "cheriot_mem_sys_rmw_core_tbre_same_word"]
+    }
+    {
+      name: nvm_cap_store
+      desc: '''
+            A capability store to the NVM is read back and compared: it sets the tag only if the
+            NVM holds both words, otherwise it answers d_error and leaves the tag. Plain stores are
+            refused and clear the tag; programming the NVM leaves it. Stores the core cannot
+            produce raise `fatal_fault`.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_nvm_cap_store"]
+    }
+    {
+      name: nvm_corners
+      desc: '''
+            Capability stores to the NVM that do not compare, repeat or split a word, write part of
+            a word or put the second word in another granule, with the tag clear or changed by a
+            bitmap write during a sweep. Back-to-back stores: with the tag request queue full, the
+            next store presented on the cycle the previous one's response is taken, after a failed
+            and after a successful compare.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_wtrc_handoffs", "cheriot_mem_sys_nvm_corners"]
+    }
+    {
+      name: tbre_sweep
+      desc: '''
+            A sweep clears exactly the tagged, non-sealing capabilities whose base is revoked: over
+            whole regions, sub-ranges and single capabilities, for every exponent and both base
+            corrections, at the bitmap's edges.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tbre_sweep", "cheriot_mem_sys_tbre_base_decode"]
+    }
+    {
+      name: tbre_registers
+      desc: '''
+            TBRE_START, TBRE_REGWEN, TBRE_STATUS and TBRE_EPOCH: accepted and ignored starts,
+            start_err and sweep_err, the lock while a sweep runs, a sweep clamped at the top of its
+            region, refused partial writes and unmapped offsets, the epoch count.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tbre_csr", "cheriot_mem_sys_tbre_epoch"]
+    }
+    {
+      name: tbre_concurrent
+      desc: '''
+            Core traffic and bitmap writes during a sweep. Core writes to capabilities the engine
+            has in flight stop their clear.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tbre_concurrent", "cheriot_mem_sys_tbre_snoop_window"]
+    }
+    {
+      name: tbre_store_race
+      desc: '''
+            The core overwrites a revoked capability with a live one 0 to 23 cycles after each of
+            the revocation engine's requests and responses for it. The final tag must be one the
+            documentation allows for that race.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tbre_store_race"]
+    }
+    {
+      name: tbre_intr
+      desc: '''
+            The `tbre_done` interrupt at the end of every sweep, including a failed one; INTR_STATE
+            as a level; INTR_ENABLE masking; INTR_TEST; no interrupt for an ignored start.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_tbre_intr"]
+    }
+    {
+      name: revocation_causes
+      desc: '''
+            One bitmap response that combines a revoked base, d_error and bad data integrity, in a
+            one-capability sweep. Each cause alone is covered by tbre_sweep and errors.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_revocation_causes"]
+    }
+    {
+      name: bitmap_boundaries
+      desc: '''
+            A bitmap whose size is not a power of two: the last real granule, the first and last
+            granules of the rounded-up window, the first granule beyond it, and bases below the
+            heap.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_bitmap_boundaries"]
+    }
+    {
+      name: overlapping_events
+      desc: '''
+            Events that overlap on one capability: bitmap writes during sweeps of sealing and
+            non-sealing capabilities, core stores around the engine's read of the first word, and a
+            fault on a shared tag word with INTR_ENABLE set.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_ambiguous_overlaps"]
+    }
+    {
+      name: alert_test_reg
+      desc: '''
+            ALERT_TEST.fatal_fault raises one handshake while its write enable is set; clearing the
+            write enable disables alert testing until reset.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_alert_test_reg"]
+    }
+    {
+      name: csr_byte_enable
+      desc: '''
+            INTR_TEST writes without byte 0 enabled are refused and leave INTR_STATE and the pin
+            unchanged; writes with byte 0 enabled take effect.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_csr_byte_enable"]
+    }
+    {
+      name: errors
+      desc: '''
+            Every error path:
+            - a register command integrity fault;
+            - errors on the data path, passed to the core without an alert;
+            - device and integrity errors on the meta SRAM path (`fatal_fault`);
+            - an error on a tag invalidation write;
+            - faults on the revocation engine's reads and bitmap lookups (sweep_err, the sweep not
+              counted, the capability kept or revoked as documented).
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_err_csr_intg", "cheriot_mem_sys_err_data_path",
+              "cheriot_mem_sys_err_meta_intg", "cheriot_mem_sys_err_tag_path",
+              "cheriot_mem_sys_invalidation_error", "cheriot_mem_sys_err_tbre_read",
+              "cheriot_mem_sys_err_tbre_revbm"]
+    }
+    {
+      name: reset_mid_sweep
+      desc: '''
+            Reset during a sweep, with and without racing core stores, and in ePMP mode. After
+            reset: register reset values, quiet ports, memory kept, tags as documented, and a new
+            sweep works.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_reset"]
+    }
+    {
+      name: latency_backpressure
+      desc: '''
+            The latency the core sees for each access kind, the revocation engine's outstanding
+            reads, and forward progress under bounded back-pressure on every port.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_latency", "cheriot_mem_sys_trvk_backpressure"]
+    }
+    {
+      name: toggle_sweeps
+      desc: "Legal address, data and source ID values on every port, to toggle every bit."
+      stage: V2
+      tests: ["cheriot_mem_sys_toggle_sweeps"]
+    }
+    {
+      name: mixed_random
+      desc: '''
+            Random core traffic of every kind against sweeps of random ranges, concentrated on a few
+            meta words so that the core, the engine and the bitmap meet.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_mixed_random", "cheriot_mem_sys_random_long"]
+    }
+    {
+      name: random
+      desc: '''
+            Constrained-random traffic on every port: data and capability loads and stores to the
+            main SRAM, the NVM and untagged memory; capability stores to the NVM that match and
+            that do not; bitmap reads and writes on both bitmap ports; sweeps and register
+            accesses; `cheriot_ena_i` in both modes and invalid encodings.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_cmodel_random"]
+    }
+    {
+      name: trvk_fault
+      desc: '''
+            Single-cycle faults on each decision of the revocation engine's TRVK filter (verdict,
+            tag out, bit select, lookup required, out of range, sealing, alignment) during a
+            sweep. Check the swept capability's tag afterwards, and that a fault that changes it
+            raises `fatal_fault`. Full protection needs LOGIC.SHADOW. Faults in Ibex's own
+            revocation check belong to the Ibex and chip plans.
+            '''
+      stage: V2S
+      tests: ["cheriot_mem_sys_trvk_fault_verdict", "cheriot_mem_sys_trvk_fault_tag_out",
+              "cheriot_mem_sys_trvk_fault_bit_select", "cheriot_mem_sys_trvk_fault_req_required",
+              "cheriot_mem_sys_trvk_fault_out_of_range", "cheriot_mem_sys_trvk_fault_sealing",
+              "cheriot_mem_sys_trvk_fault_align"]
+    }
+    {
+      name: checker_negative
+      desc: '''
+            Show that the environment's checks can fail. Each test corrupts one value the checker
+            sees (a load's tag, a swept capability, a bitmap word, an error, an epoch, a latency, a
+            model response) and must fail at that comparison.
+            '''
+      stage: V2
+      tests: ["cheriot_mem_sys_cap_load_hint_corrupt_load_tag",
+              "cheriot_mem_sys_cap_load_hint_corrupt_sticky_tag",
+              "cheriot_mem_sys_tbre_sweep_corrupt_sweep",
+              "cheriot_mem_sys_access_check_corrupt_revbm",
+              "cheriot_mem_sys_access_check_corrupt_err",
+              "cheriot_mem_sys_tag_store_load_corrupt_data",
+              "cheriot_mem_sys_tbre_store_race_corrupt_race",
+              "cheriot_mem_sys_tbre_epoch_corrupt_epoch",
+              "cheriot_mem_sys_latency_corrupt_latency",
+              "cheriot_mem_sys_trvk_fault_corrupt_trvk",
+              "cheriot_mem_sys_trvk_backpressure_corrupt_backpressure",
+              "cheriot_mem_sys_cmodel_random_inject_fail"]
+    }
   ]
 
   covergroups: [
     {
-      name: cheriot_mem_sys_feature_cg
+      name: core_access_cg
       desc: '''
-            Placeholder. No covergroup is implemented; SIM_COVERAGE_MODEL_ADDED is Not Started and
-            scoped for the V1-to-V2 work.
+            Every core access: opcode, size, tag or load hint, mode (CHERIoT, ePMP, invalid),
+            region (main SRAM, NVM, untagged, outside the map), error and returned tag, crossed.
+            '''
+    }
+    {
+      name: bitmap_access_cg
+      desc: "Both bitmap ports: requester, opcode, legality and error, crossed."
+    }
+    {
+      name: tbre_start_cg
+      desc: "Accepted and ignored starts by reason, region and clamping at the region's top."
+    }
+    {
+      name: tbre_end_cg
+      desc: "How a sweep ends: done, each fault kind, denied reads; region; interrupt enabled."
+    }
+    {
+      name: sweep_cap_cg
+      desc: '''
+            Each swept capability: tagged, sealing, base revoked, exponent and base correction.
+            '''
+    }
+    {
+      name: sweep_race_cg
+      desc: '''
+            Core stores during a sweep: outside or inside the swept range, sharing a meta word with
+            a swept capability, possibly revoked, and their timing against the engine's reads.
+            '''
+    }
+    {
+      name: nvm_cap_store_cg
+      desc: "Capability stores to the NVM: word, outcome and the tag before the store."
+    }
+    {
+      name: rtl_internal_cg
+      desc: '''
+            Bound to the RTL, observation only (no checks): the tag filters' lookup decisions, the
+            RMW filter, the revocation engine's mover and its TRVK filter, the access check and the
+            NVM compare.
             '''
     }
   ]
