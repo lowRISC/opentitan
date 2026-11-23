@@ -21,6 +21,42 @@ set SETUP_CLOCK_UNCERTAINTY 0.5
 set CLK_PERIOD_FACTOR $CLK_PERIOD_FACTOR ;# clock period over constraining factor
 puts "Applying constraints for top level"
 
+# Generic constraint helpers, used here and by the IP-specific constraint files
+# sourced below. Looked for next to this file first, so a flow that copies the
+# SDC into a build directory stays reproducible, then in the repository.
+# `info script` is not usable here because `read_sdc` (called on this file)
+# does not set it.
+set SDC_UTIL ""
+foreach SDC_UTIL_CANDIDATE [list \
+    [file join [pwd] sdc util.tcl] \
+    [file join [pwd] .. .. syn util.tcl]] {
+  if {[file exists ${SDC_UTIL_CANDIDATE}]} {
+    set SDC_UTIL [file normalize ${SDC_UTIL_CANDIDATE}]
+    break
+  }
+}
+if {${SDC_UTIL} eq ""} {
+  # read_sdc swallows a bare `error`, so report it where it will be seen.
+  puts "ERROR: cannot find the generic constraint helpers (util.tcl)"
+  error "cannot find the generic constraint helpers"
+}
+
+# Netlist naming used by the helpers.
+# Bit of a prim_subreg: its output port, kept by every tool as the hierarchy is
+# preserved (see the pinmux case analysis below).
+set ::sdc_cfg(reg_q_pin) {q[%d]}
+# Pad attribute flops of the pinmux. PrimeTime sees the mapped netlist after
+# change_names (see the pad attribute exceptions at the end of this file), DC
+# the elaborated netlist.
+if {${synopsys_program_name} eq "pt_shell"} {
+  set ::sdc_cfg(pad_attr_pin) {mio_pad_attr_q_reg_%d__%s/Q}
+} elseif {${synopsys_program_name} eq "dc_shell"} {
+  set ::sdc_cfg(pad_attr_pin) {mio_pad_attr_q_reg[%d][%s]/Q}
+}
+
+puts "INFO: sourcing the generic constraint helpers from ${SDC_UTIL}"
+source ${SDC_UTIL}
+
 # Note: the netlist does include pads at this level, but not all IO interfaces
 # have been constrained. The clocks are generated inside AST and
 # for the purpose of test synthesis, these clock nets are just set to ideal networks.
@@ -1679,32 +1715,13 @@ set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 # Pads, used in both directions, may need to be changed:
 #   I3C0: SCL = IOB10 (MIO pad 19), SDA = IOB9  (MIO pad 18)
 #   I3C1: SCL = IOB11 (MIO pad 20), SDA = IOB12 (MIO pad 21)
-#
-# Look for the procedures next to this file first, so a flow that copies the
-# SDC into a build directory stays reproducible, then in the IP. `info script`
-# is not usable here because `read_sdc` (called on this file) does not set it.
-set I3C_CONSTRAINTS ""
-foreach I3C_CANDIDATE [list \
-    [file join [pwd] sdc i3c_constraints.tcl] \
-    [file join [pwd] .. .. ip i3c syn i3c_constraints.tcl]] {
-  if {[file exists ${I3C_CANDIDATE}]} {
-    set I3C_CONSTRAINTS [file normalize ${I3C_CANDIDATE}]
-    break
-  }
-}
-if {${I3C_CONSTRAINTS} eq ""} {
-  # read_sdc swallows a bare `error`, so report it where it will be seen.
-  puts "ERROR: cannot find the I3C constraint procedures (i3c_constraints.tcl)"
-  error "cannot find the I3C constraint procedures"
-}
-puts "INFO: sourcing the I3C constraint procedures from ${I3C_CONSTRAINTS}"
 
 # Set these to the real numbers for the package and board this is taped out on.
 # The defaults assume the pad cells are timed by the library.
 set ::i3c_cfg(board_dly_max) 2.0
 set ::i3c_cfg(board_dly_min) 0.1
 
-source ${I3C_CONSTRAINTS}
+source [sdc_find_script i3c_constraints.tcl {.. .. ip i3c syn}]
 
 # Entries are {peripheral_input peripheral_output mio_pad}, using the MioIn* /
 # MioOut* / MioPad* indices of top_earlgrey_pkg.sv. The reset detectors observe
@@ -1729,7 +1746,7 @@ set I3C_PINMUX {
     {84  - 20}
     {85  - 21}
 }
-i3c_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
+sdc_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
 
 # These peripheral inputs take a clock from their pad. Add them to the list
 # below; used to keep clock propagation from them.

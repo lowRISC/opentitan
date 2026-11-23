@@ -27,11 +27,11 @@
 # pure SDR; HDR-DDR adds data on both edges.
 #
 # Usage:
-#   set ::i3c_cfg(reg_q_pin) {q_reg[%d]/Q} ;# netlist naming; defaults are ASIC
+#   source .../hw/syn/util.tcl             ;# generic helpers, see there
 #   set ::i3c_cfg(board_dly_max) 2.0       ;# override any default below
 #   set ::i3c_cfg(bus_clock_groups) 0      ;# in the check-only flow
 #   source .../i3c_constraints.tcl
-#   i3c_pinmux_case_analysis $u_pinmux { {38 38 19} {39 39 18} ... }
+#   sdc_pinmux_case_analysis $u_pinmux { {38 38 19} {39 39 18} ... }
 #   i3c_constrain $inst IOB10 IOB9 I3C0 $clk_pin $clk_name $clk_period
 #   i3c_constrain_rstdet $rstdet_inst I3C0 $clk_name
 #   i3c_summary
@@ -43,18 +43,14 @@
 #
 # All delay values are in nanoseconds.
 #
-# Note: Whenever a pattern in the commands below matches nothing, all tools
-# (Vivado + ASIC) silently return an empty collection instead of throwing an
-# error. This then leads to downstream errors when those empty collections are
-# handed to commands such as create_clock.
-# All of this makes sdc debugging notoriously tedious and error-prone.
-#
-# This file therefore wraps the bare sdc commands into `i3c_get_pins`,
-# `i3c_get_cells`, and similar. The calls to these carry a human-readable label
-# which gets recorded if the requested pattern does not match. On a match, a
-# counter is increased.
-# i3c_summary then prints both the labels of all commands with no match as well
-# as the number of successfully applied commands.
+# Lookups go through the sdc_* wrappers of hw/syn/util.tcl, which record every
+# pattern that matches nothing for i3c_summary to report.
+
+if {[llength [info procs sdc_summary]] == 0} {
+  # read_sdc swallows a bare `error`, so report it where it will be seen.
+  puts "ERROR: i3c_constraints: hw/syn/util.tcl has not been sourced"
+  error "i3c_constraints: hw/syn/util.tcl has not been sourced"
+}
 
 #############################
 # Configuration             #
@@ -176,10 +172,6 @@ i3c_cfg_default hdr_patt_max 32.0
 ## Netlist naming. The tools disagree on all of this and a wrong spelling
 ## matches nothing silently, so it is configuration. The defaults are for the
 ## Cadence/Synopsys ASIC flows; the FPGA flow overrides them.
-# Bit of a prim_subreg: the module output pin.
-i3c_cfg_default reg_q_pin {q[%d]}
-# Bit of the packed pad attribute register, by pad index and field name.
-i3c_cfg_default pad_attr_pin {mio_pad_attr_q_reg[%d][%s]/q}
 # Input pin of a clock buffer. A clock has to be created on a pin, and a buffer
 # is not a sequential cell, so it is not a valid path startpoint.
 i3c_cfg_default buf_in_pin A
@@ -200,110 +192,6 @@ i3c_cfg_default prim_flop {*flop*}
 # Helpers                   #
 #############################
 
-# Lookups that found nothing, reported by i3c_summary.
-set ::i3c_misses {}
-set ::i3c_applied 0
-
-proc i3c_miss {desc pattern} {
-  lappend ::i3c_misses "${desc}  (no match: ${pattern})"
-}
-
-# get_pins that accounts for a pattern matching nothing. Never filters on
-# attributes: the attribute names and the case of their values differ between
-# tools, and a bad filter does not return an empty collection but an error that
-# some tools then feed into the constraint as a bogus object. Naming the pin
-# explicitly through the cfg templates achieves the same selection portably.
-proc i3c_get_pins {desc patterns} {
-  foreach p $patterns {
-    if {[llength [get_pins -quiet $p]] == 0} {
-      i3c_miss $desc $p
-    }
-  }
-  return [get_pins -quiet $patterns]
-}
-
-proc i3c_get_cells {desc patterns} {
-  foreach p $patterns {
-    if {[llength [get_cells -quiet $p]] == 0} {
-      i3c_miss $desc $p
-    }
-  }
-  return [get_cells -quiet $patterns]
-}
-
-# Objects to anchor a `-through` on, tried in order of preference.
-#
-# A hierarchical module pin is the natural anchor and is what the ASIC flows
-# offer, because they constrain an elaborated netlist whose hierarchy is still
-# intact. Vivado's FPGA synthesis flattens the design: the module boundary
-# pins are gone, but the nets and the leaf cells below the block keep their
-# hierarchical names, so the same point in the design is still reachable under
-# a different object type. Taking the first kind that matches keeps one set of
-# procedures working on both.
-#
-#   desc   label for i3c_summary
-#   specs  list of {pins|nets|cells} {pattern ...} pairs, most preferred first
-#
-# Once a kind matches, each of its patterns is checked on its own, so that one
-# match in a list does not hide the rest.
-proc i3c_get_through {desc specs} {
-  set tried {}
-  foreach {kind patterns} $specs {
-    switch -exact -- $kind {
-      pins  { set objs [get_pins  -quiet $patterns] }
-      nets  { set objs [get_nets  -quiet $patterns] }
-      cells { set objs [get_cells -quiet $patterns] }
-      default { error "i3c_get_through: unknown object kind '${kind}'" }
-    }
-    lappend tried $kind
-    if {[llength $objs]} {
-      set first [lindex $tried 0]
-      if {$first ne $kind} {
-        puts "i3c_constraints: ${desc}: no ${first}, used ${kind} instead"
-      }
-      foreach p $patterns {
-        if {[llength [get_${kind} -quiet $p]] == 0} {
-          i3c_miss $desc $p
-        }
-      }
-      return $objs
-    }
-  }
-  i3c_miss $desc "none of [join $tried {, }] matched"
-  return {}
-}
-
-# Apply set_case_analysis to a pin if it exists, reporting a miss otherwise.
-# Returns 1 if applied. Callers may pass `optional` as 1 for cases where a
-# miss might legitimately occur and can be tolerated.
-proc i3c_case_if_present {value pattern {optional 0}} {
-  set pins [get_pins -quiet $pattern]
-  if {[llength $pins] == 0} {
-    if {!$optional} {
-      i3c_miss "set_case_analysis ${value}" $pattern
-    }
-    return 0
-  }
-  set_case_analysis $value $pins
-  incr ::i3c_applied
-  return 1
-}
-
-proc i3c_case_reg {base width value} {
-  for {set bit 0} {$bit < $width} {incr bit} {
-    i3c_case_if_present [expr {($value >> $bit) & 1}] \
-        "${base}/[format $::i3c_cfg(reg_q_pin) $bit]"
-  }
-}
-
-# Apply a constraint, reporting rather than aborting when the netlist does not
-# have the expected structure.
-proc i3c_try {desc script} {
-  if {[catch {uplevel 1 $script} err]} {
-    lappend ::i3c_misses "${desc}  (error: ${err})"
-  }
-}
-
 # Fail if the asynchronous bus clock groups exist. They outrank set_max_delay
 # for some tools, so the crossing bounds would have no effect.
 proc i3c_require_no_bus_groups {} {
@@ -316,80 +204,9 @@ proc i3c_require_no_bus_groups {} {
 }
 
 # Report what was applied and what was not. Call once after the i3c_constrain
-# calls. A miss is not necessarily fatal (some are expected), but never make
-# them silent as it can make sdc debugging very hard.
+# calls.
 proc i3c_summary {} {
-  puts "i3c_constraints: applied ${::i3c_applied} case-analysis constraints"
-  if {[llength $::i3c_misses] == 0} {
-    puts "i3c_constraints: all lookups matched"
-  } else {
-    puts "i3c_constraints: WARNING: [llength $::i3c_misses] lookup(s) matched nothing:"
-    foreach m $::i3c_misses {
-      puts "i3c_constraints:   ${m}"
-    }
-  }
-  set ::i3c_misses {}
-  set ::i3c_applied 0
-}
-
-#############################
-# Pinmux case analysis      #
-#############################
-
-# Pin the pinmux selects so that each I3C signal has exactly one pad, in both
-# directions, and so no other muxed pad's clock reaches the I3C clock trees.
-# This is independent of where the I3C instances sit in the hierarchy.
-#
-#   pinmux       path to the pinmux instance
-#   assignments  list of {periph_in_idx periph_out_idx pad_idx}, where
-#                periph_out_idx may be `-` for an input-only peripheral such as
-#                the reset detector's SCL/SDA observation inputs.
-#
-# Mux encodings (pinmux.sv):
-#   mio_mux         = {mio_in, 1'b1, 1'b0}        -> insel  = pad_idx + 2
-#   periph_data_mux = {periph_to_mio_i, 0, 1, 0}  -> outsel = periph_out + 3
-proc i3c_pinmux_case_analysis {pinmux assignments} {
-  set pads {}
-  foreach entry $assignments {
-    lassign $entry periph_in periph_out pad
-    lappend pads $pad
-
-    # Input: the peripheral input reads this pad.
-    i3c_case_reg "${pinmux}/u_reg/u_mio_periph_insel_${periph_in}" 6 [expr {$pad + 2}]
-    # Output: this pad is driven by the peripheral output, where there is one.
-    if {$periph_out ne "-"} {
-      i3c_case_reg "${pinmux}/u_reg/u_mio_outsel_${pad}" 7 [expr {$periph_out + 3}]
-    }
-  }
-
-  foreach pad [lsort -unique -integer $pads] {
-    # Take the functional branch of the sleep retention mux in front of the
-    # output select (pinmux.sv).
-    set sleep_reg [expr {$pad < 32 ? "u_mio_pad_sleep_status_0_en_${pad}"
-                                   : "u_mio_pad_sleep_status_1_en_${pad}"}]
-    i3c_case_if_present 0 \
-        "${pinmux}/u_reg/${sleep_reg}/[format $::i3c_cfg(reg_q_pin) 0]"
-
-    # Pad attributes that would otherwise make the pad non-unate or cut the
-    # signal (prim_pad_wrapper.sv):
-    #   invert        XORs both the input and the output
-    #   virt_od_en    makes the output enable depend on the output data
-    #   input_disable turns the input buffer off
-    # Which of these exist depends on the technology's WARL mask, so a missing
-    # one is reported but not treated as an error.
-    set applied {}
-    foreach attr {invert virt_od_en input_disable} {
-      if {[i3c_case_if_present 0 \
-               "${pinmux}/[format $::i3c_cfg(pad_attr_pin) $pad $attr]" 1]} {
-        lappend applied $attr
-      }
-    }
-    if {[llength $applied] == 0} {
-      i3c_miss "MIO pad ${pad} attributes" \
-          "${pinmux}/[format $::i3c_cfg(pad_attr_pin) $pad invert]"
-    }
-    puts "i3c_constraints: MIO pad ${pad} attributes pinned: [join $applied { }]"
-  }
+  sdc_summary i3c_constraints
 }
 
 #############################
@@ -403,7 +220,7 @@ proc i3c_sda_clock_pins {desc inbufs} {
   set patterns {}
   foreach buf {u_sda0_clk u_sda0_clk_n} {
     set pattern ${inbufs}/${buf}/u_buf/*/$::i3c_cfg(buf_in_pin)
-    if {[llength [i3c_get_pins "${desc} SDA clock input of ${buf}" $pattern]]} {
+    if {[llength [sdc_get_pins "${desc} SDA clock input of ${buf}" $pattern]]} {
       lappend patterns $pattern
     }
   }
@@ -426,7 +243,7 @@ proc i3c_sda_clock_pins {desc inbufs} {
 # The module boundary pins say this most precisely, but they only exist while
 # the hierarchy does. Where it has been flattened, the leaf cells of the same
 # blocks are the fallback: a crossing that ends at one of those flops passes
-# through it just the same (see i3c_get_through).
+# through it just the same (see sdc_get_through).
 proc i3c_bus_crossing_pins {inst} {
   set core ${inst}/u_core
   set blocks [list \
@@ -461,7 +278,7 @@ proc i3c_bus_crossing_pins {inst} {
     lappend cell_patterns ${blk}/*
   }
 
-  return [i3c_get_through "${inst} bus crossings" \
+  return [sdc_get_through "${inst} bus crossings" \
       [list pins $pin_patterns cells $cell_patterns]]
 }
 
@@ -540,7 +357,7 @@ proc i3c_create_clocks {inst scl_port sda_port prefix clk_pin clk_name} {
     # in the check-only flow (i3c_set_cdc_bounds). The Controller's own paths
     # to and from the SDA port also relate clk_i and SCL_INT, so the crossings
     # are selected by the hierarchical pins they pass through instead.
-    i3c_try "cut the ${prefix} SCL loopback" {
+    sdc_try "cut the ${prefix} SCL loopback" {
       set scl_int [get_clocks ${prefix}_SCL_INT]
       # Target flops clocked by our own SCL, among themselves and against the
       # SDA port. The I/O delays on SCL_INT describe our Controller talking to
@@ -743,7 +560,7 @@ proc i3c_set_io_delays {inst scl_port sda_port prefix clk_name} {
   # The SDR read T-bit is captured earlier than the read data, at the end of
   # State_ClkLoSampleD, so the blanket read-data multicycle would let it arrive
   # two cycles late.
-  set tbit [i3c_get_cells "${prefix} SDR T-bit sample" \
+  set tbit [sdc_get_cells "${prefix} SDR T-bit sample" \
       ${inst}/u_core/u_ctrl_trx/sdr_tbit_targ_q_reg*]
   if {[llength $tbit]} {
     set tb $::i3c_cfg(ctrl_tbit_cycles)
@@ -756,7 +573,7 @@ proc i3c_set_io_delays {inst scl_port sda_port prefix clk_name} {
   # Arbitration and IBI are captured in State_ArbClkHiHoldD, while SCL is high.
   # Nothing drives SDA on the rising edge in these phases, so pairing them with
   # it would only charge a remote tSCO that does not occur there.
-  set arb [i3c_get_cells "${prefix} arbitration sample" \
+  set arb [sdc_get_cells "${prefix} arbitration sample" \
       ${inst}/u_core/u_ctrl_trx/arb_q_reg*]
   if {[llength $arb]} {
     set_false_path -rise_from [get_clocks $scl_clk] -to $arb
@@ -781,7 +598,7 @@ proc i3c_set_internal_paths {inst} {
     # than `sel_i`, and the lookup finds nothing. This is not an issue since
     # synthesis ties the scan input of the mux to ground and its select to a
     # constant that picks the functional input.
-    i3c_case_if_present 0 ${inbufs}/${buf}/u_mux/sel_i 1
+    sdc_case_if_present 0 ${inbufs}/${buf}/u_mux/sel_i 1
   }
 
   # Keep the quasi-static buffer enable out of timing. The Target input buffers
@@ -792,8 +609,8 @@ proc i3c_set_internal_paths {inst} {
   # meaningful either; they start at this flop, so the false path removes them
   # too. The same flop also enables the reset detector's buffers (via
   # rstdet_enable_o in i3c_core.sv).
-  i3c_try "target buffer enable" {
-    set en_q [i3c_get_cells "${inst} buffer enable" \
+  sdc_try "target buffer enable" {
+    set en_q [sdc_get_cells "${inst} buffer enable" \
         ${inst}/u_core/u_targ_rst/buf_en_q_reg*]
     if {[llength $en_q]} {
       set_false_path -from $en_q
@@ -840,8 +657,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
         ${sync_data}/gen_src_toggle?u_sync_tgl_ack
   }
   foreach sync $syncs {
-    i3c_try "CDC bound on ${sync}" {
-      set endpoints [i3c_get_cells "${inst}/${sync} synchronizer" \
+    sdc_try "CDC bound on ${sync}" {
+      set endpoints [sdc_get_cells "${inst}/${sync} synchronizer" \
           ${inst}/${sync}/u_sync_1/$::i3c_cfg(prim_flop)]
       if {[llength $endpoints]} {
         set_max_delay $cdc_max -to $endpoints
@@ -861,8 +678,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
       $clk_name {u_targ_txc_sync u_arb_sync gen_targ_txd_sync*u_targ_txd_sync} \
       ${prefix}_SCL_EXT {u_trx_rxd_sync}] {
     foreach sync $instances {
-      i3c_try "CDC bound on ${sync} payload" {
-        set sync_data [i3c_get_cells "${inst}/${sync} payload" \
+      sdc_try "CDC bound on ${sync} payload" {
+        set sync_data [sdc_get_cells "${inst}/${sync} payload" \
             ${inst}/u_core/u_target/${sync}/dst_data_q_reg*]
         if {[llength $sync_data]} {
           set_max_delay $cdc_max -from [get_clocks $src_clk] -to $sync_data
@@ -873,8 +690,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
 
   # The Target transceiver's reset is released by a clk_i flop into the
   # SCL/SDA domains (i3c_core.sv).
-  i3c_try "transceiver reset bound" {
-    set rst_src [i3c_get_cells "${inst} transceiver reset source" \
+  sdc_try "transceiver reset bound" {
+    set rst_src [sdc_get_cells "${inst} transceiver reset source" \
         ${inst}/u_core/u_targ_rst_src/$::i3c_cfg(prim_flop)]
     if {[llength $rst_src]} {
       set_max_delay $cdc_max -from $rst_src
@@ -888,8 +705,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
   # hierarchy has been flattened the pins are gone but the nets that feed them
   # survive one level up, under the name they carry in i3c_core.sv.
   foreach {cfg_pin cfg_net} {targ_dev_i targ_dev grp_addr_i grp_addr} {
-    i3c_try "quasi-static ${cfg_pin}" {
-      set objs [i3c_get_through "${inst} quasi-static ${cfg_pin}" \
+    sdc_try "quasi-static ${cfg_pin}" {
+      set objs [sdc_get_through "${inst} quasi-static ${cfg_pin}" \
           [list pins ${inst}/u_core/u_targ_trx/${cfg_pin}* \
                 nets ${inst}/u_core/${cfg_net}*]]
       if {[llength $objs]} {
@@ -904,8 +721,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
   # tCAS after a START before the first SCL edge, and tCBP before a STOP, which
   # is the window the detectors have to resolve in.
   foreach det {stop_det start_det rep_start_det rep_start_pre} {
-    i3c_try "START/STOP detector ${det}" {
-      set det_d [i3c_get_cells "${inst} ${det}" \
+    sdc_try "START/STOP detector ${det}" {
+      set det_d [sdc_get_cells "${inst} ${det}" \
           ${inst}/u_core/u_targ_trx/${det}_reg*]
       if {[llength $det_d]} {
         set_max_delay $::i3c_cfg(start_stop_max) -to $det_d
@@ -918,8 +735,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
   # comes tCAS after a START and tCASr after a repeated START. Only the paths
   # into SCL are bounded here; stop_det also reaches clk_i through u_edge_det,
   # which is bounded above.
-  i3c_try "${prefix} START/STOP detections" {
-    set det_q [i3c_get_cells "${inst} START/STOP detections" [list \
+  sdc_try "${prefix} START/STOP detections" {
+    set det_q [sdc_get_cells "${inst} START/STOP detections" [list \
         ${inst}/u_core/u_targ_trx/stop_det_reg* \
         ${inst}/u_core/u_targ_trx/start_det_reg* \
         ${inst}/u_core/u_targ_trx/rep_start_det_reg*]]
@@ -935,8 +752,8 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
   # the same clock-as-data crossings as above, with tDIG_H between the edges of
   # the pattern. The bound into the detector also covers its quasi-static
   # enables.
-  i3c_try "${prefix} HDR pattern detector" {
-    set patt [i3c_get_cells "${inst} HDR pattern detector" \
+  sdc_try "${prefix} HDR pattern detector" {
+    set patt [sdc_get_cells "${inst} HDR pattern detector" \
         ${inst}/u_core/u_patt_det/*_reg*]
     if {[llength $patt]} {
       set_max_delay $::i3c_cfg(hdr_patt_max) -to $patt
@@ -989,11 +806,11 @@ proc i3c_constrain_rstdet {inst prefix clk_name} {
   # crossing with clk_i is the configuration coming in, of which `activate`
   # also resets the SCL-clocked stage asynchronously.
   if {$::i3c_cfg(bus_io_delays)} {
-    i3c_try "cut the ${prefix} rstdet SCL loopback" {
+    sdc_try "cut the ${prefix} rstdet SCL loopback" {
       # The configuration is the detector's only crossing with clk_i. Where
       # the hierarchy is gone the port pin is too, and any path from clk_i
       # into the detector is that same crossing, so its cells will do.
-      set xing [i3c_get_through "${prefix} rstdet configuration input" \
+      set xing [sdc_get_through "${prefix} rstdet configuration input" \
           [list pins ${det}/req_i* cells ${det}/*]]
       if {[llength $xing]} {
         set_false_path -from [get_clocks $clk_name] \
@@ -1009,7 +826,7 @@ proc i3c_constrain_rstdet {inst prefix clk_name} {
   foreach buf {u_scl_buf u_sda0_clk u_sda0_clk_n} {
     # The secondary partition ties scanmode off, so the mux may already be
     # trimmed; pin it where it survives.
-    i3c_case_if_present 0 ${inbufs}/${buf}/u_mux/sel_i 1
+    sdc_case_if_present 0 ${inbufs}/${buf}/u_mux/sel_i 1
   }
 }
 
@@ -1030,8 +847,8 @@ proc i3c_set_rstdet_cdc_bounds {inst prefix aon_period} {
   # the Target's START/STOP detectors.
   foreach node {rst_cnt cnt_met poss_reset_pend poss_reset_start reset_detected
                 wake_up_q target_reset_q chip_reset_q} {
-    i3c_try "${prefix} rstdet ${node}" {
-      set cells [i3c_get_cells "${prefix} rstdet ${node}" ${det}/${node}_reg*]
+    sdc_try "${prefix} rstdet ${node}" {
+      set cells [sdc_get_cells "${prefix} rstdet ${node}" ${det}/${node}_reg*]
       if {[llength $cells]} {
         set_max_delay $::i3c_cfg(start_stop_max) -to $cells
       }
@@ -1044,8 +861,8 @@ proc i3c_set_rstdet_cdc_bounds {inst prefix aon_period} {
   foreach {sync dst_period} [list \
       u_cfg_sync $::i3c_cfg(scl_ext_period) \
       u_out_sync $aon_period] {
-    i3c_try "${prefix} rstdet ${sync}" {
-      set endpoints [i3c_get_cells "${prefix} rstdet ${sync}" \
+    sdc_try "${prefix} rstdet ${sync}" {
+      set endpoints [sdc_get_cells "${prefix} rstdet ${sync}" \
           ${det}/${sync}/u_sync_1/$::i3c_cfg(prim_flop)]
       if {[llength $endpoints]} {
         set_max_delay [expr {$dst_period * $::i3c_cfg(cdc_fraction)}] \
