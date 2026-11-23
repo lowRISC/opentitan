@@ -159,6 +159,7 @@ module sram_ctrl
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: EXEC.CONFIG.REGWEN
   // SEC_CM: READBACK.CONFIG.REGWEN
+  // SEC_CM: RMW_INTG_CHECK.CONFIG.REGWEN
   sram_ctrl_regs_reg_top #(
     .EnableRacl       ( EnableRacl           ),
     .RaclErrorRsp     ( RaclErrorRsp         ),
@@ -208,6 +209,10 @@ module sram_ctrl
   logic sram_alert;
   assign hw2reg.status.sram_alert.d  = 1'b1;
   assign hw2reg.status.sram_alert.de = sram_alert;
+
+  // TODO: Connect once the RMW integrity check is implemented.
+  assign hw2reg.status.rmw_intg_error.d  = 1'b0;
+  assign hw2reg.status.rmw_intg_error.de = 1'b0;
 
   logic alert_req;
   assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert;
@@ -411,7 +416,10 @@ module sram_ctrl
 
   logic unused_csr_sigs;
   assign unused_csr_sigs = ^{reg2hw.status.init_done.q,
-                             reg2hw.status.scr_key_seed_valid.q};
+                             reg2hw.status.scr_key_seed_valid.q,
+                             // TODO: Remove once the RMW integrity check is implemented.
+                             reg2hw.status.rmw_intg_error.q,
+                             reg2hw.rmw_intg_check.q};
 
   ////////////////////
   // SRAM Execution //
