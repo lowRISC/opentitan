@@ -278,11 +278,23 @@ This basically creates the IP UVM env and its env cfg class instance. Any env cf
 setting that may be required to be controlled externally via plusargs are looked
 up here, before the env instance is created. This also sets a few variables that
 pertain to how / when should the test exit on timeout or failure. In the run
-phase, the test calls `run_seq` which basically uses factory to create the
-virtual sequence instance using the `UVM_TEST_SEQ` string that is passed via
-plusarg. As a style guide, it is preferred to encapsulate a complete test within
-a virtual sequence and use the same `UVM_TEST` plusarg for all of the tests (which
-points to the extended IP test class), and only change the `UVM_TEST_SEQ` plusarg.
+phase, the test calls `run_seq`, which uses the factory to create the virtual
+sequence named by `test_seq_s` and starts it. There are two ways to choose that
+sequence:
+* The `UVM_TEST_SEQ` plusarg names it. This is the preferred style: all the
+  tests of an IP use the same `UVM_TEST` (the extended IP test class), and each
+  test names the virtual sequence that holds the whole test.
+* The test class sets `test_seq_s`, in its constructor or `build_phase`. This
+  suits an IP whose tests differ by their configuration rather than by their
+  sequence. Its `sim_cfg` sets the default `uvm_test_seq` to an empty string,
+  and only the tests that name a sequence set `uvm_test_seq`. Leaving
+  `uvm_test_seq` empty in a test entry is not enough, since DVSim replaces an
+  empty value with the default.
+
+When the test class sets `test_seq_s` and `UVM_TEST_SEQ` names another
+sequence, the test stops with a fatal error. The base test of the IP, which the
+common CSR tests run with their own `UVM_TEST_SEQ`, therefore leaves
+`test_seq_s` empty.
 
 This class is type parameterized with the env cfg class type `CFG_T` and the env
 class type `ENV_T` so that when extended IP test class creates the env and env cfg

@@ -9,6 +9,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   ENV_T             env;
   CFG_T             cfg;
   bit               run_test_seq = 1'b1;
+  // Name of the sequence that run_phase runs. A test may set it in its constructor or build_phase,
+  // otherwise +UVM_TEST_SEQ gives it. A plusarg that names another sequence stops the test.
   string            test_seq_s;
 
   uint   max_quit_count  = 1;
@@ -119,14 +121,27 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   endfunction : end_of_elaboration_phase
 
   virtual task run_phase(uvm_phase phase);
+    string plusarg_seq_s;
+
     super.run_phase(phase);
     void'($value$plusargs("drain_time_ns=%0d", drain_time_ns));
     phase.phase_done.set_drain_time(this, (drain_time_ns * 1ns));
     void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
     void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
     if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
-    void'($value$plusargs("UVM_TEST_SEQ=%0s", test_seq_s));
+    // An empty +UVM_TEST_SEQ, as passed when the sim cfg leaves uvm_test_seq empty, keeps the
+    // sequence that the test chose
+    if ($value$plusargs("UVM_TEST_SEQ=%0s", plusarg_seq_s) && plusarg_seq_s != "") begin
+      if (test_seq_s != "" && test_seq_s != plusarg_seq_s) begin
+        `uvm_fatal(`gfn, $sformatf("The test runs %0s but +UVM_TEST_SEQ names %0s",
+                                   test_seq_s, plusarg_seq_s))
+      end
+      test_seq_s = plusarg_seq_s;
+    end
     if (run_test_seq) begin
+      if (test_seq_s == "") begin
+        `uvm_fatal(`gfn, "No test sequence: set test_seq_s in the test or pass +UVM_TEST_SEQ")
+      end
       run_seq(test_seq_s, phase);
     end
   endtask : run_phase
