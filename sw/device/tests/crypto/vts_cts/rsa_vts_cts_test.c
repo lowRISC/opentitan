@@ -1148,13 +1148,18 @@ static status_t rsa_cts_oaep_sha256_mgf1_sha1_kat_test(void) {
  * Source:
  *   - `CipherTest.java:398` — `testEmptyPlaintextEncryptsAndDecrypts`
  *   - `KeyMintTest.cpp:5801` —
- *     `TEST_P(EncryptionOperationsTest, RsaPkcs1Success)` (0-byte message
- *     decryption into a caller buffer smaller than `k - 11 = 245` bytes)
+ *     `TEST_P(EncryptionOperationsTest, RsaPkcs1Success)`
+ *
+ * Verifies that `otcrypto_rsa_decrypt` in PKCS#1 v1.5 mode enforces an upfront
+ * `>= k - 11` (245B) output buffer requirement (matching OAEP/Raw RSA) and
+ * demonstrates the wrapper pattern for callers providing a smaller output
+ * buffer: decrypt into a `k - 11` scratch buffer, then copy `decrypted_len`
+ * bytes into the caller's smaller buffer.
  */
 static status_t rsa_cts_pkcs1_v15_empty_plaintext_short_buf_test(void) {
   LOG_INFO(
-      "Testing Android CTS testEmptyPlaintextEncryptsAndDecrypts & KeyMint VTS "
-      "RsaPkcs1Success (0-byte PKCS#1 v1.5 decrypt into < 245B buffer)");
+      "Testing PKCS#1 v1.5 short output buffer rejection (< k - 11 = 245B) and "
+      "wrapper scratch-buffer pattern for 0-byte decrypt");
 
   uint32_t pub_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes, sizeof(uint32_t))];
   uint32_t priv_blob[ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes,
@@ -1177,15 +1182,29 @@ static status_t rsa_cts_pkcs1_v15_empty_plaintext_short_buf_test(void) {
   TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &empty_pt,
                            &empty_label, &ct_buf));
 
-  // Decrypting a 0-byte PKCS#1 v1.5 plaintext into a 64-byte output buffer
-  // should succeed (`OTCRYPTO_OK` with `decrypted_len == 0`).
-  uint8_t decrypted[kRsa2048NumBytes];
+  // `otcrypto_rsa_decrypt` rejects output buffers smaller than `k - 11` (245B)
+  // upfront with `OTCRYPTO_BAD_ARGS` and `decrypted_len == 0`.
+  uint8_t caller_buf[64];
+  uint8_t scratch[kMaxPkcs1v15PayloadBytes];
   size_t decrypted_len = 999;
   otcrypto_byte_buf_t small_out =
-      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, decrypted, 64);
-  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
-                           &empty_label, &small_out, &decrypted_len));
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, caller_buf, sizeof(caller_buf));
+  TRY_CHECK(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull,
+                                 &const_ct_buf, &empty_label, &small_out,
+                                 &decrypted_len)
+                .value == OTCRYPTO_BAD_ARGS.value);
   TRY_CHECK(decrypted_len == 0);
+
+  // Wrapper pattern: decrypt into a `k - 11` (245B) scratch buffer, then copy
+  // `decrypted_len` bytes into the caller's smaller buffer if it fits.
+  decrypted_len = 999;
+  otcrypto_byte_buf_t scratch_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, scratch, sizeof(scratch));
+  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
+                           &empty_label, &scratch_out, &decrypted_len));
+  TRY_CHECK(decrypted_len == 0);
+  TRY_CHECK(decrypted_len <= sizeof(caller_buf));
+  memcpy(caller_buf, scratch, decrypted_len);
 
   return OK_STATUS();
 }

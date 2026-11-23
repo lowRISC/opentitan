@@ -811,38 +811,35 @@ static status_t pkcs1v15_check_padding_and_find_message_start(
 
 status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
                                              size_t encoded_message_len,
-                                             size_t max_message_bytelen,
                                              uint8_t *message,
                                              size_t *message_bytelen) {
-  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
   *message_bytelen = 0;
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
 
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
 
   volatile uint32_t message_start_idx0 = 0;
   volatile uint32_t message_start_idx1 = 0;
-  if (!status_ok(pkcs1v15_check_padding_and_find_message_start(
-          encoded_message_bytes, encoded_message_bytelen,
-          &message_start_idx0)) ||
-      !status_ok(pkcs1v15_check_padding_and_find_message_start(
-          encoded_message_bytes, encoded_message_bytelen,
-          &message_start_idx1))) {
+  status_t status0 = pkcs1v15_check_padding_and_find_message_start(
+      encoded_message_bytes, encoded_message_bytelen, &message_start_idx0);
+  status_t status1 = pkcs1v15_check_padding_and_find_message_start(
+      encoded_message_bytes, encoded_message_bytelen, &message_start_idx1);
+  if (launder32((uint32_t)status0.value) != kHardenedBoolTrue ||
+      launder32((uint32_t)status1.value) != kHardenedBoolTrue) {
+    hardened_memshred(encoded_message, encoded_message_len);
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
 
-  *message_bytelen = encoded_message_bytelen - message_start_idx0;
-  if (*message_bytelen > max_message_bytelen) {
-    hardened_memshred(encoded_message, encoded_message_len);
-    return OTCRYPTO_BAD_ARGS;
-  }
+  size_t decoded_bytelen = encoded_message_bytelen - message_start_idx0;
   HARDENED_TRY(randomized_bytecopy(
-      message, encoded_message_bytes + message_start_idx0, *message_bytelen));
+      message, encoded_message_bytes + message_start_idx0, decoded_bytelen));
   HARDENED_CHECK_EQ(
       consttime_memeq_byte(encoded_message_bytes + message_start_idx0, message,
-                           *message_bytelen),
+                           decoded_bytelen),
       kHardenedBoolTrue);
+  *message_bytelen = decoded_bytelen;
   hardened_memshred(encoded_message, encoded_message_len);
   return OTCRYPTO_OK;
 }
