@@ -203,6 +203,10 @@ module rv_core_ibex
   logic [6:0]  main_core_revbm_rdata_intg;
   logic        main_core_revbm_err;
 
+  // Shadow core CHERIoT TRVK revocation bitmap (revbm) interface (internal)
+  logic        shadow_core_revbm_req;
+  logic [31:0] shadow_core_revbm_addr;
+
   // Lockstep interface
   ibex_pkg::ibex_mubi_t core_lockstep_cmp_en;
 
@@ -298,6 +302,7 @@ module rv_core_ibex
   logic fatal_intg_err, fatal_core_err, recov_core_err;
   logic alert_rv_d_tlul_comparison;
   logic alert_rv_i_tlul_comparison;
+  logic alert_rv_revbm_tlul_comparison;
 
   // alert events to peripheral module
   logic fatal_intg_event;
@@ -312,7 +317,8 @@ module rv_core_ibex
                             double_fault                |
                             tlul_lc_gate_core_d_error   |
                             alert_rv_d_tlul_comparison  |
-                            alert_rv_i_tlul_comparison;
+                            alert_rv_i_tlul_comparison  |
+                            alert_rv_revbm_tlul_comparison;
   assign recov_core_event = alert_minor;
 
   // configurations for address translation
@@ -675,8 +681,8 @@ module rv_core_ibex
     .instr_addr_shadow_o      (shadow_core_instr_addr),
 
     // Shadow core TRVK revocation bitmap interface outputs.
-    .trvk_revbm_req_shadow_o  (),
-    .trvk_revbm_addr_shadow_o ()
+    .trvk_revbm_req_shadow_o  (shadow_core_revbm_req),
+    .trvk_revbm_addr_shadow_o (shadow_core_revbm_addr)
   );
 
   logic core_sleep_q;
@@ -1554,9 +1560,118 @@ module rv_core_ibex
                                      unused_shadow_core_instr_rdata_intg,
                                      unused_shadow_core_instr_err,
                                      unused_shadow_core_ibus_intg_err};
+
+    /////////////////////////////////////////////////////////
+    // Shadow Core Revocation Bitmap (revbm) TL-UL Adapter //
+    /////////////////////////////////////////////////////////
+
+    // TL-UL output signals
+    tl_h2d_t tl_revbm_shadow_core;
+
+    // Buffer the incoming TL-UL response from the main core to avoid synthesis optimizations.
+    tl_d2h_t tl_revbm_fifo2ibex_buf;
+
+    // Delayed signals.
+    tl_d2h_t tl_revbm_fifo2ibex_delayed;
+    tl_h2d_t tl_revbm_main_core_delayed;
+
+    prim_buf #(
+      .Width(TlD2HWidth)
+    ) u_tl_revbm_fifo2ibex_buf (
+      .in_i(tl_revbm_fifo2ibex),
+      .out_o(tl_revbm_fifo2ibex_buf)
+    );
+
+    // Delay the main core TL-UL input and outputs.
+    if (LockstepOffset > 1) begin : gen_tl_revbm_multi_cycle_delay
+      tl_h2d_t tl_revbm_main_core_q [LockstepOffset];
+      tl_d2h_t tl_revbm_fifo2ibex_q [LockstepOffset];
+
+      assign tl_revbm_main_core_delayed = tl_revbm_main_core_q[0];
+      assign tl_revbm_fifo2ibex_delayed = tl_revbm_fifo2ibex_q[0];
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          for (int unsigned i = 0; i < LockstepOffset; i++) begin
+            tl_revbm_main_core_q[i] <= tl_h2d_t'('0);
+            tl_revbm_fifo2ibex_q[i] <= tl_d2h_t'('0);
+          end
+        end else begin
+          for (int unsigned i = 0; i < LockstepOffset - 1; i++) begin
+            tl_revbm_main_core_q[i] <= tl_revbm_main_core_q[i+1];
+            tl_revbm_fifo2ibex_q[i] <= tl_revbm_fifo2ibex_q[i+1];
+          end
+          tl_revbm_main_core_q[LockstepOffset-1] <= tl_revbm_ibex2fifo;
+          tl_revbm_fifo2ibex_q[LockstepOffset-1] <= tl_revbm_fifo2ibex_buf;
+        end
+      end
+    end else begin : gen_tl_revbm_single_cycle_delay
+      tl_h2d_t tl_revbm_main_core_q;
+      tl_d2h_t tl_revbm_fifo2ibex_q;
+
+      assign tl_revbm_main_core_delayed = tl_revbm_main_core_q;
+      assign tl_revbm_fifo2ibex_delayed = tl_revbm_fifo2ibex_q;
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          tl_revbm_main_core_q <= tl_h2d_t'('0);
+          tl_revbm_fifo2ibex_q <= tl_d2h_t'('0);
+        end else begin
+          tl_revbm_main_core_q <= tl_revbm_ibex2fifo;
+          tl_revbm_fifo2ibex_q <= tl_revbm_fifo2ibex_buf;
+        end
+      end
+    end
+
+    logic unused_shadow_core_revbm_rvalid, unused_shadow_core_revbm_gnt;
+    logic unused_shadow_core_revbm_err, unused_shadow_core_revbmbus_intg_err;
+    logic [31:0] unused_shadow_core_revbm_rdata;
+    logic [6:0]  unused_shadow_core_revbm_rdata_intg;
+
+    tlul_adapter_host #(
+      .MAX_REQS(NumOutstandingReqs),
+      // if secure ibex is not set, data integrity is not generated
+      // from ibex, therefore generate it in the gasket instead.
+      .EnableDataIntgGen(~SecureIbex)
+    ) tl_adapter_host_revbm_ibex_shadow_core (
+      .clk_i,
+      .rst_ni,
+      .req_i        (shadow_core_revbm_req),
+      .instr_type_i (prim_mubi_pkg::MuBi4False),
+      .gnt_o        (unused_shadow_core_revbm_gnt),
+      .addr_i       (shadow_core_revbm_addr),
+      .we_i         (1'b0),
+      .wdata_i      (32'b0),
+      .wdata_intg_i (revbm_wdata_intg),
+      .be_i         (4'hF),
+      .user_rsvd_i  (TlulHostUserRsvdBits),
+      .valid_o      (unused_shadow_core_revbm_rvalid),
+      .rdata_o      (unused_shadow_core_revbm_rdata),
+      .rdata_intg_o (unused_shadow_core_revbm_rdata_intg),
+      .err_o        (unused_shadow_core_revbm_err),
+      .intg_err_o   (unused_shadow_core_revbmbus_intg_err),
+      .tl_o         (tl_revbm_shadow_core),
+      .tl_i         (tl_revbm_fifo2ibex_delayed)
+    );
+
+    // Compare the main and shadow core TL-UL outputs. The revocation bitmap interface has no
+    // address translation, so the comparison does not pause on region configuration updates.
+    assign alert_rv_revbm_tlul_comparison =
+      ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
+       (tl_revbm_main_core_delayed != tl_revbm_shadow_core));
+
+    // Tie off unused signals.
+    logic unused_tlul_revbm_signals;
+    assign unused_tlul_revbm_signals = ^{unused_shadow_core_revbm_rvalid,
+                                         unused_shadow_core_revbm_gnt,
+                                         unused_shadow_core_revbm_rdata,
+                                         unused_shadow_core_revbm_rdata_intg,
+                                         unused_shadow_core_revbm_err,
+                                         unused_shadow_core_revbmbus_intg_err};
   end else begin : gen_no_tlul_lockstep
     assign alert_rv_d_tlul_comparison = 1'b0;
     assign alert_rv_i_tlul_comparison = 1'b0;
+    assign alert_rv_revbm_tlul_comparison = 1'b0;
     assign cfg_reg_intg_err_shadow = 1'b0;
   end
 

@@ -726,6 +726,9 @@
       desc: '''
         Shadow core run in lockstep to crosscheck CPU behaviour. This provides
         broad protection for all assets with the Ibex core.
+        The core and its TRVK filter form one unit, so the shadow core has its own TRVK filter.
+        Each core encodes its own request tag of the data interface, which is compared encoded,
+        and decodes its own copy of the response tag.
       '''
     }
     { name: "FETCH.CTRL.LC_GATED"
@@ -763,8 +766,9 @@
     }
     { name: "TLUL_ADAPTER.LOGIC.SHADOW"
       desc: '''
-        Address translation and TL-UL adapters (data and instruction interface) run in lockstep with
-        shadow logic protecting both interfaces against faults.
+        Address translation and TL-UL adapters (data and instruction interface) and the TL-UL
+        adapter of the revocation bitmap interface run in lockstep with shadow logic protecting
+        these interfaces against faults.
       '''
     }
     { name: "MCOUNTEREN_WRITABLE.CTRL.MUBI"
