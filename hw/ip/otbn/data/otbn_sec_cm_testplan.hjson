@@ -126,6 +126,38 @@
       tests: ["otbn_sec_cm"]
     }
     {
+      name: sec_cm_op_ctrl_fsm_global_esc
+      desc: '''Verify the countermeasure(s) OP_CTRL.FSM.GLOBAL_ESC.
+            Run an OTBN program, drive lc_escalate_en_i port randomly to
+            see global escalation moving the operation control FSM to the locked state.
+            '''
+      stage: V2S
+      tests: ["otbn_escalate"]
+    }
+    {
+      name: sec_cm_op_ctrl_fsm_local_esc
+      desc: '''Verify the countermeasure(s) OP_CTRL.FSM.LOCAL_ESC.
+            The operation control FSM moves to the locked state upon local escalation.
+            1. IMEM/DMEM error tests to see local escalation related with integrity checking.
+            2. Zero state URND test to see local escalation regarding a URND value of all zeros.
+            3. Illegal memory access test to see local escalation while having illegal read and
+               write accesses to the IMEM when the OTBN is busy.
+            4. Bad internal state errors that are triggered by otbn_sec_cm test will also cause
+               local escalation to the locked state.
+            '''
+      stage: V2S
+      tests: ["otbn_imem_err", "otbn_dmem_err", "otbn_zero_state_err_urnd", "otbn_illegal_mem_acc",
+              "otbn_sec_cm"]
+    }
+    {
+      name: sec_cm_op_ctrl_fsm_sparse
+      desc: '''Verify the countermeasure(s) OP_CTRL.FSM.SPARSE.
+            This countermeasure is verified with a standardized test.
+            '''
+      stage: V2S
+      tests: ["otbn_sec_cm"]
+    }
+    {
       name: sec_cm_start_stop_ctrl_fsm_global_esc
       desc: '''Verify the countermeasure(s) START_STOP_CTRL.FSM.GLOBAL_ESC.
             Run an OTBN program, drive lc_escalate_en_i port randomly to

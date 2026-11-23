@@ -73,6 +73,7 @@ filesets:
     files:
       - rtl/otbn_reg_top.sv
       - rtl/otbn_scramble_ctrl.sv
+      - rtl/otbn_op_ctrl.sv
       - rtl/otbn.sv
     file_type: systemVerilogSource
 

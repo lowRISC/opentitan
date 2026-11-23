@@ -848,6 +848,53 @@ typedef enum logic [StateScrambleCtrlWidth-1:0] {
   ScrambleCtrlError   = 5'b00101
 } scramble_ctrl_state_e;
 
+// Encoding generated with:
+// $ ./util/design/sparse-fsm-encode.py -d 3 -m 9 -n 7 \
+//      -s 1729836561 --language=sv
+//
+// Hamming distance histogram:
+//
+//  0: --
+//  1: --
+//  2: --
+//  3: |||||||||||||||||||| (41.67%)
+//  4: ||||||||||||||||| (36.11%)
+//  5: |||||| (13.89%)
+//  6: |||| (8.33%)
+//  7: --
+//
+// Minimum Hamming distance: 3
+// Maximum Hamming distance: 6
+// Minimum Hamming weight: 2
+// Maximum Hamming weight: 5
+//
+localparam int StateOpCtrlWidth = 7;
+typedef enum logic [StateOpCtrlWidth-1:0] {
+  OpCtrlWipeInt     = 7'b1000101,
+  OpCtrlIdle        = 7'b0101101,
+  OpCtrlExecute     = 7'b1101010,
+  OpCtrlExecWipeInt = 7'b1010000,
+  OpCtrlPaused      = 7'b0010111,
+  OpCtrlResume      = 7'b1111001,
+  OpCtrlWipeDmem    = 7'b0011100,
+  OpCtrlWipeImem    = 7'b0100011,
+  OpCtrlLocked      = 7'b1110110
+} op_ctrl_state_e;
+
+  function automatic status_e op_ctrl_state_to_status(op_ctrl_state_e state);
+    unique case (state)
+      OpCtrlIdle:        return StatusIdle;
+      OpCtrlExecute:     return StatusBusyExecute;
+      OpCtrlWipeDmem:    return StatusBusySecWipeDmem;
+      OpCtrlWipeImem:    return StatusBusySecWipeImem;
+      OpCtrlWipeInt,
+      OpCtrlExecWipeInt: return StatusBusySecWipeInt;
+      OpCtrlPaused,
+      OpCtrlResume:      return StatusPaused;
+      default:           return StatusLocked;
+    endcase
+  endfunction
+
   // URNG PRNG default seed.
   typedef prim_trivium_pkg::trivium_lfsr_seed_t urnd_prng_seed_t;
   parameter urnd_prng_seed_t RndCnstUrndPrngSeedDefault =
