@@ -41,7 +41,7 @@ Type          | Item                      | Resolution  | Note/Collaterals
 Documentation | [NEW_FEATURES][]          | Done        |
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | N/A         |
+Documentation | [DOC_INTEGRATION_D2][]    | Done        |
 Documentation | [MISSING_FUNC][]          | Done        |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
@@ -60,7 +60,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         ../../../../doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: ../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    ../../../../doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          ../../../../doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        ../../../../doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      ../../../../doc/project_governance/checklist/README.md#feature_complete
@@ -80,13 +80,13 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
-Security      | [SEC_CM_RND_CNST][]          | Done        |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
-Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
+Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
