@@ -64,12 +64,24 @@
     {
       name: err
       desc: '''
-            Verify err_code register bits assert when:
-            - An error has been detected in any of the internal fifos and the corresponding write/read/state bits.
-            - A word is written to CMD_REQ while SW_CMD_STS.CMD_RDY is low.
-            - An illegal state is reached in any of the 6 state machines.
-            - An error is detected in the generate command counter.
-            Verify that the err_code register clears all bits after reset.
+            Verify that each error condition sets the corresponding ERR_CODE bits.
+
+            **Stimulus**:
+            - Cause each kind of fatal error:
+              - while CSRNG is enabled, a write, read or state error in the command or genbits FIFO of each instance,
+              - an illegal state in the command stage, main and ctr_drbg state machines,
+              - an AES fatal error,
+              - a mismatch in any of the hardened counters.
+            - Write a word to CMD_REQ while SW_CMD_STS.CMD_RDY is low.
+            - Write each ERR_CODE bit number to ERR_CODE_TEST.
+            - Reset CSRNG after an error.
+
+            **Checks**:
+            - For each FIFO error, the bit of that FIFO and the bit of the error type are set in ERR_CODE.
+            - For a word written to CMD_REQ while SW_CMD_STS.CMD_RDY is low, the word is dropped and SFIFO_CMD_ERR and FIFO_WRITE_ERR are set.
+            - For each other fatal error, the corresponding ERR_CODE bit is set.
+            - For each fatal error, including those forced via ERR_CODE_TEST, a fatal alert is sent.
+            - ERR_CODE bits stay set until the next reset, which clears them.
             '''
       stage: V2
       tests: ["csrng_err"]
