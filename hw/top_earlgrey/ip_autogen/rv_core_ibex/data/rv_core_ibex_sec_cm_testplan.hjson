@@ -142,9 +142,10 @@
       desc: '''
             Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI.
 
-            Corrupt the response tag of an untagged data response to an invalid encoding, and
-            check that it reads as untagged, sets ERR_STATUS.FATAL_INTG_ERR and raises the
-            `fatal_hw_err` alert.
+            Corrupt the tag of an untagged data request or response to an invalid encoding, in
+            turn at the input and the output of the data FIFO. Check that each corruption sets
+            ERR_STATUS.FATAL_INTG_ERR and raises the `fatal_hw_err` alert, and that a corrupted
+            response tag reads as untagged.
             '''
       stage: V2S
       // To be covered by the chip-level testpoint chip_sw_cheriot_cored_tag_mubi.

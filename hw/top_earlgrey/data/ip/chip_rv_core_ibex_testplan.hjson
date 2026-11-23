@@ -235,13 +235,16 @@
      desc: '''Verify the multi-bit encoding of the capability tag sideband between rv_core_ibex and
               cheriot_mem_sys (CORED_TAG.INTERSIG.MUBI).
 
-              While the CPU runs a CHERIoT test, corrupt the request tag into cheriot_mem_sys and
-              the response tag into rv_core_ibex to an invalid encoding for one untagged beat each.
+              While the CPU runs a CHERIoT test, corrupt the tag of one untagged beat to an invalid
+              encoding, in turn at each of these points: the request tag at the input and at the
+              output of the data FIFO of rv_core_ibex and at the port of cheriot_mem_sys, and the
+              response tag at the port of rv_core_ibex and at the output of its data FIFO.
               Ensure that:
               - The receiver reads the invalid encoding as untagged.
-              - The receiver raises its fatal alert: `fatal_fault` of cheriot_mem_sys, or
-                `fatal_hw_err` of rv_core_ibex with ERR_STATUS.FATAL_INTG_ERR set.
-              - The alert of the other side does not fire.
+              - Every check downstream of the corruption raises its fatal alert: `fatal_hw_err` of
+                rv_core_ibex with ERR_STATUS.FATAL_INTG_ERR set for a check at its data FIFO, and
+                `fatal_fault` of cheriot_mem_sys for its request tag check.
+              - No check upstream of the corruption fires.
            '''
      stage: V2S
      si_stage: NA
