@@ -56,3 +56,8 @@ This bazel command will download a bitstream associated with the HEAD commit of 
 
 **Note**: If you have hardware changes then you can build the bitstream locally by changing the tag `bitstream=` from `gcp` to `vivado`.
 Although this will take much longer.
+
+### FIPS KAT in ROM E2E Test
+
+The FIPS 140-3 Known Answer Test (KAT) ROM E2E test (`sw/device/silicon_creator/rom/e2e/kat/fips_kat_rom_test.c`) verifies transient 8 KiB NAPOT ePMP mapping of the `.fips_kat` ROM window (`[0x6E000, 0x70000)` on Earl Grey Gen2) and executes all 30 embedded KAT entries (31 KAT operations) on CW340 FPGA (`//sw/device/silicon_creator/rom/e2e/kat:fips_kat_rom_test_fpga_cw340_rom_ext`).
+See [`sw/device/silicon_creator/rom/e2e/kat/README.md`](../e2e/kat/README.md) for host unit test and CW340 FPGA execution instructions.

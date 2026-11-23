@@ -268,3 +268,12 @@ See the [[sigverify]](sigverify.md) specification for details.
     *   Hang (WFI) and wait for watchdog reset.
 
 See the [[shutdown]](shutdown.md) specification for details.
+
+
+## Embedded FIPS KAT Data Region
+
+Mask ROM embeds a passive, read-only table of FIPS 140-3 Known Answer Test (KAT) vectors in the `.fips_kat` section (`sw/device/silicon_creator/rom/fips_kat_table.h` and `sw/device/silicon_creator/rom/fips_kat_ptrs.c`).
+Mask ROM itself does not link cryptographic KAT runners; the region provides a position-independent read-only vector repository for later boot stages (`ROM_EXT`, BL0) so static test vectors do not need to be duplicated in flash/NVM.
+
+*   **Fixed 8 KiB NAPOT Window:** `sw/device/silicon_creator/rom/rom.ld` anchors `.fips_kat` at `ORIGIN(rom) + LENGTH(rom) - 0x2000` with size `0x2000` (8 KiB). On Earl Grey Gen2 (192 KiB ROM at `[0x40000, 0x70000)`), this places the window at `[0x6E000, 0x70000)`, leaving 184 KiB below for Mask ROM code and `.rodata` with zero unused gap. `.fips_kat` is strictly bounded below `_rom_chip_info_start` (`0x6FF80`, max usable size `kFipsKatMaxTableSize = 0x1F80` = 8,064 B), keeping `.chip_info` (`[0x6FF80, 0x6FFE0)`) and the ECC-poisoned `rom_ctrl` digest words (`[0x6FFE0, 0x70000)`) outside all valid KAT table offsets.
+*   **Isolation and Discovery:** Downstream stages transiently map only this 8 KiB NAPOT window as read-only via ePMP (see [Memory Protection](memory_protection.md)), validate the `"FKAT"` descriptor table header (`magic`, `version`, `entry_count`, `total_size`) bounded by `kFipsKatMaxTableSize`, execute KATs, and immediately revoke the mapping. See the [FIPS KAT E2E test README](../e2e/kat/README.md) for coverage and execution commands.
