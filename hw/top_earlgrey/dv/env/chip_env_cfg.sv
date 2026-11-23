@@ -237,6 +237,13 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     m_rom_ctrl_env_cfg.initialize(1'b1);
   endfunction
 
+  function void post_randomize();
+    super.post_randomize();
+    // The lockstep of the CHERIoT memory subsystem compares the data port's A channel also while
+    // a_valid is low, so the stub CPU must not drive X on it then.
+    m_tl_agent_cfg.invalidate_a_x = 1'b0;
+  endfunction
+
   // Configure the environment to run a DMI agent over a JTAG connection.
   //
   // To enable DMI over JTAG, the testbench or test must call this function before the chip
