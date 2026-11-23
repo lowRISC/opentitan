@@ -108,6 +108,7 @@ hw/ip/aon_timer/data/aon_timer.hjson
 
 # HJSON files for ipgen blocks
 hw/top_earlgrey/ip/ast/data/ast.hjson
+hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson
 hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
 hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson
 hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson
