@@ -198,13 +198,22 @@ module cheriot_mem_sys_lockstep
   } delayed_inputs_t;
 
   // Stage LockstepOffset-1 takes the inputs of the main copy, stage 0 feeds the second copy.
-  delayed_inputs_t                      shadow_inputs_in;
+  delayed_inputs_t                      shadow_inputs_in, shadow_inputs_buf;
   delayed_inputs_t [LockstepOffset-1:0] shadow_inputs_d, shadow_inputs_q;
 
+  // Synthesis keeps the buffers in front of both delays, so it cannot merge flops or share logic
+  // between the main copy and the delays.
+  prim_buf #(
+    .Width($bits(delayed_inputs_t))
+  ) u_shadow_inputs_buf (
+    .in_i (shadow_inputs_in),
+    .out_o(shadow_inputs_buf)
+  );
+
   if (LockstepOffset > 1) begin : gen_multi_cycle_delay
-    assign shadow_inputs_d = {shadow_inputs_in, shadow_inputs_q[LockstepOffset-1:1]};
+    assign shadow_inputs_d = {shadow_inputs_buf, shadow_inputs_q[LockstepOffset-1:1]};
   end else begin : gen_single_cycle_delay
-    assign shadow_inputs_d[0] = shadow_inputs_in;
+    assign shadow_inputs_d[0] = shadow_inputs_buf;
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_shadow_inputs_store
@@ -246,7 +255,7 @@ module cheriot_mem_sys_lockstep
   } delayed_outputs_t;
 
   // Stage OutputsOffset-1 takes the outputs of the main copy, stage 0 is compared.
-  delayed_outputs_t                     core_outputs_in;
+  delayed_outputs_t                     core_outputs_in, core_outputs_buf;
   delayed_outputs_t [OutputsOffset-1:0] core_outputs_d, core_outputs_q;
   delayed_outputs_t                     shadow_outputs_d, shadow_outputs_q;
   // The second copy's response tag, compared outside delayed_outputs_t
@@ -264,8 +273,15 @@ module cheriot_mem_sys_lockstep
   assign core_outputs_in.tbre_tl_h     = tbre_tl_h_h2d_i;
   assign core_outputs_in.meta_sram_tl  = meta_sram_tl_h2d_i;
 
+  prim_buf #(
+    .Width($bits(delayed_outputs_t))
+  ) u_core_outputs_buf (
+    .in_i (core_outputs_in),
+    .out_o(core_outputs_buf)
+  );
+
   // OutputsOffset is at least 2.
-  assign core_outputs_d = {core_outputs_in, core_outputs_q[OutputsOffset-1:1]};
+  assign core_outputs_d = {core_outputs_buf, core_outputs_q[OutputsOffset-1:1]};
 
   // No reset: the comparison only starts once both delay lines hold outputs from after the reset.
   always_ff @(posedge clk_i) begin : proc_core_outputs_store
