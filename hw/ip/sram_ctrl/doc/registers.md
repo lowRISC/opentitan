@@ -3,17 +3,19 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
 ## Summary
 
-| Name                                            | Offset   |   Length | Description                                  |
-|:------------------------------------------------|:---------|---------:|:---------------------------------------------|
-| sram_ctrl.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                          |
-| sram_ctrl.[`STATUS`](#status)                   | 0x4      |        4 | SRAM status register.                        |
-| sram_ctrl.[`EXEC_REGWEN`](#exec_regwen)         | 0x8      |        4 | Lock register for execution enable register. |
-| sram_ctrl.[`EXEC`](#exec)                       | 0xc      |        4 | Sram execution enable.                       |
-| sram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)         | 0x10     |        4 | Lock register for control register.          |
-| sram_ctrl.[`CTRL`](#ctrl)                       | 0x14     |        4 | SRAM ctrl register.                          |
-| sram_ctrl.[`SCR_KEY_ROTATED`](#scr_key_rotated) | 0x18     |        4 | Clearable SRAM key request status.           |
-| sram_ctrl.[`READBACK_REGWEN`](#readback_regwen) | 0x1c     |        4 | Lock register for readback enable register.  |
-| sram_ctrl.[`READBACK`](#readback)               | 0x20     |        4 | readback enable.                             |
+| Name                                                        | Offset   |   Length | Description                                                              |
+|:------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------|
+| sram_ctrl.[`ALERT_TEST`](#alert_test)                       | 0x0      |        4 | Alert Test Register                                                      |
+| sram_ctrl.[`STATUS`](#status)                               | 0x4      |        4 | SRAM status register.                                                    |
+| sram_ctrl.[`EXEC_REGWEN`](#exec_regwen)                     | 0x8      |        4 | Lock register for execution enable register.                             |
+| sram_ctrl.[`EXEC`](#exec)                                   | 0xc      |        4 | Sram execution enable.                                                   |
+| sram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                     | 0x10     |        4 | Lock register for control register.                                      |
+| sram_ctrl.[`CTRL`](#ctrl)                                   | 0x14     |        4 | SRAM ctrl register.                                                      |
+| sram_ctrl.[`SCR_KEY_ROTATED`](#scr_key_rotated)             | 0x18     |        4 | Clearable SRAM key request status.                                       |
+| sram_ctrl.[`READBACK_REGWEN`](#readback_regwen)             | 0x1c     |        4 | Lock register for readback enable register.                              |
+| sram_ctrl.[`READBACK`](#readback)                           | 0x20     |        4 | readback enable.                                                         |
+| sram_ctrl.[`RMW_INTG_CHECK_REGWEN`](#rmw_intg_check_regwen) | 0x24     |        4 | Lock register for the read-modify-write integrity check enable register. |
+| sram_ctrl.[`RMW_INTG_CHECK`](#rmw_intg_check)               | 0x28     |        4 | Read-modify-write integrity check enable.                                |
 
 ## ALERT_TEST
 Alert Test Register
@@ -37,17 +39,18 @@ Alert Test Register
 SRAM status register.
 - Offset: `0x4`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x1ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READBACK_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SRAM_ALERT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
+{"reg": [{"name": "BUS_INTEG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ESCALATED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SCR_KEY_SEED_VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "INIT_DONE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "READBACK_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "SRAM_ALERT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RMW_INTG_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|  31:8  |        |         | Reserved                                          |
+|  31:9  |        |         | Reserved                                          |
+|   8    |   ro   |   0x0   | [RMW_INTG_ERROR](#status--rmw_intg_error)         |
 |   7    |   ro   |   0x0   | [SRAM_ALERT](#status--sram_alert)                 |
 |   6    |   ro   |   0x0   | [READBACK_ERROR](#status--readback_error)         |
 |   5    |   ro   |   0x0   | [INIT_DONE](#status--init_done)                   |
@@ -56,6 +59,12 @@ SRAM status register.
 |   2    |   ro   |   0x0   | [ESCALATED](#status--escalated)                   |
 |   1    |   ro   |   0x0   | [INIT_ERROR](#status--init_error)                 |
 |   0    |   ro   |   0x0   | [BUS_INTEG_ERROR](#status--bus_integ_error)       |
+
+### STATUS . RMW_INTG_ERROR
+This bit is set to 1 if the integrity check of the read data in a
+read-modify-write transaction failed (see [`RMW_INTG_CHECK`](#rmw_intg_check)).
+This error triggers a fatal_error alert.
+This condition is terminal.
 
 ### STATUS . SRAM_ALERT
 This bit is set to 1 if a multi bit encoding error has been detected inside the RAM modules.
@@ -260,6 +269,54 @@ readback enable.
 ### READBACK . EN
 Write kMultiBitBool4True to this field to enable the readback security feature for the SRAM.
 A readback of each memory write or read request will be performed and a comparison happens.
+Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
+
+## RMW_INTG_CHECK_REGWEN
+Lock register for the read-modify-write integrity check enable register.
+- Offset: `0x24`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "RMW_INTG_CHECK_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                           |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------|
+|  31:1  |        |         |                       | Reserved                                                                              |
+|   0    |  rw0c  |   0x1   | RMW_INTG_CHECK_REGWEN | When cleared to zero, [`RMW_INTG_CHECK`](#rmw_intg_check) can not be written anymore. |
+
+## RMW_INTG_CHECK
+Read-modify-write integrity check enable.
+- Offset: `0x28`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`RMW_INTG_CHECK_REGWEN`](#rmw_intg_check_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                      |
+|:------:|:------:|:-------:|:--------------------------|
+|  31:4  |        |         | Reserved                  |
+|  3:0   |   rw   |   0x9   | [EN](#rmw_intg_check--en) |
+
+### RMW_INTG_CHECK . EN
+Write kMultiBitBool4True to this field to enable the integrity check of the data
+read from the SRAM during a read-modify-write transaction (i.e., a sub-word write).
+If the check fails, the write is not performed, [`STATUS.RMW_INTG_ERROR`](#status) is set and
+a fatal_error alert is triggered.
+
+This check is disabled by default, as a sub-word write to a memory location that
+has not been initialized would otherwise trigger an integrity error.
+Software should only enable this check once the SRAM has been fully initialized
+(e.g., via [`CTRL.INIT`](#ctrl)) and should then lock it using [`RMW_INTG_CHECK_REGWEN.`](#rmw_intg_check_regwen)
+
 Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
 
 

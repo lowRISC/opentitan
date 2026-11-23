@@ -62,9 +62,9 @@ module sram_ctrl_regs_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [8:0] reg_we_check;
+  logic [10:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(9)
+    .OneHotWidth(11)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -144,6 +144,7 @@ module sram_ctrl_regs_reg_top
   logic status_init_done_qs;
   logic status_readback_error_qs;
   logic status_sram_alert_qs;
+  logic status_rmw_intg_error_qs;
   logic exec_regwen_we;
   logic exec_regwen_qs;
   logic exec_regwen_wd;
@@ -165,6 +166,12 @@ module sram_ctrl_regs_reg_top
   logic readback_we;
   logic [3:0] readback_qs;
   logic [3:0] readback_wd;
+  logic rmw_intg_check_regwen_we;
+  logic rmw_intg_check_regwen_qs;
+  logic rmw_intg_check_regwen_wd;
+  logic rmw_intg_check_we;
+  logic [3:0] rmw_intg_check_qs;
+  logic [3:0] rmw_intg_check_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -444,6 +451,34 @@ module sram_ctrl_regs_reg_top
     .qs     (status_sram_alert_qs)
   );
 
+  //   F[rmw_intg_error]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_rmw_intg_error (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.status.rmw_intg_error.de),
+    .d      (hw2reg.status.rmw_intg_error.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.rmw_intg_error.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_rmw_intg_error_qs)
+  );
+
 
   // R[exec_regwen]: V(False)
   prim_subreg #(
@@ -699,13 +734,74 @@ module sram_ctrl_regs_reg_top
   );
 
 
+  // R[rmw_intg_check_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_rmw_intg_check_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
-  logic [8:0] addr_hit;
+    // from register interface
+    .we     (rmw_intg_check_regwen_we),
+    .wd     (rmw_intg_check_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rmw_intg_check_regwen_qs)
+  );
+
+
+  // R[rmw_intg_check]: V(False)
+  // Create REGWEN-gated WE signal
+  logic rmw_intg_check_gated_we;
+  assign rmw_intg_check_gated_we = rmw_intg_check_we & rmw_intg_check_regwen_qs;
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_rmw_intg_check (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (rmw_intg_check_gated_we),
+    .wd     (rmw_intg_check_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.rmw_intg_check.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (rmw_intg_check_qs)
+  );
+
+
+
+  logic [10:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [8:0] racl_addr_hit_read;
-  logic [8:0] racl_addr_hit_write;
+  logic [10:0] racl_addr_hit_read;
+  logic [10:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -726,18 +822,20 @@ module sram_ctrl_regs_reg_top
   always_comb begin
     racl_addr_hit_read  = '0;
     racl_addr_hit_write = '0;
-    addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
-    addr_hit[1] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
-    addr_hit[2] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
-    addr_hit[3] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
-    addr_hit[4] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
-    addr_hit[5] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
-    addr_hit[6] = (reg_addr == SRAM_CTRL_SCR_KEY_ROTATED_OFFSET);
-    addr_hit[7] = (reg_addr == SRAM_CTRL_READBACK_REGWEN_OFFSET);
-    addr_hit[8] = (reg_addr == SRAM_CTRL_READBACK_OFFSET);
+    addr_hit[ 0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
+    addr_hit[ 1] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
+    addr_hit[ 2] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
+    addr_hit[ 3] = (reg_addr == SRAM_CTRL_EXEC_OFFSET);
+    addr_hit[ 4] = (reg_addr == SRAM_CTRL_CTRL_REGWEN_OFFSET);
+    addr_hit[ 5] = (reg_addr == SRAM_CTRL_CTRL_OFFSET);
+    addr_hit[ 6] = (reg_addr == SRAM_CTRL_SCR_KEY_ROTATED_OFFSET);
+    addr_hit[ 7] = (reg_addr == SRAM_CTRL_READBACK_REGWEN_OFFSET);
+    addr_hit[ 8] = (reg_addr == SRAM_CTRL_READBACK_OFFSET);
+    addr_hit[ 9] = (reg_addr == SRAM_CTRL_RMW_INTG_CHECK_REGWEN_OFFSET);
+    addr_hit[10] = (reg_addr == SRAM_CTRL_RMW_INTG_CHECK_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 9; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 11; slice_idx++) begin
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
@@ -770,15 +868,17 @@ module sram_ctrl_regs_reg_top
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((racl_addr_hit_write[0] & (|(SRAM_CTRL_REGS_PERMIT[0] & ~reg_be))) |
-               (racl_addr_hit_write[1] & (|(SRAM_CTRL_REGS_PERMIT[1] & ~reg_be))) |
-               (racl_addr_hit_write[2] & (|(SRAM_CTRL_REGS_PERMIT[2] & ~reg_be))) |
-               (racl_addr_hit_write[3] & (|(SRAM_CTRL_REGS_PERMIT[3] & ~reg_be))) |
-               (racl_addr_hit_write[4] & (|(SRAM_CTRL_REGS_PERMIT[4] & ~reg_be))) |
-               (racl_addr_hit_write[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be))) |
-               (racl_addr_hit_write[6] & (|(SRAM_CTRL_REGS_PERMIT[6] & ~reg_be))) |
-               (racl_addr_hit_write[7] & (|(SRAM_CTRL_REGS_PERMIT[7] & ~reg_be))) |
-               (racl_addr_hit_write[8] & (|(SRAM_CTRL_REGS_PERMIT[8] & ~reg_be)))));
+              ((racl_addr_hit_write[ 0] & (|(SRAM_CTRL_REGS_PERMIT[ 0] & ~reg_be))) |
+               (racl_addr_hit_write[ 1] & (|(SRAM_CTRL_REGS_PERMIT[ 1] & ~reg_be))) |
+               (racl_addr_hit_write[ 2] & (|(SRAM_CTRL_REGS_PERMIT[ 2] & ~reg_be))) |
+               (racl_addr_hit_write[ 3] & (|(SRAM_CTRL_REGS_PERMIT[ 3] & ~reg_be))) |
+               (racl_addr_hit_write[ 4] & (|(SRAM_CTRL_REGS_PERMIT[ 4] & ~reg_be))) |
+               (racl_addr_hit_write[ 5] & (|(SRAM_CTRL_REGS_PERMIT[ 5] & ~reg_be))) |
+               (racl_addr_hit_write[ 6] & (|(SRAM_CTRL_REGS_PERMIT[ 6] & ~reg_be))) |
+               (racl_addr_hit_write[ 7] & (|(SRAM_CTRL_REGS_PERMIT[ 7] & ~reg_be))) |
+               (racl_addr_hit_write[ 8] & (|(SRAM_CTRL_REGS_PERMIT[ 8] & ~reg_be))) |
+               (racl_addr_hit_write[ 9] & (|(SRAM_CTRL_REGS_PERMIT[ 9] & ~reg_be))) |
+               (racl_addr_hit_write[10] & (|(SRAM_CTRL_REGS_PERMIT[10] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -810,6 +910,12 @@ module sram_ctrl_regs_reg_top
   assign readback_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign readback_wd = reg_wdata[3:0];
+  assign rmw_intg_check_regwen_we = racl_addr_hit_write[9] & reg_we & !reg_error;
+
+  assign rmw_intg_check_regwen_wd = reg_wdata[0];
+  assign rmw_intg_check_we = racl_addr_hit_write[10] & reg_we & !reg_error;
+
+  assign rmw_intg_check_wd = reg_wdata[3:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -822,6 +928,8 @@ module sram_ctrl_regs_reg_top
     reg_we_check[6] = scr_key_rotated_we;
     reg_we_check[7] = readback_regwen_we;
     reg_we_check[8] = readback_gated_we;
+    reg_we_check[9] = rmw_intg_check_regwen_we;
+    reg_we_check[10] = rmw_intg_check_gated_we;
   end
 
   // Read data return
@@ -842,6 +950,7 @@ module sram_ctrl_regs_reg_top
         reg_rdata_next[5] = status_init_done_qs;
         reg_rdata_next[6] = status_readback_error_qs;
         reg_rdata_next[7] = status_sram_alert_qs;
+        reg_rdata_next[8] = status_rmw_intg_error_qs;
       end
 
       racl_addr_hit_read[2]: begin
@@ -871,6 +980,14 @@ module sram_ctrl_regs_reg_top
 
       racl_addr_hit_read[8]: begin
         reg_rdata_next[3:0] = readback_qs;
+      end
+
+      racl_addr_hit_read[9]: begin
+        reg_rdata_next[0] = rmw_intg_check_regwen_qs;
+      end
+
+      racl_addr_hit_read[10]: begin
+        reg_rdata_next[3:0] = rmw_intg_check_qs;
       end
 
       default: begin
