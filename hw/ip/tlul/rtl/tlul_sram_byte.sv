@@ -42,6 +42,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
   input prim_mubi_pkg::mubi4_t readback_en_i,
 
+  input prim_mubi_pkg::mubi4_t rmw_intg_chk_en_i,
+  output logic rmw_intg_error_o,
+
   input logic wr_collision_i,
   input logic write_pending_i
 );
@@ -871,6 +874,11 @@ module tlul_sram_byte import tlul_pkg::*; #(
       PendingTxnCntW'(1))
 
     assign compound_txn_in_progress_o = wr_phase | rdback_phase | rdback_phase_wrreadback;
+
+    // TODO: Implement the RMW integrity check.
+    assign rmw_intg_error_o = 1'b0;
+    mubi4_t unused_rmw_intg_chk_en;
+    assign unused_rmw_intg_chk_en = rmw_intg_chk_en_i;
   end else begin : gen_no_integ_handling
     // In this case we pass everything just through.
     assign tl_sram_o = tl_i;
@@ -882,6 +890,11 @@ module tlul_sram_byte import tlul_pkg::*; #(
     // Signal only used in readback mode.
     mubi4_t unused_readback_en;
     assign unused_readback_en = readback_en_i;
+
+    // No integrity available, tie-off RMW integrity checks.
+    assign rmw_intg_error_o = 1'b0;
+    mubi4_t unused_rmw_intg_chk_en;
+    assign unused_rmw_intg_chk_en = rmw_intg_chk_en_i;
 
   end
 

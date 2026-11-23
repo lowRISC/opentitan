@@ -592,6 +592,8 @@ module sram_ctrl
     .compound_txn_in_progress_o (sram_compound_txn_in_progress),
     .readback_en_i              (reg_readback_en),
     .readback_error_o           (readback_error),
+    .rmw_intg_chk_en_i          (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o           (),
     .wr_collision_i             (sram_wr_collision),
     .write_pending_i            (sram_wpending),
     // RACL interface
