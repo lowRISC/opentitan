@@ -456,6 +456,8 @@ module otbn
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
+    .rmw_intg_chk_en_i          (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o           (),
     .wr_collision_i             (imem_wr_collision),
     .write_pending_i            (imem_wpending)
   );
@@ -711,6 +713,8 @@ module otbn
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
     .readback_error_o           (),
+    .rmw_intg_chk_en_i          (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o           (),
     .wr_collision_i             (dmem_wr_collision),
     .write_pending_i            (dmem_wpending)
   );

@@ -86,6 +86,8 @@ module tlul_adapter_sram_racl
   output logic                 compound_txn_in_progress_o,
   input  mubi4_t               readback_en_i,
   output logic                 readback_error_o,
+  input  mubi4_t               rmw_intg_chk_en_i,
+  output logic                 rmw_intg_error_o,
   input  logic                 wr_collision_i,
   input  logic                 write_pending_i,
   // RACL interface
@@ -150,6 +152,8 @@ module tlul_adapter_sram_racl
     .compound_txn_in_progress_o,
     .readback_en_i,
     .readback_error_o,
+    .rmw_intg_chk_en_i,
+    .rmw_intg_error_o,
     .wr_collision_i,
     .write_pending_i
   );
