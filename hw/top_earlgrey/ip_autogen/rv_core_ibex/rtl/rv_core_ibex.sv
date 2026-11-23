@@ -222,7 +222,6 @@ module rv_core_ibex
   // FIFO spare ports are plain vectors.
   ibex_pkg::ibex_mubi_t                 main_core_data_tag_h2d;
   ibex_pkg::ibex_mubi_t                 main_core_data_tag_d2h;
-  prim_mubi_pkg::mubi4_t                tag_d_ibex2fifo;
   logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2out;
   logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2ibex;
 
@@ -309,8 +308,8 @@ module rv_core_ibex
   logic fatal_core_event;
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
-  // An invalid encoding of a response's capability tag (CORED_TAG.INTERSIG.MUBI) counts as an
-  // integrity error, too.
+  // An invalid encoding of the capability tag on either side of the data FIFO counts as an
+  // integrity error, too (CORED_TAG.INTERSIG.MUBI).
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | dbus_tag_intg_err | revbmbus_intg_err |
                             alert_major_bus;
   assign fatal_core_event = alert_major_internal        |
@@ -854,25 +853,85 @@ module rv_core_ibex
   // The capability tags of the data interface stay multi-bit encoded from Ibex, which encodes and
   // decodes them in each lockstep copy, to the CHERIoT memory subsystem, including inside the data
   // FIFO. ibex_mubi_t and mubi4_t differ only in the order of bits 1 and 0, so the conversion is
-  // wiring only and keeps an invalid tag invalid. An invalid tag on a response is a fatal integrity
-  // error.
+  // wiring only and keeps an invalid tag invalid. An invalid tag on either side of the data
+  // FIFO is a fatal integrity error.
   function automatic logic [prim_mubi_pkg::MuBi4Width-1:0] swap_tag_bits(
       logic [prim_mubi_pkg::MuBi4Width-1:0] tag);
     return {tag[3:2], tag[0], tag[1]};
   endfunction
 
-  assign tag_d_ibex2fifo        = prim_mubi_pkg::mubi4_t'(swap_tag_bits(main_core_data_tag_h2d));
-  assign main_core_data_tag_d2h = ibex_pkg::ibex_mubi_t'(swap_tag_bits(tag_d_fifo2ibex));
-
   `ASSERT_INIT(CoredTagWidth_A, $bits(ibex_pkg::ibex_mubi_t) == prim_mubi_pkg::MuBi4Width)
   `ASSERT_INIT(CoredTagSwapOn_A, swap_tag_bits(ibex_pkg::IbexMuBiOn) == prim_mubi_pkg::MuBi4True)
   `ASSERT_INIT(CoredTagSwapOff_A, swap_tag_bits(ibex_pkg::IbexMuBiOff) == prim_mubi_pkg::MuBi4False)
 
-  // The tag only carries a value with a response: between responses, the empty data FIFO drives
-  // it to zero if PipeLine is set. So only a response with an invalid encoding is a fault.
+  // Each tag that enters or leaves the data FIFO gets one buffered copy for the path and one for
+  // its check, so synthesis cannot share logic between the two, and the next check downstream
+  // covers the path's copy. With AsyncOn(0) the receivers add no flop. The response tag towards
+  // Ibex has no check downstream, so Ibex and the check read the same copy; inside Ibex, the
+  // receiver and the lockstep's buffers keep the decoders apart from the check.
+  typedef enum logic [1:0] {
+    TagPassIdx,
+    TagCheckIdx,
+    TagLast
+  } tag_copy_pos_e;
+
+  prim_mubi_pkg::mubi4_t [TagLast-1:0] tag_h2d_fifo_in_buf, tag_h2d_fifo_out_buf;
+  prim_mubi_pkg::mubi4_t [TagLast-1:0] tag_d2h_fifo_in_buf;
+  prim_mubi_pkg::mubi4_t [0:0]         tag_d2h_fifo_out_buf;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_tag_h2d_fifo_in_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_t'(swap_tag_bits(main_core_data_tag_h2d))),
+    .mubi_o(tag_h2d_fifo_in_buf)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_tag_h2d_fifo_out_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_t'(tag_d_fifo2out)),
+    .mubi_o(tag_h2d_fifo_out_buf)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(TagLast)),
+    .AsyncOn  (1'b0)
+  ) u_tag_d2h_fifo_in_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cored_tag_d2h_i),
+    .mubi_o(tag_d2h_fifo_in_buf)
+  );
+
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn  (1'b0)
+  ) u_tag_d2h_fifo_out_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex)),
+    .mubi_o(tag_d2h_fifo_out_buf)
+  );
+
+  assign main_core_data_tag_d2h = ibex_pkg::ibex_mubi_t'(swap_tag_bits(tag_d2h_fifo_out_buf[0]));
+
+  // The tag only carries a value with its beat: between beats, the empty data FIFO drives it to
+  // zero if PipeLine is set. So only a request or response with an invalid encoding is a fault.
   assign dbus_tag_intg_err =
-      tl_d_fifo2ibex.d_valid &&
-      prim_mubi_pkg::mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex));
+      (tl_d_ibex2fifo_main_core.a_valid &&
+       prim_mubi_pkg::mubi4_test_invalid(tag_h2d_fifo_in_buf[TagCheckIdx])) ||
+      (tl_d_fifo2gate.a_valid &&
+       prim_mubi_pkg::mubi4_test_invalid(tag_h2d_fifo_out_buf[TagCheckIdx])) ||
+      (tl_d_gate2fifo.d_valid &&
+       prim_mubi_pkg::mubi4_test_invalid(tag_d2h_fifo_in_buf[TagCheckIdx])) ||
+      (tl_d_fifo2ibex.d_valid &&
+       prim_mubi_pkg::mubi4_test_invalid(tag_d2h_fifo_out_buf[0]));
 
   tlul_fifo_sync #(
     .ReqPass(FifoPass),
@@ -888,12 +947,12 @@ module rv_core_ibex
     .tl_h_o      (tl_d_fifo2ibex),
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
-    .spare_req_i (prim_mubi_pkg::MuBi4Width'(tag_d_ibex2fifo)),
+    .spare_req_i (prim_mubi_pkg::MuBi4Width'(tag_h2d_fifo_in_buf[TagPassIdx])),
     .spare_req_o (tag_d_fifo2out),
-    .spare_rsp_i (prim_mubi_pkg::MuBi4Width'(cored_tag_d2h_i)),
+    .spare_rsp_i (prim_mubi_pkg::MuBi4Width'(tag_d2h_fifo_in_buf[TagPassIdx])),
     .spare_rsp_o (tag_d_fifo2ibex));
 
-  assign cored_tag_h2d_o = prim_mubi_pkg::mubi4_t'(tag_d_fifo2out);
+  assign cored_tag_h2d_o = tag_h2d_fifo_out_buf[TagPassIdx];
 
   // SEC_CM: CORED_TLUL.BUS.LC_GATED
   // Gate any pending requests on escalation

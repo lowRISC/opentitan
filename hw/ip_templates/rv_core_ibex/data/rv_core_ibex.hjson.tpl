@@ -73,7 +73,8 @@
           - A double fault is seen (Ibex raises `double_fault_seen_o`)
           - A bus integrity error is seen
 % if cheriot_available:
-          - A data response carries an invalid encoding of the capability tag
+          - A data request or response carries an invalid encoding of the capability tag at the
+            input or the output of the data FIFO
           - The ePMP/CHERIoT execution mode switch enters its error state
 % endif
       '''
@@ -833,8 +834,11 @@
       desc: '''
         The capability tags of the data interface stay multi-bit encoded between Ibex, which
         encodes and decodes them in each lockstep copy, and the CHERIoT memory subsystem, including
-        inside the data FIFO. Only MuBi4True reads as tagged, and a data response with an invalid
-        encoding raises the fatal_hw_err alert.
+        inside the data FIFO. Only MuBi4True reads as tagged, and a data request or response with
+        an invalid encoding at the input or the output of the data FIFO raises the fatal_hw_err
+        alert. Against a single fault, the response check at the output of the data FIFO and the
+        request check of the CHERIoT memory subsystem suffice; the other three checks are defence
+        in depth.
       '''
     }
 % endif
@@ -1179,8 +1183,8 @@
             resval: "0x0"
             desc: '''
 % if cheriot_available:
-              rv_core_ibex detected a response integrity error, or a data response with an invalid
-              encoding of the capability tag
+              rv_core_ibex detected a response integrity error, or a data request or response with
+              an invalid encoding of the capability tag on either side of the data FIFO
 % else:
               rv_core_ibex detected a response integrity error
 % endif

@@ -181,10 +181,10 @@ Every data access of Ibex carries a capability validity tag next to the TL-UL st
 `cored_tag_d2h_i` comes with the response: it is the tag of the loaded capability.
 Both are `mubi4_t` towards the CHERIoT memory subsystem (`cheriot_mem_sys`).
 Ibex encodes the request tag and decodes the response tag itself as `ibex_mubi_t`, in each lockstep copy, so the lockstep compares the encoded request tag and the shadow core decodes its own copy of the response tag.
-The wrapper only converts between `ibex_mubi_t` and `mubi4_t`, which swaps bits 1 and 0, so the tag stays multi-bit encoded on its whole way, including inside the data FIFO.
+The wrapper converts between `ibex_mubi_t` and `mubi4_t` by swapping bits 1 and 0, so the tag stays multi-bit encoded on its whole way, including inside the data FIFO.
 The encoding adds no flop, so the tag stays in the cycle of its TL-UL beat.
 
 Decoding is strict: only `MuBi4True` reads as tagged.
 An invalid encoding therefore reads as untagged.
-A data response with an invalid encoding also sets [`FATAL_INTG_ERR`](registers.md#err_status) and raises the `fatal_hw_err` alert.
+A data request or response with an invalid encoding at the input or the output of the data FIFO also sets [`FATAL_INTG_ERR`](registers.md#err_status) and raises the `fatal_hw_err` alert.
 Like other integrity errors, it does not disable fetch locally (see [Local Escalation Path](#local-escalation-path)); its escalation is left to the alert handler.
