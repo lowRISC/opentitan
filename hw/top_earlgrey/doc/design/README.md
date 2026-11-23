@@ -669,8 +669,8 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 14   | SPI_DEV_D1    | VIOA   | BidirStr     | direct            | SPI device data                            |
 | 15   | SPI_DEV_D2    | VIOA   | BidirStr     | direct            | SPI device data                            |
 | 16   | SPI_DEV_D3    | VIOA   | BidirStr     | direct            | SPI device data                            |
-| 17   | SPI_DEV_CLK   | VIOA   | InputStd     | direct            | SPI device clock                           |
-| 18   | SPI_DEV_CS_L  | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 17   | SPI_DEV_CLK   | VIOA   | BidirStd     | direct            | SPI device clock                           |
+| 18   | SPI_DEV_CS_L  | VIOA   | BidirStd     | direct            | SPI device chip select                     |
 | 0    | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 1    | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 2    | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |

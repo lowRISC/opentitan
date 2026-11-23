@@ -35,8 +35,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_ec_rst_l
     prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_flash_wp_l
-    prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
-    prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
+    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sck
+    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_csb
     prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sck
     prim_pad_wrapper_pkg::BidirStr  // DIO spi_host0_csb0
   };
@@ -163,6 +163,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         }
       }
     }
+    // spi_device only reads sck and csb, the top ties their periph output enables to 0.
+    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceSck] == 0;
+    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceCsb] == 0;
   }
 
   virtual task body();
