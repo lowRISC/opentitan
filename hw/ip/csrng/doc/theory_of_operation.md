@@ -251,6 +251,9 @@ The actions performed by each command, as well as which flags are supported, are
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
          It is the responsibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
          Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.
+         If <tt>clen</tt> is non-zero, the additional data is first used to update the internal state before any output is generated, even if all data words are zero.
+         If <tt>clen</tt> is zero, this initial update is skipped.
+         In both cases, the internal state is updated with the additional data (or zero) after the requested bits have been generated.
     </td>
   </tr>
   <tr>
