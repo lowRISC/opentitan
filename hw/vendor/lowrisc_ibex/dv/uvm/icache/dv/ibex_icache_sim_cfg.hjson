@@ -43,6 +43,12 @@
       name: fusesoc_cores_root_dirs
       value: ["--cores-root {proj_root}"]
     }
+    // Add the bench's own coverage config to the common ones. The first two files must stay in
+    // sync with default_vcs_cov_cfg_file in vendor/lowrisc_ip/dv/tools/dvsim/common_sim_cfg.hjson.
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{proj_root}/dv/uvm/icache/dv/ibex_icache_cover.cfg"
+    }
   ]
 
   // Default iterations for all tests - each test entry can override this.
@@ -102,6 +108,11 @@
     }
 
     {
+      name: ibex_icache_ecc_back_line
+      uvm_test_seq: ibex_icache_ecc_back_line_vseq
+    }
+
+    {
       name: ibex_icache_stress_all
       uvm_test_seq: ibex_icache_combo_vseq
     }
@@ -123,6 +134,7 @@
               "ibex_icache_back_line",
               "ibex_icache_many_errors",
               "ibex_icache_ecc",
+              "ibex_icache_ecc_back_line",
               "ibex_icache_stress_all",
               "ibex_icache_stress_all_with_reset"]
     }

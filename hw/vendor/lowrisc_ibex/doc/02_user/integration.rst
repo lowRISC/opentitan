@@ -433,6 +433,10 @@ Interfaces
 |                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
 |                              |                         |     | Tie to ``IbexMuBiOff`` to always run   |
 |                              |                         |     | in RV32I mode.                         |
+|                              |                         |     | Switching at runtime requires a        |
+|                              |                         |     | specific software sequence and system  |
+|                              |                         |     | conditions, see                        |
+|                              |                         |     | :ref:`details <cheriot-mode-switch>`.  |
 +------------------------------+-------------------------+-----+----------------------------------------+
 | ``hart_id_i``                | 32                      | in  | Hart ID, usually static, can be read   |
 |                              |                         |     | from :ref:`csr-mhartid` CSR            |

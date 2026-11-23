@@ -130,6 +130,12 @@ parameters:
     paramtype: vlogparam
     description: "Enable support for debug triggers. "
 
+  DbgHwBreakNum:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+    description: "Number of debug triggers (hardware breakpoints)"
+
   SecureIbex:
     datatype: int
     default: 0
@@ -184,8 +190,6 @@ targets:
       - tool_vivado ? (FPGA_XILINX=true)
   lint:
     <<: *default_target
-    filesets:
-      - files_map_prim_generic
     parameters:
       - SYNTHESIS=true
       - RVFI=true

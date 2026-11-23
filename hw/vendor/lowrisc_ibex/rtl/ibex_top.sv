@@ -236,6 +236,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   logic                        clk;
   ibex_mubi_t                  core_busy_d, core_busy_q;
   logic                        clock_en;
+  logic                        clock_gate_err;
+  ibex_mubi_t                  core_busy_buf;
+  logic                        debug_req_buf;
+  logic                        irq_pending_buf;
+  logic                        irq_nm_buf;
   logic                        irq_pending;
   // Core <-> Register file signals
   logic                        dummy_instr_id;
@@ -312,6 +317,57 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .q_o   (core_busy_q)
     );
     assign clock_en = (core_busy_q != IbexMuBiOff) | debug_req_i | irq_pending | irq_nm_i;
+
+    // Clock gate check. Faulting the clock enable logic, core_busy_q, or the clock gate stops
+    // the main and shadow core. To detect such attacks, introduce a redundant clock enable signal
+    // (clock_en_chk). In addition, monitor the gated clock signal and check, whether it was
+    // enabled when we are expecting it.
+
+    ibex_mubi_t core_busy_chk_q;
+    logic       clock_en_chk;
+
+    prim_flop #(
+      .Width($bits(ibex_mubi_t)),
+      .ResetValue(IbexMuBiOff)
+    ) u_prim_core_busy_chk_flop (
+      .clk_i (clk_i),
+      .rst_ni(rst_ni),
+      .d_i   (core_busy_buf),
+      .q_o   (core_busy_chk_q)
+    );
+
+    // The redundant clock enable signal. Use the buffered signal to avoid synthesis optimizations.
+    assign clock_en_chk = (core_busy_chk_q != IbexMuBiOff) | debug_req_buf | irq_pending_buf |
+                          irq_nm_buf;
+
+    // If the gated clock (clk) stops, clk_toggle_q will keep its value.
+    logic clk_toggle_q;
+    always_ff @(posedge clk or negedge rst_ni) begin
+      if (!rst_ni) begin
+        clk_toggle_q <= 1'b0;
+      end else begin
+        clk_toggle_q <= ~clk_toggle_q;
+      end
+    end
+
+    // Sample clk_toggle_q and clock_en_chk with the ungated clock (clk_i).
+    logic clk_toggle_prev_q;
+    logic clock_en_chk_q;
+
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        clk_toggle_prev_q <= 1'b0;
+        clock_en_chk_q    <= 1'b0;
+      end else begin
+        clk_toggle_prev_q <= clk_toggle_q;
+        clock_en_chk_q    <= clock_en_chk;
+      end
+    end
+
+    // Check if the previous clock cycle was correct. It is correct, when both, redundant clock
+    // enable signals (clock_en and clock_en_chk) agree that the clock is either gated or not
+    // gated.
+    assign clock_gate_err = clock_en_chk_q & (clk_toggle_q == clk_toggle_prev_q);
   end else begin : g_clock_en_non_secure
     // For non secure Ibex only the bottom bit of core_busy_q is considered. Other FFs can be
     // optimized away during synthesis.
@@ -324,8 +380,12 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     end
     assign clock_en = core_busy_q[0] | debug_req_i | irq_pending | irq_nm_i;
 
+    // No clock gate check for non secure Ibex.
+    assign clock_gate_err = 1'b0;
+
     logic unused_core_busy;
-    assign unused_core_busy = ^core_busy_q[$bits(ibex_mubi_t)-1:1];
+    assign unused_core_busy = ^{core_busy_q[$bits(ibex_mubi_t)-1:1], core_busy_buf, debug_req_buf,
+                                irq_pending_buf, irq_nm_buf};
   end
 
   assign core_sleep_o = ~clock_en;
@@ -623,8 +683,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   if (ICacheScramble) begin : gen_scramble
 
     // SEC_CM: ICACHE.MEM.SCRAMBLE
-    // Scramble key valid starts with OTP returning new valid key and stays high
-    // until we request a new valid key.
+    // Scramble key valid resets high with the RndCnstIbexKey default key. It goes low when a new
+    // key is requested and high again when the key provider acknowledges the request.
     assign scramble_key_valid_d = scramble_req_q ? scramble_key_valid_i :
                                   ic_scr_key_req ? 1'b0                 :
                                                    scramble_key_valid_q;
@@ -897,6 +957,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       data_rdata_core,
       trvk_rtag,
       trvk_err,
+      rf_raddr_a,
+      rf_raddr_b,
+      rf_waddr_wb,
+      rf_we_wb,
+      rf_wdata_wb,
       rf_rdata_a,
       rf_rdata_b,
       ic_tag_req,
@@ -951,6 +1016,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic                         data_rdata_tag_local;
     logic                         data_err_local;
 
+    logic [4:0]                   rf_raddr_a_local;
+    logic [4:0]                   rf_raddr_b_local;
+    logic [4:0]                   rf_waddr_wb_local;
+    logic                         rf_we_wb_local;
+    logic [RegFileDataWidth-1:0]  rf_wdata_wb_local;
     logic [RegFileDataWidth-1:0]  rf_rdata_a_local;
     logic [RegFileDataWidth-1:0]  rf_rdata_b_local;
 
@@ -1006,6 +1076,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       data_rdata_core,
       trvk_rtag,
       trvk_err,
+      rf_raddr_a,
+      rf_raddr_b,
+      rf_waddr_wb,
+      rf_we_wb,
+      rf_wdata_wb,
       rf_rdata_a,
       rf_rdata_b,
       ic_tag_req,
@@ -1056,6 +1131,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       data_rdata_local,
       data_rdata_tag_local,
       data_err_local,
+      rf_raddr_a_local,
+      rf_raddr_b_local,
+      rf_waddr_wb_local,
+      rf_we_wb_local,
+      rf_wdata_wb_local,
       rf_rdata_a_local,
       rf_rdata_b_local,
       ic_tag_req_local,
@@ -1095,6 +1175,12 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .in_i(buf_in),
       .out_o(buf_out)
     );
+
+    // The buffered copies of the clock enable signals are also used by the clock gate check.
+    assign core_busy_buf   = core_busy_local;
+    assign debug_req_buf   = debug_req_local;
+    assign irq_pending_buf = irq_pending_local;
+    assign irq_nm_buf      = irq_nm_local;
 
     logic [TagSizeECC-1:0]  ic_tag_rdata_local [IC_NUM_WAYS];
     logic [LineSizeECC-1:0] ic_data_rdata_local [IC_NUM_WAYS];
@@ -1182,6 +1268,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .data_rdata_tag_i         (data_rdata_tag_local),
       .data_err_i               (data_err_local),
 
+      .rf_raddr_a_i             (rf_raddr_a_local),
+      .rf_raddr_b_i             (rf_raddr_b_local),
+      .rf_waddr_wb_i            (rf_waddr_wb_local),
+      .rf_we_wb_i               (rf_we_wb_local),
+      .rf_wdata_wb_i            (rf_wdata_wb_local),
       .rf_rdata_a_i             (rf_rdata_a_local),
       .rf_rdata_b_i             (rf_rdata_b_local),
 
@@ -1252,6 +1343,10 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     assign lockstep_alert_major_internal = 1'b0;
     assign lockstep_alert_major_bus      = 1'b0;
     assign lockstep_alert_minor          = 1'b0;
+    assign core_busy_buf                 = IbexMuBiOff;
+    assign debug_req_buf                 = 1'b0;
+    assign irq_pending_buf               = 1'b0;
+    assign irq_nm_buf                    = 1'b0;
 
     assign lockstep_cmp_en_o             = IbexMuBiOff;
     assign data_req_shadow_o             = 1'b0;
@@ -1361,7 +1456,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   assign alert_major_internal_o = core_alert_major_internal     |
                                   lockstep_alert_major_internal |
-                                  icache_alert_major_internal;
+                                  icache_alert_major_internal   |
+                                  clock_gate_err;
   assign alert_major_bus_o      = core_alert_major_bus       |
                                   lockstep_alert_major_bus   |
                                   trvk_revbm_data_intg_error |

@@ -18,6 +18,9 @@ The following configuration parameters are available to control PMP checking:
 
 When PMPEnable is zero, the PMP module is not instantiated and all PMP registers read as zero (regardless of the value of PMPNumRegions)
 
+In CHERIoT mode (see :ref:`cheriot`), capability checks replace PMP: no PMP checks are performed and accesses to the PMP CSRs and ``mseccfg`` raise an illegal instruction exception.
+PMP regions and locks configured in RV32I mode therefore no longer restrict accesses after a :ref:`runtime switch to CHERIoT mode <cheriot-mode-switch>`.
+
 PMP Integration
 ---------------
 

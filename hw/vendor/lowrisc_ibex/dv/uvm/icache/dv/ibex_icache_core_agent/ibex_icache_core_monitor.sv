@@ -4,8 +4,6 @@
 
 class ibex_icache_core_monitor extends dv_base_monitor #(
     .ITEM_T     (ibex_icache_core_bus_item),
-    .REQ_ITEM_T (ibex_icache_core_req_item),
-    .RSP_ITEM_T (ibex_icache_core_rsp_item),
     .CFG_T      (ibex_icache_core_agent_cfg),
     .COV_T      (ibex_icache_core_agent_cov)
   );

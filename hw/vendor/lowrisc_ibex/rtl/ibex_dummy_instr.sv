@@ -22,6 +22,7 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   input  logic [2:0]  dummy_instr_mask_i,
   input  logic        dummy_instr_seed_en_i,
   input  logic [31:0] dummy_instr_seed_i,
+  input  logic        dummy_instr_16regs_i,
 
   // Interface to IF stage
   input  logic        fetch_valid_i,
@@ -59,6 +60,7 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   logic [6:0]               dummy_set;
   logic [2:0]               dummy_opcode;
   logic [31:0]              dummy_instr;
+  logic [OP_W-1:0]          dummy_op_a, dummy_op_b;
   logic [31:0]              dummy_instr_seed_q, dummy_instr_seed_d;
 
   // Shift the LFSR every time we insert an instruction
@@ -142,8 +144,12 @@ module ibex_dummy_instr import ibex_pkg::*; #(
     endcase
   end
 
-  //                    SET        RS2             RS1             OP            RD
-  assign dummy_instr = {dummy_set, lfsr_data.op_b, lfsr_data.op_a, dummy_opcode, 5'h00, 7'h33};
+  // Don't use x16-x31 in rv32e or CHERIoT mode
+  assign dummy_op_a = {lfsr_data.op_a[OP_W-1] & ~dummy_instr_16regs_i, lfsr_data.op_a[OP_W-2:0]};
+  assign dummy_op_b = {lfsr_data.op_b[OP_W-1] & ~dummy_instr_16regs_i, lfsr_data.op_b[OP_W-2:0]};
+
+  //                    SET        RS2         RS1         OP            RD
+  assign dummy_instr = {dummy_set, dummy_op_b, dummy_op_a, dummy_opcode, 5'h00, 7'h33};
 
   // Assign outputs
   assign insert_dummy_instr_o = insert_dummy_instr;
