@@ -28,6 +28,10 @@ module tb;
     .clk_i                (clk      ),
     .rst_ni               (rst_n    ),
 
+    // Scan mode off
+    .scanmode_i           (prim_mubi_pkg::MuBi4False),
+    .scan_rst_ni          (1'b1),
+
     // Bus interface (device) for CSRs
     .regs_tl_d_i          (tl_if.h2d),
     .regs_tl_d_o          (tl_if.d2h),
