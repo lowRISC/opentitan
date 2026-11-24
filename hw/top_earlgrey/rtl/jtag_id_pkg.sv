@@ -15,14 +15,14 @@ package jtag_id_pkg;
 
   localparam logic [31:0] RV_DM_JTAG_IDCODE = {
     JTAG_VERSION,          // Version
-    16'h1,                 // Part Number
+    16'h31,                // Part Number
     JEDEC_MANUFACTURER_ID, // Manufacturer ID
     1'b1                   // (fixed)
   };
 
   localparam logic [31:0] LC_CTRL_JTAG_IDCODE = {
     JTAG_VERSION,          // Version
-    16'h2,                 // Part Number
+    16'h32,                // Part Number
     JEDEC_MANUFACTURER_ID, // Manufacturer ID
     1'b1                   // (fixed)
   };
