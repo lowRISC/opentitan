@@ -167,26 +167,33 @@ All necessary configuration files are included in this repository.
 
 For more guidance on using OpenOCD, see [Using OpenOCD](./using_openocd.md).
 
-Run the simulation with Bazel, making sure to build the device software with debug symbols using
+Run the simulation with Bazel, making sure to build and run the device software with debug symbols using
 ```console
 cd $REPO_TOP
-bazel run --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
+bazel run --copt=-g //sw/device/tests:uart_smoketest_sim_verilator
 ```
 
 Then, connect with OpenOCD using the following command.
+The two `-f` flags specify the configuration files that describe the virtual JTAG interface, and Earlgrey, respectively.
+These must be provided in this order.
+The final `-c` flag is optional.
 
 ```console
 cd $REPO_TOP
-bazel run //third_party/openocd -- -s util/openocd -f board/lowrisc-earlgrey-verilator.cfg
+bazel run //third_party/openocd -- \
+  -f util/openocd/interface/sim-jtagdpi.cfg \
+  -f util/openocd/target/lowrisc-earlgrey.cfg \
+  -c "riscv set_command_timeout_sec 120"
 ```
 
 Lastly, connect GDB using the following command (noting it needs to be altered to point to the sw binary in use).
 
 ```console
 cd $REPO_TOP
-bazel run @lowrisc_rv32imcb_toolchain//:/bin/riscv32-unknown-elf-gdb -- \
-  -ex "target extended-remote :3333" -ex "info reg" \
-  "$(bazel outquery --config=riscv32 //sw/device/tests:uart_smoketest_prog_sim_verilator.elf)"
+bazel run @lowrisc_rv32imcb_toolchain//:bin/riscv32-unknown-elf-gdb -- \
+  -ex "set remotetimeout unlimited" \
+  -ex "target extended-remote :3333" \
+  "$(bazel outquery //sw/device/tests:uart_smoketest_sim_verilator | sed 's/\.bash$/\.elf/')"
 ```
 
 ## SPI device test interface (optional)
