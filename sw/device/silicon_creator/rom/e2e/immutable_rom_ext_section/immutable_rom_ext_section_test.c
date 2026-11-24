@@ -23,7 +23,7 @@ OTTF_DEFINE_TEST_CONFIG();
 
 enum {
   kImmutableRomExtSectionHashSizeIn32BitWords =
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_SIZE /
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH_SIZE /
       sizeof(uint32_t),
   kSramValuePass = 0x53534150,  // PASS
 };
@@ -61,10 +61,13 @@ bool test_main(void) {
            otp_read32(
                OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH_OFFSET));
   uint32_t immutable_rom_ext_hash[kImmutableRomExtSectionHashSizeIn32BitWords];
-  otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
+  otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH_OFFSET,
            immutable_rom_ext_hash, kImmutableRomExtSectionHashSizeIn32BitWords);
   LOG_INFO(
-      "Immutable ROM_EXT Section Hash OTP: 0x%08x%08x%08x%08x%08x%08x%08x%08x",
+      "Immutable ROM_EXT Section Hash OTP: "
+      "0x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x",
+      immutable_rom_ext_hash[11], immutable_rom_ext_hash[10],
+      immutable_rom_ext_hash[9], immutable_rom_ext_hash[8],
       immutable_rom_ext_hash[7], immutable_rom_ext_hash[6],
       immutable_rom_ext_hash[5], immutable_rom_ext_hash[4],
       immutable_rom_ext_hash[3], immutable_rom_ext_hash[2],

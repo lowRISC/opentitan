@@ -208,7 +208,7 @@ otp_json_immutable_rom_ext(
                 # Enable the immutable ROM_EXT
                 "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
                 # Set the hash to a bogus value
-                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH": otp_hex(0x1234),
             },
         ),
         otp_partition(
