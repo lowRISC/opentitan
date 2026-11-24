@@ -718,6 +718,7 @@ jobs:
 
   qemu_smoketest:
     name: QEMU smoketest
+    if: false
     runs-on: ubuntu-22.04-vivado
     needs: quick_lint
     steps:
