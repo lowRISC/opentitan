@@ -624,7 +624,8 @@ module hmac
   assign reg_fifo_wentry.mask = {reg_fifo_wmask[0],  reg_fifo_wmask[8],
                                  reg_fifo_wmask[16], reg_fifo_wmask[24]};
   assign fifo_empty  = ~fifo_rvalid;
-  assign fifo_wvalid = (hmac_fifo_wsel && fifo_wready) ? hmac_fifo_wvalid : reg_fifo_wvalid;
+  assign fifo_wvalid = (hmac_fifo_wsel && fifo_wready) ? hmac_fifo_wvalid
+                                                       : reg_fifo_wvalid & msg_allowed;
 
   logic index;
   always_comb begin : select_fifo_wdata
