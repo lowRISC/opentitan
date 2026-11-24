@@ -719,6 +719,22 @@ def _get_otp_ctrl_params(top: ConfigT,
                 return p
         raise ValueError(f"Parameter {name} not found in {param_list}")
 
+    def get_macro_backend(top: ConfigT, otp_ctrl: Dict[str, Any]) -> str:
+        """Returns the type of the module that implements the OTP macro interface.
+
+        This is the module that the otp_macro port of otp_ctrl is connected to,
+        for example otp_macro or rram_ctrl.
+        """
+        port = f"{otp_ctrl['name']}.otp_macro"
+        connect = top.get("inter_module", {}).get("connect", {})
+        peers = list(connect.get(port, []))
+        peers += [req for req, rsps in connect.items() if port in rsps]
+        for peer in peers:
+            module = lib.find_module_by_name(top["module"], peer.split(".")[0])
+            if module is not None:
+                return module.get("template_type", module["type"])
+        raise ValueError(f"{port} is not connected to an OTP macro backend")
+
     """Returns the parameters extracted from the otp_mmap.hjson file."""
     otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
     otp_mmap = OtpMemMap.from_mmap_path(otp_mmap_path, generate_fresh_keys=True).config
@@ -782,6 +798,7 @@ def _get_otp_ctrl_params(top: ConfigT,
     ipgen_params.update({
         "otp_mmap": otp_mmap,
         "enable_nvm_key": enable_nvm_keys,
+        "macro_backend": get_macro_backend(top, otp_ctrl),
     })
     return ipgen_params
 

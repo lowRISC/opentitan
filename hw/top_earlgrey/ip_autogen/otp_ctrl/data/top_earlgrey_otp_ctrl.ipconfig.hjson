@@ -2306,6 +2306,7 @@
       ]
     }
     enable_nvm_key: true
+    macro_backend: rram_ctrl
     topname: earlgrey
     uniquified_modules: {}
     module_instance_name: otp_ctrl

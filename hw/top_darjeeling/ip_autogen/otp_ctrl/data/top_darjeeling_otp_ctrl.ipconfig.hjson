@@ -2200,6 +2200,7 @@
       ]
     }
     enable_nvm_key: false
+    macro_backend: otp_macro
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: otp_ctrl
