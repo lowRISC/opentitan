@@ -142,6 +142,22 @@ rust_binary(
 )
 
 rust_binary(
+    name = "cheriot_mode_switch",
+    srcs = [
+        "src/cheriot_mode_switch.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
+        "@crate_index//:rand",
+        "@crate_index//:rand_chacha",
+    ],
+)
+
+rust_binary(
     name = "access_after_wakeup",
     srcs = [
         "src/access_after_wakeup.rs",
