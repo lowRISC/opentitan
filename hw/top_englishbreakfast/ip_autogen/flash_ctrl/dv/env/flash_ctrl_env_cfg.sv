@@ -313,7 +313,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
     seq_cfg.configure();
 
     m_fpp_agent_cfg = flash_phy_prim_agent_cfg::type_id::create("m_fpp_agent_cfg");
-    m_fpp_agent_cfg.is_active = 0;
+    m_fpp_agent_cfg.if_mode = Monitor;
     m_fpp_agent_cfg.en_cov = 0;
 
     // set num_interrupts & num_alerts

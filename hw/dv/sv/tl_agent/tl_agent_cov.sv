@@ -89,6 +89,7 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
                                "addr_not_align_size",
                                "mask_not_in_active_lanes",
                                "size_over_max"};
+
     super.build_phase(phase);
     m_pending_req_on_rst_cg = new("m_pending_req_on_rst_cg", `gfn);
     m_max_outstanding_cg    = new("m_max_outstanding_cg", cfg.max_outstanding_req, `gfn);
@@ -98,19 +99,21 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
           new({`gfn, "::m_outstanding_item_w_same_addr_cov_obj"});
     end
 
-    if (cfg.if_mode == dv_utils_pkg::Host) begin
+    if (should_sample_host()) begin
       m_tl_a_chan_cov_cg = new("m_tl_a_chan_cov_cg", cfg.valid_a_source_width, `gfn);
       foreach (tl_error_names[i]) begin
         m_tl_error_cov_objs[tl_error_names[i]] = new({`gfn, "::", tl_error_names[i]});
       end
-    end else begin // device mode
+    end
+
+    if (should_sample_device()) begin
       m_tl_d_chan_cov_cg = new("m_tl_d_chan_cov_cg", `gfn);
     end
   endfunction : build_phase
 
   // sample info that is within the seq_item, this will be called at the end of transaction
   virtual function void sample(tl_seq_item item);
-    if (cfg.if_mode == dv_utils_pkg::Host) begin
+    if (should_sample_host()) begin
       if (!item.get_exp_d_error()) begin // no error
         m_tl_a_chan_cov_cg.sample(item);
       end else begin // error cases
@@ -123,9 +126,23 @@ class tl_agent_cov extends dv_base_agent_cov #(tl_agent_cfg);
             item.get_error_mask_not_in_active_lanes());
         m_tl_error_cov_objs["size_over_max"].sample(item.get_error_size_over_max());
       end
-    end else begin // device mode
+    end
+
+    if (should_sample_device()) begin
       m_tl_d_chan_cov_cg.sample(item);
     end
   endfunction : sample
 
+  // Return true if this coverage collector should sample information from the host side of the
+  // interface.
+  local function bit should_sample_host();
+    return cfg.if_mode inside {dv_utils_pkg::Host, dv_utils_pkg::Monitor};
+  endfunction
+
+  // Return true if this coverage collector should sample information from the device side of the
+  // interface.
+  local function bit should_sample_device();
+    return cfg.if_mode inside {dv_utils_pkg::Device, dv_utils_pkg::Monitor};
+  endfunction
+  
 endclass

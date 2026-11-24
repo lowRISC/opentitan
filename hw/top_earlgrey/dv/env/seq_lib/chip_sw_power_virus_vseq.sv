@@ -196,12 +196,15 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     // i2c_agent configs
     configure_i2c_agents();
 
-    // Spi_device_agent1 config to handle spi_host1 TX bytes
+    // Configure the agent for the spi_device with index 1 (which will handle TX bytes for the
+    // corresponding spi_host).
+    //
+    // Note that the update to if_mode will have no effect (since we are now in run_phase), but we
+    // do it here to document the expected use of the agent.
     cfg.m_spi_device_agent_cfgs[1].csid = '0;
     cfg.m_spi_device_agent_cfgs[1].num_bytes_per_trans_in_mon = 4;
     cfg.m_spi_device_agent_cfgs[1].spi_mode = Quad;
-    cfg.m_spi_device_agent_cfgs[1].if_mode = dv_utils_pkg::Device;
-    cfg.m_spi_device_agent_cfgs[1].is_active = 0;
+    cfg.m_spi_device_agent_cfgs[1].if_mode = dv_utils_pkg::Monitor;
 
     // Configs for SPI passthrough part of the test
     cfg.m_spi_device_agent_cfgs[0].byte_order = '0;
