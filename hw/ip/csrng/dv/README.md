@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../README.md)
 * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/csrng/dv/latest/report.html)
+* [Simulation results](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html)
 
 ## Design features
 For detailed information on CSRNG design features, please see the [CSRNG HWIP technical specification](../README.md).
@@ -22,13 +22,14 @@ CSRNG testbench has been constructed based on the [CIP testbench architecture](.
 ![Block diagram](./doc/csrng_tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/csrng/dv/tb/tb.sv`. It instantiates the CSRNG DUT module `hw/ip/csrng/rtl/csrng.sv`.
+Top level testbench is located at `hw/ip/csrng/dv/tb.sv`. It instantiates the CSRNG DUT module `hw/ip/csrng/rtl/csrng.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
-* CSRNG IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
-* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md)
+* One `csrng_if` per HW instance, connected to the application interface of that instance
+* A `push_pull_if` connected to the entropy source interface
+* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Alerts ([`alert_if`](../../../dv/sv/alert_agent/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -66,16 +67,19 @@ To ensure high quality constrained random stimulus, it is necessary to develop a
 The following covergroups have been developed to prove that the test intent has been adequately met:
 * common covergroup for interrupts `hw/dv/sv/cip_lib/cip_base_env_cov.sv`: Cover interrupt value, interrupt enable, intr_test, interrupt pin
 
+The CSRNG covergroups are listed in the [testplan](#testplan).
+
 ### Self-checking strategy
 #### Scoreboard
 The `csrng_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 * tl_a_chan_fifo, tl_d_chan_fifo:  These 2 FIFOs provide transaction items at the end of Tilelink address channel and data channel respectively
-* entropy_src_fifo, genbits_fifo:  The entropy_src_fifo provides transaction items from the predictor and the genbits_fifo provide actual post-entropy_src transaction items to compare
+* entropy_src_fifo: provides the seeds returned to CSRNG on the entropy source interface
+* csrng_cmd_fifo[]: one per HW instance, provides the commands and genbits on the application interface of that instance
 
 
 #### Assertions
-* TLUL assertions: The `tb/csrng_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `sva/csrng_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 ## Building and running tests
