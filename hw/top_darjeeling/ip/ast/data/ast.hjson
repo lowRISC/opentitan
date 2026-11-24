@@ -6,6 +6,13 @@
 // *Module Description: Analog Sensors Top Registers
 //#############################################################################
 { name:               "ast",
+  human_name:         "Analog Sensor Top",
+  one_line_desc:      "Analog and security companion providing clocks, regulators, random number generation and physical attack sensors",
+  one_paragraph_desc: '''
+    The Analog Sensor Top (AST) is the analog and security companion of OpenTitan.
+    It contains the analog functions needed to operate the device, such as clock sources, voltage regulators and random number generation, as well as physical security sensors that protect the device from physical attacks or manipulation.
+    AST connects to several comportable modules, including the clock, power and reset managers, the entropy source and the sensor control module, which forwards AST alerts to the alert handler.
+    '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "34",
   design_spec:        "../doc",

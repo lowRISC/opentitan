@@ -6,6 +6,12 @@
 #
 {
   name:               "sensor_ctrl",
+  human_name:         "Sensor Control",
+  one_line_desc:      "Front-end to the analog sensor top that forwards its alerts and provides status readback and wakeups",
+  one_paragraph_desc: '''
+    The sensor control module is a comportable front-end to the analog sensor top (AST).
+    It handshakes alerts with AST and forwards them to the alert handler, provides status readback and pad debug hookups for AST, and can wake up the device based on alert events.
+    '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "35",
   design_spec:        "../doc",
