@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 #define OPENTITAN_HW_DV_DPI_SPIDPI_SPIDPI_H_
 
+#include <stdint.h>
 #include <svdpi.h>
 
 #ifdef __cplusplus
@@ -21,7 +22,7 @@ extern "C" {
 #define P2D_SDI 0x4
 
 void *spidpi_create(const char *name, int mode, int loglevel);
-char spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data);
+uint8_t spidpi_tick(void *ctx_void, const svLogicVecVal *d2p_data);
 void spidpi_close(void *ctx_void);
 
 // monitor
