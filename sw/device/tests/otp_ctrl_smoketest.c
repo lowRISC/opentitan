@@ -54,9 +54,10 @@ bool test_main(void) {
   CHECK_STATUS_OK(otp_ctrl_testutils_wait_for_dai(&otp));
 
   uint32_t readout[ARRAYSIZE(kTestData) / sizeof(uint32_t)] = {0};
-  CHECK_DIF_OK(dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionVendorTest,
-                                          0x10, readout, ARRAYSIZE(kTestData)),
-               "Failed to perform OTP blocking readout.");
+  CHECK_DIF_OK(
+      dif_otp_ctrl_read_blocking(&otp, kDifOtpCtrlPartitionVendorTest, 0x10,
+                                 readout, sizeof(readout) / sizeof(uint32_t)),
+      "Failed to perform OTP blocking readout.");
 
   CHECK(memcmp(kTestData, readout, ARRAYSIZE(kTestData)) == 0);
 
