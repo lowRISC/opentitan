@@ -5,13 +5,13 @@
 // Verifies that the mcounteren_writable register properly locks the mcounteren
 // CSR and that the register is write-protected when locked.
 
+#include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "hw/top/rv_core_ibex_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define MCOUNTERS_DISABLE (0x0)
 #define MCOUNTERS_ENABLE (0x5)
@@ -35,7 +35,7 @@ bool test_main(void) {
   uint32_t regwen;
 
   mmio_region_t ibex_cfg =
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR);
+      mmio_region_from_addr(dt_rv_core_ibex_primary_reg_block(kDtRvCoreIbex));
 
   // Initialize mcounteren to a known value for testing.
   csr_write_mcounteren(MCOUNTERS_DISABLE);

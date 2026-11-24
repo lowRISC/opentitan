@@ -1285,6 +1285,27 @@
       tests: ["chip_sw_alert_handler_ping_timeout"]
     }
     {
+      name: chip_sw_alert_handler_ping_ok
+      desc: '''Verify alert ping mechanism doesn't trigger spurious alerts.
+
+            Check that the alert handler ping mechanism doesn't trigger any unexpected NMI
+            interrupts once enabled.
+
+            **Procedure**
+
+            - On POR reset:
+              - Enable an alert and assign it to to ClassA.
+              - Set escalation configuration to trigger before test wake up time.
+              - Set ping timeout to 0x100
+              - Lock alert configuration and enable ping mechanism.
+              - Wait for polling counters to cycle through by busy polling on Ibex for
+                120000 alert_handler clock cycles.
+              - Check there are no alert_handler NMI interrupts triggered.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_ping_ok"]
+    }
+    {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
       desc: '''Verify alert_handler can preserve alerts during low_power mode.
 
@@ -1341,8 +1362,8 @@
            '''
       stage: V2
       tests: ["chip_sw_alert_handler_lpg_reset_toggle"]
-   }
-   {
+    }
+    {
       name: chip_sw_alert_handler_reverse_ping_in_deep_sleep
       desc: '''Verify escalation reverse ping timer disabled in sleep mode.
 
@@ -2759,21 +2780,21 @@
             '''
       stage: V2
       tests: ["chip_sw_rv_core_ibex_address_translation"]
-   }
-   {
-     name: chip_sw_rv_core_ibex_icache_scrambled_access
-     desc: '''Verify scrambled memory accesses to CPU icache.
+    }
+    {
+      name: chip_sw_rv_core_ibex_icache_scrambled_access
+      desc: '''Verify scrambled memory accesses to CPU icache.
 
-           - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
-             done by the test_rom startup code).
-           - Execute the `fence` instruction to invalidate the icache.
-           - Verify using probes, that this resulted in a new scrambling key fetched from the OTP
-             ctrl.
-           '''
-     stage: V2
-     tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
-   }
-   {
+            - Initialize the entropy_src subsystem to enable OTP_CTRL fetch random data (already
+              done by the test_rom startup code).
+            - Execute the `fence` instruction to invalidate the icache.
+            - Verify using probes, that this resulted in a new scrambling key fetched from the OTP
+              ctrl.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_core_ibex_icache_invalidate"]
+    }
+    {
       name: chip_sw_rv_core_ibex_fault_dump
       desc: '''Verify the functionality of the ibex fault dump.
 
@@ -2784,8 +2805,8 @@
             '''
       stage: V2
       tests: ["chip_sw_rstmgr_cpu_info"]
-   }
-   {
+    }
+    {
       name: chip_sw_rv_core_ibex_double_fault
       desc: '''Verify the functionality of the ibex double fault dump.
 
@@ -2796,32 +2817,39 @@
             '''
       stage: V2
       tests: ["chip_sw_rstmgr_cpu_info"]
-   }
-   {
-    name: chip_sw_rv_core_ibex_lockstep_glitch
-    desc: '''Verify lockstep checking of the Ibex core.
+    }
+    {
+      name: chip_sw_rv_core_ibex_lockstep_glitch
+      desc: '''Verify lockstep checking of the Ibex core.
 
-             Ensure suitable alerts are triggered when:
-             - Outputs from the lockstep or the main core are corrupted.
-             - Inputs into the lockstep core are corrupted.
-          '''
-    stage: V2S
-    tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
-   }
-   {
-     name: chip_sw_rv_core_ibex_alerts
-     desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
+               Ensure suitable alerts are triggered when:
+               - Outputs from the lockstep or the main core are corrupted.
+               - Inputs into the lockstep core are corrupted.
+            '''
+      stage: V2S
+      tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_mcounteren_writable
+      desc: '''Verifies that the mcounteren_writable register is lockable.
+            '''
+      stage: V2
+      tests: ["chip_sw_rv_core_ibex_mcounteren_writable"]
+    }
+    {
+      name: chip_sw_rv_core_ibex_alerts
+      desc: '''Inject and verify all available faults in rv_core_ibex / ibex_top.
 
-            Inject faults in the following areas and verify the alert is fired leading to an
-            escalation.
+             Inject faults in the following areas and verify the alert is fired leading to an
+             escalation.
 
-            - Bus integrity error on the data and instruction TL interface (on the response channel)
-            - PC mismatch fault
-            - ECC error in the register file
-           '''
+             - Bus integrity error on the data and instruction TL interface (on the response channel)
+             - PC mismatch fault
+             - ECC error in the register file
+            '''
       stage: V3
       tests: []
-   }
+    }
 
     ////////////////////////////
     // System level scenarios //

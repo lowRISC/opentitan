@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
@@ -22,7 +23,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -62,14 +62,16 @@ enum {
   kEscalationPhase2Micros = 100,         // 100 us
   kIrqDeadlineMicros = 10,               // 10 us
   kTick1us = 1 * 1000 * 1000,            // 1MHz - 1us.
-  kHart = kTopEarlgreyPlicTargetIbex0,
-  kTimeThresholdUs = 5000,  // 5ms expressed in microseconds.
+  kHart = 0,
+  kTimeThresholdUs = 5000,   // 5ms expressed in microseconds.
+  kPingWaitCycles = 120000,  // 5ms of alert_handler cycles at 24MHz.
 };
 
 static status_t set_tick(uint32_t tick_hz) {
   dif_rv_timer_tick_params_t tick_params;
-  TRY(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz, tick_hz,
-                                           &tick_params));
+  TRY(dif_rv_timer_approximate_tick_params(
+      dt_clock_frequency(dt_rv_timer_clock(kRvTimerDt, kDtRvTimerClockClk)),
+      tick_hz, &tick_params));
   TRY(dif_rv_timer_set_tick_params(&timer, kHart, tick_params));
   return OK_STATUS();
 }
@@ -142,7 +144,8 @@ static void alert_handler_config(void) {
       .crashdump_escalation_phase = kDifAlertHandlerClassStatePhase3,
   }};
 
-  dif_alert_handler_alert_t alerts[] = {kTopEarlgreyAlertIdPwrmgrFatalFault};
+  dif_alert_handler_alert_t alerts[] = {
+      dt_pwrmgr_alert_to_alert_id(kPwrmgrDt, kDtPwrmgrAlertFatalFault)};
   dif_alert_handler_class_t alert_classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_class_t classes[] = {kDifAlertHandlerClassA};
   dif_alert_handler_config_t config = {
@@ -179,7 +182,14 @@ static void alert_handler_ping_ok_test(void) {
   alert_handler_config();
 
   uint64_t theshold_us = kTimeThresholdUs;
-  if (kDeviceType != kDeviceSimDV && kDeviceType != kDeviceSimVerilator) {
+  if (kDeviceType == kDeviceSimDV) {
+    // Wait a fixed number of alert_handler cycles, so that the simulation
+    // time does not grow with the alert_handler clock frequency of the top.
+    theshold_us = udiv64_slow((uint64_t)kPingWaitCycles * 1000000,
+                              dt_clock_frequency(dt_alert_handler_clock(
+                                  kAlertHandlerDt, kDtAlertHandlerClockClk)),
+                              NULL);
+  } else if (kDeviceType != kDeviceSimVerilator) {
     theshold_us = theshold_us * 10;
     CHECK(theshold_us > kTimeThresholdUs, "Threshold overflow");
   }
