@@ -105,6 +105,11 @@ class otp_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(otp_ctrl_core_reg_block
     m_tl_agent_cfg.max_outstanding_req = 1;
     m_tl_agent_cfgs["otp_macro_prim_reg_block"].max_outstanding_req = 1;
 
+    // The vseqs stop when a reset is asserted, so a random reset need not wait for CSR accesses to
+    // drain. They read clk_rst_vif.rst_n directly because the scoreboard sets under_reset from
+    // another process, which a zero-time loop can starve.
+    can_reset_with_csr_accesses = 1'b1;
+
     // create the inputs cfg instance
     dut_cfg = otp_ctrl_ast_inputs_cfg::type_id::create("dut_cfg");
   endfunction

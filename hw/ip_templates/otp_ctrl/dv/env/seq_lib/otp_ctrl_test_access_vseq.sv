@@ -15,8 +15,8 @@ class otp_ctrl_test_access_vseq extends otp_ctrl_dai_lock_vseq;
 
     // Once turn on lc_dft_en register, will need some time to update the state register
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en.
-    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(4);
-    else               cfg.clk_rst_vif.wait_clks(3);
+    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks_or_rst(4);
+    else               cfg.clk_rst_vif.wait_clks_or_rst(3);
   endtask
 
   // Avoid back-to-back lc_dft_en initializations with random values since CDC can cause
@@ -37,8 +37,8 @@ class otp_ctrl_test_access_vseq extends otp_ctrl_dai_lock_vseq;
       phase = !phase;
       // Once turn on lc_dft_en register, will need some time to update the state register
       // two clock cycles for lc_async mode, one clock cycle for driving dft_en.
-      if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(4);
-      else               cfg.clk_rst_vif.wait_clks(3);
+      if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks_or_rst(4);
+      else               cfg.clk_rst_vif.wait_clks_or_rst(3);
     end
   endtask
 endclass

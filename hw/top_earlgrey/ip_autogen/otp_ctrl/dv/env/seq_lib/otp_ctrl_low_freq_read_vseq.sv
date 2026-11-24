@@ -26,7 +26,6 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
     // Backdoor write all partitions.
     for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
       int dai_addr = addr * 4;
-      if (cfg.stop_transaction_generators()) return;
       cfg.mem_bkdr_util_h.write32(dai_addr, dai_addr);
       `uvm_info(`gfn, $sformatf("backdoor write dai addr %0h", dai_addr), UVM_HIGH)
     end
@@ -35,7 +34,8 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
     for (int addr = VendorTestOffset / 4; addr < LifeCycleOffset / 4; addr++) begin
       bit [31:0] dai_addr = addr * 4;
       int        part_idx = get_part_index(dai_addr);
-      if (cfg.stop_transaction_generators()) break;
+      // A reset from the caller, as in stress_all_with_rand_reset, ends the sequence
+      if (!cfg.clk_rst_vif.rst_n) return;
 
       // Digests and Zeroize markers are not scrambled.
       if (!is_digest(dai_addr) && !touches_zeroize_marker(dai_addr)) begin
@@ -54,7 +54,7 @@ class otp_ctrl_low_freq_read_vseq extends otp_ctrl_base_vseq;
           bit [TL_DW-1:0] tlul_val;
           uvm_reg_addr_t tlul_addr = cfg.ral.get_addr_from_offset(get_sw_window_offset(dai_addr));
           tl_access(.addr(tlul_addr), .write(0), .data(tlul_val), .blocking(1));
-          if (!cfg.under_reset) begin
+          if (cfg.clk_rst_vif.rst_n) begin
             `DV_CHECK_EQ(tlul_val, dai_addr,
                          $sformatf("sw parts read out mismatch at tlul_addr %0h, dai_addr %0h",
                                     tlul_addr, dai_addr))

@@ -45,8 +45,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     // once turn on lc_dft_en register, will need some time to update the state register
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en, one more clock cycle
     // so there is no racing condition.
-    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(5);
-    else               cfg.clk_rst_vif.wait_clks(3);
+    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks_or_rst(5);
+    else               cfg.clk_rst_vif.wait_clks_or_rst(3);
   endtask
 
   virtual task body();
