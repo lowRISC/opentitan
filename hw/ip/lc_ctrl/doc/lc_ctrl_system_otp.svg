@@ -1,0 +1,297 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 1210 930" width="1210" height="930">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#000000"/>
+    </marker>
+    <marker id="ahb" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#0000ff"/>
+    </marker>
+    <style>
+      text { font-family: "Inconsolata", "DejaVu Sans Mono", "Courier New", monospace; font-size: 11px; fill: #000000; }
+      .c { text-anchor: middle; }
+      .e { text-anchor: end; }
+      .ip { font-size: 12.5px; font-weight: bold; }
+      .lc { fill: #0000ff; }
+      .sm { font-size: 10.5px; }
+      .note { fill: #666666; font-size: 10.5px; }
+      .red { fill: #ff0000; font-weight: bold; }
+      .bold { font-weight: bold; }
+      .blk { fill: #cfe2f3; stroke: #595959; stroke-width: 1; }
+      .sub { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+      .csr { fill: #cccccc; stroke: #000000; stroke-width: 1; }
+      .gate { fill: #f4cccc; stroke: #ff0000; stroke-width: 1; }
+      .w { stroke: #000000; stroke-width: 1; fill: none; }
+      .wb { stroke: #0000ff; stroke-width: 1; fill: none; }
+      .bus { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1210" height="930" fill="#ffffff"/>
+
+  <!-- ===================================================== debug crossbar -->
+  <line class="w" x1="455" y1="2" x2="455" y2="30" marker-end="url(#ah)"/>
+  <text class="bold" x="463" y="16">SoC debug TL-UL (dbg host)</text>
+  <rect class="blk" x="230" y="30" width="450" height="45"/>
+  <text class="ip c" x="455" y="57">xbar_dbg</text>
+
+  <line class="w" x1="285" y1="75" x2="285" y2="100" marker-end="url(#ah)"/>
+  <line class="w" x1="415" y1="75" x2="415" y2="100" marker-end="url(#ah)"/>
+
+  <!-- rv_dm -->
+  <rect class="blk" x="240" y="100" width="90" height="40"/>
+  <text class="ip c" x="285" y="124">rv_dm</text>
+  <line class="wb" x1="322" y1="200" x2="322" y2="140" marker-end="url(#ahb)"/>
+  <text class="lc e sm" x="315" y="160">lc_hw_debug_en</text>
+  <text class="lc e sm" x="315" y="172">lc_hw_debug_clr</text>
+  <text class="lc e sm" x="315" y="184">lc_init_done</text>
+  <text class="e sm" x="315" y="196">strap_en_override</text>
+
+  <!-- soc_dbg_ctrl -->
+  <rect class="blk" x="350" y="100" width="130" height="40"/>
+  <text class="ip c" x="415" y="124">soc_dbg_ctrl</text>
+  <line class="wb" x1="470" y1="212" x2="470" y2="140" marker-end="url(#ahb)"/>
+  <text class="lc sm" x="354" y="156">lc_raw_test_rma</text>
+  <text class="lc sm" x="354" y="168">lc_dft_en</text>
+  <text class="lc sm" x="354" y="180">lc_hw_debug_en</text>
+  <text class="lc sm" x="354" y="192">lc_cpu_en</text>
+  <text class="lc sm" x="354" y="204">lc_rma_state</text>
+
+  <!-- rv_core_ibex -->
+  <rect class="blk" x="10" y="180" width="120" height="46"/>
+  <text class="ip c" x="70" y="207">rv_core_ibex</text>
+  <polyline class="w" points="130,203 200,203 200,120 240,120" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <line class="wb" x1="70" y1="150" x2="70" y2="180" marker-end="url(#ahb)"/>
+  <text class="lc c" x="70" y="144">lc_cpu_en</text>
+
+  <!-- ===================================================== lc_ctrl -->
+  <rect class="blk" x="230" y="240" width="450" height="520"/>
+  <text class="ip" x="240" y="752">lc_ctrl</text>
+
+  <!-- TL-UL -->
+  <polygon class="bus" points="196,280 206,270 206,275 226,275 226,270 236,280 226,290 226,285 206,285 206,290"/>
+  <line class="w" x1="236" y1="280" x2="250" y2="280"/>
+  <rect class="sub" x="250" y="260" width="90" height="40"/>
+  <text class="c" x="295" y="284">TL-UL</text>
+  <line class="w" x1="340" y1="280" x2="365" y2="280" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- CSRs -->
+  <rect class="csr" x="365" y="255" width="165" height="105"/>
+  <text class="c" x="447" y="274">Life cycle CSRs:</text>
+  <text class="c" x="447" y="288">DEVICE_ID</text>
+  <text class="c" x="447" y="302">MANUF_STATE</text>
+  <text class="c" x="447" y="316">HW_REVISION</text>
+  <text class="c" x="447" y="330">Transition Interface</text>
+  <text class="c" x="447" y="344">OTP Vendor Test Regs</text>
+
+  <!-- DMI port -->
+  <rect class="sub" x="595" y="255" width="75" height="36"/>
+  <text class="c" x="632" y="270">DMI</text>
+  <text class="c" x="632" y="284">TL-UL port</text>
+  <line class="w" x1="530" y1="273" x2="595" y2="273" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- vendor test gate -->
+  <rect class="gate" x="560" y="300" width="50" height="22"/>
+  <text class="c" x="585" y="315">gate</text>
+  <line class="w" x1="560" y1="311" x2="530" y2="311" marker-end="url(#ah)"/>
+  <text class="lc c" x="585" y="336">lc_raw_test_rma</text>
+  <text class="lc c" x="585" y="348">(internal)</text>
+
+  <!-- FSM -->
+  <rect class="sub" x="365" y="380" width="165" height="260"/>
+  <text class="c" x="447" y="505">State Controller</text>
+  <text class="c" x="447" y="519">FSM</text>
+  <line class="w" x1="447" y1="360" x2="447" y2="380" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- left interface blocks -->
+  <rect class="sub" x="250" y="335" width="90" height="60"/>
+  <text class="c" x="295" y="361">Pwrmgr</text>
+  <text class="c" x="295" y="375">Interface</text>
+  <line class="w" x1="340" y1="388" x2="365" y2="388" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <rect class="sub" x="250" y="405" width="90" height="60"/>
+  <text class="c" x="295" y="431">Escalation</text>
+  <text class="c" x="295" y="445">Receivers</text>
+  <line class="w" x1="340" y1="435" x2="365" y2="435" marker-end="url(#ah)"/>
+
+  <rect class="sub" x="250" y="478" width="90" height="60"/>
+  <text class="c" x="295" y="498">KMAC</text>
+  <text class="c" x="295" y="512">Hashing</text>
+  <text class="c" x="295" y="526">Interface</text>
+  <line class="w" x1="340" y1="508" x2="365" y2="508" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <rect class="sub" x="250" y="550" width="90" height="60"/>
+  <text class="c" x="295" y="576">Clkmgr</text>
+  <text class="c" x="295" y="590">Interface</text>
+  <line class="w" x1="340" y1="580" x2="365" y2="580" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- right interface blocks -->
+  <rect class="sub" x="560" y="380" width="110" height="100"/>
+  <text class="c" x="615" y="426">OTP</text>
+  <text class="c" x="615" y="440">Interface</text>
+  <line class="w" x1="530" y1="430" x2="560" y2="430" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <rect class="sub" x="560" y="500" width="110" height="140"/>
+  <text class="c" x="615" y="566">RMA</text>
+  <text class="c" x="615" y="580">Interface</text>
+  <line class="w" x1="530" y1="570" x2="560" y2="570" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- Manufacturing state decoder -->
+  <rect class="gate" x="365" y="665" width="165" height="55"/>
+  <text class="c" x="447" y="689">Manufacturing State</text>
+  <text class="c" x="447" y="703">Decoder</text>
+  <line class="w" x1="447" y1="640" x2="447" y2="665" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- broadcast bundle -->
+  <g class="wb">
+    <line x1="393" y1="720" x2="393" y2="800" marker-end="url(#ahb)"/>
+    <line x1="402" y1="720" x2="402" y2="800" marker-end="url(#ahb)"/>
+    <line x1="411" y1="720" x2="411" y2="800" marker-end="url(#ahb)"/>
+    <line x1="420" y1="720" x2="420" y2="800" marker-end="url(#ahb)"/>
+    <line x1="429" y1="720" x2="429" y2="800" marker-end="url(#ahb)"/>
+    <line x1="438" y1="720" x2="438" y2="800" marker-end="url(#ahb)"/>
+    <line x1="447" y1="720" x2="447" y2="800" marker-end="url(#ahb)"/>
+    <line x1="456" y1="720" x2="456" y2="800" marker-end="url(#ahb)"/>
+    <line x1="465" y1="720" x2="465" y2="800" marker-end="url(#ahb)"/>
+    <line x1="474" y1="720" x2="474" y2="800" marker-end="url(#ahb)"/>
+    <line x1="483" y1="720" x2="483" y2="800" marker-end="url(#ahb)"/>
+    <line x1="492" y1="720" x2="492" y2="800" marker-end="url(#ahb)"/>
+  </g>
+  <text class="lc e" x="382" y="815">lc_init_done</text>
+  <text class="lc e" x="382" y="829">lc_dft_en</text>
+  <text class="lc e" x="382" y="843">lc_hw_debug_en</text>
+  <text class="lc e" x="382" y="857">lc_hw_debug_clr</text>
+  <text class="lc e" x="382" y="871">lc_cpu_en</text>
+  <text class="lc e" x="382" y="885">lc_escalate_en</text>
+  <text class="lc e" x="382" y="899">lc_check_byp_en</text>
+  <text class="lc" x="505" y="815">lc_seed_hw_rd_en</text>
+  <text class="lc" x="505" y="829">lc_creator_seed_sw_rw_en</text>
+  <text class="lc" x="505" y="843">lc_owner_seed_sw_rw_en</text>
+  <text class="lc" x="505" y="857">lc_rma_state</text>
+  <text class="lc" x="505" y="871">lc_raw_test_rma</text>
+  <text class="note" x="505" y="895">Not connected: lc_nvm_debug_en,</text>
+  <text class="note" x="505" y="909">lc_iso_part_sw_rd_en, lc_iso_part_sw_wr_en,</text>
+  <text class="note" x="505" y="923">lc_nvm_rma_seed, hw_rev</text>
+
+  <!-- ===================================================== left column IPs -->
+  <rect class="blk" x="10" y="335" width="120" height="60"/>
+  <text class="ip c" x="70" y="369">pwrmgr</text>
+  <line class="w" x1="130" y1="355" x2="250" y2="355" marker-end="url(#ah)"/>
+  <text class="c" x="190" y="350">init_req</text>
+  <line class="w" x1="250" y1="382" x2="130" y2="382" marker-end="url(#ah)"/>
+  <text class="c" x="190" y="377">init_done</text>
+
+  <rect class="blk" x="10" y="405" width="120" height="60"/>
+  <text class="ip c" x="70" y="439">alert_handler</text>
+  <line class="w" x1="130" y1="415" x2="250" y2="415" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <line class="w" x1="130" y1="455" x2="250" y2="455" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text class="c" x="190" y="432">escalation</text>
+  <text class="c" x="190" y="446">channels</text>
+
+  <rect class="blk" x="10" y="478" width="120" height="60"/>
+  <text class="ip c" x="70" y="512">kmac</text>
+  <text class="c" x="190" y="497">token hashing</text>
+  <text class="c" x="190" y="509">interface</text>
+  <line class="w" x1="130" y1="518" x2="250" y2="518" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- clock bypass loopback (no bypassable clocks) -->
+  <polyline class="wb" points="250,565 160,565 160,597 250,597" marker-end="url(#ahb)"/>
+  <text class="lc e sm" x="155" y="568">lc_clk_byp_req</text>
+  <text class="lc e sm" x="155" y="582">looped back to</text>
+  <text class="lc e sm" x="155" y="596">lc_clk_byp_ack</text>
+  <text class="note e" x="155" y="612">(no bypassable clocks)</text>
+
+  <rect class="blk" x="10" y="655" width="120" height="65"/>
+  <text class="ip c" x="70" y="691">keymgr_dpe</text>
+  <line class="wb" x1="365" y1="678" x2="130" y2="678" marker-end="url(#ahb)"/>
+  <text class="lc" x="138" y="673">lc_keymgr_en</text>
+  <line class="w" x1="365" y1="706" x2="130" y2="706" marker-end="url(#ah)"/>
+  <text x="138" y="701">lc_keymgr_div</text>
+
+  <!-- ===================================================== otp_macro -->
+  <rect class="blk" x="790" y="105" width="410" height="120"/>
+  <text class="ip" x="800" y="217">otp_macro</text>
+  <rect class="csr" x="830" y="130" width="140" height="70"/>
+  <text class="c" x="900" y="160">OTP Macro</text>
+  <text class="c" x="900" y="174">(Vendor IP)</text>
+  <rect class="gate" x="1010" y="160" width="50" height="22"/>
+  <text class="c" x="1035" y="175">gate</text>
+  <line class="w" x1="1010" y1="171" x2="970" y2="171" marker-end="url(#ah)"/>
+  <line class="w" x1="1195" y1="171" x2="1060" y2="171" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="1070" y="163">TL-UL test IF</text>
+  <line class="wb" x1="1035" y1="130" x2="1035" y2="160" marker-end="url(#ahb)"/>
+  <text class="lc" x="1042" y="142">lc_dft_en</text>
+
+  <!-- vendor test path from lc_ctrl -->
+  <polyline class="w" points="610,311 760,311 760,190 830,190" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="690" y="296">Vendor</text>
+  <text x="690" y="306">test signals</text>
+
+  <!-- ===================================================== otp_ctrl -->
+  <rect class="blk" x="790" y="240" width="410" height="245"/>
+  <text class="ip" x="800" y="477">otp_ctrl</text>
+  <polygon class="bus" points="790,272 800,262 800,267 820,267 820,262 830,272 820,282 820,277 800,277 800,282"/>
+  <rect class="sub" x="830" y="255" width="80" height="35"/>
+  <text class="c" x="870" y="277">TL-UL</text>
+
+  <rect class="sub" x="830" y="315" width="80" height="85"/>
+  <text class="c" x="870" y="354">Partition</text>
+  <text class="c" x="870" y="368">Buffers</text>
+
+  <rect class="sub" x="935" y="315" width="100" height="85"/>
+  <text class="c" x="985" y="354">Partition</text>
+  <text class="c" x="985" y="368">Controllers</text>
+  <line class="w" x1="910" y1="340" x2="935" y2="340" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <!-- macro interface to otp_macro -->
+  <line class="w" x1="950" y1="315" x2="950" y2="200" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="956" y="262">macro IF</text>
+
+  <g class="wb">
+    <line x1="1043" y1="322" x2="1035" y2="322" marker-end="url(#ahb)"/>
+    <line x1="1043" y1="335" x2="1035" y2="335" marker-end="url(#ahb)"/>
+    <line x1="1043" y1="348" x2="1035" y2="348" marker-end="url(#ahb)"/>
+    <line x1="1043" y1="361" x2="1035" y2="361" marker-end="url(#ahb)"/>
+    <line x1="1043" y1="374" x2="1035" y2="374" marker-end="url(#ahb)"/>
+    <line x1="1043" y1="387" x2="1035" y2="387" marker-end="url(#ahb)"/>
+  </g>
+  <text class="lc sm" x="1046" y="326">lc_escalate_en</text>
+  <text class="lc sm" x="1046" y="339">lc_check_byp_en</text>
+  <text class="lc sm" x="1046" y="352">lc_seed_hw_rd_en</text>
+  <text class="lc sm" x="1046" y="365">lc_creator_seed_sw_rw_en</text>
+  <text class="lc sm" x="1046" y="378">lc_owner_seed_sw_rw_en</text>
+  <text class="lc sm" x="1046" y="391">lc_rma_state</text>
+
+  <!-- otp_ctrl <-> lc_ctrl -->
+  <line class="w" x1="830" y1="352" x2="530" y2="352" marker-end="url(#ah)"/>
+  <text x="690" y="334">DEVICE_ID,</text>
+  <text x="690" y="346">MANUF_STATE</text>
+  <line class="w" x1="830" y1="395" x2="670" y2="395" marker-end="url(#ah)"/>
+  <text x="690" y="377">life cycle</text>
+  <text x="690" y="389">state vector</text>
+  <polyline class="w" points="670,450 922,450 922,385 935,385" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="690" y="432">programming</text>
+  <text x="690" y="444">interface</text>
+
+  <!-- ===================================================== otbn -->
+  <rect class="blk" x="790" y="530" width="110" height="65"/>
+  <text class="ip c" x="845" y="567">otbn</text>
+  <line class="wb" x1="670" y1="550" x2="790" y2="550" marker-end="url(#ahb)"/>
+  <text class="lc" x="680" y="545">lc_nvm_rma_req</text>
+  <line class="wb" x1="790" y1="578" x2="670" y2="578" marker-end="url(#ahb)"/>
+  <text class="lc" x="680" y="573">lc_nvm_rma_ack</text>
+  <text class="note" x="680" y="615">No NVM controller,</text>
+  <text class="note" x="680" y="628">NumRmaAckSigs = 1</text>
+
+  <!-- ===================================================== other IPs -->
+  <rect class="blk" x="950" y="525" width="130" height="75"/>
+  <text class="ip c" x="1015" y="558">other</text>
+  <text class="ip c" x="1015" y="574">security IPs</text>
+  <line class="wb" x1="1200" y1="540" x2="1080" y2="540" marker-end="url(#ahb)"/>
+  <text class="lc sm" x="1090" y="535">lc_escalate_en</text>
+  <line class="wb" x1="1200" y1="563" x2="1080" y2="563" marker-end="url(#ahb)"/>
+  <text class="lc sm" x="1090" y="558">lc_hw_debug_en</text>
+  <line class="wb" x1="1200" y1="586" x2="1080" y2="586" marker-end="url(#ahb)"/>
+  <text class="lc sm" x="1090" y="581">lc_dft_en</text>
+  <!-- DMI port connection, drawn last so it stays on top of lc_ctrl -->
+  <line class="w" x1="632" y1="75" x2="632" y2="255" marker-start="url(#ah)" marker-end="url(#ah)"/>
+</svg>

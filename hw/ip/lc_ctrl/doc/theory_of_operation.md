@@ -380,20 +380,77 @@ The actions that are triggered by these escalation receivers are explained in th
 
 ### System Integration and TAP Isolation
 
-The figures below provide more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
+The subsections below provide more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
+The life cycle controller itself is identical in all integrations.
+The integrations mainly differ in the non-volatile memories that store the life cycle state and the secrets protected by it, and in how the debug side accesses the life cycle CSRs.
+The table below summarizes the integrations of the OpenTitan tops.
 
-The first figure shows the integration in Earl Grey 2.0.
-The life cycle controller interfaces with `rram_ctrl` for RMA and partition access control, and `rram_ctrl` emulates the OTP macro for `otp_ctrl`.
-The RRAM macro test TAP is gated with `lc_nvm_debug_en`.
+Aspect                          | Flash and OTP macro (Earl Grey 1.0)     | RRAM (Earl Grey 2.0)                       | OTP macro only (Darjeeling)
+--------------------------------|-----------------------------------------|--------------------------------------------|-----------------------------------------
+NVM controller                  | `flash_ctrl`                            | `rram_ctrl`                                | None
+OTP storage                     | Dedicated OTP macro                     | Emulated in the RRAM by `rram_ctrl`        | `otp_macro`
+RMA handshake                   | `flash_ctrl` and `otbn`                 | `rram_ctrl` and `otbn`                     | `otbn` only
+`NumRmaAckSigs`                 | 2                                       | 2                                          | 1
+Debug access to the CSRs        | Life cycle JTAG TAP via the pinmux      | Life cycle JTAG TAP via the pinmux         | DMI TL-UL port via `xbar_dbg` (`UseDmiInterface = 1`)
+Vendor test signals             | OTP macro                               | Not connected                              | `otp_macro`
+Clock bypass                    | `clkmgr`                                | `clkmgr`                                   | Looped back, no bypassable clocks
+Creator and owner seeds         | Flash and OTP                           | RRAM info pages and OTP                    | OTP
+Isolated partition              | Flash                                   | RRAM info page                             | None
 
-![LC Controller System View (Earl Grey 2.0)](../doc/lc_ctrl_system_view_earlgrey_2.svg)
+#### Integration with Flash and an OTP Macro
 
-The second figure shows the integration in Earl Grey 1.0, which uses `flash_ctrl` with an embedded flash macro and a dedicated OTP macro instead.
+This integration is used in Earl Grey 1.0, which has `flash_ctrl` with an embedded flash macro and `otp_ctrl` with a dedicated OTP macro.
 
-![LC Controller System View (Earl Grey 1.0)](../doc/lc_ctrl_system_view_earlgrey_1.svg)
+![LC Controller System View with Flash and OTP Macro](../doc/lc_ctrl_system_flash_otp.svg)
+
+The life cycle state, the transition counter and the transition tokens are stored in the OTP macro and read by `otp_ctrl`.
+`otp_ctrl` consumes `lc_escalate_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_check_byp_en`.
+The test access to the OTP macro is gated with `lc_dft_en`.
+The vendor-specific OTP test signals are forwarded from the life cycle controller CSRs to the OTP macro while `lc_raw_test_rma` is ON.
+
+`flash_ctrl` consumes the access control signals for the seed partitions and the isolated partition.
+It also implements the RMA handshake via `lc_nvm_rma_seed`, `lc_nvm_rma_req` and `lc_nvm_rma_ack`, together with `otbn`.
+The flash macro test TAP is connected to dedicated muxed pins and is gated with `lc_nvm_debug_en`.
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
 See the [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+
+#### Integration with RRAM
+
+This integration is used in Earl Grey 2.0, which replaces the flash and the OTP macro with `rram_ctrl` and `rram_macro`.
+
+![LC Controller System View with RRAM](../doc/lc_ctrl_system_rram.svg)
+
+`otp_ctrl` is still the owner of the life cycle state, the transition counter and the transition tokens.
+However, it does not have a dedicated OTP macro.
+Instead, its macro interface is connected to `rram_ctrl`, which emulates the OTP macro in RRAM.
+`otp_ctrl` consumes `lc_escalate_en`, `lc_check_byp_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_rma_state`.
+The vendor-specific OTP test interface of the life cycle controller is not connected.
+
+`rram_ctrl` consumes the access control signals for the seed partitions and the isolated partition.
+It also implements the RMA handshake via `lc_nvm_rma_seed`, `lc_nvm_rma_req` and `lc_nvm_rma_ack`, together with `otbn`.
+
+The strap sampling and TAP isolation in the pinmux work as in the integration with flash and an OTP macro.
+In addition, the RRAM macro test TAP is selected in the pinmux.
+The pinmux only selects it while the `RRAM_JTAG_SEL` CSR is set to True and `lc_nvm_debug_en` is ON.
+`rram_macro` additionally gates the TAP with its own synchronized copy of `lc_nvm_debug_en`.
+
+#### Integration with an OTP Macro Only
+
+This integration is used in Darjeeling, which has `otp_ctrl` with `otp_macro` but no NVM controller.
+
+![LC Controller System View with OTP Macro Only](../doc/lc_ctrl_system_otp.svg)
+
+The life cycle state, the transition counter and the transition tokens are stored in `otp_macro` and read by `otp_ctrl`.
+As there is no NVM, `otp_ctrl` also consumes `lc_owner_seed_sw_rw_en` in addition to `lc_escalate_en`, `lc_check_byp_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_rma_state`.
+The TL-UL test interface of `otp_macro` is gated with `lc_dft_en`, and the vendor-specific OTP test signals are forwarded to `otp_macro` while `lc_raw_test_rma` is ON.
+
+`otbn` is the only participant of the RMA handshake, hence `NumRmaAckSigs = 1`.
+`lc_nvm_debug_en`, `lc_iso_part_sw_rd_en`, `lc_iso_part_sw_wr_en`, `lc_nvm_rma_seed` and `hw_rev_o` are not connected.
+Since there are no bypassable clocks, `lc_clk_byp_req` is looped back to `lc_clk_byp_ack`.
+
+The debug side accesses the life cycle CSRs via the DMI TL-UL port (`UseDmiInterface = 1`), which is connected to the SoC debug crossbar `xbar_dbg` next to `rv_dm` and `soc_dbg_ctrl`.
+`soc_dbg_ctrl` consumes `lc_raw_test_rma`, `lc_dft_en`, `lc_hw_debug_en`, `lc_cpu_en` and `lc_rma_state`, and `rv_dm` receives `strap_en_override`.
 
 ### Life Cycle Manufacturing State Encodings
 
