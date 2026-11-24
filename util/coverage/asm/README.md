@@ -1,61 +1,57 @@
-# RISC-V Assembly Coverage Guide
+# Ibex ASM Coverage Guide
 
-This document outlines the usage of the RISC-V assembly coverage tool.
+OpenTitan provides a custom framework for measuring code coverage in handwritten
+RISC-V assembly files. This enables the generation of detailed coverage reports
+for assembly code, similar to those produced for C/C++ code.
 
 ## Overview
 
-The RISC-V assembly coverage tool allows users to add LLVM-compatible coverage
-mapping and profiling data to hand-written assembly files. This enables the
-generation of detailed coverage reports for assembly code, similar to those
-produced for C/C++ code.
+The Ibex ASM coverage system consists of several integrated components:
 
-The tool provides two main functionalities:
+-   **Assembly API:** A set of RISC-V macros (defined in `api_asm.h`) for
+    interacting with the coverage runtime and incrementing counters in SRAM.
+-   **Instrumentation Tool:** A basic block analysis and counter insertion
+    framework managed via the `run_instrument.sh` wrapper script, which
+    automatically processes all registered assembly files in the repository.
+-   **Bazel Rule:** The `asm_library_with_coverage` rule, which manages the
+    instrumentation process and injects LLVM-compatible coverage metadata into
+    the final binary.
 
-### 1. Auto-Instrumentation
+## User Guide
 
-```shell
-./util/coverage/asm/run_instrument.sh
-```
+### 1. Enabling Coverage in Assembly Files
 
-This tool automatically injects coverage `MARK` macros into assembly source
-files at basic block boundaries. This tool needs to be run after the assembly
-file is modified to ensure the generated counter is up-to-date.
+To measure coverage for an assembly file, you must include the coverage API and
+specify the counter placement.
 
-### 2. Coverage Report Integration
-The `asm_library_with_coverage` Bazel rule is designed to automatically inject
-the LLVM coverage mapping and profiling data, integrating them for the LLVM
-coverage reporting tools.
+#### 1.1. Import the coverage API
 
-This allows Bazel to automatically generate coverage data for assembly code
-when building with coverage mode enabled.
-
-
-## Getting Started
-
-### 1. Enable Instrumentation and Coverage Report
-
-#### 1.1. Import the coverage API.
-The coverage API needs to be included in the assembly file to use the coverage marking functions.
+Include the coverage header at the top of your assembly file:
 
 ```assembly
 #include "sw/device/lib/coverage/api_asm.h"
 ```
 
 #### 1.2. Specify the counter placement
-Add the following section pragma in your assembly file.
+
+Add the following section pragma to your assembly file to define where counters
+are stored:
 
 ```assembly
 // PRAGMA_COVERAGE: section(<section_name>)
 ```
 
-The section could be chosen from the following two options:
+Available sections:
 
-*   `__llvm_prf_cnts`: For assembly code running after SRAM scramble.
-*   `__llvm_prf_cnts_head`: Reserved for assembly code that runs before SRAM scramble. This section is designed for counters that must survive across SRAM scramble, by backing up in registers. There are only 64 counters available in this section.
+*   `__llvm_prf_cnts`: For standard assembly code running after SRAM scrambling.
+*   `__llvm_prf_cnts_head`: Reserved for early-boot code that runs before SRAM
+    scrambling. Only 64 counters are available in this section, as they must be
+    manually preserved in registers.
 
-#### 1.3. Create asm library.
-In your `BUILD` file, define an `asm_library_with_coverage` target,
-specifying your assembly source files.
+#### 1.3. Define the Bazel Library
+
+In your `BUILD` file, use the `asm_library_with_coverage` rule instead of
+`cc_library`.
 
 ```bazel
 load("//rules/coverage:asm.bzl", "asm_library_with_coverage")
@@ -65,94 +61,76 @@ asm_library_with_coverage(
     srcs = ["my_assembly_file.S"],
     deps = [
         "//sw/device/lib/coverage:api_asm",
-        # Add other necessary dependencies
     ],
 )
 ```
 
-This rule registers the assembly files for instrumentation, integrating them
-into Bazel's coverage system by preprocessing the source files in `srcs` and
-then wrapping them as a `cc_library`.
+The `asm_library_with_coverage` rule registers the assembly files for
+instrumentation and wraps them as a `cc_library`.
 
-The `asm_library_with_coverage` rule has the same attributes as `cc_library`,
-but its `srcs` attribute MUST only contain assembly files.
+Note that the `srcs` attribute MUST only contain assembly files.
 
-When coverage mode is disabled, the preprocessing step is skipped, so this rule
-behaves identically to `cc_library`.
+All other attributes are passed through to the underlying `cc_library`. When
+coverage mode is disabled, this rule behaves identically to `cc_library`.
 
-#### 1.4. Example:
-Example from `sw/device/lib/crt/crt.S`:
+### 2. Instrumentation
 
-```assembly
-#include "sw/device/lib/coverage/api_asm.h"
+The tool supports both automatic and manual instrumentation.
 
-// PRAGMA_COVERAGE: section(__llvm_prf_cnts_head)
-// PRAGMA_COVERAGE: autogen start
+#### 2.1. Automatic Instrumentation (Recommended)
 
-.section .crt, "ax", @progbits
-crt_section_clear:
-...
-```
-
-### 2. Automatic Instrumentation
-
-Automatic instrumentation is off by default. To activate it, place the
-`autogen start` pragma at the desired insertion point for generated markers.
+Automatic instrumentation is activated using pragmas in the assembly source:
 
 ```assembly
 // PRAGMA_COVERAGE: autogen start
-```
-
-The autogeneration feature can be deactivated using the `stop` pragma.
-If the `stop` pragma is omitted, autogeneration will remain active after
-the `start` pragma until the end of the file.
-
-```assembly
+... assembly code ...
 // PRAGMA_COVERAGE: autogen stop
 ```
 
-#### 2.1. Run the Instrumentation Tool
+If the `stop` pragma is omitted, autogeneration remains active from the `start`
+pragma until the end of the file.
+
+To apply the instrumentation markers, run the following command:
 
 ```bash
-./util/coverage/asm/run_instrument.sh \
-  (--apply | --check | --dryrun | --clear)
+./util/coverage/asm/run_instrument.sh --apply
 ```
 
-The instrumentation tool has four modes:
+The tool has several modes:
 
-*   `--apply`: This mode refreshes all the auto-generated markers and saves the changes in place.
-*   `--check`: This is a linting mode for CI that shows the diff that would be applied to the files, indicating which lines need to be updated.
-*   `--dryrun`: This mode processes the files without modifying them. It displays the results of the basic block analysis, allowing users to review the code before they are applied.
-*   `--clear`: This mode removes all existing auto-generated markers.
+*   `--apply`: Refreshes all markers and saves changes in place.
+*   `--check`: Linting mode for CI to verify markers are up-to-date.
+*   `--dryrun`: Displays results of basic block analysis without modifying
+    files.
+*   `--clear`: Removes all existing auto-generated markers.
 
-By default, the tool operates on all source files associated with the `asm_library_with_coverage` instances. You can also target specific files using the `--files` flag.
+#### 2.2. Manual Instrumentation
 
-### 3. Manual Instrumentation
+While automatic instrumentation is convenient, manual markers may be required in
+certain scenarios:
 
-For precise control or when automatic instrumentation is not sufficient,
-you can manually add coverage `MARK` calls to your assembly files.
+-   **Register Constraints:** The automatic instrumentation macro
+    (`COVERAGE_ASM_AUTOGEN_MARK`) always clobbers the **`t6` register**. If `t6`
+    is unavailable or must be preserved (e.g., in an Interrupt Service Routine
+    handler), you must use a manual marker to specify an alternative temporary
+    register.
+-   **Placement Restrictions:** In sensitive code regions, such as those
+    performing **SRAM scrambling** or early-boot memory initialization, autogen
+    markers might be placed at inappropriate locations. Manual markers allow for
+    precise control over exactly where the counter is incremented.
 
-Use `COVERAGE_ASM_MANUAL_MARK(kTemp, kIndex)` to mark a basic block as
-executed.
+Use the `COVERAGE_ASM_MANUAL_MARK(kTemp, kIndex)` macro for precise control:
 
-*   `kTemp`: A temporary register that will be clobbered.
-*   `kIndex`: An arbitrary integer; the autogeneration tool will automatically reassign a unique, sequential index.
+-   `kTemp`: A temporary register that will be clobbered.
+-   `kIndex`: A unique integer; the instrumentation tool will automatically
+    reassign sequential indices when run.
 
-#### 3.1. Refresh Autogen Markers
+### 3. Running Tests and Generating Reports
 
-The instrumentation tool (see Section 2.1) should be executed to update counter indices.
+Once the setup steps are complete, you can generate a coverage report using the
+`bazel coverage` command. For example:
 
-It skips inserting generated markers into basic blocks that have been manually instrumented.
-
-The tool provides a visual representation of the counter assignments, which you can use for verification.
-
-### 4. Test with Coverage
-
-Once the setup steps are complete, you can generate a coverage report using the `bazel coverage` command.
-
-For example:
-
-```shell
+```bash
 ./bazelisk.sh coverage --config=ot_coverage \
   //sw/device/tests:crt_test_fpga_cw340_test_rom
 
@@ -164,3 +142,77 @@ genhtml -o /tmp/$USER/coverage --ignore-errors inconsistent \
 #   lines=51 hit=51 functions=2 hit=2
 # ...
 ```
+
+The reports will include the assembly source files with line-by-line coverage
+data.
+
+--------------------------------------------------------------------------------
+
+## Implementation Details
+
+### Assembly Syntax Restrictions
+
+To ensure reliable parsing, instrumented assembly must follow these conventions:
+
+-   **One statement per line:** Each line must contain exactly one instruction,
+    label, or directive.
+-   **Function Encapsulation:** Code should be within functions marked with
+    `.type name, @function` and terminated with a `.size` annotation.
+-   **Labels:** Branch targets should be on their own line.
+
+### Automated Instrumentation Flow
+
+The project provides the `util/coverage/asm/run_instrument.sh` script to manage
+automated instrumentation. This script discovers all assembly sources belonging
+to `asm_library_with_coverage` targets and processes them with the
+`instrument.py` tool.
+
+Registering your assembly file for coverage tracking is as simple as adding it
+to an `asm_library_with_coverage` rule.
+
+### Automated Instrumentation Logic
+
+The `util/coverage/asm/instrument.py` tool performs basic block analysis to
+optimize counter placement:
+
+-   **Block Splitting:** Code is split into blocks at every label (entry point)
+    and after every branch or trap instruction (exit point).
+-   **Marker Insertion:** If a block does not have a manual marker and autogen
+    is enabled, the tool inserts an autogen marker.
+-   **Connectivity Analysis:** Blocks are assigned `up` and `down` attributes to
+    track fall-through and entry connectivity.
+-   **Counter Propagation:** If two blocks are connected, the tool propagates
+    the counter ID. This allows covering blocks where adding a marker is
+    infeasible by leveraging markers from adjacent blocks.
+
+### Counter Preservation across SRAM Scrambling
+
+During early boot, OpenTitan scrambles Main SRAM, which is destructive to
+existing data. To preserve coverage data, the `api_asm.h` library provides
+macros to backup and restore the "head" counters:
+
+-   `COVERAGE_ASM_BACKUP_COUNTERS(kReg0, kReg1)`: Copies the first 64 counters
+    into registers.
+-   `COVERAGE_ASM_RESTORE_COUNTERS(kReg0, kReg1)`: Restores them back to SRAM
+    after scrambling is complete.
+
+### Bazel Integration
+
+The `asm_library_with_coverage` rule integrates assembly coverage into the Clang
+pipeline by:
+
+1.  **Metadata Injection:** Running the `generate_mapping.py` tool to append
+    LLVM-compatible coverage metadata (`__llvm_covmap`, `__llvm_covfun`) and
+    profiling data (`__llvm_prf_data`, `__llvm_prf_names`) directly to the
+    assembly sources as assembly directives.
+2.  **Counter Allocation:** Defining the counter array (`.L__asm_profc`) within
+    the specified coverage counter section.
+3.  **Compilation:** Passing the processed assembly files to `cc_library` to be
+    compiled into the final library.
+
+## Known Limitations
+
+-   **Vector Table Support:** The RISC-V vector table is not supported for
+    instrumentation. Because the vector table has a fixed architectural layout
+    and size, adding instrumentation macros would displace the handlers and
+    break the table structure.
