@@ -260,7 +260,7 @@ As can be seen from the table, the external clock switch scheme prioritizes the 
 ### Clock Frequency / Time-out Measurements
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
-This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).
+This feature can be enabled through the various measurement control registers such as [`IO_MEAS_CTRL_EN`](registers.md#io_meas_ctrl_en) and [`IO_MEAS_CTRL_SHADOWED`](registers.md#io_meas_ctrl_shadowed).
 
 The root clocks, specifically the clocks supplied from `ast` and their divided variants, are constantly measured against the `always on clock` when this feature is enabled.
 Software sets both an expected maximum and minimum for each measured clock.

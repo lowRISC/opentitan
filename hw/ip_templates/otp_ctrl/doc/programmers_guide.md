@@ -254,13 +254,13 @@ For the HW_CFG* and SECRET* partitions, this can be achieved as follows:
 
 1. [Trigger](#digest-calculation-sequence) a digest calculation via the DAI.
 2. [Read back](#readout-sequence) and verify the digest location via the DAI.
-3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ([`HW_CFG_DIGEST_0`](registers.md#hw_cfg_digest), [`SECRET0_DIGEST_0`](registers.md#secret0_digest), [`SECRET1_DIGEST_0`](registers.md#secret1_digest) or [`SECRET2_DIGEST_0`](registers.md#secret2_digest)).
+3. Perform a full-system reset and verify that the corresponding CSRs exposing the 64bit digest have been populated ([`HW_CFG0_DIGEST_0`](registers.md#hw_cfg0_digest), [`HW_CFG1_DIGEST_0`](registers.md#hw_cfg1_digest), [`SECRET0_DIGEST_0`](registers.md#secret0_digest), [`SECRET1_DIGEST_0`](registers.md#secret1_digest) or [`SECRET2_DIGEST_0`](registers.md#secret2_digest)).
 
 It should be noted that locking only takes effect after a system reset since the affected partitions first have to re-sense the digest values.
 Hence, it is critical that SW ensures that no more data is written to the partition to be locked after triggering the hardware digest calculation.
 Otherwise, the device will likely be rendered inoperable as this can lead to permanent digest mismatch errors after system reboot.
 
-For the [`CREATOR_SW_CFG`](registers.md#creator_sw_cfg) and [`OWNER_SW_CFG`](registers.md#owner_sw_cfg) partitions, the process is similar, but computation and programming of the digest is entirely up to software:
+For the [`CREATOR_SW_CFG` and `OWNER_SW_CFG`](theory_of_operation.md#software-configuration-partitions) partitions, the process is similar, but computation and programming of the digest is entirely up to software:
 
 1. Compute a 64bit digest over the relevant parts of the partition, and [program](#programming-sequence) that value to [`CREATOR_SW_CFG_DIGEST_0`](registers.md#creator_sw_cfg_digest) or [`OWNER_SW_CFG_DIGEST_0`](registers.md#owner_sw_cfg_digest) via the DAI. Note that digest accesses through the DAI have an access granule of 64bit.
 2. [Read back](#readout-sequence) and verify the digest location via the DAI.
