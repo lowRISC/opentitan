@@ -19,6 +19,9 @@ static inline uintptr_t rv_core_ibex_base(void) {
 
 /**
  * Device-specific symbol definitions for the DV simulation device.
+ *
+ * Clock frequencies below are for Earlgrey and EnglishBreakfast; see
+ * `device_sim_dv_darjeeling.c` for Darjeeling.
  */
 
 const device_type_t kDeviceType = kDeviceSimDV;

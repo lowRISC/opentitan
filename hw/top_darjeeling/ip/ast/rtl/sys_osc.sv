@@ -48,7 +48,7 @@ assign sys_jen = sys_jen_i && en_osc_re_buf && init_start;
 ////////////////////////////////////////
 real CalSysClkPeriod, UncSysClkPeriod, SysClkPeriod, jitter;
 
-initial CalSysClkPeriod = cal_sys_clk_70mhz ? $itor( 14286 ) :    // 14286ps (70MHz)
+initial CalSysClkPeriod = cal_sys_clk_70mhz ? $itor( 1429 ) :     // 1429ps (700MHz)
                                               $itor( 1000 );     // 1000ps (1GHz)
 
 assign SysClkPeriod = CalSysClkPeriod;
@@ -65,7 +65,7 @@ always_ff (* xprop_off *) @( posedge clk, negedge vcore_pok_h_i ) begin
     jitter <= 0.0;
   end else if ( jrate_cnt == '0 ) begin
     jrate_cnt <= jrate;
-    jitter <= cal_sys_clk_70mhz ? $itor($urandom_range(3571, 0)) :  // 56MHz - 70MHz
+    jitter <= cal_sys_clk_70mhz ? $itor($urandom_range(357, 0)) :   // 560MHz - 700MHz
                                   0;   // No jitter
   end else if ( jrate_cnt > '0 ) begin
     jrate_cnt <= jrate_cnt - 1'b1;
