@@ -67,9 +67,11 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
       // Set dft_en to On to allow the csr_test to check all registers' default value after reset.
       cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
-      otp_ctrl_init();
       otp_pwr_init();
       super.apply_resets_concurrently(reset_duration_ps);
+      // A DAI write, a digest calculation or an LC program request writes the OTP until the reset
+      // stops it, so only clear the OTP once the reset has been applied
+      otp_ctrl_init();
       cfg.en_scb = 1;
     end else begin
       super.apply_resets_concurrently(reset_duration_ps);
