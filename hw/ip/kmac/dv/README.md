@@ -39,6 +39,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 Two compile-time configurations are tested:
 * `kmac_masked` - this configuration enables internal secure data masking features
 * `kmac_unmasked` - this configuration disables all internal security features
+* `kmac_stripped` - Build modes also cover full and stripped-down KMAC, and masked software keys. Keyed, sideload, and entropy-dependent tests require full KMAC.
 
 A macro define `EN_MASKING` is defined as a build option in `hw/ip/kmac/dv/kmac_base_sim_cfg.hjson`, which is used to set the correct compile-time settings.
 
@@ -94,6 +95,7 @@ This agent will return random data as entropy after a random delay any time the 
 ### KMAC_APP Agent
 The KMAC testbench instantiates an array of [`kmac_app_agent`](../../../dv/sv/kmac_app_agent/README.md) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
 These interfaces are used to send in message data to the KMAC, and to receive an output digest.
+Dynamic app sessions also send configuration and message requests through this interface with a separate Session termination.
 
 ### UVM RAL Model
 The KMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
@@ -114,6 +116,11 @@ Some of the most commonly used tasks / functions are as follows:
 * `write_msg()` - This task breaks down the input messages into chunks less than or equal to the TLUL bus size, and writes each chunk to the message FIFO window of the KMAC
 * `read_digest_shares()` - This task reads the output digest data from the `STATE_SHARE` windows, manually squeezing (polling for more output data) as necessary
 
+The testplan includes dynamic app sessions for SHA3, SHAKE, cSHAKE, and KMAC.
+Planned cases cover strengths, XOF squeezing, cSHAKE prefix programming, sideloaded keys, empty and partial messages, and Keccak rate boundaries.
+Additional cases cover response backpressure, sustained stress, concurrent requests & arbitration, pipelined termination, invalid configurations, entropy prerequisites, key invalidation, reset and recovery.
+It also includes planned context save/restore scenarios, including  checkpoints, configuration restoration, repeated and interleaved contexts, and error/reset recovery.
+
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 Please refer to the covergroups section under [testplan](#testplan) for coverpoints that are implemented.
@@ -132,6 +139,8 @@ The KMAC scoreboard implements a cycle-accurate model of the DUT that is used to
 Though complex to implement, this is extremely useful for CSR prediction as many of the status fields rely on exact timing of the design (e.g. CSR fields that reflect the internal message FIFO pointers need to be predicted in the scoreboard on the exact cycle that they are updated in the design otherwise it will result in prediction mismatches).
 
 The cycle-accurate model is also designed to check the operation of the various application interfaces as well as the EDN interface to provide full confidence in the design's correctness.
+
+For dynamic app sessions  the following properties are checked: accepted request and response handshakes, request stability during stalls, ordered reference-matched digest beats, and error/finish behavior.
 
 In addition to the cycle-accurate model, the scoreboard tracks the input message as it is written to the message FIFO in chunks, assembles it into a full bytestream, and uses this complete message as input for the DPI-C++ reference model to produce the expected digest value.
 As the test sequence reads the output STATE_SHARE windows after a hash operation, the scoreboard will assemble the read digest data into the actual digest value, which can easily be compared against the output of the C++ reference model.
