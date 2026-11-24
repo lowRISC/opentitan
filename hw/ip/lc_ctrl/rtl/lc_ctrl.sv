@@ -745,7 +745,9 @@ module lc_ctrl
 
   logic token_hash_req, token_hash_req_chk, token_hash_ack, token_hash_err, token_if_fsm_err;
   lc_token_t hashed_token;
-  lc_ctrl_kmac_if u_lc_ctrl_kmac_if (
+  lc_ctrl_kmac_if #(
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
+  ) u_lc_ctrl_kmac_if (
     .clk_i,
     .rst_ni,
     .clk_kmac_i,
@@ -808,7 +810,6 @@ module lc_ctrl
     .token_hash_err_i       ( token_hash_err                   ),
     .token_if_fsm_err_i     ( token_if_fsm_err                 ),
     .hashed_token_i         ( hashed_token                     ),
-    .unhashed_token_i       ( transition_token_q               ),
     .otp_prog_req_o         ( lc_otp_program_o.req             ),
     .otp_prog_lc_state_o    ( lc_otp_program_o.state           ),
     .otp_prog_lc_cnt_o      ( lc_otp_program_o.count           ),
