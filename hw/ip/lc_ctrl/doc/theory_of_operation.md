@@ -95,7 +95,7 @@ The core function of life cycle is how various functions of the design are modul
 [This section](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states) in the life cycle architecture documentation summarizes the overall behavior.
 
 The signals have been split into two summary tables in the sections below.
-The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the flash and OTP memories.
+The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the non-volatile memories (NVM) and OTP.
 
 All life cycle control signals are 4-bit multibit values of type `lc_tx_t`, where `4'b0101` means ON and `4'b1010` means OFF; any other value is invalid.
 A `"Y"` mark means the function is directly enabled by hardware during that
@@ -116,26 +116,26 @@ Signals marked with an asterisk (Y\*) are only asserted under certain conditions
 #### DFT_EN
 
 As its name implies, this signal enables DFT functions.
-This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash and OTP).
+This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash, RRAM and OTP).
 
 The isolation ensures three things:
 - The TAP controller is unable to issue instructions that would put the design into scan mode.
 This ensures that secrets cannot be scanned out, and specific values cannot be scanned into the design to emulate a particular functional mode
 - The TAP controller is unable to issue any kind of self test that would disrupt and scramble live logic which could lead to unpredictable behavior
-- The TAP controller or test function is unable to alter the non-volatile contents of flash or OTP
+- The TAP controller or test function is unable to alter the non-volatile contents of the NVM or OTP
 
 See [TAP isolation](#tap-and-isolation) for more implementation details.
 
 #### NVM_DEBUG_EN
 
-NVM modules like flash implement debug access that bypasses memory protection or lock-down.
+NVM modules like flash or RRAM implement debug access that bypasses memory protection or lock-down.
 This feature may be there for a variety of reasons, but primarily it can be used to debug the normal behavior of the controller.
 
 This type of functionality, if it exists, must be disabled during specific life cycle states.
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
-Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be securely populated, without exposing its contents via the NVM backdoor interface.
-See also accessibility description of the [isolated flash partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
+Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated NVM partition can be securely populated, without exposing its contents via the NVM backdoor interface.
+See also accessibility description of the [isolated NVM partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
 
 #### HW_DEBUG_EN
 
@@ -236,7 +236,7 @@ However, as these signals only gate functional access and not DFT access, it is 
 
 While the OWNER_SEED_SW_RW_EN is statically enabled in the states shown above, the CREATOR_SEED_SW_RW_EN is only enabled if the device has not yet been personalized (i.e., the OTP partition holding the root key has not been locked down yet).
 
-For more a list of the collateral in Flash and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral](#otp-collateral) and [flash collateral](#flash-collateral) sections.
+For a list of the collateral in the NVM and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral](#otp-collateral) and [NVM collateral](#nvm-collateral) sections.
 
 #### SEED_HW_RD_EN
 
@@ -250,7 +250,7 @@ The signal is set to `On` when in the RMA state and otherwise to `Off`.
 
 #### ISO_PART_SW_RD_EN and ISO_PART_SW_WR_EN
 
-These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
+These signals control whether the isolated NVM partition holding additional manufacturing details can be accessed.
 The isolated partition is both read and writable during the PROD / PROD_END / RMA states.
 In all other states it is inaccessible, except during the TEST_UNLOCKED* and DEV states where the partition is write-only.
 This construction allows to write a value to that partition and keep it secret before advancing into any of the production states.
@@ -273,7 +273,7 @@ For example, see earlgey's [OTP controller specification](../../../top_earlgrey/
 
 ### ID State of the Device
 
-If the SECRET2_DIGEST is zero, the device is considered to have "blank" ID state, in which case the CREATOR_ROOT_KEY_* (in OTP) and CREATOR_DIV_KEY (in FLASH) can be written by software.
+If the SECRET2_DIGEST is zero, the device is considered to have "blank" ID state, in which case the CREATOR_ROOT_KEY_* (in OTP) and CREATOR_DIV_KEY (in the NVM) can be written by software.
 All consumers of these keys are supplied with an invalid value.
 
 If the SECRET2_DIGEST has a nonzero value, the device is considered "creator personalized", and the CREATOR_ROOT_KEY and CREATOR_DIV_KEY are no longer accessible to software.
@@ -313,31 +313,37 @@ The table below summarizes the software accessibility of all life cycle collater
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
 
-## Flash Collateral
+## NVM Collateral
 
-The flash contains both memory mapped and non-memory mapped partitions.
-As it pertains to life cycle, the flash contains two sets of important collateral.
+The non-volatile memory (NVM) is the embedded flash in Earl Grey 1.0 (`flash_ctrl`) and the RRAM in Earl Grey 2.0 (`rram_ctrl`).
+Darjeeling does not have an NVM, so this section does not apply to it.
+There, the creator and owner seeds are stored in OTP, and there is no isolated partition.
+The NVM contains both memory mapped and non-memory mapped partitions.
+As it pertains to life cycle, the NVM contains two sets of important collateral.
 They are enumerated in the table below.
 Just as with OTP, the consumer and usage of each is also described.
 
-{{#include lc_ctrl_flash_collateral.md}}
+{{#include lc_ctrl_nvm_collateral.md}}
 
-Each collateral belongs to a separate flash partition, the table below enumerates the partition and whether the partition is memory mapped.
+Each collateral belongs to a separate non-memory mapped NVM partition.
+The table below enumerates the partition in each integration and whether the partition is memory mapped.
 
-{{#include lc_ctrl_flash_partitions.md}}
+{{#include lc_ctrl_nvm_partitions.md}}
 
-The general flash partition refers to any software managed storage in flash, and is not a specific carve out in the non-memory mapped area.
+The general NVM partition refers to any software managed storage in the NVM, and is not a specific carve out in the non-memory mapped area.
+In Earl Grey 2.0, the isolated partition is the `IsolatedInfoPage` of the RRAM.
+The mapping of these info pages to physical RRAM info pages is defined in `rram_ctrl`.
 
-### Flash Accessibility Summary and Impact of Life Cycle Signals
+### NVM Accessibility Summary and Impact of Life Cycle Signals
 
 The creator software is trusted to manage the owner partition (OWNER_DATA).
 As such, OWNER_DATA remains accessible during DEV / PROD / PROD_END / RMA states, irrespective of the device personalization state.
 It is expected that ROM_ext during secure boot programs the protection correctly such that downstream software has appropriate permissions.
 
 The CREATOR_DATA partitions however, are further qualified based on the personalization state of the device.
-Just as with OTP, the table below enumerates accessibility of flash collateral.
+Just as with OTP, the table below enumerates accessibility of NVM collateral.
 
-{{#include lc_ctrl_flash_accessibility.md}}
+{{#include lc_ctrl_nvm_accessibility.md}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -500,7 +506,7 @@ A decoded version of this counter is exposed in the [`LC_TRANSITION_CNT`](regist
 
 ### Life Cycle State Controller
 
-The life cycle state controller is the main entity that handles life cycle requests, escalation events and transactions with the OTP and flash controllers.
+The life cycle state controller is the main entity that handles life cycle requests, escalation events and transactions with the OTP and NVM controllers.
 The state diagram for the controller FSM is shown below.
 
 ![LC Controller FSM](../doc/lc_ctrl_fsm.svg)

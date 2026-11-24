@@ -18,7 +18,7 @@ The life cycle implementation refers to the design that encompasses all life cyc
 This touches on the functionality of the following modules, listed in no particular order:
 - The life cycle controller itself - A new peripheral
 - The key manager
-- The flash controller
+- The NVM controller, if present (the flash controller in Earl Grey 1.0, the RRAM controller in Earl Grey 2.0)
 - The OTP controller
 - The reset / power controller
 - The debug infrastructure, specifically TAP isolation
