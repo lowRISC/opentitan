@@ -360,13 +360,20 @@ I.e., it never returns to the initialization and broadcast states as described i
 The main FSM state is redundantly encoded, and augmented with the life cycle state.
 That augmented state vector is consumed by three combinational submodules:
 - `lc_ctrl_state_decode`: This submodule decodes the redundantly encoded life cycle state, checks that there are no encoding errors and enforces state dependencies as required by the definition. The decoded state is forwarded to the CSRs for SW consumption.
-- `lc_ctrl_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
-- `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
+- `lc_ctrl_state_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
+- `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) and the key manager diversification value from the augmented state vector.
+  Its outputs are registered with `prim_lc_sender` instances before they are broadcast.
 
-Note that the two additional life cycle control signals `lc_nvm_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+Note that the three additional life cycle control signals `lc_nvm_rma_req_o`, `lc_clk_byp_req_o` and `lc_check_byp_en_o` are output by the main FSM, since they cannot be derived from the life cycle state alone.
+The first two are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+The main FSM also drives `strap_en_override_o` after a volatile RAW unlock.
 
-The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
-In order to write to the CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed.
+The life cycle controller contains two instances of the same register file.
+The first one is accessible via the `regs_tl` TL-UL port.
+The second one is accessible either via the life cycle JTAG TAP, which consists of a RISC-V DTM and a TL-UL host adapter, or via the `dmi_tl` TL-UL port if `UseDmiInterface = 1'b1`.
+In order to write to the transition interface CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed by one of the two sides.
+The transition token register also provides the `lc_nvm_rma_seed_o` output.
+The OTP vendor test interface is only forwarded while `lc_raw_test_rma` is ON.
 
 The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
