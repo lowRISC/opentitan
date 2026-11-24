@@ -282,6 +282,8 @@ static usb_testutils_ctstate_t setup_req(usb_testutils_controlep_ctx_t *ctctx,
           case kVendorSetupReqTestStatus: {
             // TODO - pass the received test status to the OTTF directly?
           } break;
+          default:
+            break;
         }
       }
       return kUsbTestutilsCtError;
