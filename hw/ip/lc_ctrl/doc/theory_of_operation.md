@@ -373,9 +373,17 @@ The actions that are triggered by these escalation receivers are explained in th
 
 ### System Integration and TAP Isolation
 
-The figure below provides more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
+The figures below provide more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
 
-![LC Controller Block Diagram](../doc/lc_ctrl_system_view.svg)
+The first figure shows the integration in Earl Grey 2.0.
+The life cycle controller interfaces with `rram_ctrl` for RMA and partition access control, and `rram_ctrl` emulates the OTP macro for `otp_ctrl`.
+The RRAM macro test TAP is gated with `lc_nvm_debug_en`.
+
+![LC Controller System View (Earl Grey 2.0)](../doc/lc_ctrl_system_view_earlgrey_2.svg)
+
+The second figure shows the integration in Earl Grey 1.0, which uses `flash_ctrl` with an embedded flash macro and a dedicated OTP macro instead.
+
+![LC Controller System View (Earl Grey 1.0)](../doc/lc_ctrl_system_view_earlgrey_1.svg)
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
 See the [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
