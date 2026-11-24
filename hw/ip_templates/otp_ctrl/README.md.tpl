@@ -51,6 +51,8 @@ The functionality of OTP is split into the open-source OTP controller and a back
 
 ![OTP Controller Overview](./doc/otp_ctrl_overview.svg)
 
+This top uses the `${macro_backend}` backend.
+
 It is the task of the open-source controller to provide a common, non-technology specific interface to OTP users with a common register interface and a clearly defined I/O interface to hardware.
 The open-source controller implements logical isolation and partitioning of OTP storage that enables users to separate different functions of the OTP into "partitions" with different properties.
 Finally, the open-source controller provides a high level of security for specific partitions by provisioning integrity digests for each partition, and scrambling of partitions where required.

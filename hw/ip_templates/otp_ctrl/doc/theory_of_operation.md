@@ -279,7 +279,7 @@ The following is a high-level block diagram of the OTP controller that illustrat
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions (P0 to Pn) has its [own controller FSM](#partition-implementations) that interacts with the [macro interface](#macro-interface-and-backends) and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
+Each partition has its [own controller FSM](#partition-controllers) that interacts with the [macro interface](#macro-interface-and-backends) and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
 The partitions can only issue read transactions to the backend.
@@ -287,7 +287,7 @@ Note that the access ranges of the DAI and the LCI are mutually exclusive.
 I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
-The CSR node on the left side of this diagram connects to the DAI and the OTP partitions (P0 to Pn).
+The CSR node on the left side of this diagram connects to the DAI and the OTP partitions.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
