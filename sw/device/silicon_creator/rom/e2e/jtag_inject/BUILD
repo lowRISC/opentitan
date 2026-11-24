@@ -40,7 +40,7 @@ package(default_visibility = ["//visibility:public"])
         name = "sram_program_test_otp_{}".format(lc_state),
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             binaries = {
@@ -87,7 +87,7 @@ test_suite(
         name = "openocd_asm_interrupt_handler_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -129,7 +129,7 @@ test_suite(
         name = "openocd_shutdown_execution_asm_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -171,7 +171,7 @@ test_suite(
         name = "openocd_asm_watchdog_bark_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -214,7 +214,7 @@ test_suite(
         name = "openocd_asm_watchdog_bite_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             logging = "debug",
@@ -262,7 +262,7 @@ LC_STATES_DEBUG_DISALLOWED = [
         name = "openocd_debug_test_otp_" + lc_state,
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(

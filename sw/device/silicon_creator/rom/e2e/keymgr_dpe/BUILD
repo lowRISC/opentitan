@@ -75,10 +75,10 @@ rom_e2e_keymgr_dpe_init_configs = [
         ),
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_rom": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_keymgr_dpe_{}".format(config["name"]),
