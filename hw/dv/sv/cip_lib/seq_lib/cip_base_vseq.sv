@@ -1502,7 +1502,7 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
               tl_access_w_abort(.addr(addr), .write(1), .data(data),
                                 .completed(write_completed), .saw_err(write_error),
                                 .check_err_rsp(0), .mask(mask), .blocking(1),
-                                .req_abort_pct($urandom_range(0, 100)),
+                                .req_abort_pct(cfg.en_tl_req_abort ? $urandom_range(0, 100) : 0),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
               if (!cfg.under_reset && write_completed && !write_error) begin
@@ -1525,7 +1525,7 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
               tl_access_w_abort(.addr(addr), .write(0), .data(data),
                                 .completed(completed), .saw_err(saw_err),
                                 .mask(mask), .blocking(1), .check_err_rsp(0),
-                                .req_abort_pct($urandom_range(0, 100)),
+                                .req_abort_pct(cfg.en_tl_req_abort ? $urandom_range(0, 100) : 0),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
             end
           end
