@@ -83,6 +83,8 @@ class pwrmgr_escalation_timeout_vseq extends pwrmgr_base_vseq;
     check_stopped_esc_clk(2000, 1'b1);
     wait_for_rom_and_active();
     check_stopped_esc_clk(136, 1'b1);
+    // Let the DUT power up again after the reset, so post_start stops the responders in Active
+    wait_for_rom_and_active();
   endtask : body
 
 endclass
