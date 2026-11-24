@@ -204,13 +204,14 @@ To this end:
    2. Set to `FTDI` to (likely) route the UART0 to `/dev/ttyUSB2`.
    3. Set to `SAM` to route the UART0 to `/dev/ttyACM0`.
 1. Make sure the DIP switch SW4 on the top side of the board has all switches (1-8) in the ON position.
+1. Set the jumper *JP9* to `1.8V`.
 1. Make sure the DIP switches on the bottom side of the board are set up as follows:
    - SW1, SW2: all switches (1 to 8) in the OFF position
    - SW3: switch 1 in the ON position, switch 2, 3 in the OFF position.
    - SW10, SW11: all switches (1 to 3) in the ON position
    - SW12: all switches (1 to 6) in the ON position
-   - DIP switch connected to IOB0 - IOB7: all switches (1 to 8) in the ON position
-   - DIP switch connected to IOB8 - IOB12: switch 1 to 7 in the ON position, switch 8 in the OFF position.
+   - DIP switch connected to IOB0 - IOB7 (SW9): all switches (1 to 8) in the ON position
+   - DIP switch connected to IOB8 - IOB12 (SW8): switch 1 to 7 in the ON position, switch 8 in the OFF position.
 1. If you are connecting a HyperDebug board to your CW340 base board, follow instructions in the [HyperDebug Board](#hyperdebug-board) section.
 1. Afterwards, depending on your use case, do the following::
    - If you want to run SPI host tests, make sure a compatible flash chip is inserted in the U29 socket (right of the SW4).
