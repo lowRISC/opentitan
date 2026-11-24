@@ -1,0 +1,10 @@
+{
+  "name": "sysrst_ctrl",
+  "sim": [
+    {
+      "cfg": "dv/sysrst_ctrl_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

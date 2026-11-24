@@ -1,0 +1,10 @@
+{
+  "name": "mbx",
+  "sim": [
+    {
+      "cfg": "dv/mbx_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
