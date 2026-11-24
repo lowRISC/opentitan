@@ -30,6 +30,18 @@ class mbx_env extends cip_base_env #(
 
     cfg.m_tl_agent_sram_cfg.synchronise_ports = 1'b1;
 
+    // The SRAM agent is not in m_tl_agent_cfgs, so cip_base_env does not apply zero_delays to it.
+    if (cfg.zero_delays) begin
+      cfg.m_tl_agent_sram_cfg.a_valid_delay_min = 0;
+      cfg.m_tl_agent_sram_cfg.a_valid_delay_max = 0;
+      cfg.m_tl_agent_sram_cfg.d_valid_delay_min = 0;
+      cfg.m_tl_agent_sram_cfg.d_valid_delay_max = 0;
+      cfg.m_tl_agent_sram_cfg.a_ready_delay_min = 0;
+      cfg.m_tl_agent_sram_cfg.a_ready_delay_max = 0;
+      cfg.m_tl_agent_sram_cfg.d_ready_delay_min = 0;
+      cfg.m_tl_agent_sram_cfg.d_ready_delay_max = 0;
+    end
+
   endfunction: build_phase
 
   function void connect_phase(uvm_phase phase);
