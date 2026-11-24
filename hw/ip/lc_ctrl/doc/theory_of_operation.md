@@ -375,7 +375,7 @@ In order to write to the transition interface CSRs, a [hardware mutex](#life-cyc
 The transition token register also provides the `lc_nvm_rma_seed_o` output.
 The OTP vendor test interface is only forwarded while `lc_raw_test_rma` is ON.
 
-The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
+The life cycle controller also contains two escalation receivers that are connected to escalation channels 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
 
 ### System Integration and TAP Isolation
@@ -518,14 +518,13 @@ Note that an initiated life cycle transition request always ends in `PostTransSt
 
 #### Escalation Handling
 
-The life cycle controller contains two escalation channels that are connected to the alert handler.
+The life cycle controller contains two escalation receivers that are connected to the alert handler (`esc_scrap_state0` and `esc_scrap_state1`).
+Both receivers trigger the same action, so the escalation is still effective if one of the two channels is tampered with.
 
-When the first channel `esc_wipe_secrets` is asserted, the life cycle controller permanently asserts the `lc_escalate_en` life cycle signal.
-That signal is routed to various security modules in OpenTitan and triggers local wiping and invalidation features.
-Note that this first escalation action does not affect the life cycle state.
-
-When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
+When either channel is asserted, the life cycle controller moves the FSM into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
+In `EscalateSt`, the life cycle controller asserts the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals and disables all other life cycle functions except for `lc_init_done`.
+`lc_escalate_en` is routed to various security modules in OpenTitan and triggers local wiping and invalidation features.
 Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals to be asserted.
 
 #### FSM Glitch Countermeasures
