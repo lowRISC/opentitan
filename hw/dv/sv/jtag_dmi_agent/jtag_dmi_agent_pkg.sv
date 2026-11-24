@@ -31,7 +31,7 @@ package jtag_dmi_agent_pkg;
     DmiOpInProgress = 3
   } jtag_dmi_op_rsp_e;
 
-  // package sources
+  `include "direct_predict_cb.svh"
   `include "jtag_dmi_reg_block.sv"
   `include "jtag_dmi_reg_frontdoor.sv"
   `include "jtag_dmi_item.sv"
