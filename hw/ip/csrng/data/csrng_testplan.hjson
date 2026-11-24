@@ -109,9 +109,10 @@
       desc: '''
             Covers that all csrng configuration options have been tested.
             Individual config settings that will be covered include:
-            - sw_app_enable
-            - read_int_state
-            - enable
+            - CTRL.ENABLE, CTRL.SW_APP_ENABLE, CTRL.READ_INT_STATE, CTRL.WRITE_INT_STATE and CTRL.FIPS_FORCE_ENABLE, each true and false.
+              Invalid values of these fields are covered by csrng_recov_alert_sts_cg.
+            - FIPS_FORCE set and cleared for each instance.
+            - lc_hw_debug_en_i On, Off and invalid.
             - regwen has been true and false
             - intr_state has had each bit set and unset at least once (handled in comportable ip coverage)
             Cross:
@@ -124,13 +125,15 @@
             Covers that all csrng commands and variations have been tested for all apps.
             Individual commands and command options that will be covered include:
             - app
-            - acmd, clen, flags, glen
+            - acmd, clen, flags, glen, including flag0 values other than kMultiBitBool4True and kMultiBitBool4False
             - continuous/non-continuous valid
             Crosses of
             - app/acmd
             - acmd/clen
             - acmd/flag0
             - acmd/glen
+            - For the Generate command, clen 0 and >0 against glen 1 and >1
+            - For the Reseed command, the transition of flag0 from the previous Instantiate or Reseed command of the same instance, crossed with app
             - For the instantiate and reseed command:
               - flag0 false and clen 0
               - flag0 false and clen >0
@@ -148,7 +151,10 @@
     {
       name: csrng_err_code_cg
       desc: '''
-            Covers all possible fatal errors and possible AES FSM errors inside CSRNG.
+            Covers all possible fatal errors and possible AES FSM errors inside CSRNG:
+            - each error bit of ERR_CODE,
+            - for the command and genbits FIFO errors, crossed with the error type: write, read and state,
+            - an error in each of the redundant state machines of the AES cipher core control.
             '''
     }
     {
@@ -172,22 +178,22 @@
     {
       name: csrng_app_sfifo_cg
       desc: '''
-            Covers the stage FIFO statuses of a single app. One instance of this covergroup exists per app.
-            - cp_cmd_depth : Covers current number of commands in FIFO
-            - cp_genbits_depth : Covers current number of genbit responses in FIFO
+            Covers statuses of command and genbits FIFOs of a single app. One instance of this covergroup exists per app.
+            - cp_cmd_depth : Covers current number of command words in command FIFO
+            - cp_genbits_depth : Covers current number of blocks in genbits FIFO
             - cmd_push_cross : command FIFO fill status x command FIFO write valid x command FIFO write ready
-            - cmd_pop_cross : command FIFO fill status x command FIFO read ready
+            - cmd_pop_cross : command FIFO fill status x command FIFO pop
             - genbits_pop_cross : genbits FIFO fill status x genbits FIFO read valid x genbits FIFO read ready
             '''
     }
     {
       name: csrng_sfifo_depth_cross_cg
       desc: '''
-            Covers the stage FIFO statuses of the apps against each other. A cross has a fixed
-            number of items, so this covergroup names individual apps and is only instantiated for
-            a design with two HW apps and one SW app.
-            - cmd_depth_cross : Cross for checking each command FIFO status in different apps
-            - genbits_depth_cross : Cross for checking genbits FIFO status in different apps
+            Covers statuses of command and genbits FIFOs of the apps against each other. A cross has
+            a fixed number of items, so this covergroup names individual apps and is only
+            instantiated for a design with two HW apps and one SW app.
+            - cmd_depth_cross : command FIFO fill status of HW app 0 x HW app 1 x SW app
+            - genbits_depth_cross : genbits FIFO fill status of HW app 0 x HW app 1 x SW app
             '''
     }
     {
@@ -201,10 +207,27 @@
             '''
     }
     {
+      name: csrng_es_sample_cg
+      desc: '''
+            Covers the FIPS/CC flag of the entropy received from ENTROPY_SRC, for HW and SW instances:
+            - the flag set and cleared,
+            - each transition of the flag from the previous entropy received by the same instance, crossed with HW and SW instances.
+            '''
+    }
+    {
+      name: csrng_state_db_cg
+      desc: '''
+            Covers the FIPS/CC flag stored in the internal state of each instance after each Instantiate and Reseed command, for HW and SW instances:
+            - the flag set and cleared,
+            - each transition of the flag from the previous Instantiate or Reseed command of the same instance, crossed with HW and SW instances.
+            '''
+    }
+    {
       name: csrng_genbits_cg
       desc: '''
-            Covers FIPS/CC bit in genbits_vld register
-            genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            Covers the FIPS/CC flag returned with each generated block, for HW and SW instances:
+            - the flag set and cleared,
+            - each transition of the flag from the previous block returned to the same instance, crossed with HW and SW instances.
             '''
     }
   ]
