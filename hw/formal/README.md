@@ -264,6 +264,38 @@ To run formal property verification for all prim modules, type:
 This script generates a report of all FPV runs.
 The report is printed at the end of the run, which lists the total number of assertions and the number of proven, vacuous, covered and failing assertions for each block. CRASH identifies modules that fail to run VC Formal.
 
+### Expected failures
+
+Set `exp_fail_hjson` in an FPV configuration to an Hjson file of expected failures.
+Group waivers by engine so that engine-specific property names apply only to that engine:
+
+```hjson
+{
+  jaspergold: {
+    unreachable: [
+      pinmux_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
+    ]
+  }
+}
+```
+
+The supported engine names are `jaspergold` and `vcformal`.
+A file with categories directly at the top level remains supported and applies to both engines.
+
+Waivers are for properties that cannot pass in the FPV environment by design, not for hiding real failures.
+For example, the alert condition of an `FpvSecCm` assertion only becomes reachable with [fault injection](#fpv-fault-injection), so JasperGold reports its `:precondition1` cover item as unreachable.
+Give each waiver, or each group of waivers, a comment or an issue link that explains why it is needed.
+
+The accepted categories are `errors`, `warnings`, `proven`, `cex`, `covered`, `undetermined` and `unreachable`.
+JasperGold statuses use the same names.
+VC Formal statuses map onto them as follows: `falsified` and `vacuous` assertions are `cex`, `inconclusive` assertions and covers are `undetermined`, and `uncoverable` covers are `unreachable`.
+
+A property waiver gives the full hierarchical property name, exactly as the report prints it, so `tb.Foo_A` does not match `tb.Foo_A:precondition1`.
+An `errors` or `warnings` entry matches any message that contains it.
+Each entry must match exactly one message in its category.
+Invalid files, stale entries and ambiguous entries emit errors that fail the DVSim build, and an entry that repeats an earlier match emits a warning.
+The report retains the raw messages and adjusts only the summary counts.
+
 ## Running Connectivity Tests
 Connectivity tests use formal method to exhaustively verify system-level connections, which are specified in a high-level format (for example: CSV format for JasperGold).
 
