@@ -117,6 +117,7 @@ ld_library(
         "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
         "//sw/device/silicon_creator/lib/base:static_dice_sections",
+        "//sw/device/silicon_creator/rom_ext:ld_imm_coverage",
     ],
 )
 
@@ -173,7 +174,17 @@ ld_library(
     create_imm_section_targets(
         name = "main_section_{}_slot_{}".format(variation_name, slot),
         src = ":main_binaries_{}_slot_{}".format(variation_name, slot),
-        exports = variation.imm_exports,
+        # Under coverage builds, export `coverage_profile_desc` so mutable
+        # ROM_EXT can locate and flush imm_section's counters. Combined with
+        # the default `prefix_exports = "imm_shared_"` in `utils.bzl`, this
+        # produces `imm_shared_coverage_profile_desc` (declared in
+        # `sw/device/lib/coverage/printer.h`).
+        exports = variation.imm_exports + (select({
+            "//rules/coverage:instrumented": [
+                "coverage_profile_desc",
+            ],
+            "//conditions:default": [],
+        }) if variation.imm_exports else []),
     )
     for variation_name, variation in ROM_EXT_VARIATIONS.items()
     for slot in SLOTS

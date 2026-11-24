@@ -17,18 +17,31 @@ void coverage_transport_init(void) {
   }
 }
 
-void coverage_report(void) {
-  if (coverage_is_valid()) {
-    dbg_puts("== COVERAGE PROFILE START ==\r\n");
-    coverage_printer_run();
-    dbg_puts("== COVERAGE PROFILE END ==\r\n");
-  } else {
+static void coverage_report_desc(const coverage_profile_desc_t *desc,
+                                 bool skip_if_no_hits) {
+  if (!coverage_desc_is_present(desc)) {
+    return;
+  }
+
+  if (!coverage_is_valid_desc(desc)) {
     dbg_puts("== COVERAGE PROFILE INVALID ==\r\n");
+  } else if (skip_if_no_hits && !coverage_has_hits_desc(desc)) {
+    return;
+  } else {
+    dbg_puts("== COVERAGE PROFILE START ==\r\n");
+    coverage_printer_run_desc(desc);
+    dbg_puts("== COVERAGE PROFILE END ==\r\n");
   }
 
   // Wait until the report is sent.
   while (!uart_tx_idle()) {
   }
+}
+
+void coverage_report(void) {
+  coverage_report_desc(&coverage_profile_desc, /*skip_if_no_hits=*/false);
+  coverage_report_desc(&imm_shared_coverage_profile_desc,
+                       /*skip_if_no_hits=*/true);
 }
 
 void coverage_printer_sink(const void *data, size_t size) {

@@ -28,3 +28,16 @@
     DEFINED(_ot_coverage_enabled) || SIZEOF(.note.gnu.build-id) == 0,
     "Build ID section must be empty when coverage is disabled.");
 } > coverage_flash
+
+/**
+ * Coverage profile descriptor retained across `--gc-sections` so binaries
+ * such as `imm_section` can export `coverage_profile_desc` independently of
+ * cross-TU references.
+ */
+__ot_coverage_rodata : ALIGN(4) {
+  KEEP(*(__ot_coverage_rodata))
+
+  ASSERT(
+    DEFINED(_ot_coverage_enabled) || SIZEOF(__ot_coverage_rodata) == 0,
+    "__ot_coverage_rodata section must be empty when coverage is disabled.");
+} > coverage_flash

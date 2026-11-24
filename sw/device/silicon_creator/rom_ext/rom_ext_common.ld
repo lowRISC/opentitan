@@ -68,6 +68,7 @@ _manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
                                               + LENGTH(eflash))) ? 0x1d4 : 0x739;
 
 REGION_ALIAS("coverage_flash", rom_ext_flash);
+INCLUDE sw/device/silicon_creator/rom_ext/imm_coverage.ld
 
 /**
  * NOTE: We have to align each section to word boundaries as our current
@@ -246,3 +247,7 @@ SECTIONS {
 
   INCLUDE sw/device/info_sections.ld
 }
+
+ASSERT(
+  !DEFINED(_ot_coverage_enabled) || __llvm_prf_cnts_end <= _imm_coverage_region_start,
+  "ROM_EXT coverage counters overlap reserved imm_section coverage region");

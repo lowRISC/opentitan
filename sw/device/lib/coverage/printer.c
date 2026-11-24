@@ -23,12 +23,6 @@ extern char __llvm_prf_cnts_end[];
 extern char _build_id_start[];
 extern char _build_id_end[];
 
-#define BUILD_ID ((uint8_t *)_build_id_end - kBuildIdSize)
-
-// The `build_id | 1` indicates the coverage data in the RAM is valid for the
-// binary with this build ID.
-#define VALID_COVERAGE ((*(uint32_t *)BUILD_ID) | 1)
-
 OT_SET_BSS_SECTION(
     "__ot_coverage_bss",
 
@@ -58,6 +52,20 @@ OT_SET_BSS_SECTION(
      * End of `__ot_coverage_bss` section.
      */
 );
+
+OT_USED OT_SECTION("__ot_coverage_rodata") const coverage_profile_desc_t
+    coverage_profile_desc = {
+        .build_id = (const uint8_t *)_build_id_end - kBuildIdSize,
+        .cnts_start = (uint8_t *)__llvm_prf_cnts_start,
+        .cnts_end = (uint8_t *)__llvm_prf_cnts_end,
+        .status = &coverage_status,
+};
+
+// The `build_id | 1` indicates the coverage data in RAM is valid for the
+// binary with this build ID.
+static uint32_t coverage_valid_marker(const coverage_profile_desc_t *desc) {
+  return (*(const uint32_t *)(uintptr_t)desc->build_id) | 1u;
+}
 
 static void coverage_printer_sink_with_crc(const void *buf, size_t size) {
   crc32_add(&coverage_crc, buf, size);
@@ -127,45 +135,67 @@ static void coverage_compress(unsigned char *data, size_t size) {
   }
 }
 
-void coverage_init(void) {
-  if (!coverage_is_valid()) {
+static void coverage_init_desc(const coverage_profile_desc_t *desc) {
+  if (!coverage_desc_is_present(desc)) {
+    return;
+  }
+  if (!coverage_is_valid_desc(desc)) {
     // Initialize all coverage counter bytes to 0xff (uncovered).
     //
-    // The linker script ensure the prf cnts section is aligned to 4-byte
+    // The linker script ensures the prf cnts section is aligned to a 4-byte
     // boundary.
-    uint32_t *ptr = (uint32_t *)__llvm_prf_cnts_start;
-    while (ptr < (uint32_t *)__llvm_prf_cnts_end) {
+    uint32_t *ptr = (uint32_t *)(uintptr_t)desc->cnts_start;
+    while (ptr < (uint32_t *)(uintptr_t)desc->cnts_end) {
       *ptr++ = 0xffffffff;
     }
 
     // Set the report as valid.
-    coverage_status = VALID_COVERAGE;
+    *desc->status = coverage_valid_marker(desc);
   }
 }
 
-void coverage_printer_run(void) {
+static void coverage_invalidate_desc(const coverage_profile_desc_t *desc) {
+  if (!coverage_desc_is_present(desc)) {
+    return;
+  }
+  // Set to any even value (i.e., without LSB).
+  *desc->status = 0;
+}
+
+void coverage_init(void) {
+  coverage_init_desc(&coverage_profile_desc);
+  coverage_init_desc(&imm_shared_coverage_profile_desc);
+}
+
+void coverage_printer_run_desc(const coverage_profile_desc_t *desc) {
+  if (!coverage_desc_is_present(desc)) {
+    return;
+  }
   crc32_init(&coverage_crc);
 
   const uint64_t magic = kFileMagic;
   coverage_printer_sink_with_crc(&magic, sizeof(magic));
-  coverage_printer_sink_with_crc((unsigned char *)BUILD_ID, kBuildIdSize);
+  coverage_printer_sink_with_crc(desc->build_id, kBuildIdSize);
 
-  size_t cnts_size =
-      (size_t)__llvm_prf_cnts_end - (size_t)__llvm_prf_cnts_start;
-  uint8_t *cnts = (uint8_t *)__llvm_prf_cnts_start;
-  coverage_compress(cnts, cnts_size);
+  size_t cnts_size = (size_t)(desc->cnts_end - desc->cnts_start);
+  coverage_compress(desc->cnts_start, cnts_size);
 
   coverage_crc = crc32_finish(&coverage_crc);
   coverage_printer_sink(&coverage_crc, sizeof(coverage_crc));
 }
 
-void coverage_invalidate(void) {
-  // Set to any even value (i.e., without LSB).
-  coverage_status = 0;
+void coverage_printer_run(void) {
+  coverage_printer_run_desc(&coverage_profile_desc);
 }
 
-bool coverage_is_valid(void) {
-  if (coverage_status != VALID_COVERAGE) {
+void coverage_invalidate(void) {
+  coverage_invalidate_desc(&coverage_profile_desc);
+  coverage_invalidate_desc(&imm_shared_coverage_profile_desc);
+}
+
+bool coverage_is_valid_desc(const coverage_profile_desc_t *desc) {
+  if (!coverage_desc_is_present(desc) ||
+      *desc->status != coverage_valid_marker(desc)) {
     return false;
   }
 
@@ -174,8 +204,8 @@ bool coverage_is_valid(void) {
   // We use Clang's single-byte coverage mode. Each counter byte is a boolean
   // representing whether the corresponding region is either covered (0x00) or
   // uncovered (0xff).
-  uint8_t *ptr = (uint8_t *)__llvm_prf_cnts_start;
-  while (ptr < (uint8_t *)__llvm_prf_cnts_end) {
+  uint8_t *ptr = desc->cnts_start;
+  while (ptr < desc->cnts_end) {
     uint8_t counter = *ptr++;
     if (counter != 0x00 && counter != 0xff) {
       return false;
@@ -183,4 +213,22 @@ bool coverage_is_valid(void) {
   }
 
   return true;
+}
+
+bool coverage_has_hits_desc(const coverage_profile_desc_t *desc) {
+  if (!coverage_desc_is_present(desc)) {
+    return false;
+  }
+  uint8_t *ptr = desc->cnts_start;
+  while (ptr < desc->cnts_end) {
+    if (*ptr++ == 0x00) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool coverage_is_valid(void) {
+  return coverage_is_valid_desc(&coverage_profile_desc);
 }
