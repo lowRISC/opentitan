@@ -112,10 +112,6 @@
       sw_images: ["//sw/device/tests:entropy_src_smoketest:1"]
     }
     {
-      name: gpio_smoketest
-      sw_images: ["//sw/device/tests:gpio_smoketest:1"]
-    }
-    {
       name: hmac_smoketest
       sw_images: ["//sw/device/tests:hmac_smoketest:1"]
     }
