@@ -334,12 +334,25 @@ smoke_alu_zbr:
 smoke_alu_zbs:
   addi t0, zero, 0x3
   addi t1, zero, 0x4
-  bclr t0, t0, 0
-  binv t0, t0, 1
-  bset t0, t0, 2
+  addi t2, zero, 0
+  addi t3, zero, 1
+  bclr t0, t0, t2
+  binv t0, t0, t3
+  addi t2, zero, 2
+  bset t0, t0, t2
   check t0, t1
 
-  bext t1, t0, 1
+  bext t1, t0, t3
+  check t1
+
+  addi t0, zero, 0x3
+  addi t1, zero, 0x4
+  bclri t0, t0, 0
+  binvi t0, t0, 1
+  bseti t0, t0, 2
+  check t0, t1
+
+  bexti t1, t0, 1
   check t1
 
   ret
