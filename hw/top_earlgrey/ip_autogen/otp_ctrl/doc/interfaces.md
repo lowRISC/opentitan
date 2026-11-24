@@ -121,7 +121,7 @@ The OTP controller contains various interfaces that connect to other comportable
 ### EDN Interface
 
 The entropy request interface that talks to EDN in order to fetch fresh entropy for ephemeral SRAM scrambling key derivation and the LFSR counters for background checks.
-It is comprised of the `otp_edn_o` and `otp_edn_i` signals and follows a req / ack protocol.
+It is comprised of the `edn_o` and `edn_i` signals and follows a req / ack protocol.
 
 See also [EDN documentation](../../../../ip/edn/README.md).
 
@@ -140,21 +140,24 @@ See also [power manager documentation](../../pwrmgr/README.md).
 
 ### Life Cycle Interfaces
 
-The interface to the life cycle controller can be split into three functional sub-interfaces (vendor test, state output, state transitions), and these are explained in more detail below.
+The interface to the life cycle controller can be split into two functional sub-interfaces (state output and state transitions), and these are explained in more detail below.
 Note that the OTP and life cycle controllers are supposed to be in the same clock domain, hence no additional signal synchronization is required.
 See also [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
 
-#### Vendor Test Signals
-
-The `lc_otp_vendor_test_i` and `lc_otp_vendor_test_o` signals are connected to a 32bit control and a 32bit status register in the life cycle TAP, respectively, and are directly routed to the `prim_otp` wrapper.
-These control and status signals may be used by the silicon creator to exercise the OTP programming smoke checks on the VENDOR_TEST partition.
-The signals are gated with the life cycle state inside the life cycle controller such that they do not have any effect in production life cycle states.
+The vendor-specific OTP test signals of the life cycle controller are not connected to the OTP controller.
+In this top, they are not connected, since the `rram_ctrl` backend does not provide vendor-specific OTP test functionality (see the [macro interface backends](theory_of_operation.md#macro-interface-and-backends)).
 
 #### State, Counter and Token Output
 
 After initialization, the life cycle partition contents, as well as the tokens and personalization status is output to the life cycle controller via the `otp_lc_data_o` struct.
 The life cycle controller uses this information to determine the life cycle state, and steer the appropriate qualifier signals.
-Some of these qualifier signals (`lc_dft_en_i`, `lc_creator_seed_sw_rw_en_i`, `lc_seed_hw_rd_en_i` and `lc_escalate_en_i`) are fed back to the OTP controller in order to ungate testing logic to the OTP macro; enable SW write access to the `SECRET2` partition; enable hardware read access to the root key in the `SECRET2` partition; or to push the OTP controller into escalation state.
+Some of these qualifier signals are fed back to the OTP controller:
+- `lc_creator_seed_sw_rw_en_i` enables SW access to the partitions holding the creator key material (for example the root key in the `SECRET2` partition).
+- `lc_owner_seed_sw_rw_en_i` enables SW access to the partitions holding the owner key material, if the memory map contains such partitions.
+- `lc_seed_hw_rd_en_i` enables hardware read access to the root keys.
+- `lc_check_byp_en_i` bypasses the consistency checks of the buffered partitions while a life cycle transition is ongoing.
+- `lc_rma_state_i` re-enables DAI read access to partitions that are configured to ignore their read lock in RMA.
+- `lc_escalate_en_i` pushes the OTP controller into escalation state.
 
 A possible sequence for the signals described is illustrated below.
 ```wavejson
@@ -175,7 +178,7 @@ A possible sequence for the signals described is illustrated below.
   {},
   {name: 'lc_creator_seed_sw_rw_en_i',      wave: '0.|...|...|.4.|...'},
   {name: 'lc_seed_hw_rd_en_i',              wave: '0.|...|...|.4.|...'},
-  {name: 'lc_dft_en_i',                     wave: '0.|...|...|.4.|...'},
+  {name: 'lc_owner_seed_sw_rw_en_i',        wave: '0.|...|...|.4.|...'},
   {},
   {name: 'lc_escalate_en_i',                wave: '0.|...|...|...|.5.'},
 ]}
@@ -206,10 +209,6 @@ An error is fatal and indicates that the OTP programming operation has failed.
 
 Note that the new state must not clear any bits that have already been programmed to OTP - i.e., the new state must be incrementally programmable on top of the previous state.
 There are hence some implications on the life cycle encoding due to the ECC employed, see [life cycle state encoding](../../../../ip/lc_ctrl/doc/theory_of_operation.md#life-cycle-manufacturing-state-encodings) for details.
-
-Note that the behavior of the `lc_otp_program_i.otp_test_ctrl` signal is vendor-specific, and hence the signal is set to `x` in the timing diagram above.
-The purpose of this signal is to control vendor-specific test mechanisms, and its value will only be forwarded to the OTP macro in RAW, TEST_* and RMA states.
-In all other life cycle states this signal will be clamped to zero.
 
 ### Interface to Key Manager
 
@@ -285,9 +284,16 @@ The resulting scrambling key is still ephemeral (i.e., it is derived using entro
 Note that the req/ack protocol runs on the OTP clock.
 It is the task of the scrambling device to perform the synchronization as described in the previous subsection on the [interface to SRAM and OTBN scramblers](#interface-to-sram-and-otbn-scramblers).
 
+### Macro Interface
+
+The OTP controller accesses its non-volatile storage via the `otp_macro_o` and `otp_macro_i` structs.
+This interface is connected either to `otp_macro`, which wraps a dedicated OTP macro, or to `rram_ctrl`, which emulates OTP in the RRAM.
+In this top, it is connected to `rram_ctrl`.
+See [Macro Interface and Backends](theory_of_operation.md#macro-interface-and-backends) for the protocol and the two backends.
+
 ### Hardware Config Bits
 
-The bits of the HW_CFG* partitions are output via the `otp_ctrl_otp_broadcast_o` struct.
+The bits of the HW_CFG* partitions are output via the `otp_broadcast_o` struct.
 IPs that consume collateral stored in this partition shall connect to this struct via the topgen feature, and break out the appropriate bits by either accessing the correct index or using the struct fields.
 These fields are autogenerated from the memory map items allocated to the HW_CFG* partitions, and the autogenerated struct type can be found in the `otp_ctrl_part_pkg.sv` package.
 Note that it is the task of the receiving IP to synchronize these bits accordingly to the local clock.
