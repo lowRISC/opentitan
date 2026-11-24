@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_ihp130:ram_2p"
+description: "IHP130 true dual-port SRAM using 2P macros (both ports R/W)"
+virtual:
+  - lowrisc:prim:ram_2p
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim_ihp130:ram_2p_pkg
+    files:
+      - rtl/prim_ram_2p.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
