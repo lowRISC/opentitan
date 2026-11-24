@@ -242,8 +242,10 @@ module usb_fs_rx (
   logic [1:0] bit_phase_q, bit_phase_d;
   logic line_state_valid;
 
-  assign line_state_valid = (bit_phase_q == 2'd1);
-  assign bit_strobe_o     = (bit_phase_q == 2'd2);
+  // Capture the line state if presently moving from phase 1 to 2 and we haven't just detected a
+  // transition in phase 1; this can happen if the usbdev is running faster than the host and
+  // CDC causes the differential signals to be sampled on either sides of our clock edge.
+  assign line_state_valid = (bit_phase_d == 2'd2);
 
   // keep track of phase within each bit
   assign bit_phase_d = (line_state_rx == DT) ? 0 : bit_phase_q + 1;
@@ -260,12 +262,14 @@ module usb_fs_rx (
     end
   end
 
+  // Strobe to tx logic.
+  assign bit_strobe_o = (bit_phase_q == 2'd2);
 
   //////////////////////
   // packet detection //
   //////////////////////
 
-  // usb uses a sync to denote the beginning of a packet's PID and two
+  // USB uses a SYNC to denote the beginning of a packet's PID and two
   // single-ended-0 to denote the end of a packet.  this state machine
   // recognizes the beginning and end of packets for subsequent layers to
   // process.
@@ -274,27 +278,36 @@ module usb_fs_rx (
   logic packet_valid_q, packet_valid_d;
   logic see_sop, see_eop, see_preamble, packet_start, packet_end;
   logic in_packet_d, in_packet_q;
+  logic ignore_packet_d, ignore_packet_q;
 
   // A bit of a misnomer: packet_start pulses when the PID begins, not SOP.
   assign packet_start = packet_valid_d & ~packet_valid_q;
-  assign packet_end   = ~packet_valid_d & packet_valid_q;
+  // packet_end pulses when the EOP is detected; note that 'packet_valid_q' may already have fallen
+  // because an error was detected, or indeed never been asserted if the SYNC signal was invalid.
+  assign packet_end   = in_packet_q & ~in_packet_d;
 
   // EOP detection is configurable for 1/2 bit periods of SE0.
   // The standard (Table 7-7) mandates min = 82 ns = 1 bit period.
-  // We also trigger an EOP on seeing a bitstuff error or a PRE PID.
   assign see_eop = (cfg_eop_single_bit_i && line_history_q[1:0] == 2'b00)
-    || (line_history_q[3:0] == 4'b0000) || bitstuff_error_q || see_preamble;
+    || (line_history_q[3:0] == 4'b0000);
 
   // SOP is the transition from idle (J) to K
   assign see_sop = (line_history_q[3:0] == 4'b1001) & ~tx_en_i & ~in_packet_q;
-  assign in_packet_d = see_eop ? 1'b0 :
+  assign in_packet_d = (in_packet_q & line_state_valid & see_eop) ? 1'b0 :
                        see_sop ? 1'b1 : in_packet_q;
+
+  assign ignore_packet_d = in_packet_q & (ignore_packet_q | (packet_valid_q & ~packet_valid_d));
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_reg_in_packet
     if (!rst_ni) begin
       in_packet_q <= 1'b0;
+      ignore_packet_q <= 1'b0;
+    end else if (link_reset_i) begin
+      in_packet_q <= 1'b0;
+      ignore_packet_q <= 1'b0;
     end else begin
       in_packet_q <= in_packet_d;
+      ignore_packet_q <= ignore_packet_d;
     end
   end
 
@@ -305,14 +318,14 @@ module usb_fs_rx (
       if (~diff_rx_ok_i) begin
         packet_valid_d = 0;
       // check for packet start: KJKJKK, we use the last 6 bits
-      end else if (!packet_valid_q && line_history_q[11:0] == 12'b011001100101) begin
+      end else if (!packet_valid_q && !ignore_packet_q &&
+                   line_history_q[11:0] == 12'b011001100101) begin
         packet_valid_d = 1;
       end
-
       // check for packet end: SE0 SE0
-      else if (packet_valid_q && see_eop) begin
+      // We also declare the packet invalid on seeing a bitstuff error or a PRE PID.
+      else if ((packet_valid_q && (see_eop || bitstuff_error_q)) || see_preamble) begin
         packet_valid_d = 0;
-
       end else begin
         packet_valid_d = packet_valid_q;
       end
@@ -527,7 +540,7 @@ module usb_fs_rx (
 
   assign valid_pid_o = pid_valid;
 
-  assign valid_packet_o = pid_valid && !bitstuff_error_q &&
+  assign valid_packet_o = packet_valid_q & pid_valid && !bitstuff_error_q &&
     ((pkt_is_handshake && valid_handshake_len) ||
      (pkt_is_data && valid_data_len && crc16_valid) ||
      (pkt_is_token && valid_token_len && crc5_valid));
