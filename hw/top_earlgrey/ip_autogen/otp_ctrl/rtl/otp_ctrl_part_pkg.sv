@@ -120,7 +120,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           12'd64,
-      size:             400,
+      size:             416,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -136,7 +136,7 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           12'd464,
+      offset:           12'd480,
       size:             672,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -153,7 +153,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_CODESIGN
     '{
       variant:          Unbuffered,
-      offset:           12'd1136,
+      offset:           12'd1152,
       size:             472,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -170,7 +170,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_STATE
     '{
       variant:          Unbuffered,
-      offset:           12'd1608,
+      offset:           12'd1624,
       size:             40,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -187,7 +187,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           12'd1648,
+      offset:           12'd1664,
       size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -204,7 +204,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           12'd1720,
+      offset:           12'd1736,
       size:             16,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -221,7 +221,7 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           12'd1736,
+      offset:           12'd1752,
       size:             48,
       key_sel:          Secret0Key,
       secret:           1'b1,
@@ -238,7 +238,7 @@ package otp_ctrl_part_pkg;
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           12'd1784,
+      offset:           12'd1800,
       size:             96,
       key_sel:          Secret1Key,
       secret:           1'b1,
@@ -255,7 +255,7 @@ package otp_ctrl_part_pkg;
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           12'd1880,
+      offset:           12'd1896,
       size:             128,
       key_sel:          Secret2Key,
       secret:           1'b1,
@@ -272,7 +272,7 @@ package otp_ctrl_part_pkg;
     // SECRET3
     '{
       variant:          Buffered,
-      offset:           12'd2008,
+      offset:           12'd2024,
       size:             144,
       key_sel:          Secret3Key,
       secret:           1'b1,
@@ -289,7 +289,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:          LifeCycle,
-      offset:           12'd2152,
+      offset:           12'd2168,
       size:             88,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -407,7 +407,7 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
-      logic [2239:0][7:0] part_buf_data);
+      logic [2255:0][7:0] part_buf_data);
     otp_broadcast_t otp_broadcast;
     logic valid, unused;
     unused = 1'b0;
@@ -454,8 +454,8 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
-      logic [2239:0][7:0] part_buf_data,
-      logic [17919:0] part_inv_default,
+      logic [2255:0][7:0] part_buf_data,
+      logic [18047:0] part_inv_default,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
     logic valid, unused;

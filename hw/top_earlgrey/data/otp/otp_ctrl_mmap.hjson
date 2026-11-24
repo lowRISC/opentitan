@@ -16,7 +16,7 @@
 {
     otp: {
         width: "2", // bytes
-        depth: "1120"
+        depth: "1128"
     }
 
     // Definition of scrambling and digest constants and keys.
@@ -497,10 +497,10 @@
                     '''
                 }
                 {
-                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH",
-                    size: "32",
+                    name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH",
+                    size: "48",
                     desc: '''
-                    SHA256 hash of the immutable ROM_EXT section.
+                    SHA384 hash of the immutable ROM_EXT section.
                     '''
                 }
             ],

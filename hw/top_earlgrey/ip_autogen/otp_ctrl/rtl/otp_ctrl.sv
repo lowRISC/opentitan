@@ -37,7 +37,7 @@ module otp_ctrl
   parameter digest_iv_t RndCnstDigestIV1 = '0,
   parameter digest_iv_t RndCnstDigestIV2 = '0,
   parameter digest_iv_t RndCnstDigestIV3 = '0,
-  parameter logic [17919:0] RndCnstPartInvDefault = '0,
+  parameter logic [18047:0] RndCnstPartInvDefault = '0,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault

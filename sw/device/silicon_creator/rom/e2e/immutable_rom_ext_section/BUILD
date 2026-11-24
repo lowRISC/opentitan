@@ -71,7 +71,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "name": "exec_enabled_hash_invalid",
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
-            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH": otp_hex(0x1234),
         },
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.ROM.IMM_SECTION)),
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
@@ -88,7 +88,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "name": "exec_disabled_hash_invalid",
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
-            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH": otp_hex(0x1234),
         },
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
@@ -102,7 +102,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
     {
         "name": "exec_empty_hash_invalid",
         "otp_fields": {
-            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
+            "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH": otp_hex(0x1234),
         },
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
