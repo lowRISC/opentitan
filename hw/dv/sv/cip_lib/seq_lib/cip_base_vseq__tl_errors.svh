@@ -307,7 +307,7 @@ endtask
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
-    if (cfg.stop_transaction_generators()) return;
+    if (cfg.stop_transaction_generators()) break;
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     `loop_ral_models_to_create_threads(run_tl_errors_vseq_sub(do_wait_clk, ral_name);)
   end
