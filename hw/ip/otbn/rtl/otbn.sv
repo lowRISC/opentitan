@@ -860,41 +860,37 @@ module otbn
   assign bus_intg_violation = (imem_bus_intg_violation | dmem_bus_intg_violation |
                                reg_bus_intg_violation);
 
-  // CMD register
-  always_comb begin
-    // start and resume are flopped to avoid long timing paths from the TL fabric into OTBN
-    // internals.
-    start_d       = 1'b0;
-    wfi_resume_d  = 1'b0;
-    dmem_sec_wipe = 1'b0;
-    imem_sec_wipe = 1'b0;
+  // Operation control: CMD register, STATUS register and the operational state of OTBN.
+  // start and resume are flopped to avoid long timing paths from the TL fabric into OTBN internals.
+  logic op_ctrl_state_error;
 
-    // Can only start a new command when idle. A command in the cycle that OTBN starts locking is
-    // ignored, as status_q only becomes StatusLocked a cycle later.
-    if (status_q == StatusIdle) begin
-      if (reg2hw.cmd.qe && !locking) begin
-        unique case (reg2hw.cmd.q)
-          CmdExecute:     start_d       = 1'b1;
-          CmdSecWipeDmem: dmem_sec_wipe = 1'b1;
-          CmdSecWipeImem: imem_sec_wipe = 1'b1;
-          default: ;
-        endcase
-      end
-    end else if (busy_execute_q || status_q == StatusPaused) begin
-      // OTBN can command a secure wipe of IMEM and DMEM. This occurs when OTBN encounters a fatal
-      // error.
-      if (mems_sec_wipe) begin
-        dmem_sec_wipe = 1'b1;
-        imem_sec_wipe = 1'b1;
-      end
-      // Resume execution once the cmd arrives.
-      if (status_q == StatusPaused) begin
-        if (reg2hw.cmd.qe && (reg2hw.cmd.q == CmdResume)) begin
-          wfi_resume_d = 1'b1;
-        end
-      end
-    end
-  end
+  otbn_op_ctrl u_otbn_op_ctrl (
+    .clk_i,
+    .rst_ni                (rst_n),
+
+    .cmd_valid_i           (reg2hw.cmd.qe),
+    .cmd_i                 (reg2hw.cmd.q),
+
+    .locking_i             (locking),
+    .secure_wipe_running_i (busy_secure_wipe),
+    .wfi_pending_i         (wfi_pending),
+    .done_core_i           (done_core),
+    .mems_sec_wipe_i       (mems_sec_wipe),
+    .dmem_key_req_busy_i   (otbn_dmem_scramble_key_req_busy),
+    .imem_key_req_busy_i   (otbn_imem_scramble_key_req_busy),
+
+    .start_o               (start_d),
+    .wfi_resume_o          (wfi_resume_d),
+    .dmem_sec_wipe_o       (dmem_sec_wipe),
+    .imem_sec_wipe_o       (imem_sec_wipe),
+
+    .busy_execute_d_o      (busy_execute_d),
+    .busy_execute_q_o      (busy_execute_q),
+    .status_d_o            (status_d),
+    .status_q_o            (status_q),
+
+    .state_error_o         (op_ctrl_state_error)
+  );
 
   assign req_sec_wipe_urnd_keys = dmem_sec_wipe | imem_sec_wipe;
 
@@ -922,27 +918,6 @@ module otbn
   end
 
   // STATUS register
-  // imem/dmem scramble req can be busy when locked, so use a priority selection so locked status
-  // always takes priority.
-  //
-  // Note that these signals are all "a cycle early". For example, the locking signal gets asserted
-  // combinatorially on the cycle that an error is injected. The STATUS register change, done
-  // interrupt and any change to the idle signal will be delayed by 2 cycles.
-  assign status_d = locking                         ? StatusLocked          :
-                    busy_secure_wipe                ? StatusBusySecWipeInt  :
-                    wfi_pending & ~wfi_resume_q     ? StatusPaused          :
-                    busy_execute_d                  ? StatusBusyExecute     :
-                    otbn_dmem_scramble_key_req_busy ? StatusBusySecWipeDmem :
-                    otbn_imem_scramble_key_req_busy ? StatusBusySecWipeImem :
-                                                      StatusIdle;
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      status_q <= StatusBusySecWipeInt;
-    end else begin
-      status_q <= status_d;
-    end
-  end
-
   assign hw2reg.status.d = status_q;
   assign hw2reg.status.de = 1'b1;
 
@@ -1173,20 +1148,13 @@ module otbn
 
   always_ff @(posedge clk_i or negedge rst_n) begin
     if (!rst_n) begin
-      busy_execute_q       <= 1'b0;
       wfi_resume_q         <= 1'b0;
       init_sec_wipe_done_q <= 1'b0;
     end else begin
-      busy_execute_q       <= busy_execute_d;
       wfi_resume_q         <= wfi_resume_d;
       init_sec_wipe_done_q <= init_sec_wipe_done_d;
     end
   end
-  // OTBN is busy executing once started or resumed until it is done or gets paused. The
-  // wfi_pending signal has only effect if we haven't already received the resume command.
-  assign busy_execute_d = wfi_resume_d |
-                          ((busy_execute_q | start_d) &
-                           ~(done_core | (wfi_pending & ~wfi_resume_q)));
   assign init_sec_wipe_done_d = init_sec_wipe_done_q | ~busy_secure_wipe;
 
   otbn_core #(
@@ -1280,7 +1248,7 @@ module otbn
   assign non_core_err_bits = '{
     lifecycle_escalation: lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en[0]),
     illegal_bus_access:   illegal_bus_access_q,
-    bad_internal_state:   otbn_scramble_state_error | missed_gnt_error_q,
+    bad_internal_state:   otbn_scramble_state_error | op_ctrl_state_error | missed_gnt_error_q,
     bus_intg_violation:   bus_intg_violation
   };
 
@@ -1569,6 +1537,11 @@ module otbn
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
     OtbnScrambleCtrlFsmCheck_A,
     u_otbn_scramble_ctrl.u_state_regs,
+    gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
+  )
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT_IN(
+    OtbnOpCtrlFsmCheck_A,
+    u_otbn_op_ctrl.u_state_regs,
     gen_alert_tx[AlertFatalIdx].u_prim_alert_sender.alert_req_i
   )
 

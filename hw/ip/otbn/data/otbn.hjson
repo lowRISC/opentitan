@@ -354,6 +354,18 @@
     { name: "SCRAMBLE_CTRL.FSM.SPARSE",
       desc: "The scramble control FSM uses a sparse state encoding."
     }
+    { name: "OP_CTRL.FSM.GLOBAL_ESC",
+      desc: "The operation control FSM moves to a terminal locked state upon global escalation."
+    }
+    { name: "OP_CTRL.FSM.LOCAL_ESC",
+      desc: '''
+        The operation control FSM moves to a terminal locked state upon local escalation.
+        Can be triggered by OP_CTRL.FSM.SPARSE.
+      '''
+    }
+    { name: "OP_CTRL.FSM.SPARSE",
+      desc: "The operation control FSM uses a sparse state encoding."
+    }
     { name: "START_STOP_CTRL.FSM.GLOBAL_ESC",
       desc: "The start-stop control FSM moves to a terminal error state upon global escalation."
     }
