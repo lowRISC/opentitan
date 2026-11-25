@@ -139,6 +139,8 @@ waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flo
       -comment "The only purpose of the flop is to enable the lockstep comparison after reset"
 waive -rules CONST_FF             -location {ibex_load_store_unit.sv} -regexp {Flip-flop 'cheriot_err_q' is driven by constant zero} \
       -comment "CHERIoT errors cannot occur when BaseIsa is BaseIsaRV32I"
+waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flop 'shadow_outputs_q\.(trvk_revbm_req|trvk_revbm_addr)' is driven by constant zero} \
+      -comment "The shadow TRVK outputs are tied to zero in RV32I-only configurations, which have no TRVK"
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

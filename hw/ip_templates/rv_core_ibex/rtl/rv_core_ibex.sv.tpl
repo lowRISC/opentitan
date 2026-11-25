@@ -236,10 +236,10 @@ module ${module_instance_name}
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
 
-  // Capability tags: a single bit towards Ibex, MuBi4 towards the CHERIoT memory subsystem. The
+  // Capability tags: ibex_mubi_t towards Ibex, MuBi4 towards the CHERIoT memory subsystem. The
   // FIFO spare ports are plain vectors.
-  logic                                 main_core_data_tag_h2d;
-  logic                                 main_core_data_tag_d2h;
+  ibex_pkg::ibex_mubi_t                 main_core_data_tag_h2d;
+  ibex_pkg::ibex_mubi_t                 main_core_data_tag_d2h;
   prim_mubi_pkg::mubi4_t                tag_d_ibex2fifo;
   logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2out;
   logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2ibex;
@@ -625,7 +625,7 @@ module ${module_instance_name}
 % if cheriot_available:
     .data_tag_i         (main_core_data_tag_d2h),
 % else:
-    .data_tag_i         ('0),
+    .data_tag_i         (ibex_pkg::IbexMuBiOff),
 % endif
     .data_err_i         (main_core_data_err),
 
@@ -735,7 +735,11 @@ module ${module_instance_name}
 
     // Shadow core instruction interface outputs.
     .instr_req_shadow_o       (shadow_core_instr_req),
-    .instr_addr_shadow_o      (shadow_core_instr_addr)
+    .instr_addr_shadow_o      (shadow_core_instr_addr),
+
+    // Shadow core TRVK revocation bitmap interface outputs.
+    .trvk_revbm_req_shadow_o  (),
+    .trvk_revbm_addr_shadow_o ()
   );
 
   logic core_sleep_q;
@@ -905,23 +909,22 @@ module ${module_instance_name}
 % if cheriot_available:
 
   // SEC_CM: CORED_TAG.INTERSIG.MUBI
-  // The capability tags of the data interface are multi-bit encoded between Ibex and the CHERIoT
-  // memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged, and an
-  // invalid tag on a response is a fatal integrity error.
-  prim_mubi4_sender #(
-    .AsyncOn (1'b0),
-    .EnSecBuf(1'b1)
-  ) u_prim_mubi4_sender_cored_tag (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(prim_mubi_pkg::mubi4_bool_to_mubi(main_core_data_tag_h2d)),
-    .mubi_o(tag_d_ibex2fifo)
-  );
+  // The capability tags of the data interface stay multi-bit encoded from Ibex, which encodes and
+  // decodes them in each lockstep copy, to the CHERIoT memory subsystem, including inside the data
+  // FIFO. ibex_mubi_t and mubi4_t differ only in the order of bits 1 and 0, so the conversion is
+  // wiring only and keeps an invalid tag invalid. An invalid tag on a response is a fatal integrity
+  // error.
+  function automatic logic [prim_mubi_pkg::MuBi4Width-1:0] swap_tag_bits(
+      logic [prim_mubi_pkg::MuBi4Width-1:0] tag);
+    return {tag[3:2], tag[0], tag[1]};
+  endfunction
 
-  prim_mubi4_dec u_prim_mubi4_dec_cored_tag (
-    .mubi_i    (prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex)),
-    .mubi_dec_o(main_core_data_tag_d2h)
-  );
+  assign tag_d_ibex2fifo        = prim_mubi_pkg::mubi4_t'(swap_tag_bits(main_core_data_tag_h2d));
+  assign main_core_data_tag_d2h = ibex_pkg::ibex_mubi_t'(swap_tag_bits(tag_d_fifo2ibex));
+
+  `ASSERT_INIT(CoredTagWidth_A, $bits(ibex_pkg::ibex_mubi_t) == prim_mubi_pkg::MuBi4Width)
+  `ASSERT_INIT(CoredTagSwapOn_A, swap_tag_bits(ibex_pkg::IbexMuBiOn) == prim_mubi_pkg::MuBi4True)
+  `ASSERT_INIT(CoredTagSwapOff_A, swap_tag_bits(ibex_pkg::IbexMuBiOff) == prim_mubi_pkg::MuBi4False)
 
   // The tag only carries a value with a response: between responses, the empty data FIFO drives
   // it to zero if PipeLine is set. So only a response with an invalid encoding is a fault.

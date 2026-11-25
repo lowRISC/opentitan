@@ -209,7 +209,7 @@ module ibex_riscv_compliance (
       .data_tag_o                (                     ),
       .data_rdata_i              (host_rdata[CoreD]    ),
       .data_rdata_intg_i         (ibex_data_rdata_intg ),
-      .data_tag_i                (1'b0                 ),
+      .data_tag_i                (ibex_pkg::IbexMuBiOff),
       .data_err_i                (host_err[CoreD]      ),
 
       .trvk_revbm_req_o          (                     ),
@@ -252,7 +252,10 @@ module ibex_riscv_compliance (
       .data_wdata_intg_shadow_o  (                     ),
 
       .instr_req_shadow_o        (                     ),
-      .instr_addr_shadow_o       (                     )
+      .instr_addr_shadow_o       (                     ),
+
+      .trvk_revbm_req_shadow_o   (                     ),
+      .trvk_revbm_addr_shadow_o  (                     )
     );
 
   // SRAM block for instruction and data storage

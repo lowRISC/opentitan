@@ -169,9 +169,9 @@ Every data access of Ibex carries a capability validity tag next to the TL-UL st
 `cored_tag_h2d_o` goes with the request: it is the tag of a store, or on a load the hint that it loads a capability.
 `cored_tag_d2h_i` comes with the response: it is the tag of the loaded capability.
 Both are `mubi4_t` towards the CHERIoT memory subsystem (`cheriot_mem_sys`).
-The wrapper encodes the request tag right at the data interface of Ibex and decodes the response tag right in front of it, so the tag also stays multi-bit encoded inside the data FIFO.
-The encoder has no flop, so the tag stays in the cycle of its TL-UL beat.
-Between the lockstep comparison of Ibex and the wrapper, the tag is a single bit that the lockstep does not cover: the TRVK filter of Ibex passes it on, and the shadow core receives the same response tag as the main core.
+Ibex encodes the request tag and decodes the response tag itself as `ibex_mubi_t`, in each lockstep copy, so the lockstep compares the encoded request tag and the shadow core decodes its own copy of the response tag.
+The wrapper only converts between `ibex_mubi_t` and `mubi4_t`, which swaps bits 1 and 0, so the tag stays multi-bit encoded on its whole way, including inside the data FIFO.
+The encoding adds no flop, so the tag stays in the cycle of its TL-UL beat.
 
 Decoding is strict: only `MuBi4True` reads as tagged.
 An invalid encoding therefore reads as untagged.

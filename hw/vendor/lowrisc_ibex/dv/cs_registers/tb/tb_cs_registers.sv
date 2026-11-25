@@ -14,12 +14,14 @@ module tb_cs_registers #(
     parameter ibex_pkg::rv32m_e RV32M            = ibex_pkg::RV32MFast,
     parameter ibex_pkg::rv32b_e RV32B            = ibex_pkg::RV32BNone
 ) (
-    // Clock and Reset
-    inout  logic                clk_i,
-    inout  logic                in_rst_ni,
+    // Clock and Reset (only driven by the C++ top-level in Verilator)
+    input  logic                clk_i,
+    input  logic                in_rst_ni,
     output logic                test_passed_o
 );
 
+  logic                 clk;
+  logic                 top_rst_ni;
   logic                 dpi_rst_ni;
   logic                 rst_ni;
 
@@ -43,22 +45,23 @@ module tb_cs_registers #(
   //-----------------
   // Allow reset to be toggled by the top-level (in Verilator)
   // or a DPI call
-  assign rst_ni = in_rst_ni & dpi_rst_ni;
+  assign rst_ni = top_rst_ni & dpi_rst_ni;
 
-  //----------------------------------------
-  // Clock generation (not used in Verilator
-  //----------------------------------------
-`ifndef VERILATOR
-  logic local_clk_i;
+  //---------------------------------------------------------
+  // Clock generation (Verilator uses the top-level ports)
+  //---------------------------------------------------------
+`ifdef VERILATOR
+  assign clk        = clk_i;
+  assign top_rst_ni = in_rst_ni;
+`else
   initial begin
-    local_clk_i = 1'b0;
+    clk = 1'b0;
     while (1) begin
       #10
-      local_clk_i = !local_clk_i;
+      clk = !clk;
     end
   end
-  assign clk_i = local_clk_i;
-  assign in_rst_ni = 1'b1;
+  assign top_rst_ni = 1'b1;
 `endif
 
   /* verilator lint_off PINMISSING */
@@ -74,7 +77,7 @@ module tb_cs_registers #(
     .RV32M            (RV32M),
     .RV32B            (RV32B)
   ) i_cs_regs (
-    .clk_i              (clk_i),
+    .clk_i              (clk),
     .rst_ni             (rst_ni),
     .csr_access_i       (csr_access_i),
     .csr_addr_i         (csr_addr_i),
@@ -104,7 +107,7 @@ module tb_cs_registers #(
     env_dpi::env_final();
   end
 
-  always_ff @(posedge clk_i) begin
+  always_ff @(posedge clk) begin
     env_dpi::env_tick(stop_simulation, test_passed);
     rst_dpi::rst_tick("rstn_driver", dpi_rst_ni);
     if (stop_simulation) begin
@@ -116,7 +119,7 @@ module tb_cs_registers #(
   // return code)
   assign test_passed_o = test_passed;
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin
+  always_ff @(posedge clk or negedge rst_ni) begin
     reg_dpi::monitor_tick("reg_driver",
                           rst_ni,
                           illegal_csr_insn_o,

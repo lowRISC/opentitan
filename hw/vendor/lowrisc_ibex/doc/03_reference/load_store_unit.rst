@@ -52,15 +52,16 @@ Signals that are used by the LSU:
 | ``data_rdata_intg_i[6:0]`` | input     | Integrity bits read from memory (ignored      |
 |                            |           | unless the SecureIbex parameter is set)       |
 +----------------------------+-----------+-----------------------------------------------+
-| ``data_tag_o``             | output    | Capability tag signal (CHERIoT only. See      |
-|                            |           | :ref:`cheriot`). High on a capability store   |
-|                            |           | if the stored capability has a valid tag.     |
-|                            |           | Also driven high on both beats of a           |
+| ``data_tag_o``             | output    | Capability tag (CHERIoT only, see             |
+|                            |           | :ref:`cheriot`): ``IbexMuBiOn`` on a          |
+|                            |           | capability store if the stored capability has |
+|                            |           | a valid tag, and on both beats of a           |
 |                            |           | capability load to request tag data from      |
-|                            |           | memory.                                       |
+|                            |           | memory, else ``IbexMuBiOff``.                 |
 +----------------------------+-----------+-----------------------------------------------+
 | ``data_tag_i``             | input     | Capability tag returned for a capability load |
-|                            |           | (CHERIoT only; see :ref:`cheriot`)            |
+|                            |           | (CHERIoT only, see :ref:`cheriot`). Only      |
+|                            |           | ``IbexMuBiOn`` reads as tagged.               |
 +----------------------------+-----------+-----------------------------------------------+
 
 
@@ -176,8 +177,8 @@ Capability Loads and Stores
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Capabilities are 64-bit values (32-bit address + 32 bits of metadata) plus an out-of-band tag bit, so a capability load or store always occupies two consecutive, 8-byte-aligned 32-bit bus transactions.
-The LSU serialises these automatically: a capability store performs two word writes in order (low word, then high word) and drives ``data_tag_o`` high on both beats if the stored capability carries a valid tag.
-A capability load performs two word reads and collects both data words together with the two ``data_tag_i`` values; the capability is considered valid only if the tag is set on both beats.
+The LSU serialises these automatically: a capability store performs two word writes in order (low word, then high word) and drives ``data_tag_o`` to ``IbexMuBiOn`` on both beats if the stored capability carries a valid tag.
+A capability load performs two word reads and collects both data words together with the two ``data_tag_i`` values; the capability is considered valid only if ``data_tag_i`` is ``IbexMuBiOn`` on both beats.
 
 After a capability load the loaded tag passes through the TRVK revocation filter before reaching the register file.
 If the filter determines the capability has been software-revoked, the tag is silently cleared without raising an exception.
