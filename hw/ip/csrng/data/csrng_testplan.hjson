@@ -13,9 +13,16 @@
     {
       name: smoke
       desc: '''
-            Verify that sending an instantiate command via the SW path returns OK.
-            Instantiate the CSRNG with flag0 set to true and clen set to 12.
-            Verify that sending a generate command via the SW path returns glen=1 number of words followed by an OK.
+            Verify that the SW instance can be instantiated, generate random bits and be uninstantiated.
+
+            **Stimulus**:
+            - Through the SW instance, send an Instantiate command with flag0 = True and clen = 12.
+            - Send a Generate command with glen = 1.
+            - Send an Uninstantiate command.
+
+            **Checks**:
+            - Each command is acknowledged with SUCCESS.
+            - The Generate command returns one block of genbits.
             '''
       stage: V1
       tests: ["csrng_smoke"]
