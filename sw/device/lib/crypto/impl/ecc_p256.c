@@ -1110,20 +1110,26 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   HARDENED_TRY(hardened_memcpy(share0, ss.x_share0, kP256CoordWords));
   HARDENED_TRY(
       hardened_memcpy(share0 + kP256CoordWords, ss.y_share0, kP256CoordWords));
+  HARDENED_CHECK_EQ(
+      hardened_memeq(share0, (const uint32_t *)launderw((uintptr_t)ss.x_share0),
+                     kP256CoordWords),
+      kHardenedBoolTrue);
+  hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0));
+  hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0));
   HARDENED_TRY(hardened_memcpy(share1, ss.x_share1, kP256CoordWords));
   HARDENED_TRY(
       hardened_memcpy(share1 + kP256CoordWords, ss.y_share1, kP256CoordWords));
+  HARDENED_CHECK_EQ(
+      hardened_memeq(share1, (const uint32_t *)launderw((uintptr_t)ss.x_share1),
+                     kP256CoordWords),
+      kHardenedBoolTrue);
+  hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1));
+  hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1));
   HARDENED_TRY(keyblob_from_shares(share0, share1, shared_secret->config,
                                    shared_secret->keyblob));
 
   // Set the checksum.
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
-
-  // Shred ss.
-  hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0));
-  hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1));
-  hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0));
-  hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
