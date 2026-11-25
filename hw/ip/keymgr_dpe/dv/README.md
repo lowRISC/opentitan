@@ -45,6 +45,7 @@ It instantiates the `keymgr_dpe` DUT module `hw/ip/keymgr_dpe/rtl/keymgr_dpe.sv`
 * Other interfaces are: `Root and Secondary Root Keys`, `Creator seed`, `Owner seed`, and `Device ID`.
   They will get consumed by the key derivation function to generate HW / SW and child keys.
 * KMAC masking enable input.
+* kmac_sensitive_key_o signals KMAC to protect the parent key.
 * otbn_sensitive_key_o signals OTBN to protect the parent key.
   This should be contained in [OTBN app interface]().
 
