@@ -245,6 +245,22 @@
      bazel: []
     }
     {
+     name: chip_sw_cheriot_mem_sys_lockstep_glitch
+     desc: '''Verify lockstep checking of cheriot_mem_sys (LOGIC.SHADOW).
+
+              While the CPU runs a CHERIoT test that loads and stores capabilities and the
+              revocation engine sweeps, ensure the `fatal_fault` alert of cheriot_mem_sys is
+              triggered when:
+              - Outputs from the main or the second copy of its logic are corrupted.
+              - Inputs into the second copy are corrupted while they are in use.
+              Ensure that the alert does not fire without a corruption.
+           '''
+     stage: V2S
+     si_stage: NA
+     tests: []
+     bazel: []
+    }
+    {
       name: chip_sw_rv_core_ibex_mcounteren_writable
       desc: '''Verifies that the mcounteren_writable register is lockable.
             '''

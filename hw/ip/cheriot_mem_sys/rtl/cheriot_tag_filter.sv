@@ -473,7 +473,7 @@ module cheriot_tag_filter #(
   assign unused_cap_tag_req = cap_tag_req.d_ready;
 
   // The response and data integrity is not checked, as both the RMW and the tag filter are
-  // lock-stepped.
+  // lock-stepped (cheriot_mem_sys parameter SecLockstep).
   assign unused_m_rsp = ^{tl_m_i.d_data,
                           tl_m_i.d_opcode,
                           tl_m_i.d_param,

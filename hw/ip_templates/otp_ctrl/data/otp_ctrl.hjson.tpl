@@ -1282,9 +1282,10 @@ has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
           items: "NumSwCfgWindowWords"
           swaccess: "ro",
           desc: '''
-          Any read to this window directly maps to the corresponding offset in the creator and owner software
-          config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
-          will block until OTP readout has completed.
+          Any read to this window maps to the corresponding offset in an unbuffered partition.
+          It triggers an OTP readout of the bytes requested, and the transaction will block until the
+          OTP readout has completed.
+          Any other read returns a bus error without changing any status or error register.
           '''
         }
       }

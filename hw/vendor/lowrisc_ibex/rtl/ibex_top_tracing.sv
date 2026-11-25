@@ -156,9 +156,7 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   cap_t        rvfi_rs2_rcap;
   logic [31:0] rvfi_rs2_rdata;
   logic [31:0] rvfi_rs3_rdata;
-  // verilator lint_off UNOPTFLAT
   logic [ 4:0] rvfi_rd_addr;
-  // verilator lint_on UNOPTFLAT
   logic [31:0] rvfi_rd_wdata;
   cap_t        rvfi_rd_wcap;
   logic [31:0] rvfi_pc_rdata;

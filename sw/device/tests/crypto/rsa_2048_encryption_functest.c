@@ -891,6 +891,13 @@ status_t pkcs1v15_and_raw_encrypt_decrypt_test(void) {
   CHECK(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeSha256, &msg_buf,
                              &empty_label, &ciphertext_buf)
             .value == OTCRYPTO_BAD_ARGS.value);
+  actual_msg_len = 999;
+  otcrypto_byte_buf_t short_pt_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, actual_msg, kMaxPkcs1v15PlaintextBytes - 1);
+  CHECK(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
+                             &empty_label, &short_pt_buf, &actual_msg_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(actual_msg_len == 0);
 
   // 2. Raw RSA encrypt & decrypt (kOtcryptoKeyModeRsaRaw).
   public_key.key_mode = kOtcryptoKeyModeRsaRaw;

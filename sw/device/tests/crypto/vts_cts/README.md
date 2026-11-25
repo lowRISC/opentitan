@@ -151,3 +151,15 @@ the following responsibilities:
     wrapper must reverse big-endian wire-format byte arrays to/from little-endian
     words and ASN.1 DER encode/decode ECDSA signatures
     (`SEQUENCE { INTEGER r, INTEGER s }`).
+
+### 10. RSA Decryption Output Buffer Sizing (`rsa_cts_pkcs1_v15_empty_plaintext_short_buf_test`)
+- **File**: `rsa_vts_cts_test.c` (active in `test_main()`)
+- **Requirement**: `otcrypto_rsa_decrypt` requires the caller-provided
+  `plaintext` buffer to be at least the maximum possible plaintext length for
+  the key size and padding mode ($k - 11$ bytes for PKCS#1 v1.5,
+  $k - 2 \cdot hLen - 2$ bytes for OAEP, and $k$ bytes for raw RSA), returning
+  `OTCRYPTO_BAD_ARGS` with `*plaintext_bytelen = 0` otherwise. When a
+  higher-level API supplies a smaller output buffer (such as decrypting a
+  0-byte PKCS#1 v1.5 plaintext into a 64-byte buffer), the wrapper must decrypt
+  into a max-sized scratch buffer and then copy `*plaintext_bytelen` bytes into
+  the caller's buffer.

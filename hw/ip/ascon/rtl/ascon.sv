@@ -4,6 +4,8 @@
 //
 // Ascon top-level wrapper
 
+`include "prim_assert.sv"
+
 module ascon
   import ascon_reg_pkg::*;
   import ascon_pkg::*;

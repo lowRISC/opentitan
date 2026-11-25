@@ -137,6 +137,10 @@ waive -rules {CLOCK_USE RESET_USE} -location {ibex_register_file_ff.sv} ${"\\"}
       -comment {The module is fully combinatorial, clk/rst are only used for assertions.}
 waive -rules CONST_FF             -location {ibex_lockstep.sv} -regexp {Flip-flop 'enable_cmp_d' is driven by constant 4'b0101} ${"\\"}
       -comment "The only purpose of the flop is to enable the lockstep comparison after reset"
+% if not cheriot_available:
+waive -rules CONST_FF             -location {ibex_load_store_unit.sv} -regexp {Flip-flop 'cheriot_err_q' is driven by constant zero} ${"\\"}
+      -comment "CHERIoT errors cannot occur when BaseIsa is BaseIsaRV32I"
+% endif
 
 # Highlighting my main concerns here, documenting areas to review in next dive
 #

@@ -393,6 +393,30 @@ Under the hood, Bazel conveniently dispatches `opentitantool` to:
 
 To get a better understanding of the `opentitantool` functions Bazel invokes automatically, follow the instructions for manually loading FPGA bitstreams below.
 
+#### Increasing the test timeout for the first run
+
+The first time you run a test after turning the board on, or after switching to a different bitstream, Bazel has to perform some steps before the test can run.
+In particular, it has to load the bitstream and program the ROM/OTP.
+This can take longer than the default test timeout (60 seconds for most FPGA tests), causing the test to fail even when nothing is wrong with the setup.
+Later runs are much faster, because `opentitantool` skips reloading the bitstream and ROM/OTP if it is already on the FPGA (see [USR_ACCESS and Loading Bitstreams](#usr_access-and-loading-bitstreams)).
+
+There are a couple of ways to avoid this timeout.
+One option is to supply a longer timeout with the `--test_timeout` option (in seconds).
+For example:
+```sh
+cd $REPO_TOP
+bazel test --test_timeout=3600 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+```
+Once the first run has succeeded, you can drop the `--test_timeout` flag for later runs, until another power cycle or bitstream change.
+
+The approach used in CI is to run the `fpga_priming_test`:
+```sh
+bazel test --test_output=streamed --cache_test_results=no //sw/device/tests:fpga_priming_test_fpga_${BOARD}_sival
+```
+This test does very little other than loading the bitstream and programming the ROM/OTP.
+Moreover, it has a longer timeout by default than other FPGA tests.
+Disable the caching of test results with `--cache_test_results=no` to make sure the `fpga_priming_test` actually runs.
+
 #### Configuring Bazel to load the Vivado-built bitstream
 
 By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.

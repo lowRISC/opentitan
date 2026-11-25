@@ -251,6 +251,9 @@ The actions performed by each command, as well as which flags are supported, are
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
          It is the responsibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
          Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.
+         If <tt>clen</tt> is non-zero, the additional data is first used to update the internal state before any output is generated, even if all data words are zero.
+         If <tt>clen</tt> is zero, this initial update is skipped.
+         In both cases, the internal state is updated with the additional data (or zero) after the requested bits have been generated.
     </td>
   </tr>
   <tr>
@@ -300,6 +303,19 @@ Software can halt the instance selected by [`INT_STATE_NUM`](registers.md#int_st
 A Generate command halts after processing the current block and continues once resumed.
 Any other command completes before halting.
 Once halted, [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) is set, the `cs_cmd_req_done` interrupt is raised, and the instance accepts no new commands until resumed.
+
+#### Saving and Restoring the Internal State
+
+Software can read and write the [internal state](programmers_guide.md#internal-state-save-and-restore) of the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num) via [`INT_STATE_VAL`](registers.md#int_state_val).
+Reading requires both [`CTRL.READ_INT_STATE`](registers.md#ctrl), which enables reading for all instances, and the instance's bit in [`INT_STATE_READ_ENABLE`](registers.md#int_state_read_enable), which enables it per instance.
+Writing likewise requires both [`CTRL.WRITE_INT_STATE`](registers.md#ctrl) for all instances and the instance's bit in [`INT_STATE_WRITE_ENABLE`](registers.md#int_state_write_enable).
+The internal state comprises the CTR_DRBG state and the state of a Generate command in progress.
+Each access advances a word pointer, which wraps around after the last word.
+The pointer is reset by any valid write to [`INT_STATE_NUM`](registers.md#int_state_num), even if the value doesn't change, and by disabling CSRNG.
+Writes are only accepted while the instance is halted and take effect word by word.
+Restoring the state discards generated blocks that have not been read yet.
+If the instance updates its state during a read sequence, the words read may be inconsistent.
+In this case, [`RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT`](registers.md#recov_alert_sts) is set and a [`recov_alert`](interfaces.md#security-alerts) is raised.
 
 #### Aborting Generate Commands
 
@@ -440,7 +456,7 @@ The following waveform shows an example of how the entropy source hardware inter
 
 ### Interrupts
 
-The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed.
+The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed, or when an instance halted via [`INT_STATE_HALT`](registers.md#int_state_halt) has quiesced.
 
 The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTROPY_SRC.
 
@@ -448,16 +464,3 @@ The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled C
 
 The `cs_fatal_err` interrupt will assert when any of the CSRNG FIFOs has a malfunction.
 The conditions that cause this to happen are either when there is a push to a full FIFO or a pull from an empty FIFO.
-
-## Supported Parameter Sets
-
-CSRNG has the following configurable parameters:
-- `SBoxImpl` selects the S-Box implementation of the unmasked AES cipher core.
-  Both supported variants are logically equivalent.
-  `SBoxImplCanright` has the smallest area and is recommended for ASICs; it is also the variant used in verification.
-  `SBoxImplLut` is preferable for FPGAs in terms of logic utilization and timing.
-- `RndCnstCsKeymgrDivNonProduction` and `RndCnstCsKeymgrDivProduction` are the seed diversification values, which are randomized per top.
-- `AlertAsyncOn` and `AlertSkewCycles` configure the alert senders, as for any comportable IP.
-
-The number of application interfaces (`NumApps`) is currently fixed at 3 in `csrng.hjson`: two hardware instances and one software instance.
-Other values haven't been verified to work yet.

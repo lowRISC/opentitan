@@ -121,7 +121,7 @@ static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   }
 
   size_t num_words = keyblob_num_words(key->config);
-  if (launder32(key->keyblob_length) == num_words * sizeof(uint32_t)) {
+  if (launderw(key->keyblob_length) == launderw(num_words * sizeof(uint32_t))) {
     HARDENED_CHECK_EQ(key->keyblob_length, num_words * sizeof(uint32_t));
     HARDENED_CHECK_LE(key->keyblob_length / sizeof(uint32_t), num_words);
     return OTCRYPTO_OK;

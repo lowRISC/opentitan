@@ -56,8 +56,6 @@ Code Quality  | [AREA_CHECK][]            | Done        |
 Code Quality  | [TIMING_CHECK][]          | Done        | Fmax @ 24 MHz on ChipWhisperer CW340
 Security      | [SEC_CM_DOCUMENTED][]     | Done        | Additional control-path FI CMs are under review in #32412.
 
-[#761]: https://github.com/loWRISC/opentitan/issues/761
-
 [NEW_FEATURES]:        ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:       ../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:       ../../../../doc/project_governance/checklist/README.md#doc_interface

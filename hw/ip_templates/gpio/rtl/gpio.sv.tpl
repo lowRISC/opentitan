@@ -407,6 +407,14 @@ module ${module_instance_name}
     end
   end
 
+  // The mask and data fields of the MASKED_OUT_* and MASKED_OE_* registers are written together,
+  // so the qe of the data field is used for the whole register.
+  logic unused_masked_mask_qe;
+  assign unused_masked_mask_qe = ^{reg2hw.masked_out_upper.mask.qe,
+                                   reg2hw.masked_out_lower.mask.qe,
+                                   reg2hw.masked_oe_upper.mask.qe,
+                                   reg2hw.masked_oe_lower.mask.qe};
+
 % if per_pin_view:
   // Interrupt control and input filter
   assign hw2reg.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q;

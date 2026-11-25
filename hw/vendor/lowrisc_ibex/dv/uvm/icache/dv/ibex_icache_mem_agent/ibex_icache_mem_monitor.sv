@@ -4,8 +4,6 @@
 
 class ibex_icache_mem_monitor
   extends dv_base_monitor #(.ITEM_T     (ibex_icache_mem_bus_item),
-                            .REQ_ITEM_T (ibex_icache_mem_resp_item),
-                            .RSP_ITEM_T (ibex_icache_mem_resp_item),
                             .CFG_T      (ibex_icache_mem_agent_cfg),
                             .COV_T      (ibex_icache_mem_agent_cov));
 

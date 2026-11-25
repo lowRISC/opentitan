@@ -65,7 +65,7 @@
 | otp_ctrl.[`SECRET2_DIGEST_1`](#secret2_digest)                                         | 0xe4     |        4 | Integrity digest for the SECRET2 partition.                                                                                                |
 | otp_ctrl.[`SECRET3_DIGEST_0`](#secret3_digest)                                         | 0xe8     |        4 | Integrity digest for the SECRET3 partition.                                                                                                |
 | otp_ctrl.[`SECRET3_DIGEST_1`](#secret3_digest)                                         | 0xec     |        4 | Integrity digest for the SECRET3 partition.                                                                                                |
-| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                             | 0x1000   |     4096 | Any read to this window directly maps to the corresponding offset in the creator and owner software                                        |
+| otp_ctrl.[`SW_CFG_WINDOW`](#sw_cfg_window)                                             | 0x1000   |     4096 | Any read to this window maps to the corresponding offset in an unbuffered partition.                                                       |
 
 ## INTR_STATE
 Interrupt State Register
@@ -893,9 +893,10 @@ After a reset, the digest then becomes visible in this CSR, and the correspondin
 |  31:0  |   ro   |   0x0   | SECRET3_DIGEST |               |
 
 ## SW_CFG_WINDOW
-Any read to this window directly maps to the corresponding offset in the creator and owner software
-config partitions, and triggers an OTP readout of the bytes requested. Note that the transaction
-will block until OTP readout has completed.
+Any read to this window maps to the corresponding offset in an unbuffered partition.
+It triggers an OTP readout of the bytes requested, and the transaction will block until the
+OTP readout has completed.
+Any other read returns a bus error without changing any status or error register.
 
 - Word Aligned Offset Range: `0x1000`to`0x1ffc`
 - Size (words): `1024`

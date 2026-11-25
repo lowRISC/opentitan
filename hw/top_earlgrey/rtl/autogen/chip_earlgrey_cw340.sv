@@ -130,28 +130,28 @@ module chip_earlgrey_cw340 #(
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirStd, // DIO spi_host0_csb
-      BidirStd, // DIO spi_host0_sck
-      InputStd, // DIO spi_device_csb
-      InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_ec_rst_l
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_csb
+      BidirStr, // DIO spi_host0_sck
+      BidirStd, // DIO spi_device_csb
+      BidirStd, // DIO spi_device_sck
+      BidirStd, // DIO sysrst_ctrl_flash_wp_l
+      BidirStd, // DIO sysrst_ctrl_ec_rst_l
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
       BidirStd, // DIO usbdev_usb_dn
       BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
-      BidirOd, // MIO Pad 46
-      BidirOd, // MIO Pad 45
-      BidirOd, // MIO Pad 44
-      BidirOd, // MIO Pad 43
+      BidirStd, // MIO Pad 46
+      BidirStd, // MIO Pad 45
+      BidirStd, // MIO Pad 44
+      BidirStd, // MIO Pad 43
       BidirStd, // MIO Pad 42
       BidirStd, // MIO Pad 41
       BidirStd, // MIO Pad 40
@@ -160,9 +160,9 @@ module chip_earlgrey_cw340 #(
       BidirStd, // MIO Pad 37
       BidirStd, // MIO Pad 36
       BidirStd, // MIO Pad 35
-      BidirOd, // MIO Pad 34
-      BidirOd, // MIO Pad 33
-      BidirOd, // MIO Pad 32
+      BidirStd, // MIO Pad 34
+      BidirStd, // MIO Pad 33
+      BidirStd, // MIO Pad 32
       BidirStd, // MIO Pad 31
       BidirStd, // MIO Pad 30
       BidirStd, // MIO Pad 29
@@ -173,22 +173,22 @@ module chip_earlgrey_cw340 #(
       BidirStd, // MIO Pad 24
       BidirStd, // MIO Pad 23
       BidirStd, // MIO Pad 22
-      BidirOd, // MIO Pad 21
-      BidirOd, // MIO Pad 20
-      BidirOd, // MIO Pad 19
-      BidirOd, // MIO Pad 18
+      BidirStr, // MIO Pad 21
+      BidirStr, // MIO Pad 20
+      BidirStr, // MIO Pad 19
+      BidirStr, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
-      BidirStd, // MIO Pad 15
-      BidirStd, // MIO Pad 14
-      BidirStd, // MIO Pad 13
-      BidirStd, // MIO Pad 12
-      BidirStd, // MIO Pad 11
-      BidirStd, // MIO Pad 10
-      BidirStd, // MIO Pad 9
-      BidirOd, // MIO Pad 8
-      BidirOd, // MIO Pad 7
-      BidirOd, // MIO Pad 6
+      BidirStr, // MIO Pad 15
+      BidirStr, // MIO Pad 14
+      BidirStr, // MIO Pad 13
+      BidirStr, // MIO Pad 12
+      BidirStr, // MIO Pad 11
+      BidirStr, // MIO Pad 10
+      BidirStr, // MIO Pad 9
+      BidirStr, // MIO Pad 8
+      BidirStr, // MIO Pad 7
+      BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
       BidirStd, // MIO Pad 3
@@ -362,27 +362,27 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IO_USB_DP_TX
       BidirStd, // IO_USB_CONNECT
       InputStd, // IO_CLK
-      BidirOd, // IOR9
-      BidirOd, // IOR8
-      InputStd, // SPI_DEV_CS_L
-      InputStd, // SPI_DEV_CLK
-      BidirStd, // SPI_DEV_D3
-      BidirStd, // SPI_DEV_D2
-      BidirStd, // SPI_DEV_D1
-      BidirStd, // SPI_DEV_D0
-      BidirStd, // SPI_HOST_CS_L
-      BidirStd, // SPI_HOST_CLK
-      BidirStd, // SPI_HOST_D3
-      BidirStd, // SPI_HOST_D2
-      BidirStd, // SPI_HOST_D1
-      BidirStd, // SPI_HOST_D0
+      BidirStd, // IOR9
+      BidirStd, // IOR8
+      BidirStd, // SPI_DEV_CS_L
+      BidirStd, // SPI_DEV_CLK
+      BidirStr, // SPI_DEV_D3
+      BidirStr, // SPI_DEV_D2
+      BidirStr, // SPI_DEV_D1
+      BidirStr, // SPI_DEV_D0
+      BidirStr, // SPI_HOST_CS_L
+      BidirStr, // SPI_HOST_CLK
+      BidirStr, // SPI_HOST_D3
+      BidirStr, // SPI_HOST_D2
+      BidirStr, // SPI_HOST_D1
+      BidirStr, // SPI_HOST_D0
       InputStd  // POR_N
     }),
     .MioPadType ({
-      BidirOd, // IOR13
-      BidirOd, // IOR12
-      BidirOd, // IOR11
-      BidirOd, // IOR10
+      BidirStd, // IOR13
+      BidirStd, // IOR12
+      BidirStd, // IOR11
+      BidirStd, // IOR10
       BidirStd, // IOR7
       BidirStd, // IOR6
       BidirStd, // IOR5
@@ -391,9 +391,9 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IOR2
       BidirStd, // IOR1
       BidirStd, // IOR0
-      BidirOd, // IOC12
-      BidirOd, // IOC11
-      BidirOd, // IOC10
+      BidirStd, // IOC12
+      BidirStd, // IOC11
+      BidirStd, // IOC10
       BidirStd, // IOC9
       BidirStd, // IOC8
       BidirStd, // IOC7
@@ -404,22 +404,22 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IOC2
       BidirStd, // IOC1
       BidirStd, // IOC0
-      BidirOd, // IOB12
-      BidirOd, // IOB11
-      BidirOd, // IOB10
-      BidirOd, // IOB9
+      BidirStr, // IOB12
+      BidirStr, // IOB11
+      BidirStr, // IOB10
+      BidirStr, // IOB9
       BidirStd, // IOB8
       BidirStd, // IOB7
-      BidirStd, // IOB6
-      BidirStd, // IOB5
-      BidirStd, // IOB4
-      BidirStd, // IOB3
-      BidirStd, // IOB2
-      BidirStd, // IOB1
-      BidirStd, // IOB0
-      BidirOd, // IOA8
-      BidirOd, // IOA7
-      BidirOd, // IOA6
+      BidirStr, // IOB6
+      BidirStr, // IOB5
+      BidirStr, // IOB4
+      BidirStr, // IOB3
+      BidirStr, // IOB2
+      BidirStr, // IOB1
+      BidirStr, // IOB0
+      BidirStr, // IOA8
+      BidirStr, // IOA7
+      BidirStd, // IOA6
       BidirStd, // IOA5
       BidirStd, // IOA4
       BidirStd, // IOA3

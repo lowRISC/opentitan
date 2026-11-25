@@ -9,6 +9,8 @@
 // buffer, that buffer is not de-allocated before this request is served.
 //
 
+`include "prim_assert.sv"
+
 module rram_phy_rd_buf_dep import rram_ctrl_pkg::*;
 #(
   parameter int unsigned Depth = 2

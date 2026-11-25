@@ -64,7 +64,7 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
       break;
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
-      if (launder32(message_bytelen) != num_words * sizeof(uint32_t)) {
+      if (launderw(message_bytelen) != launderw(num_words * sizeof(uint32_t))) {
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(message_bytelen, num_words * sizeof(uint32_t));
@@ -80,11 +80,12 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
 
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
-  return rsa_modexp_vartime_start(size, encoded_message, e, n);
+  return rsa_modexp_vartime_start(size, encoded_message, e, n,
+                                  kRsaModexpOpEncrypt, key_mode);
 }
 
 status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext) {
-  return rsa_modexp_finalize_size(size, ciphertext);
+  return rsa_modexp_finalize_size(kRsaModexpOpEncrypt, size, ciphertext);
 }
 
 status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
@@ -93,7 +94,7 @@ status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
                            uint32_t checksum) {
   // Start computing (ciphertext ^ d) mod n.
   return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum,
-                                    (uint32_t)key_mode);
+                                    kRsaModexpOpDecrypt, key_mode);
 }
 
 status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
@@ -101,14 +102,20 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_len) {
-  // Wait for OTBN to complete and get the size for the last RSA operation.
+  *plaintext_len = 0;
+
+  // Wait for OTBN to complete and get the size and key_mode.
   size_t num_words;
-  HARDENED_TRY(rsa_modexp_wait(&num_words));
+  otcrypto_key_mode_t stored_key_mode = (otcrypto_key_mode_t)0;
+  HARDENED_TRY(
+      rsa_modexp_wait(kRsaModexpOpDecrypt, &num_words, &stored_key_mode));
   if (launder32((uint32_t)key_mode) == 0) {
-    uint32_t raw_key_mode = 0;
-    HARDENED_TRY(rsa_modexp_key_mode(&raw_key_mode));
-    key_mode = (otcrypto_key_mode_t)raw_key_mode;
+    key_mode = stored_key_mode;
+  } else if (launder32((uint32_t)key_mode) !=
+             launder32((uint32_t)stored_key_mode)) {
+    return OTCRYPTO_RECOV_ERR;
   }
+  HARDENED_CHECK_EQ(key_mode, stored_key_mode);
 
   if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep &&
       launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha1 &&
@@ -135,7 +142,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
   // Finalize the modexp operation to get the recovered encoded message.
   HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
   uint32_t recovered_message[kRsa4096NumWords];
-  HARDENED_TRY(rsa_modexp_finalize(num_words, recovered_message));
+  HARDENED_TRY(
+      rsa_modexp_finalize(kRsaModexpOpDecrypt, num_words, recovered_message));
 
   size_t max_plaintext_bytelen = num_words * sizeof(uint32_t);
   switch (launder32(key_mode)) {
@@ -171,8 +179,12 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                                      num_words, plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
+      HARDENED_CHECK_GE(max_plaintext_bytelen, 11);
+      if (plaintext_max_bytelen < max_plaintext_bytelen - 11) {
+        hardened_memshred(recovered_message, num_words);
+        return OTCRYPTO_BAD_ARGS;
+      }
       return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
-                                                 plaintext_max_bytelen,
                                                  plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);

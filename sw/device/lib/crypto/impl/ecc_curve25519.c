@@ -99,6 +99,25 @@ static status_t curve25519_private_key_length_check(
   }
   HARDENED_CHECK_EQ(private_key->config.key_mode, expected_mode);
 
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    if (expected_mode != kOtcryptoKeyModeX25519) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    if (private_key->keyblob_length != kKeyblobHwBackedBytes) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  } else {
+    HARDENED_CHECK_NE(private_key->config.hw_backed, kHardenedBoolTrue);
+    if (private_key->config.hw_backed != kHardenedBoolFalse) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    // Check the keyblob length.
+    if (private_key->keyblob_length !=
+        keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+  }
+
   // Check the integrity of the key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
@@ -106,23 +125,6 @@ static status_t curve25519_private_key_length_check(
   HARDENED_CHECK_EQ(
       launder32(otcrypto_integrity_blinded_key_check(private_key)),
       kHardenedBoolTrue);
-
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    if (expected_mode != kOtcryptoKeyModeX25519) {
-      return OTCRYPTO_BAD_ARGS;
-    }
-    // Skip the length check in this case; if the salt is the wrong length, the
-    // keyblob library will catch it before we sideload the key.
-    return OTCRYPTO_OK;
-  }
-  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
-                    kHardenedBoolTrue);
-
-  // Check the keyblob length.
-  if (private_key->keyblob_length !=
-      keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   return OTCRYPTO_OK;
 }
@@ -229,7 +231,7 @@ static status_t ed25519_message_prehash(
   // Instantiate variable for an FI check on the sign mode used.
   otcrypto_eddsa_sign_mode_t sign_mode_used = launder32(0);
   // Use SHA2_512 if the sign mode is kOtcryptoEddsaSignModeHashEddsa.
-  if (sign_mode == launder32(kOtcryptoEddsaSignModeHashEddsa)) {
+  if (launder32(sign_mode) == kOtcryptoEddsaSignModeHashEddsa) {
     sign_mode_used =
         launder32(sign_mode_used) | kOtcryptoEddsaSignModeHashEddsa;
 
@@ -241,7 +243,7 @@ static status_t ed25519_message_prehash(
     message_ph->len = kCurve25519HashBytes;
 
     // Use the unity function if the sign mode is kOtcryptoEddsaSignModeEddsa.
-  } else if (sign_mode == launder32(kOtcryptoEddsaSignModeEddsa)) {
+  } else if (launder32(sign_mode) == kOtcryptoEddsaSignModeEddsa) {
     sign_mode_used = launder32(sign_mode_used) | kOtcryptoEddsaSignModeEddsa;
     *message_ph =
         OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)input_message->data,
@@ -472,7 +474,7 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
                                        kOtcryptoEddsaSignModeEddsa, &sig_const,
                                        &result));
 
-  if (result != kHardenedBoolTrue) {
+  if (launder32(result) != kHardenedBoolTrue) {
     // COVERAGE (FI CM) Pairwise consistency check only fails under fault
     // injection.
     crypto_state_t state;
@@ -529,10 +531,7 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
-  // Default to not-approved in case of an early return; this service is
-  // approved and `otcrypto_ed25519_sign_part1_async_start` sets the indicator
-  // to approved once reached.
-  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN);
   OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
   // Validate signature buffer
   HARDENED_TRY(ed25519_signature_check(signature));
@@ -572,7 +571,8 @@ otcrypto_status_t otcrypto_ed25519_sign(
       private_key, &input_message_ph, sign_mode, signature, &s0, &s1, &r0,
       &r1));
   // Finish the execution and retrieve the signature.
-  return otcrypto_ed25519_sign_async_finalize(signature);
+  HARDENED_TRY(otcrypto_ed25519_sign_async_finalize(signature));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ed25519_verify(
@@ -581,10 +581,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  // Default to not-approved in case of an early return; this service is
-  // approved and `otcrypto_ed25519_verify_async_start` sets the indicator to
-  // approved once reached.
-  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_VERIFY);
   OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
@@ -606,7 +603,8 @@ otcrypto_status_t otcrypto_ed25519_verify(
   HARDENED_TRY(otcrypto_ed25519_verify_async_start(
       public_key, &input_message_ph, sign_mode, signature));
   // Finish the verification operation and get the result.
-  return otcrypto_ed25519_verify_async_finalize(verification_result);
+  HARDENED_TRY(otcrypto_ed25519_verify_async_finalize(verification_result));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ed25519_point_on_curve(

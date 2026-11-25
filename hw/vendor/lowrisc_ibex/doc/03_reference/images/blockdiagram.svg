@@ -3,8 +3,8 @@
 
 <svg
    width="278.31393mm"
-   height="171.93503mm"
-   viewBox="0 0 278.31393 171.93503"
+   height="192mm"
+   viewBox="0 0 278.31393 192"
    version="1.1"
    id="svg8"
    inkscape:version="1.4 (1:1.4+202410161351+e7c3feb100)"
@@ -1070,20 +1070,22 @@
        y="247.46063"
        x="49.951035"
        height="7.9375"
-       width="26.458334"
+       width="12.7"
        id="rect1303"
        style="fill:#e0384f;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1" />
     <text
        xml:space="preserve"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
-       x="62.986069"
-       y="252.99501"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.5px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="56.301035"
+       y="252.53"
        id="text1400"><tspan
          sodipodi:role="line"
          id="tspan1398"
-         x="62.986069"
-         y="252.99501"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.264583">Mul/Div</tspan></text>
+         x="56.301035"
+         y="252.53"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.5px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke-width:0.264583">Mul/Div</tspan></text>
+    <rect ry="1" rx="1" x="63.709369" y="247.46063" width="12.7" height="7.9375" id="rect-cheriot" style="fill:#e0384f;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1" />
+    <text xml:space="preserve" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.5px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583" x="70.059369" y="252.53" id="text-cheriot"><tspan sodipodi:role="line" id="text-cheriot-s" x="70.059369" y="252.53">CHERIoT</tspan></text>
     <path
        inkscape:connector-curvature="0"
        id="path1305-7-6-0-7"
@@ -1344,12 +1346,12 @@
          id="tspan1404-0"
          x="-20.243507"
          y="250.10785"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;stroke-width:0.264583">Compressed</tspan><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;stroke-width:0.264583">Compressed Decoder</tspan><tspan
          sodipodi:role="line"
          x="-20.243507"
          y="256.28146"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.93889px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;stroke-width:0.264583"
-         id="tspan1320">Instruction Decoder</tspan></text>
+         id="tspan1320">(Zca, Zcb, Zcmp)</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
@@ -1382,5 +1384,10 @@
          x="66.038544"
          y="117.86932"
          id="tspan2">ICache or Prefetch Buffer</tspan></text>
+    <rect ry="1" rx="1" x="246.0" y="135.5" width="15.0" height="13.5" id="rect-trvk" style="fill:#e0384f;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1" />
+    <text xml:space="preserve" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.95px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583" x="253.5" y="143.65" id="text-trvk"><tspan sodipodi:role="line" id="text-trvk-s" x="253.5" y="143.65">TRVK</tspan></text>
+    <rect ry="1" rx="1" x="264.6" y="152.0" width="13.7" height="38.0" id="rect-revbm-if" style="fill:#e0384f;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;stroke-dasharray:0.5, 0.5;stroke-dashoffset:0;stroke-opacity:1" />
+    <text xml:space="preserve" style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333px;line-height:1.25;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;text-anchor:middle;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.264583" transform="rotate(90)" x="171.0" y="-271.45" id="text-revbm-if"><tspan sodipodi:role="line" id="text-revbm-if-0" x="171.0" y="-271.45">Revocation Bitmap</tspan><tspan sodipodi:role="line" id="text-revbm-if-1" x="171.0" y="-266.1583">Interface</tspan></text>
+    <path style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" d="M 259.0,149.0 L 259.0,170.0 L 264.6,170.0" id="path-trvk-revbm" />
   </g>
 </svg>

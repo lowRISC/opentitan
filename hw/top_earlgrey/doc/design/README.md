@@ -143,6 +143,7 @@ The [CHERIoT memory subsystem](../../../ip/cheriot_mem_sys/README.md) (`cheriot_
 It stores the validity tags and the revocation bitmap in the [CHERIoT meta SRAM](#srams), which is separate from the memories that hold the capabilities.
 It splits each data access into an access to the memory and an access to the tag.
 A non-capability store clears the tag of the location it writes.
+Like Ibex, the memory subsystem runs in lockstep with a delayed second copy of its logic.
 
 The memory subsystem also contains a background revocation engine.
 The engine sweeps a range of capabilities in the Main SRAM, the Secondary SRAM or the RRAM.
@@ -187,7 +188,7 @@ The [memory map](../memory_map.md) gives their base addresses.
 |-------------------|---------|-----------------------------------------------------|--------------|-----------------------------------------------|
 | ROM               | 192 KiB | [`rom_ctrl`](../../../ip/rom_ctrl/README.md)        | `Main`       | Boot code                                     |
 | RRAM              | 2 MiB   | [`rram_ctrl`](../../../ip/rram_ctrl/README.md)      | `Main`       | Non-volatile code and data storage            |
-| OTP               | 2096 B  | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
+| OTP               | 2256 B  | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
 | Main SRAM         | 128 KiB | [`sram_ctrl_main`](../../../ip/sram_ctrl/README.md) | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Secondary SRAM    | 64 KiB  | [`sram_ctrl_sec`](../../../ip/sram_ctrl/README.md)  | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Retention SRAM    | 8 KiB   | [`sram_ctrl_ret`](../../../ip/sram_ctrl/README.md)  | `Aon`        | Data that must be retained during deep sleep  |
@@ -248,7 +249,7 @@ When software triggers the hardware initialization of the CHERIoT meta SRAM, its
 Code execution from it is not supported.
 
 All four SRAMs have 7 ECC bits per 32-bit word and are scrambled by their [SRAM controller](../../../ip/sram_ctrl/README.md) with a reduced-round PRINCE cipher.
-For the CHERIoT meta SRAM, address scrambling is currently disabled.
+The CHERIoT meta SRAM is not a power of 2 in size, so its address scrambling works on 2 KiB chunks and is weaker than for the other SRAMs: only 9 of its 14 address bits pass through the S&P network.
 
 ### Secure boot
 
@@ -348,7 +349,7 @@ In target mode, they stretch the clock automatically and support programmable au
 
 The SCL and SDA signals of each I2C peripheral can be connected to any of the multiplexable IO (MIO) of the chip via the [pinmux](../../ip_autogen/pinmux/README.md).
 The I2C peripherals drive SCL and SDA as a virtual open drain: they only pull the lines low and otherwise release them.
-A bus pulled up above the pad supply voltage needs a **BidirOd** pad with open drain enabled (see [Open drain / virtual open drain](#open-drain--virtual-open-drain)).
+The bus must not be pulled up above the supply voltage of the pad bank (see [Virtual open drain](#virtual-open-drain)).
 Each I2C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
 
 See the [I2C specification](../../../ip/i2c/README.md) for more details.
@@ -659,40 +660,40 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 4    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                                |
 | 5    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                                |
 | 6    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
-| 7    | SPI_HOST_D0   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 8    | SPI_HOST_D1   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 9    | SPI_HOST_D2   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 10   | SPI_HOST_D3   | VIOA   | BidirStd     | direct            | SPI host data                              |
-| 11   | SPI_HOST_CLK  | VIOA   | BidirStd     | direct            | SPI host clock                             |
-| 12   | SPI_HOST_CS_L | VIOA   | BidirStd     | direct            | SPI host chip select                       |
-| 13   | SPI_DEV_D0    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 14   | SPI_DEV_D1    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 15   | SPI_DEV_D2    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 16   | SPI_DEV_D3    | VIOA   | BidirStd     | direct            | SPI device data                            |
-| 17   | SPI_DEV_CLK   | VIOA   | InputStd     | direct            | SPI device clock                           |
-| 18   | SPI_DEV_CS_L  | VIOA   | InputStd     | direct            | SPI device chip select                     |
+| 7    | SPI_HOST_D0   | VIOA   | BidirStr     | direct            | SPI host data                              |
+| 8    | SPI_HOST_D1   | VIOA   | BidirStr     | direct            | SPI host data                              |
+| 9    | SPI_HOST_D2   | VIOA   | BidirStr     | direct            | SPI host data                              |
+| 10   | SPI_HOST_D3   | VIOA   | BidirStr     | direct            | SPI host data                              |
+| 11   | SPI_HOST_CLK  | VIOA   | BidirStr     | direct            | SPI host clock                             |
+| 12   | SPI_HOST_CS_L | VIOA   | BidirStr     | direct            | SPI host chip select                       |
+| 13   | SPI_DEV_D0    | VIOA   | BidirStr     | direct            | SPI device data                            |
+| 14   | SPI_DEV_D1    | VIOA   | BidirStr     | direct            | SPI device data                            |
+| 15   | SPI_DEV_D2    | VIOA   | BidirStr     | direct            | SPI device data                            |
+| 16   | SPI_DEV_D3    | VIOA   | BidirStr     | direct            | SPI device data                            |
+| 17   | SPI_DEV_CLK   | VIOA   | BidirStd     | direct            | SPI device clock                           |
+| 18   | SPI_DEV_CS_L  | VIOA   | BidirStd     | direct            | SPI device chip select                     |
 | 0    | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 1    | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 2    | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 3    | IOA3          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 4    | IOA4          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 5    | IOA5          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 6    | IOA6          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 7    | IOA7          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 8    | IOA8          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 9    | IOB0          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 10   | IOB1          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 11   | IOB2          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 12   | IOB3          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 13   | IOB4          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 14   | IOB5          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 15   | IOB6          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 6    | IOA6          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 7    | IOA7          | VIOA   | BidirStr     | muxed             | Muxed IO pad                               |
+| 8    | IOA8          | VIOA   | BidirStr     | muxed             | Muxed IO pad                               |
+| 9    | IOB0          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 10   | IOB1          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 11   | IOB2          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 12   | IOB3          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 13   | IOB4          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 14   | IOB5          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 15   | IOB6          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
 | 16   | IOB7          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 17   | IOB8          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 18   | IOB9          | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 19   | IOB10         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 20   | IOB11         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 21   | IOB12         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 18   | IOB9          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 19   | IOB10         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 20   | IOB11         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
+| 21   | IOB12         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
 | 22   | IOC0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 23   | IOC1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 24   | IOC2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
@@ -703,9 +704,9 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 29   | IOC7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 30   | IOC8          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 31   | IOC9          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 32   | IOC10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 33   | IOC11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 34   | IOC12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 32   | IOC10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 33   | IOC11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 34   | IOC12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 35   | IOR0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 36   | IOR1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 37   | IOR2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
@@ -714,28 +715,26 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 40   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 41   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 42   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 19   | IOR8          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 20   | IOR9          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
-| 43   | IOR10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 44   | IOR11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 45   | IOR12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 46   | IOR13         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 19   | IOR8          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 20   | IOR9          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 43   | IOR10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 44   | IOR11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 45   | IOR12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 46   | IOR13         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 
 <!-- END CMDGEN -->
 
-#### Open drain / virtual open drain
+#### Virtual open drain
 
-Pads of type **BidirOd** and **BidirStd** support **open drain** and **virtual open drain**, respectively.
-When open drain or virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
+Pads of type **BidirStd** and **BidirStr** support **virtual open drain**.
+When virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
 Thus for a logic 1, the impedance of the pad is essentially the output impedance of the CMOS transistor pair (which is specified in the data sheet of the chip).
 
 However, there still exists a parallel connection to the supply rail through a protection circuit.
-Therefore:
-- For **BidirOd** pads in open drain mode, the output protection circuit allows voltages that exceed the supply voltage.
-  The maximum voltage that may be applied in this case is derived from the maximum voltage of the specific pad type (which is specified in the data sheet of the chip).
-- For **BidirStd** pads, the maximum voltage that may be applied is the supply voltage (within tolerance, as specified in the data sheet of the chip).
+Therefore, the maximum voltage that may be applied is the supply voltage of the pad bank (within tolerance, as specified in the data sheet of the chip).
 
-All other pad types support neither open drain nor virtual open drain.
+No pad of the chip supports true open drain.
+All other pad types do not support virtual open drain.
 
 
 # RTL Implementation Notes

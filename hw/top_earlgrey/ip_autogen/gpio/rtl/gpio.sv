@@ -899,6 +899,14 @@ module gpio
     end
   end
 
+  // The mask and data fields of the MASKED_OUT_* and MASKED_OE_* registers are written together,
+  // so the qe of the data field is used for the whole register.
+  logic unused_masked_mask_qe;
+  assign unused_masked_mask_qe = ^{reg2hw.masked_out_upper.mask.qe,
+                                   reg2hw.masked_out_lower.mask.qe,
+                                   reg2hw.masked_oe_upper.mask.qe,
+                                   reg2hw.masked_oe_lower.mask.qe};
+
   // Interrupt control and input filter
   assign hw2reg.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q;
   assign hw2reg.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q;

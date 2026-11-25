@@ -177,12 +177,14 @@ module earlgrey_pd_main #(
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
   parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
+  parameter bit SecCheriotMemSysLockstep = 1'b1,
+  parameter int unsigned CheriotMemSysLockstepOffset = 1,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
   parameter bit SramCtrlMetaInstrExec = 0,
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
-  parameter int SramCtrlMetaNumAddrScrRounds = 0,
+  parameter int SramCtrlMetaNumAddrScrRounds = 2,
   parameter bit SramCtrlMetaEccCorrection = 0,
   parameter bit SecSramCtrlMetaZeroInit = 1
 ) (
@@ -2819,11 +2821,17 @@ module earlgrey_pd_main #(
     .NvmBaseAddr(CheriotMemSysNvmBaseAddr),
     .NvmTopAddr(CheriotMemSysNvmTopAddr),
     .MetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
-    .MemSizeRevbm(3072)
+    .MemSizeRevbm(3072),
+    .SecLockstep(SecCheriotMemSysLockstep),
+    .LockstepOffset(CheriotMemSysLockstepOffset)
   ) u_cheriot_mem_sys (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+
+    // DFT/scan connections
+    .scanmode_i,
+    .scan_rst_ni,
 
     // Interrupts
     .intr_tbre_done_o(intr_cheriot_mem_sys_tbre_done),

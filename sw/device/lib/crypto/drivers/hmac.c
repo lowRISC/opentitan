@@ -265,7 +265,7 @@ OT_USED static void hmac_wipe_guard(uint32_t *dummy) {
  * @return Result of the operation.
  */
 static status_t key_write(const hmac_key_t *key) {
-  if (key != NULL) {
+  if (launderw((ot_word_t)key) != 0) {
     uintptr_t key_reg = hmac_base() + HMAC_KEY_0_REG_OFFSET;
     HARDENED_TRY(
         hardened_memcpy((uint32_t *)key_reg, key->key_block, key->key_len));

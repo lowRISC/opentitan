@@ -102,30 +102,37 @@ TEST(IntegrityTest, BufferCreationAndCheck) {
 
   EXPECT_EQ(otcrypto_check_byte_buf(&buf), kHardenedBoolTrue);
 
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   buf.len = data.size() + 1;
-
   EXPECT_EQ(otcrypto_check_byte_buf(&buf), kHardenedBoolFalse);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
   otcrypto_const_byte_buf_t const_byte_buf =
       otcrypto_make_const_byte_buf(data.data(), data.size());
   EXPECT_EQ(otcrypto_check_const_byte_buf(&const_byte_buf), kHardenedBoolTrue);
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   const_byte_buf.ptr_checksum ^= 1;
   EXPECT_EQ(otcrypto_check_const_byte_buf(&const_byte_buf), kHardenedBoolFalse);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
   std::array<uint32_t, 4> word_data = {0};
   otcrypto_word32_buf_t word_buf =
       otcrypto_make_word32_buf(word_data.data(), word_data.size());
   EXPECT_EQ(otcrypto_check_word32_buf(&word_buf), kHardenedBoolTrue);
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   word_buf.len = word_data.size() + 1;
   EXPECT_EQ(otcrypto_check_word32_buf(&word_buf), kHardenedBoolFalse);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 
   otcrypto_const_word32_buf_t const_word_buf =
       otcrypto_make_const_word32_buf(word_data.data(), word_data.size());
   EXPECT_EQ(otcrypto_check_const_word32_buf(&const_word_buf),
             kHardenedBoolTrue);
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   const_word_buf.ptr_checksum ^= 1;
   EXPECT_EQ(otcrypto_check_const_word32_buf(&const_word_buf),
             kHardenedBoolFalse);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 }
 
 TEST(IntegrityTest, BlindedKeyBadVersion) {
@@ -183,12 +190,14 @@ TEST(IntegrityTest, ModuleName) {
       otcrypto_make_byte_buf(wrong_size_data, kOtcryptoModuleNameBytes + 1);
   EXPECT_EQ(otcrypto_module_name(&long_buf).value, kOtcryptoStatusValueBadArgs);
 
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   // Corrupted buffer checksum check.
   otcrypto_byte_buf_t bad_checksum_buf =
       otcrypto_make_byte_buf(data, sizeof(data));
   bad_checksum_buf.ptr_checksum ^= 1;
   EXPECT_EQ(otcrypto_module_name(&bad_checksum_buf).value,
             kOtcryptoStatusValueFatalError);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
 }
 
 TEST(IntegrityTest, RomVersion) {

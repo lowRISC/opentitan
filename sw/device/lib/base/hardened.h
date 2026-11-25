@@ -572,12 +572,16 @@ inline ot_word_t ct_cmovw(ct_boolw_t c, ot_word_t a, ot_word_t b) {
 // clang-format off
 #define HARDENED_CHECK_(op_, a_, b_)                                  \
   asm volatile(                                                       \
-      OT_CAT(HARDENED_CHECK_OP_, op_) " %0, %1, .L_HARDENED_OK_%=;"   \
+      ".option push; .option norvc;"                                  \
+      OT_CAT(HARDENED_CHECK_OP_, op_) " %z0, %z1, .L_HARDENED_OK_%=;" \
+      ".option pop;"                                                  \
       ".L_HARDENED_BAD_%=:;"                                          \
       "unimp;"                                                        \
       ".L_HARDENED_OK_%=:;"                                           \
-      OT_CAT(HARDENED_CHECK_INV_, op_) " %0, %1, .L_HARDENED_BAD_%=;" \
-      ::"r"(a_), "r"(b_))
+      ".option push; .option norvc;"                                  \
+      OT_CAT(HARDENED_CHECK_INV_, op_) " %z0, %z1, .L_HARDENED_BAD_%=;" \
+      ".option pop;"                                                  \
+      ::"rJ"(a_), "rJ"(b_))
 // clang-format on
 
 #define HARDENED_TRAP_()                      \

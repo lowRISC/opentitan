@@ -12,6 +12,8 @@
 // If the requested word is already in the read-buffer, it can be returned in the next cycle.
 //
 
+`include "prim_assert.sv"
+
 module rram_phy_rd
   import rram_ctrl_pkg::*;
 (

@@ -181,42 +181,6 @@ uint32_t alert_handler_testutils_cycle_rescaling_factor(void) {
   return kDeviceType == kDeviceSimDV ? 1 : 10;
 }
 
-static status_t alert_handler_class_info_log(
-    const dif_alert_handler_t *alert_handler,
-    dif_alert_handler_class_t alert_class) {
-  dif_alert_handler_class_state_t state;
-  TRY(dif_alert_handler_get_class_state(alert_handler, alert_class, &state));
-
-  uint16_t num_alerts;
-  TRY(dif_alert_handler_get_accumulator(alert_handler, alert_class,
-                                        &num_alerts));
-
-  if (num_alerts > 0) {
-    LOG_INFO("Alert class %c state: %d, acc_cnt: %d",
-             kAlertClassName[alert_class], state, num_alerts);
-
-    for (dif_alert_handler_alert_t alert = 0;
-         alert < ALERT_HANDLER_PARAM_N_ALERTS; ++alert) {
-      bool is_cause;
-      TRY(dif_alert_handler_alert_is_cause(alert_handler, alert, &is_cause));
-      if (is_cause) {
-        LOG_INFO("Alert %d is set", alert);
-      }
-    }
-
-    bool can_clear;
-    TRY(dif_alert_handler_escalation_can_clear(alert_handler, alert_class,
-                                               &can_clear));
-    if (can_clear) {
-      TRY(dif_alert_handler_escalation_clear(alert_handler, alert_class));
-    } else {
-      LOG_INFO("Alert class %c can't be cleared", kAlertClassName[alert_class]);
-    }
-  }
-
-  return OK_STATUS();
-}
-
 static status_t alert_handler_class_log(
     const dif_alert_handler_t *alert_handler,
     dif_alert_handler_class_t alert_class) {

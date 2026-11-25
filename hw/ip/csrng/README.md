@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/csrng/data/csrng.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`csrng`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/code.svg) |
+ [`csrng`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/csrng/index.html).
 
@@ -53,6 +53,19 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
     - Implementation follows the NRBG "Oversampling Construction" approved by SP 800-90C, to meet both [Common Criteria (CC, ISO/IEC 15408)](https://www.iso.org/standard/50341.html) and FIPS TRNG constructions.
 - In addition to the approved DRNG mode, any instance can also operate in "Fully Deterministic mode", meaning the seed depends entirely on application inputs or personalization strings.
     - This provides an approved means of seed construction in FIPS 140-2 as described in the [FIPS 140-2 Implementation Guidance](https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/fips140-2/fips1402ig.pdf), section 7.14, resolution point 2(a).
+
+## Supported Parameter Sets
+
+CSRNG has the following configurable parameters:
+- `SBoxImpl` selects the S-Box implementation of the unmasked AES cipher core.
+  Both supported variants are logically equivalent.
+  `SBoxImplCanright` has the smallest area and is recommended for ASICs; it is also the variant used in verification.
+  `SBoxImplLut` is preferable for FPGAs in terms of logic utilization and timing.
+- `RndCnstCsKeymgrDivNonProduction` and `RndCnstCsKeymgrDivProduction` are the seed diversification values, which are randomized per top.
+- `AlertAsyncOn` and `AlertSkewCycles` configure the alert senders, as for any comportable IP.
+
+The number of application interfaces (`NumApps`) is currently fixed at 3 in `csrng.hjson`: two hardware instances and one software instance.
+Other values haven't been verified to work yet.
 
 ## Description
 

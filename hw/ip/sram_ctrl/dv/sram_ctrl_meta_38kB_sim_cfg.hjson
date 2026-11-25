@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // sim cfg file for a 38 KiB variant with the size and parameters of the CHERIoT meta SRAM used in
-// Earl Grey, but with address scrambling enabled. Its size is not a multiple of 16 KiB, so address
-// scrambling operates on 2 KiB (512-word) chunks. SecZeroInit is not covered.
+// Earl Grey. Its size is not a multiple of 16 KiB, so address scrambling operates on 2 KiB
+// (512-word) chunks. SecZeroInit is not covered.
 {
   // Name of the sim cfg variant
   variant: meta_38kB

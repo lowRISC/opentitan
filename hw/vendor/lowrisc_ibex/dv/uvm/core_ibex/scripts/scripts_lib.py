@@ -8,6 +8,7 @@ import shlex
 import subprocess
 import sys
 import pickle
+import portalocker
 import yaml
 import pathlib3x as pathlib
 from io import IOBase
@@ -274,7 +275,12 @@ class testdata_cls():
         trr = cls()
         logger.debug(f"Constructing object from data in {metadata_pickle}")
         with metadata_pickle.open('rb') as handle:
+            # Take a shared lock: LockedMetadata (metadata.py) rewrites
+            # metadata.pickle in place while holding an exclusive lock, and a
+            # reader that does not wait for it can load a partly written file.
+            portalocker.lock(handle, portalocker.LockFlags.SHARED)
             trr = pickle.load(handle)
+            portalocker.unlock(handle)
         return trr
 
     @typechecked

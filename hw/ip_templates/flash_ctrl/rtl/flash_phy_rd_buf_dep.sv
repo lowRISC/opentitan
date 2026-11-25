@@ -11,6 +11,8 @@
 // to serve a new request.
 //
 
+`include "prim_assert.sv"
+
 module flash_phy_rd_buf_dep import flash_phy_pkg::*;(
   input clk_i,
   input rst_ni,

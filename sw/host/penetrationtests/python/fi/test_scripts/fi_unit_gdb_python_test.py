@@ -153,6 +153,26 @@ class UnitGdbTest(unittest.TestCase):
         )
         utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
 
+    def test_char_gdb_try_err(self):
+        gdbfi = OTFIUnitGdb(target)
+        device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = gdbfi.init(
+            alert_config=common_library.default_fpga_friendly_alert_config
+        )
+        gdbfi.handle_gdb_try_err()
+        actual_result = target.read_response()
+        actual_result_json = json.loads(actual_result)
+        # Expected status is non-debug kOtcryptoStatusValueBadArgs (0x8000fea3).
+        expected_result_json = json.loads(
+            '{"result":false, \
+                "status":2147548835, \
+                "err_status":0, \
+                "alerts":[0,0,0], \
+                "loc_alerts":0, \
+                "ast_alerts":[0,0] \
+            }'
+        )
+        utils.compare_json_data(actual_result_json, expected_result_json, ignored_keys_set)
+
     def test_char_gdb_switch(self):
         gdbfi = OTFIUnitGdb(target)
         device_id, sensors, alerts, owner_page, boot_log, boot_measurements, version = gdbfi.init(

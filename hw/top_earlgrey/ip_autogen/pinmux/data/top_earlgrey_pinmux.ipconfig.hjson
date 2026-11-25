@@ -325,6 +325,10 @@
         pads: []
       }
       {
+        name: usbdev_sense
+        pads: []
+      }
+      {
         name: uart0_rx
         pads: []
       }
@@ -382,10 +386,6 @@
       }
       {
         name: sysrst_ctrl_lid_open
-        pads: []
-      }
-      {
-        name: usbdev_sense
         pads: []
       }
     ]
@@ -1047,11 +1047,15 @@
       ]
       [
         IOR8
-        {}
+        {
+          virtual_od_en: 1
+        }
       ]
       [
         IOR9
-        {}
+        {
+          virtual_od_en: 1
+        }
       ]
       [
         SPI_DEV_CLK

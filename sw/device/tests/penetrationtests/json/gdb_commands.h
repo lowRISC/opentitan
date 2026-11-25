@@ -14,6 +14,7 @@ extern "C" {
 #define GDB_SUBCOMMAND(_, value) \
     value(_, Init) \
     value(_, Try) \
+    value(_, TryErr) \
     value(_, Switch) \
     value(_, If)
 C_ONLY(UJSON_SERDE_ENUM(GdbSubcommand, gdb_subcommand_t, GDB_SUBCOMMAND));

@@ -173,7 +173,7 @@ status_t mldsa87_sign_internal_finalize(otcrypto_word32_buf_t *signature,
   HARDENED_TRY(read_signature(signature->data));
 
   // Return if single-sign redundancy is selected.
-  if (redundancy == kMldsa87SingleSign) {
+  if (launder32(redundancy) == kMldsa87SingleSign) {
     HARDENED_CHECK_EQ(redundancy, kMldsa87SingleSign);
     return OTCRYPTO_OK;
   }

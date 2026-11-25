@@ -46,8 +46,14 @@
             Not implemented yet (#30572). Once it is, a fault in either copy must raise
             `fatal_fault`. Until then, the trvk_fault testpoint shows what a single fault in the
             revocation engine's TRVK filter does.
+            Corrupt an output of the main copy, or an input of the second copy while it is in use,
+            for one cycle, and check that the lockstep comparison raises the `fatal_fault` alert.
+            Assertions inside the second copy are disabled while it is corrupted. Without a
+            corruption, including the cycles after reset, the alert must not fire.
             '''
       stage: V2S
+      // The chip-level testpoint chip_sw_cheriot_mem_sys_lockstep_glitch is to cover this with
+      // traffic on every port.
       tests: []
     }
     {

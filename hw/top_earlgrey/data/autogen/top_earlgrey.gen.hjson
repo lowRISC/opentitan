@@ -12349,6 +12349,24 @@
           name_top: MemSizeCheriotMemSysRevbm
           default: 3072
         }
+        {
+          name: SecLockstep
+          desc: Run a second copy of the logic in lockstep with the main copy (LOGIC.SHADOW).
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: SecCheriotMemSysLockstep
+        }
+        {
+          name: LockstepOffset
+          desc: Cycles the second copy of the logic runs behind the main copy, at least 1.
+          type: int unsigned
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: CheriotMemSysLockstepOffset
+        }
       ]
       inter_signal_list:
       [
@@ -12520,7 +12538,6 @@
       param_decl:
       {
         InstrExec: "0"
-        NumAddrScrRounds: "0"
         NumPrinceRoundsHalf: "2"
         InstSize: "38912"
         SecZeroInit: "1"
@@ -12610,7 +12627,7 @@
           name: NumAddrScrRounds
           desc: Number of address scrambling rounds. 0 disables address scrambling.
           type: int
-          default: "0"
+          default: "2"
           local: "false"
           expose: "true"
           name_top: SramCtrlMetaNumAddrScrRounds
@@ -16020,7 +16037,7 @@
       }
       {
         name: SPI_HOST_D0
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host data
@@ -16029,7 +16046,7 @@
       }
       {
         name: SPI_HOST_D1
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host data
@@ -16038,7 +16055,7 @@
       }
       {
         name: SPI_HOST_D2
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host data
@@ -16047,7 +16064,7 @@
       }
       {
         name: SPI_HOST_D3
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host data
@@ -16056,7 +16073,7 @@
       }
       {
         name: SPI_HOST_CLK
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host clock
@@ -16065,7 +16082,7 @@
       }
       {
         name: SPI_HOST_CS_L
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI host chip select
@@ -16074,7 +16091,7 @@
       }
       {
         name: SPI_DEV_D0
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI device data
@@ -16083,7 +16100,7 @@
       }
       {
         name: SPI_DEV_D1
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI device data
@@ -16092,7 +16109,7 @@
       }
       {
         name: SPI_DEV_D2
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI device data
@@ -16101,7 +16118,7 @@
       }
       {
         name: SPI_DEV_D3
-        type: BidirStd
+        type: BidirStr
         bank: VIOA
         connection: direct
         desc: SPI device data
@@ -16110,7 +16127,7 @@
       }
       {
         name: SPI_DEV_CLK
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI device clock
@@ -16119,7 +16136,7 @@
       }
       {
         name: SPI_DEV_CS_L
-        type: InputStd
+        type: BidirStd
         bank: VIOA
         connection: direct
         desc: SPI device chip select
@@ -16182,7 +16199,7 @@
       }
       {
         name: IOA6
-        type: BidirOd
+        type: BidirStd
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -16191,7 +16208,7 @@
       }
       {
         name: IOA7
-        type: BidirOd
+        type: BidirStr
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -16200,7 +16217,7 @@
       }
       {
         name: IOA8
-        type: BidirOd
+        type: BidirStr
         bank: VIOA
         connection: muxed
         desc: Muxed IO pad
@@ -16209,7 +16226,7 @@
       }
       {
         name: IOB0
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16218,7 +16235,7 @@
       }
       {
         name: IOB1
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16227,7 +16244,7 @@
       }
       {
         name: IOB2
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16236,7 +16253,7 @@
       }
       {
         name: IOB3
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16245,7 +16262,7 @@
       }
       {
         name: IOB4
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16254,7 +16271,7 @@
       }
       {
         name: IOB5
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16263,7 +16280,7 @@
       }
       {
         name: IOB6
-        type: BidirStd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16290,7 +16307,7 @@
       }
       {
         name: IOB9
-        type: BidirOd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16299,7 +16316,7 @@
       }
       {
         name: IOB10
-        type: BidirOd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16308,7 +16325,7 @@
       }
       {
         name: IOB11
-        type: BidirOd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16317,7 +16334,7 @@
       }
       {
         name: IOB12
-        type: BidirOd
+        type: BidirStr
         bank: VIOB
         connection: muxed
         desc: Muxed IO pad
@@ -16421,7 +16438,7 @@
       }
       {
         name: IOC10
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16430,7 +16447,7 @@
       }
       {
         name: IOC11
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16439,7 +16456,7 @@
       }
       {
         name: IOC12
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16520,25 +16537,33 @@
       }
       {
         name: IOR8
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
+        attrs:
+        {
+          virtual_od_en: 1
+        }
         idx: 19
         port_type: inout
       }
       {
         name: IOR9
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
+        attrs:
+        {
+          virtual_od_en: 1
+        }
         idx: 20
         port_type: inout
       }
       {
         name: IOR10
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16547,7 +16572,7 @@
       }
       {
         name: IOR11
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16556,7 +16581,7 @@
       }
       {
         name: IOR12
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16565,7 +16590,7 @@
       }
       {
         name: IOR13
-        type: BidirOd
+        type: BidirStd
         bank: VCC
         connection: muxed
         desc: Muxed IO pad
@@ -16595,6 +16620,14 @@
         attr: BidirStd
       }
       {
+        instance: usbdev
+        port: sense
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
         instance: spi_host0
         port: sck
         connection: direct
@@ -16603,7 +16636,7 @@
           SPI_HOST_CLK
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_host0
@@ -16614,7 +16647,7 @@
           SPI_HOST_CS_L
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_host0
@@ -16625,7 +16658,7 @@
           SPI_HOST_D0
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_host0
@@ -16636,7 +16669,7 @@
           SPI_HOST_D1
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_host0
@@ -16647,7 +16680,7 @@
           SPI_HOST_D2
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_host0
@@ -16658,7 +16691,7 @@
           SPI_HOST_D3
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_device
@@ -16669,7 +16702,7 @@
           SPI_DEV_CLK
         ]
         desc: ""
-        attr: InputStd
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -16680,7 +16713,7 @@
           SPI_DEV_CS_L
         ]
         desc: ""
-        attr: InputStd
+        attr: BidirStd
       }
       {
         instance: spi_device
@@ -16691,7 +16724,7 @@
           SPI_DEV_D0
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_device
@@ -16702,7 +16735,7 @@
           SPI_DEV_D1
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_device
@@ -16713,7 +16746,7 @@
           SPI_DEV_D2
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: spi_device
@@ -16724,11 +16757,259 @@
           SPI_DEV_D3
         ]
         desc: ""
-        attr: BidirStd
+        attr: BidirStr
       }
       {
         instance: gpio0
-        port: ""
+        port: gpio[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[7]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[8]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[9]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[10]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[11]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[12]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[13]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[14]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[15]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[16]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[17]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[18]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[19]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[20]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[21]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[22]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[23]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[24]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[25]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[26]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[27]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[28]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[29]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[30]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[31]
         connection: muxed
         pads: []
         desc: ""
@@ -16736,7 +17017,255 @@
       }
       {
         instance: gpio1
-        port: ""
+        port: gpio[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[7]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[8]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[9]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[10]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[11]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[12]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[13]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[14]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[15]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[16]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[17]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[18]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[19]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[20]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[21]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[22]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[23]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[24]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[25]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[26]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[27]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[28]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[29]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[30]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[31]
         connection: muxed
         pads: []
         desc: ""
@@ -16744,7 +17273,15 @@
       }
       {
         instance: uart0
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart0
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16752,7 +17289,15 @@
       }
       {
         instance: uart1
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart1
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16760,7 +17305,15 @@
       }
       {
         instance: uart2
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart2
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16768,7 +17321,15 @@
       }
       {
         instance: uart3
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart3
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16776,7 +17337,15 @@
       }
       {
         instance: i2c0
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c0
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16784,7 +17353,15 @@
       }
       {
         instance: i2c1
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c1
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16792,7 +17369,15 @@
       }
       {
         instance: i2c2
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c2
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16800,7 +17385,39 @@
       }
       {
         instance: i3c0
-        port: ""
+        port: scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: ctrl_sda_pu
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: rstdet_scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: rstdet_sda
         connection: muxed
         pads: []
         desc: ""
@@ -16808,7 +17425,39 @@
       }
       {
         instance: i3c1
-        port: ""
+        port: scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: ctrl_sda_pu
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: rstdet_scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: rstdet_sda
         connection: muxed
         pads: []
         desc: ""
@@ -16840,7 +17489,63 @@
       }
       {
         instance: spi_host1
-        port: ""
+        port: sck
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[3]
         connection: muxed
         pads: []
         desc: ""
@@ -16848,7 +17553,63 @@
       }
       {
         instance: sensor_ctrl
-        port: ""
+        port: ast_debug_out[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[7]
         connection: muxed
         pads: []
         desc: ""
@@ -16911,7 +17672,7 @@
           IOR8
         ]
         desc: ""
-        attr: BidirOd
+        attr: BidirStd
       }
       {
         instance: sysrst_ctrl
@@ -16922,7 +17683,7 @@
           IOR9
         ]
         desc: ""
-        attr: BidirOd
+        attr: BidirStd
       }
       {
         instance: sysrst_ctrl
@@ -16972,14 +17733,6 @@
         desc: ""
         attr: ""
       }
-      {
-        instance: usbdev
-        port: sense
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
     ]
     num_wkup_detect: 8
     wkup_cnt_width: 8
@@ -17021,7 +17774,7 @@
         [
           SPI_HOST_D0
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17036,7 +17789,7 @@
         [
           SPI_HOST_D1
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17051,7 +17804,7 @@
         [
           SPI_HOST_D2
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17066,7 +17819,7 @@
         [
           SPI_HOST_D3
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17081,7 +17834,7 @@
         [
           SPI_DEV_D0
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17096,7 +17849,7 @@
         [
           SPI_DEV_D1
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17111,7 +17864,7 @@
         [
           SPI_DEV_D2
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -17126,7 +17879,7 @@
         [
           SPI_DEV_D3
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -18077,7 +18830,7 @@
         [
           IOR8
         ]
-        attr: BidirOd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Aon
@@ -18092,11 +18845,23 @@
         [
           IOR9
         ]
-        attr: BidirOd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Aon
         glob_idx: 11
+      }
+      {
+        name: usbdev_sense
+        width: 1
+        type: input
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 78
       }
       {
         name: spi_device_sck
@@ -18107,7 +18872,7 @@
         [
           SPI_DEV_CLK
         ]
-        attr: InputStd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Main
@@ -18122,7 +18887,7 @@
         [
           SPI_DEV_CS_L
         ]
-        attr: InputStd
+        attr: BidirStd
         connection: direct
         desc: ""
         domain: Main
@@ -18138,7 +18903,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 78
+        glob_idx: 79
       }
       {
         name: uart1_rx
@@ -18150,7 +18915,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 79
+        glob_idx: 80
       }
       {
         name: uart2_rx
@@ -18162,7 +18927,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 80
+        glob_idx: 81
       }
       {
         name: uart3_rx
@@ -18174,7 +18939,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 81
+        glob_idx: 82
       }
       {
         name: i3c0_rstdet_scl
@@ -18187,7 +18952,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 82
+        glob_idx: 83
       }
       {
         name: i3c0_rstdet_sda
@@ -18200,7 +18965,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 83
+        glob_idx: 84
       }
       {
         name: i3c1_rstdet_scl
@@ -18213,7 +18978,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 84
+        glob_idx: 85
       }
       {
         name: i3c1_rstdet_sda
@@ -18226,7 +18991,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 85
+        glob_idx: 86
       }
       {
         name: spi_device_tpm_csb
@@ -18238,7 +19003,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 86
+        glob_idx: 87
       }
       {
         name: sysrst_ctrl_ac_present
@@ -18250,7 +19015,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 87
+        glob_idx: 88
       }
       {
         name: sysrst_ctrl_key0_in
@@ -18262,7 +19027,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 88
+        glob_idx: 89
       }
       {
         name: sysrst_ctrl_key1_in
@@ -18274,7 +19039,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 89
+        glob_idx: 90
       }
       {
         name: sysrst_ctrl_key2_in
@@ -18286,7 +19051,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 90
+        glob_idx: 91
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -18298,7 +19063,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 91
+        glob_idx: 92
       }
       {
         name: sysrst_ctrl_lid_open
@@ -18310,18 +19075,6 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 92
-      }
-      {
-        name: usbdev_sense
-        width: 1
-        type: input
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
         glob_idx: 93
       }
       {
@@ -18333,7 +19086,7 @@
         [
           SPI_HOST_CLK
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
@@ -18348,7 +19101,7 @@
         [
           SPI_HOST_CS_L
         ]
-        attr: BidirStd
+        attr: BidirStr
         connection: direct
         desc: ""
         domain: Main
