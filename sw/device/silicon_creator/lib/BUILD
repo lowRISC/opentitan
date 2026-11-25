@@ -179,6 +179,7 @@ cc_library(
 
 cc_library(
     name = "error",
+    srcs = ["error.c"],
     hdrs = ["error.h"],
     deps = [
         "//sw/device/lib/base:bitfield",

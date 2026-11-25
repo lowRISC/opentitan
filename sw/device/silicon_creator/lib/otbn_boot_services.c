@@ -217,7 +217,7 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
       kOtbnBootDmemDataWords, kOtbnAppBoot.dmem_data_start_addr, dmem_backup));
 
   // Trigger a full DMEM wipe.
-  RETURN_IF_ERROR(sc_otbn_dmem_sec_wipe());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_sec_wipe());
   HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
   // Re-load the read-only data portion of the boot services app from the
