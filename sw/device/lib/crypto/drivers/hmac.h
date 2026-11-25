@@ -79,15 +79,17 @@ typedef struct hmac_ctx {
   // A copy of `KEY` to be used during start or resumption.
   hmac_key_t key;
   // The internal (message) block size of SHA-2 for this operation.
-  size_t msg_block_wordlen;
-  size_t digest_wordlen;
+  uint16_t msg_block_wordlen;
+  uint16_t digest_wordlen;
   // The following fields are saved and restored during streaming.
   uint32_t H[kHmacMaxDigestWords];
   uint32_t lower;
   uint32_t upper;
   uint32_t partial_block[kHmacMaxBlockWords];
   // The number of valid bytes in `partial_block`.
-  size_t partial_block_bytelen;
+  uint32_t partial_block_bytelen;
+  // Checksum of this HMAC context structure.
+  uint32_t checksum;
 } hmac_ctx_t;
 
 /**
@@ -416,6 +418,27 @@ uint32_t hmac_key_integrity_checksum(const hmac_key_t *key);
  * @returns Whether the integrity check passed.
  */
 hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key);
+
+/**
+ * Compute the checksum of an HMAC context.
+ *
+ * Call this routine after creating or modifying the structure.
+ *
+ * @param ctx HMAC context.
+ * @returns Checksum value.
+ */
+uint32_t hmac_ctx_integrity_checksum(const hmac_ctx_t *ctx);
+
+/**
+ * Perform an integrity check on the HMAC context.
+ *
+ * Returns `kHardenedBoolTrue` if the check passed and `kHardenedBoolFalse`
+ * otherwise.
+ *
+ * @param ctx HMAC context.
+ * @returns Whether the integrity check passed.
+ */
+hardened_bool_t hmac_ctx_integrity_checksum_check(const hmac_ctx_t *ctx);
 
 /**
  * Update the context with additional message data.

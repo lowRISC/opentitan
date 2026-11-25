@@ -100,6 +100,7 @@ static status_t run_negative_test(void) {
   // Corrupt the context to specify an absurdly large message length
   ctx.lower = 0xFFFFFFFF;
   ctx.upper = 0xFFFFFFFF;
+  ctx.checksum = hmac_ctx_integrity_checksum(&ctx);
   CHECK(hmac_final(&ctx, &digest_buf).value == OTCRYPTO_FATAL_ERR.value);
   abs_mmio_write32(hmac_base() + HMAC_CFG_REG_OFFSET, 0);
 
