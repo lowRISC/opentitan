@@ -96,7 +96,7 @@
     {
       name: stress_all
       desc: '''
-            Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
+            Run randomly chosen smoke, cmds and intr_test sequences back-to-back, with or without a reset between them.
             '''
       stage: V2
       tests: ["csrng_stress_all"]
