@@ -73,11 +73,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       ral.alert_summary_fail_counts, ral.alert_fail_counts, ral.extht_fail_counts
     };
     foreach (stat_regs[i]) begin
-      uvm_status_e status;
-      stat_regs[i].mirror(status);
+      uvm_reg_data_t val;
+      csr_rd(.ptr(stat_regs[i]), .value(val), .check(UVM_CHECK));
       if (cfg.under_reset) return;
-      if (status != UVM_IS_OK)
-        `uvm_error("mirror", $sformatf("Failed to mirror %0s", stat_regs[i].get_name()))
     end
   endtask
 
@@ -117,23 +115,20 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   endtask
 
   protected task disable_dut();
-    uvm_status_e status;
+    uvm_reg_data_t val;
 
-    ral.module_enable.module_enable.write(status, MuBi4False);
+    csr_wr(.ptr(ral.module_enable.module_enable), .value(MuBi4False), .check(UVM_CHECK));
     if (cfg.under_reset) return;
-    if (status != UVM_IS_OK) `uvm_error("write", "Writing MuBi4False to module_enable failed")
 
     // Disabling the module will clear the error state,
     // as well as the observe FIFO
     // Clear all but the es_entropy_valid interrupt here
-    ral.intr_state.write(status, 32'he);
+    csr_wr(.ptr(ral.intr_state), .value(32'he), .check(UVM_CHECK));
     if (cfg.under_reset) return;
-    if (status != UVM_IS_OK) `uvm_error("write", "Writing '1 to intr_state failed")
 
     // Check, but do not clear alert_sts, as the handlers for those conditions may need to see them.
-    ral.recov_alert_sts.es_main_sm_alert.mirror(status);
+    csr_rd(.ptr(ral.recov_alert_sts), .value(val), .check(UVM_CHECK));
     if (cfg.under_reset) return;
-    if (status != UVM_IS_OK) `uvm_error("mirror", "Mirroring recov_alert_sts failed")
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_check_ht_diag)
     if (do_check_ht_diag) begin
@@ -367,7 +362,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   //
   // This will exit early on reset
   local task entropy_src_safe_config();
-    uvm_status_e status;
+    uvm_reg_data_t val;
 
     // explicitly clear module_enable to allow module writes
     disable_dut();
@@ -404,21 +399,18 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (cfg.under_reset) return;
 
     // Read the alert_sts register (whose value will be checked by the scoreboard)
-    ral.recov_alert_sts.mirror(status);
+    csr_rd(.ptr(ral.recov_alert_sts), .value(val), .check(UVM_CHECK));
     if (cfg.under_reset) return;
-    if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
 
     // If the current status value is nonzero, clear it and then read it back (causing the
     // scoreboard to check that it has indeed been cleared).
     ral.recov_alert_sts.set(0);
     if (ral.recov_alert_sts.needs_update()) begin
-      ral.recov_alert_sts.write(status, {32{1'b1}});
+      csr_wr(.ptr(ral.recov_alert_sts), .value({32{1'b1}}), .check(UVM_CHECK));
       if (cfg.under_reset) return;
-      if (status != UVM_IS_OK) `uvm_error("update", "Failed to update alert_sts")
 
-      ral.recov_alert_sts.mirror(status);
+      csr_rd(.ptr(ral.recov_alert_sts), .value(val), .check(UVM_CHECK));
       if (cfg.under_reset) return;
-      if (status != UVM_IS_OK) `uvm_error("mirror", "Failed to mirror alert_sts")
     end
 
     `uvm_info(`gfn, "Safe configuration", UVM_MEDIUM)
