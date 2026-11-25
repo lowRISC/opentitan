@@ -15,9 +15,11 @@ This request moves into the `cmd_stage` block.
 Here the request is arbitrated between all of the `cmd_stage` blocks.
 The winner will get its command moved into the command dispatch logic.
 A common state machine will process all application interface commands in order of arbitration.
-At this point, some seed entropy may be required depending on the command and any flags.
-If needed, a request to the entropy source hardware interface will be made.
-This step can take milliseconds if seed entropy is not immediately available.
+CSRNG holds one seed from the entropy source hardware interface.
+It requests a seed when it gets enabled and a new one whenever the held seed has been consumed.
+For a command that requires seed entropy, depending on the command and any flags, a `cmd_stage` block first requests the seed, which is arbitrated between all such `cmd_stage` blocks.
+Only once the seed has been granted does the `cmd_stage` block request arbitration for its command.
+This can take milliseconds if seed entropy is not immediately available.
 Once all of the prerequisites have been collected, a CTR_DRBG command can be launched.
 This command will go into the `ctr_drbg_cmd` block.
 This `ctr_drbg_cmd` block uses two NIST-defined functions, the update and the `block_encrypt` functions.
@@ -438,7 +440,10 @@ For details on how to accelerate this process, refer to [Uninstantiating CSRNG t
 
 
 ##### Entropy Source Hardware Interface
-For `instantiate` and `reseed` commands with `flag0` not set, CSRNG asserts `es_req` and keeps it asserted until ENTROPY_SRC returns a 384-bit seed on `es_bits` with a single cycle pulse on `es_ack`.
+While CSRNG is enabled and holds no seed, it asserts `es_req` and keeps it asserted until ENTROPY_SRC returns a 384-bit seed on `es_bits` with a single cycle pulse on `es_ack`.
+The seed is held until an `instantiate` or `reseed` command with `flag0` not set has consumed it, after which CSRNG requests the next seed.
+Disabling CSRNG discards the held seed.
+If CSRNG gets disabled while `es_req` is asserted, it keeps `es_req` asserted until `es_ack` and discards a seed returned while it is disabled.
 The `es_fips` signal indicates whether the seed is FIPS/CC compliant.
 The following waveform shows an example of how the entropy source hardware interface works.
 
@@ -458,7 +463,7 @@ The following waveform shows an example of how the entropy source hardware inter
 
 The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed, or when an instance halted via [`INT_STATE_HALT`](registers.md#int_state_halt) has quiesced.
 
-The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTROPY_SRC.
+The `cs_entropy_req` interrupt will assert when an <tt>instantiate</tt> or <tt>reseed</tt> command requiring entropy is blocked because no seed is available.
 
 The `cs_hw_inst_exc` interrupt will assert when any of the hardware-controlled CSRNG instances encounters an exception while executing a command, either due to errors on the command sequencing, or an exception within the `ENTROPY_SRC` IP.
 
