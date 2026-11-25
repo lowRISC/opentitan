@@ -564,6 +564,8 @@ static otcrypto_status_t otcrypto_aes_impl(
   }
   // Check that the loop ran for the correct number of iterations.
   HARDENED_CHECK_EQ(i, 0);
+  HARDENED_CHECK_NE(launderw((uintptr_t)cipher_input),
+                    (uintptr_t)cipher_output);
 
   *checksum = local_checksum;
 
