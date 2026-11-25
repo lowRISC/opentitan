@@ -101,12 +101,7 @@ The OpenTitan Earl Grey chip provides the following features:
           <ul>
             <li>Boot ROM code implementing secure boot and chip configuration</li>
             <li>Bare metal top-level tests</li>
-            <li>OpenTitan Crypto Library with OTBN accelerated standard algorithms for </li>
-            <ul>
-              <li>RSA 2K, 3K, 4K</li>
-              <li>ECC with NIST P256/P384, Brainpool P256r1 or X25519/Ed25519</li>
-              <li>SHA2-256, 384, 512</li>
-            </ul>
+            <li><a href="../../../doc/security/cryptolib/cryptolib_api.md">OpenTitan Crypto Library</a></li>
             <li>SPHINCS+ PQ-secure boot using a stateless hash-based signatures scheme</li>
           </ul>
         </li>
