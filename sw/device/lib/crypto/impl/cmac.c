@@ -414,6 +414,8 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
   }
   HARDENED_CHECK_GE(tag->len, 2);
   HARDENED_CHECK_LE(tag->len, kAesBlockNumWords);
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input_message));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(tag));
 
   // Clear AES unconditionally, and clear sideload if requested.
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
@@ -577,6 +579,8 @@ otcrypto_status_t otcrypto_cmac_update(
   }
 #endif
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input_message));
+
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
@@ -647,6 +651,7 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   }
   HARDENED_CHECK_GE(tag->len, 2);
   HARDENED_CHECK_LE(tag->len, kAesBlockNumWords);
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(tag));
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
