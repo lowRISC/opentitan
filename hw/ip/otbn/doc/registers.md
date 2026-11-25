@@ -260,12 +260,12 @@ errors.
 Instruction Count Register
 
 Returns the number of instructions executed in the current or last
-operation. The counter saturates at 2^32-1 and is reset to 0 at the
-start of a new operation.
+EXECUTE operation. The counter saturates at 2^32-1 and is reset to 0 at
+the start of an EXECUTE operation.
 
-Only the EXECUTE operation counts instructions; for all other operations
-this register remains at 0. Instructions triggering an error do not
-count towards the total.
+Only the EXECUTE operation counts instructions. The SEC_WIPE_DMEM and
+SEC_WIPE_IMEM operations leave this register unchanged. Instructions
+triggering an error do not count towards the total.
 
 Always reads as 0 if OTBN is locked.
 
