@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:rram_macro_agent"
+description: "Agent that monitors the interface between rram_ctrl and rram_macro"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:dv_base_agent
+      - lowrisc:dv:dv_utils
+      - lowrisc:virtual_ip:rram_ctrl_pkg
+    files:
+      - rram_macro_agent_pkg.sv
+      - rram_macro_if.sv
+      - rram_macro_agent_cfg.svh: {is_include_file: true}
+      - rram_macro_monitor.svh: {is_include_file: true}
+      - rram_macro_agent.svh: {is_include_file: true}
+      - rram_macro_req_seq_item.svh: {is_include_file: true}
+      - rram_macro_rsp_seq_item.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -39,6 +39,11 @@ package rram_ctrl_env_pkg;
   import mem_bkdr_util_pkg::mem_bkdr_util;
   import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
 
+  import rram_macro_agent_pkg::rram_macro_agent;
+  import rram_macro_agent_pkg::rram_macro_agent_cfg;
+  import rram_macro_agent_pkg::rram_macro_req_seq_item;
+  import rram_macro_agent_pkg::rram_macro_rsp_seq_item;
+
   import rram_ctrl_reg_pkg::NumRegions;
   import rram_ctrl_reg_pkg::NumDataPages;
   import rram_ctrl_reg_pkg::NumInfoPages;
