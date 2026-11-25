@@ -69,6 +69,9 @@ module lc_ctrl
   // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1,
   // Otherwise this output is tied off to 0.
   output logic                                       strap_en_override_o,
+  // Gate for the volatile RAW unlock, derived from the DIS_VOL_RAW_UNLOCK marker in rram_macro.
+  // Only used when SecVolatileRawUnlockEn = 1.
+  input  prim_mubi_pkg::mubi8_t                      allow_vol_unlock_i,
   // Strap override - this is only used when
   // Macro-specific test registers going to lifecycle TAP/DMI
   output otp_macro_pkg::otp_test_req_t               lc_otp_vendor_test_o,
@@ -745,7 +748,9 @@ module lc_ctrl
 
   logic token_hash_req, token_hash_req_chk, token_hash_ack, token_hash_err, token_if_fsm_err;
   lc_token_t hashed_token;
-  lc_ctrl_kmac_if u_lc_ctrl_kmac_if (
+  lc_ctrl_kmac_if #(
+    .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
+  ) u_lc_ctrl_kmac_if (
     .clk_i,
     .rst_ni,
     .clk_kmac_i,
@@ -760,6 +765,27 @@ module lc_ctrl
     .token_if_fsm_err_o   ( token_if_fsm_err   ),
     .hashed_token_o       ( hashed_token       )
   );
+
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // ---------------------------------------------------------------
+  // The gate comes from the rram_macro clock domain.
+  // It is latched once during the RRAM init and stays stable afterwards.
+  // SEC_CM: INTERSIG.MUBI
+  prim_mubi_pkg::mubi8_t [1:0] allow_vol_unlock;
+  prim_mubi8_sync #(
+    .NumCopies(2),
+    .AsyncOn(1),
+    .StabilityCheck(1)
+  ) u_prim_mubi8_sync_allow_vol_unlock (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(allow_vol_unlock_i),
+    .mubi_o(allow_vol_unlock)
+  );
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
   ////////////
   // LC FSM //
@@ -791,6 +817,7 @@ module lc_ctrl
     .use_ext_clock_i        ( use_ext_clock_q                  ),
     .ext_clock_switched_o   ( ext_clock_switched               ),
     .volatile_raw_unlock_i  ( volatile_raw_unlock_q            ),
+    .allow_vol_unlock_i     ( allow_vol_unlock                 ),
     .strap_en_override_o,
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token  ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token    ),
@@ -808,7 +835,6 @@ module lc_ctrl
     .token_hash_err_i       ( token_hash_err                   ),
     .token_if_fsm_err_i     ( token_if_fsm_err                 ),
     .hashed_token_i         ( hashed_token                     ),
-    .unhashed_token_i       ( transition_token_q               ),
     .otp_prog_req_o         ( lc_otp_program_o.req             ),
     .otp_prog_lc_state_o    ( lc_otp_program_o.state           ),
     .otp_prog_lc_cnt_o      ( lc_otp_program_o.count           ),
