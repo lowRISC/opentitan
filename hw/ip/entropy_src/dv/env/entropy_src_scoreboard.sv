@@ -1264,8 +1264,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               (ht_watermark_num inside {REPCNT_HI, REPCNTS_HI, ADAPTP_HI, ADAPTPS_HI,
                                         BUCKET_HI, MARKOV_HI, EXTHT_HI});
           `DV_CHECK_FATAL(ral.ht_watermark.predict({16{~ht_watermark_high}}))
-          repcnt_event_cnt = 16'd1;
-          repcnts_event_cnt = 16'd1;
+          repcnt_event_cnt = '0;
+          repcnts_event_cnt = '0;
           // Wait one clock cycle, then propagate the internal counter to the watermark registers.
           cfg.clk_rst_vif.wait_clks(1);
           propagate_repcnt_to_watermark();
