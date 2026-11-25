@@ -284,8 +284,11 @@ Debug accesses in CHERIoT-mode ***MUST*** therefore be performed through Ibex an
 `cheriot_mem_sys_lockstep` runs a second copy of `cheriot_mem_sys_core` `LockstepOffset` cycles (one
 by default) behind the main copy, the same scheme as the Ibex lockstep:
 
-- The inputs of the main copy, including the register fields, reach the second copy through
-  `LockstepOffset` flops.
+- The inputs of the main copy reach the second copy through `LockstepOffset` flops, except the
+  sweep configuration (`TBRE_BASE_ADDR_SHADOWED`, `TBRE_NUM_CAPS_SHADOWED`). The second copy reads
+  it from the registers when its delayed start arrives, so each copy samples it on a different
+  clock edge and a transient on these nets reaches only one copy. `TBRE_REGWEN` keeps the registers
+  unchanged in between.
 - The outputs of the main copy other than its alert are delayed by `LockstepOffset + 1` cycles and
   compared with the registered outputs of the second copy. All bits of these outputs are compared,
   including the payload of TL-UL channels that are not valid.
