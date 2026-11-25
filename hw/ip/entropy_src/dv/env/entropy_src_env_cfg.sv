@@ -250,6 +250,10 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
+
+    // The vseqs stop at a reset, so a random reset can come with CSR accesses in flight. They poll
+    // clk_rst_vif.rst_n, not under_reset, which the scoreboard sets from another process.
+    can_reset_with_csr_accesses = 1'b1;
   endfunction
 
   virtual function string convert2string();

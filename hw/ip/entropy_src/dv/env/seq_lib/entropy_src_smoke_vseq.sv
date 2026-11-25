@@ -42,15 +42,20 @@ class entropy_src_smoke_vseq extends entropy_src_base_vseq;
             seed_cnt -= available_seeds;
             // Make sure to re-enable the module.
             enable_dut();
-          end while (seed_cnt > 0);
+          end while (seed_cnt > 0 && cfg.clk_rst_vif.rst_n);
         end
         begin
           csr_spinwait(.ptr(ral.alert_summary_fail_counts.any_fail_count), .exp_data(1),
                        .backdoor(1));
         end
       join_any
-      wait_no_outstanding_access();
-      disable fork;
+      if (!cfg.clk_rst_vif.rst_n) begin
+        // Both branches stop by themselves under reset, so let the other one finish its access
+        wait fork;
+      end else begin
+        wait_no_outstanding_access();
+        disable fork;
+      end
     end
   endtask : body
 

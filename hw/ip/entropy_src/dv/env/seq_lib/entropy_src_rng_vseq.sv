@@ -272,7 +272,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end
 
     // Wait at least 10 clock cycles before re-enabling to give the DUT some time to settle down.
-    cfg.clk_rst_vif.wait_clks(10);
+    cfg.clk_rst_vif.wait_clks_or_rst(10);
+    if (!cfg.clk_rst_vif.rst_n) return;
     wait_no_outstanding_access();
     enable_dut();
 
@@ -284,15 +285,19 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     `uvm_info(`gfn, "process interrupts", UVM_DEBUG)
 
-    // avoid zero delay loop during reset
-    wait(!cfg.under_reset);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_access_intr)
-    cfg.clk_rst_vif.wait_clks(dly_to_access_intr);
+    cfg.clk_rst_vif.wait_clks_or_rst(dly_to_access_intr);
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     `uvm_info(`gfn, "Asserting interrupt_handler_active", UVM_DEBUG)
     interrupt_handler_active = 1;
     csr_rd(.ptr(ral.intr_state), .value(intr_status));
+    if (!cfg.clk_rst_vif.rst_n) begin
+      interrupt_handler_active = 0;
+      return;
+    end
 
     if (intr_status != 0) begin
       `uvm_info(`gfn, $sformatf("Handling Interrupts: %02h", intr_status), UVM_FULL)
@@ -384,28 +389,35 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
   task shutdown_indefinite_seqs();
     // Once the CSR access is done, we can shut down everything else
-    // Note: the CSRNG agent needs to be completely shut down before
-    // shutting down the AST/RNG.  Otherwise the CSRNG pull agent
-    // will stall waiting for entropy
-    `uvm_info(`gfn, "Confirming that CSRNG indefinite seq has started", UVM_HIGH)
-    `uvm_info(`gfn, $sformatf("STATE: %s", m_csrng_pull_seq.get_sequence_state().name), UVM_HIGH)
-    m_csrng_pull_seq.wait_for_sequence_state(UVM_BODY);
-
     `uvm_info(`gfn, "Stopping XHT sequencer", UVM_LOW)
     p_sequencer.xht_sequencer.stop_sequences();
 
-    `uvm_info(`gfn, "Stopping CSRNG seq", UVM_LOW)
-    m_csrng_pull_seq.stop(.hard(0));
-    `uvm_info(`gfn, "Stopping RNG seq", UVM_LOW)
-    m_rng_push_seq.stop(.hard(0));
+    `uvm_info(`gfn, "Stopping CSRNG and RNG seqs", UVM_LOW)
+    stop_agent_seqs();
     `uvm_info(`gfn, "SEQs SHUTDOWN applying CSRNG reset", UVM_MEDIUM)
-    apply_reset(.kind("CSRNG_ONLY"));
+    // The caller's reset also resets the agents, so skip this CSRNG reset while the caller's is
+    // asserted, and cut it short if the caller's starts
+    if (cfg.clk_rst_vif.rst_n) begin
+      `DV_SPINWAIT_EXIT(apply_reset(.kind("CSRNG_ONLY"));,
+                        wait (!cfg.clk_rst_vif.rst_n);)
+    end
     `uvm_info(`gfn, "Waiting for SEQs finished", UVM_MEDIUM)
     m_csrng_pull_seq.wait_for_sequence_state(UVM_FINISHED);
     m_rng_push_seq.wait_for_sequence_state(UVM_FINISHED);
     `uvm_info(`gfn, "SEQs shutdown", UVM_LOW)
 
   endtask
+
+  // Stop the CSRNG sequence first, or its agent stalls waiting for entropy. A sequence ignores
+  // stop() until its body starts, so wait for the body or any later state.
+  task stop_agent_seqs();
+    int unsigned started = UVM_BODY | UVM_POST_BODY | UVM_POST_START | UVM_ENDED | UVM_STOPPED |
+                           UVM_FINISHED;
+    m_csrng_pull_seq.wait_for_sequence_state(started);
+    m_csrng_pull_seq.stop(.hard(0));
+    m_rng_push_seq.wait_for_sequence_state(started);
+    m_rng_push_seq.stop(.hard(0));
+  endtask : stop_agent_seqs
 
   function void randomize_unexpected_config_time();
     if (cfg.mean_rand_reconfig_time > 0) begin
@@ -492,7 +504,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `uvm_info(`gfn, "Starting entropy injection thread", UVM_LOW)
 
     if (do_inject) begin
-      while (do_background_procs) begin
+      while (do_background_procs && cfg.clk_rst_vif.rst_n) begin
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(fw_ov_insert_per_seed);
         ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4True);
         csr_update(.csr(ral.fw_ov_sha3_start));
@@ -500,16 +512,19 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           if (!do_background_procs) break;
           `DV_CHECK_STD_RANDOMIZE_FATAL(fw_ov_value);
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
-          cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
+          cfg.clk_rst_vif.wait_clks_or_rst(dly_to_insert_entropy);
+          if (!cfg.clk_rst_vif.rst_n) break;
           `uvm_info(`gfn, $sformatf("injecting entropy: %08x", fw_ov_value), UVM_FULL)
           csr_rd(.ptr(ral.fw_ov_wr_fifo_full.fw_ov_wr_fifo_full), .value(unused));
+          if (cfg.under_reset) break;
           ral.fw_ov_wr_data.set(fw_ov_value);
           csr_update(.csr(ral.fw_ov_wr_data));
         end
+        if (!cfg.clk_rst_vif.rst_n) break;
         ral.fw_ov_sha3_start.fw_ov_insert_start.set(MuBi4False);
         csr_update(.csr(ral.fw_ov_sha3_start));
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
-        cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
+        cfg.clk_rst_vif.wait_clks_or_rst(dly_to_insert_entropy);
       end
     end
 
@@ -521,7 +536,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // runs until the timer thread
   task interrupt_handler_thread();
     `uvm_info(`gfn, "Starting interrupt loop", UVM_LOW)
-    while (do_background_procs) begin
+    while (do_background_procs && cfg.clk_rst_vif.rst_n) begin
       process_interrupts();
       // If a NONFIPS-to-FIPS re-enable is needed, coordinate the
       // re-enable process with the interrupt handler to avoid
@@ -614,7 +629,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // One example BootPostHTCheck -> Idle
   task targeted_transition_thread();
     string msg;
-    while(do_background_procs && continue_sim) begin
+    while(do_background_procs && continue_sim && cfg.clk_rst_vif.rst_n) begin
       bit [TL_DW - 1:0] val;
 
       if (&rare_state_to_idle_checklist) begin
@@ -632,10 +647,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           `DV_WAIT(!interrupt_handler_active || !do_background_procs,
                    "Interrupt handler timed out", 1ms/1ns);
         end
-        cfg.clk_rst_vif.wait_clks(1);
+        cfg.clk_rst_vif.wait_clks_or_rst(1);
       join
 
-      if (!do_background_procs || !continue_sim) break;
+      if (!do_background_procs || !continue_sim || !cfg.clk_rst_vif.rst_n) begin
+        break;
+      end
 
       for (int i=0; i < NumRareMainFsmStates; i++) begin
         if (cfg.fsm_tracking_vif.next_state == rare_fsm_states[i]) begin
@@ -650,7 +667,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
               // almost always follow CSR operations such as enable signals)
               // Finally call disable_dut() to clean things up properly.
               if (rare_state_to_idle_backdoor[i]) begin
-                cfg.clk_rst_vif.wait_clks(1);
+                cfg.clk_rst_vif.wait_clks_or_rst(1);
+                if (!cfg.clk_rst_vif.rst_n) break;
                 csr_poke(.ptr(ral.module_enable), .value({28'h0, MuBi4False}));
               end
               immed_csr_wr(.ptr(ral.module_enable), .value({28'h0, MuBi4False}));
@@ -679,9 +697,10 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     `uvm_info(`gfn, "Starting re-init monitor", UVM_LOW)
 
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     csr_rd(.ptr(ral.conf.fips_enable), .value(fips_enable));
     csr_rd(.ptr(ral.entropy_control.es_route), .value(es_route));
+    if (cfg.under_reset) return;
 
     // We don't need to monitor the CSRNG bus if nothing will be coming on it, or
     // if the DUT is already configured to output FIPS data.
@@ -717,12 +736,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     `uvm_info(`gfn, "Starting forced-alert thread", UVM_LOW)
 
-    while (do_background_procs) begin
+    while (do_background_procs && cfg.clk_rst_vif.rst_n) begin
       randomize_csr_alert_time();
       if (sched_csr_alert_time > 0) begin
         delta = sched_csr_alert_time - $realtime();
         `DV_SPINWAIT_EXIT(#(delta);, wait(!do_background_procs))
-        if (do_background_procs) begin
+        if (do_background_procs && cfg.clk_rst_vif.rst_n) begin
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(csr_alert_value);
           msg = $sformatf("Generating alert via ERR_CODE_TEST with err_code %d", csr_alert_value);
           expect_fatal_alerts = 1'b1;
@@ -786,6 +805,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     `uvm_info(`gfn, "Exiting reconfig timer thread", UVM_LOW)
   endtask
 
+  // Stop all stimulus and wait for the caller's reset. Used when the DUT needs a reset to recover
+  // (fatal error, or configuration locked by SW_REGUPD). The test timeout catches a missing reset.
+  task wait_for_external_reset();
+    `uvm_info(`gfn, "The DUT needs a reset, waiting for the caller's", UVM_MEDIUM)
+    continue_sim = 0;
+    do_background_procs = 0;
+    stop_agent_seqs();
+    wait (!cfg.clk_rst_vif.rst_n);
+  endtask : wait_for_external_reset
+
   // Make a new random dut configuration according
   // to our current DUT constraints
   task random_reconfig(bit do_reset);
@@ -801,9 +830,14 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       string msg;
 
       if (do_reset) begin
+        if (external_reset) begin
+          wait_for_external_reset();
+          break;
+        end
         apply_reset(.kind("HARD_DUT_ONLY"));
         post_apply_reset(.reset_kind("HARD"));
       end
+      if (!cfg.clk_rst_vif.rst_n) break;
       wait(cfg.under_reset == 0);
       do_reenable = 0;
 
@@ -860,6 +894,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     end while (!(reconfig_complete && regwen) && continue_sim);
 
     check_reconfig();
+    if (!cfg.clk_rst_vif.rst_n) begin
+      // The caller's reset clears the DUT configuration, so keep cfg.dut_cfg as it was
+      cfg.dut_cfg.bad_mubi_cfg_pct = bad_mubi_cfg_pct_orig;
+      cfg.dut_cfg.preconfig_disable_pct = preconfig_disable_pct_orig;
+      return;
+    end
 
     init_successful = 1;
     if (regwen || do_reset) begin
@@ -876,6 +916,16 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     // Don't enable here, let the main loop do that explicitly
   endtask
+
+  // At the caller's reset, stop every thread and the agent sequences. The agents are in reset and
+  // complete items in zero time, so their sequences would otherwise never end.
+  task stop_at_external_reset();
+    wait (!cfg.clk_rst_vif.rst_n || !continue_sim);
+    if (cfg.clk_rst_vif.rst_n) return;
+    continue_sim = 0;
+    do_background_procs = 0;
+    stop_agent_seqs();
+  endtask : stop_at_external_reset
 
   function void disable_entropy_drop_assertions();
     if (cfg.rng_max_delay) begin
@@ -895,6 +945,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
     fork
       main_timer_thread();
+      if (external_reset) begin
+        stop_at_external_reset();
+      end
       while (continue_sim) begin
         bit regwen;
         do_background_procs = 1;
@@ -902,6 +955,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
 
         // If the initial configuration (in dut_init) failed, start with a reconfig.
         if (!init_successful) random_reconfig(0);
+        if (!cfg.clk_rst_vif.rst_n) break;
 
         `uvm_info(`gfn, "Launching event threads", UVM_LOW)
 

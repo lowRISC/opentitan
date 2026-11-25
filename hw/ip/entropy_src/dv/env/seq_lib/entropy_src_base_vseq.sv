@@ -18,6 +18,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
   bit  do_entropy_src_init = 1'b1;
   bit  do_interrupt        = 1'b1;
 
+  // The caller applies the resets (stress_all_with_rand_reset), so never apply one here
+  bit  external_reset      = 1'b0;
+
   bit init_successful      = 1'b0;
 
   bit [15:0] path_err_val;
@@ -89,6 +92,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       cfg.csrng_rst_vif.apply_reset();
     end
   endtask
+
+  // The RNG and CSRNG agents have their own reset. Assert it with the DUT reset so that their
+  // drivers drop the items the DUT will not answer.
+  virtual task apply_resets_concurrently(int reset_duration_ps = 0);
+    cfg.csrng_rst_vif.drive_rst_pin(0);
+    super.apply_resets_concurrently(reset_duration_ps);
+    cfg.csrng_rst_vif.drive_rst_pin(1);
+  endtask : apply_resets_concurrently
 
   virtual task dut_shutdown();
     bit bundles_found;
@@ -259,10 +270,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // time, we must wait a couple of clock cycles before potentially locking configuration CSRs.
     // Otherwise, we may lock invalid configurations which would require resetting the DUT.
     wait_no_outstanding_access();
-    cfg.clk_rst_vif.wait_clks(
+    cfg.clk_rst_vif.wait_clks_or_rst(
         cfg.m_alert_agent_cfgs["recov_alert"].ack_delay_max +
         cfg.m_alert_agent_cfgs["recov_alert"].ack_stable_max +
         2); // Pause between back-to-back handshakes at sender end.
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // Register write enable lock is on be default
     // Setting this to zero will lock future writes
@@ -292,7 +304,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     end
 
     cfg.clk_rst_vif.wait_clks_or_rst(2);
-    if (stop_early || cfg.under_reset) return;
+    if (stop_early || !cfg.clk_rst_vif.rst_n) return;
 
     `uvm_info(`gfn, "Configuration Complete", UVM_MEDIUM)
     completed = 1;
@@ -491,6 +503,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       do begin
         `uvm_info(`gfn, "READING INTERRUPT STS", UVM_DEBUG)
         csr_rd(.ptr(intr_field), .value(intr_status));
+        if (!cfg.clk_rst_vif.rst_n) break;
         if (intr_status) begin
 
           // How many words shall we read in one go?
@@ -511,7 +524,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
             // elements only.
             read_max = $urandom_range(0, 9) > 0;
             if (read_max) begin
-              cfg.clk_rst_vif.wait_n_clks(2);
+              cfg.clk_rst_vif.wait_n_clks_or_rst(2);
               num_words_to_read = `gmv(ral.observe_fifo_depth);
             end else begin
               csr_rd(.ptr(ral.observe_fifo_thresh), .value(num_words_to_read));
@@ -523,7 +536,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
           do begin
             // Read and check the entropy.
-            for (int i = 0; i < num_words_to_read; i++) begin
+            for (int i = 0; i < num_words_to_read && cfg.clk_rst_vif.rst_n; i++) begin
               bit [TL_DW-1:0] entropy_tlul;
               csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
             end
@@ -538,21 +551,22 @@ class entropy_src_base_vseq extends cip_base_vseq #(
             end
 
             // Shall we continue reading more data?
-            if (read_max) begin
-              cfg.clk_rst_vif.wait_n_clks(2);
+            if (read_max && cfg.clk_rst_vif.rst_n) begin
+              cfg.clk_rst_vif.wait_n_clks_or_rst(2);
               num_words_to_read = `gmv(ral.observe_fifo_depth);
               if ((max_bundles >= 0) && (num_words_to_read >= max_bundles)) begin
                 num_words_to_read = max_bundles;
               end
             end
             done = (max_bundles >= 0) && (bundles_found >= max_bundles);
-          end while (num_words_to_read > 0 && !done);
+          end while (num_words_to_read > 0 && !done && cfg.clk_rst_vif.rst_n);
+          if (!cfg.clk_rst_vif.rst_n) break;
 
           // Clear the appropriate interrupt bit
           `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
           csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
         end
-      end while (intr_status && !done);, // do begin
+      end while (intr_status && !done && cfg.clk_rst_vif.rst_n);, // do begin
     $sformatf("Timeout encountered while reading %s", source.name()), timeout_ns)
   endtask
 

@@ -14,7 +14,7 @@ class entropy_src_stress_all_vseq extends entropy_src_base_vseq;
                           "entropy_src_common_vseq", // for intr_test
                           "entropy_src_rng_vseq"};
 
-    for (int i = 1; i <= num_trans; i++) begin
+    for (int i = 1; i <= num_trans && cfg.clk_rst_vif.rst_n; i++) begin
       uvm_sequence            seq;
       entropy_src_base_vseq   entropy_src_vseq;
       uint                    seq_idx = $urandom_range(0, seq_names.size - 1);
@@ -25,6 +25,7 @@ class entropy_src_stress_all_vseq extends entropy_src_base_vseq;
       // dut_init (reset) can be skipped
       if (do_apply_reset) entropy_src_vseq.do_apply_reset = $urandom_range(0, 1);
       else entropy_src_vseq.do_apply_reset = 0;
+      entropy_src_vseq.external_reset = external_reset;
 
       entropy_src_vseq.set_sequencer(p_sequencer);
       `DV_CHECK_RANDOMIZE_FATAL(entropy_src_vseq)

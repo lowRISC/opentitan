@@ -20,4 +20,15 @@ class entropy_src_common_vseq extends entropy_src_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  // The random reset wrapper applies the resets, so the child it runs must not apply any.
+  //
+  // This extends a function from cip_base_vseq
+  protected function void configure_child_vseq(uvm_sequence child_vseq);
+    entropy_src_base_vseq entropy_src_child_vseq;
+
+    super.configure_child_vseq(child_vseq);
+    `downcast(entropy_src_child_vseq, child_vseq)
+    entropy_src_child_vseq.external_reset = 1'b1;
+  endfunction : configure_child_vseq
+
 endclass
