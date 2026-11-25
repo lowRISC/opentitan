@@ -1,0 +1,88 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_ihp130:all"
+description: "OpenSource IHP 130nm (sg13cmos5l) prim standard cell library: prim_ihp130:
+              * modules directly instantiate standard cells, SRAM, ROM and IO pad cells."
+virtual:
+  - lowrisc:virtual_prim_tech:all
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_ihp130:prim_pkg
+      - lowrisc:prim_ihp130:and2
+      - lowrisc:prim_ihp130:buf
+      - lowrisc:prim_ihp130:clock_buf
+      - lowrisc:prim_generic:clock_div
+      - lowrisc:prim_ihp130:clock_gating
+      - lowrisc:prim_ihp130:clock_inv
+      - lowrisc:prim_ihp130:clock_mux2
+      - lowrisc:prim_ihp130:flop
+      - lowrisc:prim_ihp130:const
+      - lowrisc:prim_ihp130:const_sec
+      - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:rst_sync
+      - lowrisc:prim_ihp130:flop_en
+      - lowrisc:prim_ihp130:pad_attr
+      - lowrisc:prim_ihp130:pad_wrapper
+      - lowrisc:prim_ihp130:ram_1p
+      - lowrisc:prim_ihp130:ram_1r1w
+      - lowrisc:prim_ihp130:ram_2p
+      - lowrisc:prim_ihp130:rom
+      - lowrisc:prim_generic:usb_diff_rx
+      - lowrisc:prim_ihp130:xnor2
+      - lowrisc:prim_ihp130:xor2
+      - lowrisc:prim_ihp130:flop_no_rst
+      - lowrisc:prim_ihp130:inv
+      - lowrisc:prim_ihp130:ram_1p_pkg
+      - lowrisc:prim_ihp130:ram_1r1w_pkg
+      - lowrisc:prim_ihp130:ram_2p_pkg
+      - lowrisc:prim_ihp130:rom_pkg
+# Note that flash is a macro that depends on IPs, so they are not
+# included here. They must be brought in explicitly.
+#      - lowrisc:prim_generic:flash
+
+mapping:
+  # Resolves the technology-library dependency of a chip-level core to this
+  # library, so that selecting a library still takes just one --mapping.
+  "lowrisc:virtual_prim_tech:all" : "lowrisc:prim_ihp130:all"
+  "lowrisc:prim:prim_pkg"         : "lowrisc:prim_ihp130:prim_pkg"
+  "lowrisc:prim:and2"             : "lowrisc:prim_ihp130:and2"
+  "lowrisc:prim:buf"              : "lowrisc:prim_ihp130:buf"
+  "lowrisc:prim:clock_buf"        : "lowrisc:prim_ihp130:clock_buf"
+  "lowrisc:prim:clock_div"        : "lowrisc:prim_generic:clock_div"
+  "lowrisc:prim:clock_gating"     : "lowrisc:prim_ihp130:clock_gating"
+  "lowrisc:prim:clock_inv"        : "lowrisc:prim_ihp130:clock_inv"
+  "lowrisc:prim:clock_mux2"       : "lowrisc:prim_ihp130:clock_mux2"
+  "lowrisc:prim:const"            : "lowrisc:prim_ihp130:const"
+  "lowrisc:prim:const_sec"        : "lowrisc:prim_ihp130:const_sec"
+  "lowrisc:prim:flop"             : "lowrisc:prim_ihp130:flop"
+  "lowrisc:prim:flop_2sync"       : "lowrisc:prim_generic:flop_2sync"
+  "lowrisc:prim:rst_sync"         : "lowrisc:prim_generic:rst_sync"
+  "lowrisc:prim:flop_en"          : "lowrisc:prim_ihp130:flop_en"
+  "lowrisc:prim:pad_attr"         : "lowrisc:prim_ihp130:pad_attr"
+  "lowrisc:prim:pad_wrapper"      : "lowrisc:prim_ihp130:pad_wrapper"
+  "lowrisc:prim:ram_1p"           : "lowrisc:prim_ihp130:ram_1p"
+  "lowrisc:prim:ram_1r1w"         : "lowrisc:prim_ihp130:ram_1r1w"
+  "lowrisc:prim:ram_2p"           : "lowrisc:prim_ihp130:ram_2p"
+  "lowrisc:prim:rom"              : "lowrisc:prim_ihp130:rom"
+  "lowrisc:prim:ram_1p_pkg"       : "lowrisc:prim_ihp130:ram_1p_pkg"
+  "lowrisc:prim:ram_1r1w_pkg"     : "lowrisc:prim_ihp130:ram_1r1w_pkg"
+  "lowrisc:prim:ram_2p_pkg"       : "lowrisc:prim_ihp130:ram_2p_pkg"
+  "lowrisc:prim:rom_pkg"          : "lowrisc:prim_ihp130:rom_pkg"
+  "lowrisc:prim:usb_diff_rx"      : "lowrisc:prim_generic:usb_diff_rx"
+  "lowrisc:prim:xnor2"            : "lowrisc:prim_ihp130:xnor2"
+  "lowrisc:prim:xor2"             : "lowrisc:prim_ihp130:xor2"
+  "lowrisc:prim:flop_no_rst"      : "lowrisc:prim_ihp130:flop_no_rst"
+  "lowrisc:prim:inv"              : "lowrisc:prim_ihp130:inv"
+  # Flash is a good canditate to be removed from the prims and become a macro like OTP.
+  # TODO(#27042): When this is done, it should be removed from this mapping.
+  "lowrisc:prim:flash"            : "lowrisc:prim_generic:flash"
+
+targets:
+  default:
+    filesets:
+      - files_rtl
