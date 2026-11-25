@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
+      - lowrisc:prim:assert
+      - lowrisc:prim:mubi
     files:
       - csrng_bind.sv
       - csrng_assert_if.sv

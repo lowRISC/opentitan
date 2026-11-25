@@ -58,15 +58,49 @@ class csrng_intr_vseq extends csrng_base_vseq;
   endtask // test_cs_cmd_req_done
 
   task test_cs_entropy_req();
+    bit    seed_vld;
+    string seed_vld_path = "tb.dut.u_csrng_core.seed_vld_q";
     cs_item = csrng_item::type_id::create("cs_item");
 
-    // Write CSRNG Cmd_Req - Instantiate Command
+    // Wait until CSRNG holds a seed, then stop entropy_src from delivering the next one.
+    `DV_SPINWAIT(
+      do begin
+        cfg.clk_rst_vif.wait_clks(1);
+        `DV_CHECK(uvm_hdl_read(seed_vld_path, seed_vld))
+      end while (!seed_vld);,
+      "timeout waiting for CSRNG to hold a seed")
+    cfg.csrng_agents_vif.drive_entropy_src_disable(1);
+
+    // Requesting a seed alone doesn't set the interrupt.
+    csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
+
+    // Write CSRNG Cmd_Req - Instantiate Command, which consumes the held seed without blocking.
     cs_item.acmd  = csrng_pkg::INS;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4False;
     cs_item.glen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(cfg.m_sw_app_idx, cs_item);
+    csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
+
+    // Write CSRNG Cmd_Req - Reseed Command, which is blocked until the next seed arrives.
+    cs_item.acmd  = csrng_pkg::RES;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4False;
+    cs_item.glen  = 'h0;
+    `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
+    send_cmd_req(cfg.m_sw_app_idx, cs_item, .await_response(1'b0));
+
+    // Expect/Clear interrupt bit
+    csr_spinwait(.ptr(ral.intr_state.cs_entropy_req), .exp_data(1'b1));
+    check_interrupts(.interrupts((1 << EntropyReq)), .check_set(1'b1));
+    cfg.clk_rst_vif.wait_clks(100);
+    // Make sure the interrupt bit is cleared and not set again while the reseed is still blocked
+    csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
+
+    // Let entropy_src deliver the seed such that the reseed completes.
+    cfg.csrng_agents_vif.drive_entropy_src_disable(0);
+    wait_cmd_req_done();
 
     // Write CSRNG Cmd_Req Register - Generate Command
     cs_item.acmd  = csrng_pkg::GEN;
@@ -75,13 +109,6 @@ class csrng_intr_vseq extends csrng_base_vseq;
     cs_item.glen  = 'h1;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(cfg.m_sw_app_idx, cs_item);
-
-    // Expect/Clear interrupt bit
-    csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b1));
-    check_interrupts(.interrupts((1 << EntropyReq)), .check_set(1'b1));
-    cfg.clk_rst_vif.wait_clks(100);
-    // Make sure the interrupt bit is cleared
-    csr_rd_check(.ptr(ral.intr_state.cs_entropy_req), .compare_value(1'b0));
 
     // Write CSRNG Cmd_Req Register - Uninstantiate Command
     cs_item.acmd  = csrng_pkg::UNI;
@@ -344,8 +371,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
     `define CMD_STAGE_1 tb.dut.u_csrng_core.gen_cmd_stage[1].u_csrng_cmd_stage
     `define CMD_STAGE_2 tb.dut.u_csrng_core.gen_cmd_stage[2].u_csrng_cmd_stage
     `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
-    $assertoff(0, "tb.entropy_src_if.ReqHighUntilAck_A");
-    $assertoff(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", 1'b0)
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", 1'b0)
     $assertoff(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));
@@ -378,8 +405,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
     end
 
     // Turn assertions back on
-    $asserton(0, "tb.entropy_src_if.ReqHighUntilAck_A");
-    $asserton(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", 1'b1)
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", 1'b1)
     $asserton(0, `HIER_PATH(`CMD_STAGE_0, CsrngCmdStageGenbitsFifoPushExpected_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_1, CsrngCmdStageGenbitsFifoPushExpected_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_2, CsrngCmdStageGenbitsFifoPushExpected_A));

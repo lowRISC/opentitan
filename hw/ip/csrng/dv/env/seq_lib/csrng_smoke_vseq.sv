@@ -30,6 +30,10 @@ class csrng_smoke_vseq extends csrng_base_vseq;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     send_cmd_req(cfg.m_sw_app_idx, cs_item);
 
+    // Stop once a reset has interrupted the commands, such that the sequence completes before the
+    // reset is released.
+    if (cfg.under_reset) return;
+
     // Check internal state
     if (cfg.check_int_state) begin
       for (int i = 0; i < cfg.m_num_apps; i++)

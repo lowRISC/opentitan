@@ -17,6 +17,9 @@ class csrng_common_vseq extends csrng_base_vseq;
   endtask
 
   virtual task body();
+    // When run from a stress test, a command blocked on entropy may have set the cs_entropy_req
+    // interrupt, which the common interrupt test doesn't expect.
+    if (`gmv(ral.ctrl.enable) == MuBi4True) clear_all_interrupts();
     run_common_vseq_wrapper(num_trans);
   endtask : body
 

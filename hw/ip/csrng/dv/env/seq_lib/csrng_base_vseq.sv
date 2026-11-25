@@ -16,8 +16,6 @@ class csrng_base_vseq extends cip_base_vseq #(
   bit [3:0]              alt_flags;
   virtual csrng_cov_if   cov_vif;
 
-  push_pull_device_seq#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
-      m_entropy_src_pull_seq;
   push_pull_host_seq#(.HostDataWidth(csrng_pkg::CmdBusWidth)) m_edn_push_seq[];
 
   virtual task body();

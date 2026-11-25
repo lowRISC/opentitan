@@ -61,7 +61,7 @@ Interrupt State Register
 |  31:4  |        |         |                 | Reserved                                                                                                                |
 |   3    |  rw1c  |   0x0   | cs_fatal_err    | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](#err_code) register to get more information. |
 |   2    |  rw1c  |   0x0   | cs_hw_inst_exc  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                         |
-|   1    |  rw1c  |   0x0   | cs_entropy_req  | Asserted when a request for entropy has been made.                                                                      |
+|   1    |  rw1c  |   0x0   | cs_entropy_req  | Asserted when an instantiate or reseed command requiring entropy is blocked because no seed is available.               |
 |   0    |  rw1c  |   0x0   | cs_cmd_req_done | Asserted when a command request is completed, or when a CSRNG instance halted via INT_STATE_HALT has quiesced.          |
 
 ## INTR_ENABLE

@@ -94,8 +94,10 @@ module csrng_core import csrng_pkg::*; #(
   logic                        packer_adata_clr;
   logic [SeedLen-1:0]          seed_diversification;
 
-  logic                        cmd_entropy_req;
-  logic                        cmd_entropy_avail;
+  logic                        seed_consumed;
+  logic                        es_handshake;
+  logic                        entropy_starved;
+  logic                        entropy_starved_posedge;
 
   logic                        ctr_drbg_cmd_req;
   csrng_core_data_t            ctr_drbg_cmd_req_data;
@@ -161,6 +163,8 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          cmd_arb_sop;
   logic [NumApps-1:0]          cmd_arb_mop;
   logic [NumApps-1:0]          cmd_arb_eop;
+  logic [NumApps-1:0]          entropy_arb_req;
+  logic [NumApps-1:0]          entropy_arb_gnt;
   logic [CmdBusWidth-1:0]      cmd_arb_bus[NumApps];
   logic [NumApps-1:0]          cmd_core_ack;
   csrng_cmd_sts_e [NumApps-1:0]cmd_core_ack_sts;
@@ -230,6 +234,9 @@ module csrng_core import csrng_pkg::*; #(
   acmd_e                      ctr_drbg_cmd_q, ctr_drbg_cmd_d;
   logic [SeedLen-1:0]         entropy_src_seed_q, entropy_src_seed_d;
   logic                       entropy_src_fips_q, entropy_src_fips_d;
+  logic                       seed_vld_q, seed_vld_d;
+  logic                       es_req_pending_q, es_req_pending_d;
+  logic                       entropy_arb_ready_q, entropy_arb_ready_d;
   logic [63:0]                cs_rdata_capt_q, cs_rdata_capt_d;
   logic                       cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                       sw_rdy_sts_q, sw_rdy_sts_d;
@@ -251,6 +258,9 @@ module csrng_core import csrng_pkg::*; #(
       ctr_drbg_cmd_q          <= INV;
       entropy_src_seed_q      <= '0;
       entropy_src_fips_q      <= '0;
+      seed_vld_q              <= '0;
+      es_req_pending_q        <= '0;
+      entropy_arb_ready_q     <= '0;
       cs_rdata_capt_q         <= '0;
       cs_rdata_capt_vld_q     <= '0;
       sw_rdy_sts_q            <= '0;
@@ -269,6 +279,9 @@ module csrng_core import csrng_pkg::*; #(
       ctr_drbg_cmd_q          <= ctr_drbg_cmd_d;
       entropy_src_seed_q      <= entropy_src_seed_d;
       entropy_src_fips_q      <= entropy_src_fips_d;
+      seed_vld_q              <= seed_vld_d;
+      es_req_pending_q        <= es_req_pending_d;
+      entropy_arb_ready_q     <= entropy_arb_ready_d;
       cs_rdata_capt_q         <= cs_rdata_capt_d;
       cs_rdata_capt_vld_q     <= cs_rdata_capt_vld_d;
       sw_rdy_sts_q            <= sw_rdy_sts_d;
@@ -297,12 +310,30 @@ module csrng_core import csrng_pkg::*; #(
     .intr_o                (intr_cs_cmd_req_done_o)
   );
 
+  // A command stage is blocked if it requests the seed while the request to ENTROPY_SRC has been
+  // outstanding for more than one cycle.
+  assign entropy_starved = |entropy_arb_req && es_req_pending_q && es_req_pending_d;
+
+  // Only signal the start of each period during which a command stage is blocked.
+  prim_edge_detector #(
+    .Width(1),
+    .ResetValue(1'b0),
+    .EnSync(1'b0)
+  ) u_prim_edge_detector_entropy_starved (
+    .clk_i,
+    .rst_ni,
+    .d_i              (entropy_starved),
+    .q_sync_o         (),
+    .q_posedge_pulse_o(entropy_starved_posedge),
+    .q_negedge_pulse_o()
+  );
+
   prim_intr_hw #(
     .Width(1)
   ) u_intr_hw_cs_entropy_req (
     .clk_i                 (clk_i),
     .rst_ni                (rst_ni),
-    .event_intr_i          (entropy_src_hw_if_o.es_req),
+    .event_intr_i          (entropy_starved_posedge),
     .reg2hw_intr_enable_q_i(reg2hw.intr_enable.cs_entropy_req.q),
     .reg2hw_intr_test_q_i  (reg2hw.intr_test.cs_entropy_req.q),
     .reg2hw_intr_test_qe_i (reg2hw.intr_test.cs_entropy_req.qe),
@@ -702,6 +733,8 @@ module csrng_core import csrng_pkg::*; #(
       .cmd_arb_sop_o                (cmd_arb_sop[ai]),
       .cmd_arb_mop_o                (cmd_arb_mop[ai]),
       .cmd_arb_eop_o                (cmd_arb_eop[ai]),
+      .entropy_arb_req_o            (entropy_arb_req[ai]),
+      .entropy_arb_gnt_i            (entropy_arb_gnt[ai]),
       .cmd_arb_gnt_i                (cmd_arb_gnt[ai]),
       .cmd_arb_bus_o                (cmd_arb_bus[ai]),
       .cmd_ack_i                    (cmd_core_ack[ai]),
@@ -881,11 +914,13 @@ module csrng_core import csrng_pkg::*; #(
     assign cmd_stage_sfifo_genbits_err_st[i] = cmd_stage_sfifo_genbits_err[i][0];
   end : gen_fifo_sts
 
-  //------------------------------------------
-  // app command arbiter and state machine
-  //------------------------------------------
-  // All commands that arrive from the
-  // application ports are arbitrated for
+  //----------------------------------------------------
+  // app entropy and command arbiters and state machine
+  //----------------------------------------------------
+  // Instantiate and reseed commands that
+  // require entropy first arbitrate for the
+  // seed. All commands that arrive from the
+  // application ports are then arbitrated for
   // and processed by the main state machine
   // logic block.
 
@@ -899,6 +934,25 @@ module csrng_core import csrng_pkg::*; #(
   // Some tools reject assignment patterns in port connections.
   logic cmd_arb_data [NumApps];
   assign cmd_arb_data = '{default: 1'b0};
+
+  // Arbitrates the seed between the command stages with an instantiate or reseed command that
+  // requires entropy.
+  prim_arbiter_ppc #(
+    .EnDataPort(0),
+    .N(NumApps),
+    .DW(1)
+  ) u_prim_arbiter_ppc_entropy (
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
+    .req_chk_i(cs_enable_fo[8]),
+    .req_i    (entropy_arb_req),
+    .data_i   (cmd_arb_data),
+    .gnt_o    (entropy_arb_gnt),
+    .idx_o    (),
+    .valid_o  (),
+    .data_o   (),
+    .ready_i  (entropy_arb_ready_q)
+  );
 
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
@@ -984,9 +1038,6 @@ module csrng_core import csrng_pkg::*; #(
     .acmd_accept_o         (acmd_accept),
     .acmd_i                (acmd_hold),
     .acmd_eop_i            (acmd_eop),
-    .flag0_i               (flag0_fo[0]),
-    .cmd_entropy_req_o     (cmd_entropy_req),
-    .cmd_entropy_avail_i   (cmd_entropy_avail),
     .cmd_req_o             (main_sm_cmd_req),
     .cmd_ack_i             (ctr_drbg_cmd_ack),
     .clr_adata_packer_o    (clr_adata_packer),
@@ -994,9 +1045,6 @@ module csrng_core import csrng_pkg::*; #(
     .main_sm_state_o       (cs_main_sm_state),
     .main_sm_err_o         (cs_main_sm_err)
   );
-
-  // entropy available
-  assign cmd_entropy_avail = entropy_src_hw_if_i.es_ack;
 
   for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
     assign cmd_core_ack[csi] = ctr_drbg_cmd_ack && (ctr_drbg_cmd_ack_data.inst_id == csi);
@@ -1082,7 +1130,11 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Basic interface logic with the entropy_src block
 
-  assign entropy_src_hw_if_o.es_req = cs_enable_fo[43] && cmd_entropy_req;
+  // Request a new seed whenever the last one has been consumed. Once asserted, the request is kept
+  // until it has been acknowledged, even if CSRNG gets disabled in the meantime.
+  assign entropy_src_hw_if_o.es_req = (cs_enable_fo[43] && !seed_vld_q) || es_req_pending_q;
+  assign es_req_pending_d = entropy_src_hw_if_o.es_req && !entropy_src_hw_if_i.es_ack;
+  assign es_handshake = entropy_src_hw_if_o.es_req && entropy_src_hw_if_i.es_ack;
 
 
   // SEC_CM: CONSTANTS.LC_GATED
@@ -1091,17 +1143,25 @@ module csrng_core import csrng_pkg::*; #(
 
   // Capture entropy from entropy_src
   assign entropy_src_seed_d =
-         flag0_fo[1] ? '0 : // special case where zero is used
-         cmd_entropy_req && cmd_entropy_avail ?
-            (entropy_src_hw_if_i.es_bits ^ seed_diversification) :
-         entropy_src_seed_q;
+         es_handshake ? (entropy_src_hw_if_i.es_bits ^ seed_diversification) : entropy_src_seed_q;
   assign entropy_src_fips_d =
-         // Use inst_id_d here such that u_csrng_ctr_drbg_cmd gets the inst_id_q and the proper
-         // entropy_src_fips_q in the next clock cycle.
-         fips_force_enable && reg2hw.fips_force.q[inst_id_d] ? 1'b1 :
-         flag0_fo[2] ? '0 : // special case where zero is used
-         cmd_entropy_req && cmd_entropy_avail ? entropy_src_hw_if_i.es_fips :
-         entropy_src_fips_q;
+         es_handshake ? entropy_src_hw_if_i.es_fips : entropy_src_fips_q;
+
+  // The seed is consumed once an instantiate or reseed command using it has completed.
+  assign seed_consumed = ctr_drbg_cmd_req && ctr_drbg_cmd_ack &&
+                         (acmd_q inside {INS, RES}) && !flag0_fo[0];
+
+  // A seed is valid from its arrival until it has been consumed.
+  assign seed_vld_d = !cs_enable_fo[6] ? 1'b0 :
+                      es_handshake     ? 1'b1 :
+                      seed_consumed    ? 1'b0 :
+                      seed_vld_q;
+
+  // The seed can be granted once, from its arrival until the entropy arbiter grants it.
+  assign entropy_arb_ready_d = !cs_enable_fo[7] ? 1'b0 :
+                               es_handshake     ? 1'b1 :
+                               |entropy_arb_gnt ? 1'b0 :
+                               entropy_arb_ready_q;
 
   //-------------------------------------
   // CTR DRBG instantiation
@@ -1129,8 +1189,9 @@ module csrng_core import csrng_pkg::*; #(
 
     .cmd_req_i             (ctr_drbg_cmd_req),
     .cmd_req_data_i        (ctr_drbg_cmd_req_data),
-    .cmd_req_entropy_i     (entropy_src_seed_q),
-    .cmd_req_entropy_fips_i(entropy_src_fips_q),
+    .cmd_req_entropy_i     (flag0_fo[1] ? '0 : entropy_src_seed_q),
+    .cmd_req_entropy_fips_i(fips_force_enable && reg2hw.fips_force.q[inst_id_q] ? 1'b1 :
+                            flag0_fo[2] ? 1'b0 : entropy_src_fips_q),
     .cmd_req_glast_i       (gen_last_q),
     .cmd_req_gen_first_i   (gen_first_q),
     .cmd_req_glen_i        (gen_len_q),
@@ -1228,7 +1289,7 @@ module csrng_core import csrng_pkg::*; #(
 
   assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[24:23]) ||
                                     (|err_code_test_bit[19:2]);
-  assign unused_enable_fo = |cs_enable_fo[18:6] || (|cs_enable_fo[35:33]) ||
+  assign unused_enable_fo = |cs_enable_fo[18:9] || (|cs_enable_fo[35:33]) ||
                             cs_enable_fo[40];
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;

@@ -18,11 +18,6 @@ module csrng_main_sm import csrng_pkg::*; (
   input  acmd_e                       acmd_i,
   input  logic                        acmd_eop_i,
 
-  input  logic                        flag0_i,
-
-  output logic                        cmd_entropy_req_o,
-  input  logic                        cmd_entropy_avail_i,
-
   output logic                        cmd_req_o,
   input  logic                        cmd_ack_i,
   output logic                        clr_adata_packer_o,
@@ -42,7 +37,6 @@ module csrng_main_sm import csrng_pkg::*; (
   always_comb begin
     state_d            = state_q;
     acmd_accept_o      = 1'b0;
-    cmd_entropy_req_o  = 1'b0;
     cmd_req_o          = 1'b0;
     clr_adata_packer_o = 1'b0;
     main_sm_err_o      = 1'b0;
@@ -53,8 +47,8 @@ module csrng_main_sm import csrng_pkg::*; (
     end else if (local_escalate_i) begin
       // In case local escalate is high we must transition to the error state.
       state_d = MainSmError;
-    end else if (!enable_i && state_q inside {MainSmIdle, MainSmParseCmd, MainSmEntropyReq,
-                                              MainSmCmdPrep, MainSmCmdReq}) begin
+    end else if (!enable_i && state_q inside {MainSmIdle, MainSmParseCmd, MainSmCmdPrep,
+                                              MainSmCmdReq}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = MainSmIdle;
     end else begin
@@ -70,22 +64,9 @@ module csrng_main_sm import csrng_pkg::*; (
         MainSmParseCmd: begin
           if (acmd_eop_i) begin
             unique case (acmd_i)
-              INS, RES:      state_d = MainSmEntropyReq; // Command may require entropy
-              GEN, UPD, UNI: state_d = MainSmCmdPrep;    // Command does not require entropy
-              default:       state_d = MainSmIdle;       // Command was not supported
+              INS, RES, GEN, UPD, UNI: state_d = MainSmCmdPrep;
+              default:                 state_d = MainSmIdle; // Command was not supported
             endcase
-          end
-        end
-        MainSmEntropyReq: begin
-          if (flag0_i) begin
-            // With flag0 set, no entropy is required.
-            state_d = MainSmCmdReq;
-          end else begin
-            // Delay one clock to fix timing issue.
-            cmd_entropy_req_o = 1'b1;
-            if (cmd_entropy_avail_i) begin
-              state_d = MainSmCmdReq;
-            end
           end
         end
         MainSmCmdPrep: begin
