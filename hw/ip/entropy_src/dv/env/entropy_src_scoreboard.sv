@@ -1246,6 +1246,12 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         fips_csrng_q.delete();
       end
       overflow_condition = 0;
+      // A reset empties the observe FIFO, and a read that the reset cuts never reaches the D
+      // channel, which is where observe_read_incoming is cleared
+      if (rst_type == HardReset) begin
+        observe_fifo_cleared = 1;
+        observe_read_incoming = 0;
+      end
       `DV_CHECK_FATAL(ral.observe_fifo_depth.observe_fifo_depth.predict('b0))
       // fw_ov_wr_fifo_full goes high when the module is disabled.
       precon_fifo_full = 1;
@@ -1681,7 +1687,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       "fw_ov_sha3_start": begin
       end
       "fw_ov_rd_data": begin
-        if (!write && channel == AddrChannel) begin
+        // A read pops the observe FIFO only when FW_OV_CONTROL.FW_OV_MODE is true
+        if (!write && channel == AddrChannel &&
+            `gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) begin
           // Signal that a read is incoming.
           // The actual comparison in the scoreboard happens with a delay. In the DUT the
           // observe FIFO would have been already popped in this cycle. We model this
