@@ -418,6 +418,7 @@ static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
   ctx->lower = 0;
   ctx->upper = 0;
   ctx->partial_block_bytelen = 0;
+  ctx->checksum = 0;
 
   return OTCRYPTO_OK;
 }
@@ -652,8 +653,8 @@ static status_t hmac_redundant_core(const hmac_key_t *key,
 }
 
 static status_t hmac_init_redundant_core(const hmac_key_t *key, hmac_ctx_t *ctx,
-                                         size_t block_words,
-                                         size_t digest_words,
+                                         uint16_t block_words,
+                                         uint16_t digest_words,
                                          hmac_digest_length_t digest_len) {
   ctx->msg_block_wordlen = block_words;
   ctx->digest_wordlen = digest_words;
@@ -665,6 +666,7 @@ static status_t hmac_init_redundant_core(const hmac_key_t *key, hmac_ctx_t *ctx,
   HARDENED_CHECK_EQ(
       hardened_memeq(key->key_block, ctx->key.key_block, key->key_len),
       kHardenedBoolTrue);
+  ctx->checksum = hmac_ctx_integrity_checksum(ctx);
   // Compute i_key_pad = key XOR ipad and absorb it so subsequent hmac_update
   // calls receive only message bytes.
   uint32_t i_key_pad[kHmacMaxBlockWords];
@@ -805,9 +807,12 @@ static void sha2_init(hmac_digest_length_t digest_len, hmac_ctx_t *ctx) {
   ctx->cfg_reg = cfg_get(/*hmac_en=*/false, digest_len, kKeyLengthNone);
   ctx->key.key_len = 0;
   ctx->key.checksum = 0;
+  memset(ctx->H, 0, sizeof(ctx->H));
+  memset(ctx->partial_block, 0, sizeof(ctx->partial_block));
   ctx->lower = 0;
   ctx->upper = 0;
   ctx->partial_block_bytelen = 0;
+  ctx->checksum = hmac_ctx_integrity_checksum(ctx);
 }
 
 /**
@@ -823,9 +828,12 @@ static void sha2_init(hmac_digest_length_t digest_len, hmac_ctx_t *ctx) {
 static void hmac_init(hmac_key_length_t key_len,
                       hmac_digest_length_t digest_len, hmac_ctx_t *ctx) {
   ctx->cfg_reg = cfg_get(/*hmac_en=*/true, digest_len, key_len);
+  memset(ctx->H, 0, sizeof(ctx->H));
+  memset(ctx->partial_block, 0, sizeof(ctx->partial_block));
   ctx->lower = 0;
   ctx->upper = 0;
   ctx->partial_block_bytelen = 0;
+  ctx->checksum = hmac_ctx_integrity_checksum(ctx);
 }
 
 void hmac_hash_sha256_init(hmac_ctx_t *ctx) {
@@ -937,17 +945,62 @@ hardened_bool_t hmac_key_integrity_checksum_check(const hmac_key_t *key) {
   return kHardenedBoolFalse;
 }
 
+uint32_t hmac_ctx_integrity_checksum(const hmac_ctx_t *hmac_ctx) {
+  uint32_t ctx;
+  crc32_init(&ctx);
+  crc32_add32(&ctx, hmac_ctx->cfg_reg);
+  crc32_add32(&ctx, hmac_ctx->key.key_len);
+  crc32_add32(&ctx, hmac_ctx->key.checksum);
+  crc32_add(
+      &ctx, (const unsigned char *)&hmac_ctx->msg_block_wordlen,
+      offsetof(hmac_ctx_t, checksum) - offsetof(hmac_ctx_t, msg_block_wordlen));
+  return crc32_finish(&ctx);
+}
+
+hardened_bool_t hmac_ctx_integrity_checksum_check(const hmac_ctx_t *hmac_ctx) {
+  if (hmac_ctx->checksum == launder32(hmac_ctx_integrity_checksum(hmac_ctx))) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
+
+/**
+ * Copy `data->data[src_offset..data->len]` into `ctx->partial_block` at
+ * `dst_offset` and verify the copy.
+ */
+static OT_ALWAYS_INLINE status_t
+partial_block_copy(hmac_ctx_t *ctx, size_t dst_offset,
+                   const otcrypto_const_byte_buf_t *data, size_t src_offset) {
+  HARDENED_TRY(randomized_bytecopy((uint8_t *)ctx->partial_block + dst_offset,
+                                   data->data + src_offset,
+                                   data->len - src_offset));
+  const hmac_ctx_t *ctx_check = (const hmac_ctx_t *)launderw((uintptr_t)ctx);
+  HARDENED_CHECK_EQ(consttime_memeq_byte(
+                        data->data + src_offset,
+                        (const uint8_t *)ctx_check->partial_block + dst_offset,
+                        data->len - src_offset),
+                    kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
 status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
+  HARDENED_CHECK_EQ(hmac_ctx_integrity_checksum_check(ctx), kHardenedBoolTrue);
+
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
-  if (data->len < block_bytelen - ctx->partial_block_bytelen) {
-    memcpy((unsigned char *)(ctx->partial_block) + ctx->partial_block_bytelen,
-           data->data, data->len);
-    ctx->partial_block_bytelen += data->len;
+  size_t partial_bytelen = ctx->partial_block_bytelen;
+  if (launderw(data->len) < block_bytelen - partial_bytelen) {
+    HARDENED_CHECK_LT(data->len, block_bytelen - ctx->partial_block_bytelen);
+    HARDENED_TRY(
+        partial_block_copy(ctx, partial_bytelen, data, /*src_offset=*/0));
+    ctx->partial_block_bytelen = partial_bytelen + data->len;
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(data));
+    HARDENED_CHECK_EQ(ctx->partial_block_bytelen, partial_bytelen + data->len);
+    ctx->checksum = hmac_ctx_integrity_checksum(ctx);
     return OTCRYPTO_OK;
   }
 
@@ -964,6 +1017,8 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   // Restore context will restore the context and also hit start or continue
   // button as necessary.
   HARDENED_TRY(context_restore(ctx));
+  HARDENED_CHECK_GE(data->len, ctx->msg_block_wordlen * sizeof(uint32_t) -
+                                   ctx->partial_block_bytelen);
 
   // Write the partial block, then the new bytes.
   otcrypto_const_byte_buf_t partial_block_buf = OTCRYPTO_MAKE_BUF(
@@ -1000,11 +1055,12 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 
   // Write leftover bytes to `partial_block`, so that future update/final call
   // can feed them to HMAC HWIP.
-  memcpy(ctx->partial_block, data->data + (data->len - leftover_len),
-         leftover_len);
+  HARDENED_TRY(partial_block_copy(ctx, /*dst_offset=*/0, data,
+                                  data->len - leftover_len));
   ctx->partial_block_bytelen = leftover_len;
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(data));
+  ctx->checksum = hmac_ctx_integrity_checksum(ctx);
 
   return OTCRYPTO_OK;
 }
@@ -1012,6 +1068,8 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
+
+  HARDENED_CHECK_EQ(hmac_ctx_integrity_checksum_check(ctx), kHardenedBoolTrue);
 
   uint64_t msg_len_bits = (((uint64_t)ctx->upper << 32) | ctx->lower) +
                           ((uint64_t)ctx->partial_block_bytelen << 3);
@@ -1025,6 +1083,9 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
       otcrypto_const_byte_buf_t, (const uint8_t *)ctx->partial_block,
       ctx->partial_block_bytelen);
   HARDENED_TRY(msg_fifo_write(&partial_block_buf));
+  HARDENED_CHECK_EQ(
+      (uintptr_t)partial_block_buf.data,
+      (uintptr_t)((const hmac_ctx_t *)launderw((uintptr_t)ctx))->partial_block);
 
   // All message bytes are fed, now hit the process button.
   uint32_t cmd =
@@ -1034,16 +1095,25 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   // Wait for HMAC to be done, then read the digest.
   HARDENED_TRY(hmac_idle_wait());
   // Copy the digest result from HMAC HWIP to given `digest` buffer.
+  size_t digest_wordlen = ctx->digest_wordlen;
   HARDENED_TRY(hardened_memcpy(
       digest->data,
       (const uint32_t *)(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET),
-      ctx->digest_wordlen));
+      digest_wordlen));
 
   // Verify the HMAC configuration, error code, status, and message length.
   hmac_verify(ctx->cfg_reg, msg_len_bits);
 
   // Destroy sensitive values in the ctx object.
   HARDENED_TRY(hmac_context_wipe(ctx));
+
+  // Verify the copied digest against the HMAC digest registers after wiping
+  // `ctx` so any aliasing between `digest` and `ctx->partial_block` is caught.
+  HARDENED_CHECK_EQ(hardened_memeq(digest->data,
+                                   (const uint32_t *)(launderw(kHmacBaseAddr) +
+                                                      HMAC_DIGEST_0_REG_OFFSET),
+                                   digest_wordlen),
+                    kHardenedBoolTrue);
 
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(digest));
 
