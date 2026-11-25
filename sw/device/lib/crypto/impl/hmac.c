@@ -330,6 +330,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         hardened_memeq(full_tag_data, tag_redundant_data, digest_words),
         kHardenedBoolTrue);
     HARDENED_TRY(hardened_memcpy(tag->data, full_tag_data, tag->len));
+    HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant_data, tag->len),
+                      kHardenedBoolTrue);
     hardened_memshred((uint32_t *)&hmac_key,
                       sizeof(hmac_key) / sizeof(uint32_t));
     hardened_memshred((uint32_t *)&hmac_key_redundant,
@@ -356,6 +358,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
         hardened_memeq(full_tag_data, tag_redundant_data, digest_words),
         kHardenedBoolTrue);
     HARDENED_TRY(hardened_memcpy(tag->data, full_tag_data, tag->len));
+    HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant_data, tag->len),
+                      kHardenedBoolTrue);
     hardened_memshred((uint32_t *)&hmac_key,
                       sizeof(hmac_key) / sizeof(uint32_t));
     hardened_memshred((uint32_t *)&hmac_key_redundant,
