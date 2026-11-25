@@ -7,8 +7,8 @@
 // CHERIoT memory subsystem lockstep module
 // This module instantiates a second copy of cheriot_mem_sys_core, and compares its outputs against
 // those from the main copy. The second copy runs synchronously with the main copy, delayed by
-// LockstepOffset cycles. Every port of the main copy is an input here: its inputs are delayed into
-// the second copy, its outputs are compared.
+// LockstepOffset cycles. Every port of the main copy is an input here: its inputs other than the
+// sweep configuration are delayed into the second copy, its outputs are compared.
 
 // SEC_CM: LOGIC.SHADOW
 module cheriot_mem_sys_lockstep
@@ -184,17 +184,15 @@ module cheriot_mem_sys_lockstep
   //////////////////
 
   typedef struct packed {
-    prim_mubi_pkg::mubi4_t                               cheriot_ena;
-    cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr;
-    cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps;
-    cheriot_mem_sys_reg2hw_tbre_start_reg_t              tbre_start;
-    tlul_pkg::tl_h2d_t                                   cored_tl_d;
-    prim_mubi_pkg::mubi4_t                               cored_tag_h2d;
-    tlul_pkg::tl_h2d_t                                   corerevbm_tl;
-    tlul_pkg::tl_h2d_t                                   revbm_tl_d;
-    tlul_pkg::tl_d2h_t                                   cored_tl_h;
-    tlul_pkg::tl_d2h_t                                   tbre_tl_h;
-    tlul_pkg::tl_d2h_t                                   meta_sram_tl;
+    prim_mubi_pkg::mubi4_t                  cheriot_ena;
+    cheriot_mem_sys_reg2hw_tbre_start_reg_t tbre_start;
+    tlul_pkg::tl_h2d_t                      cored_tl_d;
+    prim_mubi_pkg::mubi4_t                  cored_tag_h2d;
+    tlul_pkg::tl_h2d_t                      corerevbm_tl;
+    tlul_pkg::tl_h2d_t                      revbm_tl_d;
+    tlul_pkg::tl_d2h_t                      cored_tl_h;
+    tlul_pkg::tl_d2h_t                      tbre_tl_h;
+    tlul_pkg::tl_d2h_t                      meta_sram_tl;
   } delayed_inputs_t;
 
   // Stage LockstepOffset-1 takes the inputs of the main copy, stage 0 feeds the second copy.
@@ -225,17 +223,44 @@ module cheriot_mem_sys_lockstep
   end
 
   // Assign the inputs to the delay structure
-  assign shadow_inputs_in.cheriot_ena    = cheriot_ena_i;
-  assign shadow_inputs_in.tbre_base_addr = tbre_base_addr_i;
-  assign shadow_inputs_in.tbre_num_caps  = tbre_num_caps_i;
-  assign shadow_inputs_in.tbre_start     = tbre_start_i;
-  assign shadow_inputs_in.cored_tl_d     = cored_tl_d_h2d_i;
-  assign shadow_inputs_in.cored_tag_h2d  = cored_tag_h2d_i;
-  assign shadow_inputs_in.corerevbm_tl   = corerevbm_tl_h2d_i;
-  assign shadow_inputs_in.revbm_tl_d     = revbm_tl_d_h2d_i;
-  assign shadow_inputs_in.cored_tl_h     = cored_tl_h_d2h_i;
-  assign shadow_inputs_in.tbre_tl_h      = tbre_tl_h_d2h_i;
-  assign shadow_inputs_in.meta_sram_tl   = meta_sram_tl_d2h_i;
+  assign shadow_inputs_in.cheriot_ena   = cheriot_ena_i;
+  assign shadow_inputs_in.tbre_start    = tbre_start_i;
+  assign shadow_inputs_in.cored_tl_d    = cored_tl_d_h2d_i;
+  assign shadow_inputs_in.cored_tag_h2d = cored_tag_h2d_i;
+  assign shadow_inputs_in.corerevbm_tl  = corerevbm_tl_h2d_i;
+  assign shadow_inputs_in.revbm_tl_d    = revbm_tl_d_h2d_i;
+  assign shadow_inputs_in.cored_tl_h    = cored_tl_h_d2h_i;
+  assign shadow_inputs_in.tbre_tl_h     = tbre_tl_h_d2h_i;
+  assign shadow_inputs_in.meta_sram_tl  = meta_sram_tl_d2h_i;
+
+  /////////////////////////
+  // Sweep configuration //
+  /////////////////////////
+
+  // The second copy reads the sweep configuration LockstepOffset cycles after the main copy, not
+  // through the input delay, so that a transient on these nets reaches at most one copy. No write
+  // commits in between for a LockstepOffset up to 4: TBRE_REGWEN drops after a taken start, and
+  // after a dropped start a shadow register commits on a second write, 4 cycles later at the
+  // earliest.
+  typedef struct packed {
+    cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr;
+    cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps;
+  } sweep_cfg_t;
+
+  sweep_cfg_t sweep_cfg_in, sweep_cfg_buf;
+
+  assign sweep_cfg_in.tbre_base_addr = tbre_base_addr_i;
+  assign sweep_cfg_in.tbre_num_caps  = tbre_num_caps_i;
+
+  // Synthesis keeps the buffer, so it cannot share logic between the two copies on these nets.
+  prim_buf #(
+    .Width($bits(sweep_cfg_t))
+  ) u_sweep_cfg_buf (
+    .in_i (sweep_cfg_in),
+    .out_o(sweep_cfg_buf)
+  );
+
+  `ASSERT(SweepCfgStable_A, tbre_start_i.qe |=> $stable(sweep_cfg_in) [*LockstepOffset])
 
   ///////////////////
   // Output delays //
@@ -310,8 +335,8 @@ module cheriot_mem_sys_lockstep
     .clk_i,
     .rst_ni             (rst_shadow_n),
     .cheriot_ena_i      (shadow_inputs_q[0].cheriot_ena),
-    .tbre_base_addr_i   (shadow_inputs_q[0].tbre_base_addr),
-    .tbre_num_caps_i    (shadow_inputs_q[0].tbre_num_caps),
+    .tbre_base_addr_i   (sweep_cfg_buf.tbre_base_addr),
+    .tbre_num_caps_i    (sweep_cfg_buf.tbre_num_caps),
     .tbre_start_i       (shadow_inputs_q[0].tbre_start),
     .tbre_regwen_o      (shadow_outputs_d.tbre_regwen),
     .tbre_status_o      (shadow_outputs_d.tbre_status),
