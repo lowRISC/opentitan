@@ -32,6 +32,11 @@ The software can set [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) to use
 The key manager always provides the sideloaded key in two-share masked form regardless of the compile-time Verilog parameter `EnMasking`.
 If `EnMasking` is false, the KMAC converts the shared key to the unmasked form before the key is used.
 
+While the key manager performs a key derivation, it forwards its internal key, which must never be used by SW or any other app, on the same sideload interface.
+It signals this with the `keymgr_sensitive_key` input (`mubi4`), which is `kMultiBitBool4True` while the internal key is present.
+SW-initiated KMAC operations and KMAC operations of app interfaces other than the key manager only use the sideloaded key while `keymgr_sensitive_key` is `kMultiBitBool4False`.
+If such an operation uses the sideloaded key while `keymgr_sensitive_key` is any other value, the KMAC zeroes the key towards the KMAC core and treats the sideloaded key as invalid (see [Key invalid error](#key-invalid-error)).
+
 The SHA3 core is the main Keccak processing module.
 It supports SHA3 hashing functions, SHAKE128, SHAKE256 extended output functions, and also cSHAKE128, cSHAKE256 functions in order to support KMAC operation.
 To support multiple hashing functions, it has the padding logic inside.
@@ -617,6 +622,7 @@ The diagram below shows an example for a dynamic interface (note the response ba
 ##### Key invalid error
 This error occurs if the sideloaded key is used but the key is invalid.
 The sideloaded key is considered as used when either SW has full control over the KMAC or for an app session from the start of the message absorption phase (`StAppMsg`) until the digest is valid (the processing has finished, `StAppPushDigest`).
+When SW has full control over the KMAC or for an app session of an app interface other than the key manager (app index `AppIdxKeyMgr`, 0 by default), the sideloaded key is also considered invalid while the key manager forwards its internal key, i.e., while `keymgr_sensitive_key` is not `kMultiBitBool4False`.
 
 There are three cases to consider:
 - The key is already invalid when starting the operation because SW didn't configure the KeyMgr correctly.
@@ -721,7 +727,7 @@ Each error code gives debugging information at the lower 24 bits of [`ERR_CODE`]
 
 Value | Error Code | Description
 ------|------------|-------------
-0x01  | KeyNotValid | In KMAC mode with the sideloaded key, the IP raises an error if the sideloaded secret key is not ready.
+0x01  | KeyNotValid | In KMAC mode with the sideloaded key, the IP raises an error if the sideloaded secret key is not ready, or if SW or an app interface other than the key manager uses it while the key manager forwards its internal key.
 0x02  | SwPushedMsgFifo | MsgFifo is updated while not being in the Message Feed state.
 0x03  | SwIssuedCmdInAppActive | SW issued a command while the application interface is being used
 0x06  | UnexpectedModeStrength | SHA3 mode and Keccak Strength combination is not expected.
