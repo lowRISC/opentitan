@@ -103,6 +103,7 @@
 
     {
       name: entropy_src_stress_all_with_rand_reset
+      uvm_test: entropy_src_stress_all_test
       reseed: 10
     }
 
