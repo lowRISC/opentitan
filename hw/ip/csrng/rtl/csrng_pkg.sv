@@ -147,7 +147,7 @@ package csrng_pkg;
   parameter int unsigned MainSmStateWidth = 6;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 5 -n 6 \
   //     -s 137328258 --language=sv
   //
   // Hamming distance histogram:
@@ -155,9 +155,9 @@ package csrng_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (53.33%)
-  //  4: ||||||||||||||| (40.00%)
-  //  5: || (6.67%)
+  //  3: |||||||||||||||||||| (50.00%)
+  //  4: |||||||||||||||| (40.00%)
+  //  5: |||| (10.00%)
   //  6: --
   //
   // Minimum Hamming distance: 3
@@ -168,10 +168,9 @@ package csrng_pkg;
   typedef enum logic [MainSmStateWidth-1:0] {
     MainSmIdle        = 6'b010111, // idle
     MainSmParseCmd    = 6'b100001, // parse the cmd
-    MainSmEntropyReq  = 6'b001000, // request entropy if necessary
     MainSmCmdPrep     = 6'b111011, // delay cycle for command request (?)
     MainSmCmdReq      = 6'b110100, // command request to core data path
-    MainSmError       = 6'b101110  // error state, results in fatal alert
+    MainSmError       = 6'b001000  // error state, results in fatal alert
   } main_sm_state_e;
 
   parameter int CsKeymgrDivWidth = 384;

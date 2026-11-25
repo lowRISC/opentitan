@@ -83,15 +83,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
   virtual task csrng_set_enable(bit enable);
     mubi4_t mubi_en = prim_mubi_pkg::mubi4_bool_to_mubi(enable);
-
-    // Disabling CSRNG may drop an ongoing req to entropy_src.  This is generally not allowed in
-    // push_pull_if, but in this case it is allowed because entropy_src is to be disabled and
-    // re-enabled shortly after.
-    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", enable)
-
-    // While CSRNG is disabled, entropy_src may ack a previous req that is no longer high.
-    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", enable)
-
     csr_wr(.ptr(ral.ctrl.enable), .value(mubi_en), .blocking(1));
   endtask
 
@@ -101,9 +92,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     cs_item_q     = new[cfg.m_num_apps];
     uninstantiate = new[cfg.m_num_apps];
 
-    // Create entropy_src sequence
-    m_entropy_src_pull_seq = push_pull_device_seq#(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH)::
-        type_id::create("m_entropy_src_pull_seq");
     // Create edn host sequences
     m_edn_push_seq = new[cfg.m_num_hw_apps];
     for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
@@ -113,11 +101,6 @@ class csrng_cmds_vseq extends csrng_base_vseq;
 
     create_cmds_all_apps();
     print_cmds_all_apps();
-
-    // Start entropy_src agent
-    fork
-      m_entropy_src_pull_seq.start(p_sequencer.entropy_src_sequencer_h);
-    join_none
 
     // Send commands
     fork

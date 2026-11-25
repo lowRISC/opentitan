@@ -57,8 +57,8 @@ class csrng_err_vseq extends csrng_base_vseq;
     `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
 
     // Turn off assertions
-    $assertoff(0, "tb.entropy_src_if.ReqHighUntilAck_A");
-    $assertoff(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", 1'b0)
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", 1'b0)
     $assertoff(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
     $assertoff(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));
@@ -277,8 +277,8 @@ class csrng_err_vseq extends csrng_base_vseq;
     end
 
     // Turn assertions back on
-    $asserton(0, "tb.entropy_src_if.ReqHighUntilAck_A");
-    $asserton(0, "tb.entropy_src_if.AckAssertedOnlyWhenReqAsserted_A");
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_ReqHighUntilAck_A_CTRL", 1'b1)
+    `DV_ASSERT_CTRL_REQ("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL", 1'b1)
     $asserton(0, `HIER_PATH(`CMD_STAGE_0, u_state_regs_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_1, u_state_regs_A));
     $asserton(0, `HIER_PATH(`CMD_STAGE_2, u_state_regs_A));

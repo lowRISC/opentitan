@@ -17,6 +17,8 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   csrng_item                                              cs_item[];
   push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item[],
                                                           es_item_q[][$];
+  // The seed most recently received from entropy_src, which CSRNG holds until it is consumed.
+  push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   latest_es_item;
   uint                                                    more_cmd_data;
   bit [TL_DW-1:0]                                         hw_genbits_reg_q[$];
   bit [GENBITS_BUS_WIDTH-1:0]                             hw_genbits,
@@ -85,6 +87,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
     fork
       collect_seeds();
+      assign_seeds();
       forever begin
         wait(cfg.under_reset);
         `uvm_info(`gfn, "Reset detected, clearing scoreboard state.", UVM_MEDIUM)
@@ -120,6 +123,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
   // reset watcher in run_phase().
   function void handle_disable();
     entropy_src_fifo.flush();
+    latest_es_item = null;
     hw_genbits_reg_q.delete();
     hw_genbits = '0;
     more_cmd_data = 0;
@@ -599,13 +603,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   task collect_seeds();
     push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))   es_item;
-    bit [$clog2(MaxNumApps)-1:0] cmd_arb_idx;
-    string      cmd_arb_idx_q_path = "tb.dut.u_csrng_core.cmd_arb_idx_q";
-    bit [MaxNumApps-1:0] previous_fips;
-    // Flags indicating that fips transitions can be recorded for coverage.
-    bit [MaxNumApps-1:0] initial_fips_received = '0;
 
-    `DV_CHECK_FATAL(uvm_hdl_check_path(cmd_arb_idx_q_path))
     forever begin
       entropy_src_fifo.get(es_item);
       if (cfg.lc_hw_debug_en == On) begin
@@ -613,19 +611,46 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end else begin
         es_item.d_data = es_item.d_data ^ LC_HW_DEBUG_EN_OFF_DATA;
       end
+      // CSRNG discards a seed that entropy_src returns while CSRNG is disabled.
+      if (`gmv(ral.ctrl.enable) == MuBi4True) begin
+        latest_es_item = es_item;
+      end
+    end
+  endtask
+
+  // Hand the held seed to the app whose instantiate or reseed command consumes it.
+  task assign_seeds();
+    bit [$clog2(MaxNumApps)-1:0] cmd_arb_idx;
+    string      cmd_arb_idx_q_path = "tb.dut.u_csrng_core.cmd_arb_idx_q";
+    bit [MaxNumApps-1:0] previous_fips;
+    // Flags indicating that fips transitions can be recorded for coverage.
+    bit [MaxNumApps-1:0] initial_fips_received = '0;
+
+    // Without the scoreboard, the seeds from entropy_src aren't collected.
+    if (!cfg.en_scb) return;
+    `DV_CHECK_FATAL(uvm_hdl_check_path(cmd_arb_idx_q_path))
+    forever begin
+      cfg.clk_rst_vif.wait_n_clks(1);
+      if (cfg.under_reset || !cfg.csrng_path_vif.seed_consumed_i) continue;
+      if (latest_es_item == null) begin
+        // The seed may only have been dropped by a disable that has not reached the DUT yet.
+        `DV_CHECK_NE(`gmv(ral.ctrl.enable), MuBi4True, "Seed consumed but none was received")
+        continue;
+      end
       // Need to access rtl signal to determine which APP won arbitration
       `DV_CHECK(uvm_hdl_read(cmd_arb_idx_q_path, cmd_arb_idx))
       if (cmd_arb_idx < cfg.m_num_apps) begin
-        es_item_q[cmd_arb_idx].push_back(es_item);
+        es_item_q[cmd_arb_idx].push_back(latest_es_item);
       end else begin
         `uvm_fatal(`gfn, $sformatf("Invalid entropy source arb idx: %0d", cmd_arb_idx))
       end
-      cov_vif.cg_csrng_es_sample(es_item.d_data[CSRNG_BUS_WIDTH],
+      cov_vif.cg_csrng_es_sample(latest_es_item.d_data[CSRNG_BUS_WIDTH],
                                  previous_fips[cmd_arb_idx],
                                  cmd_arb_idx,
                                  initial_fips_received[cmd_arb_idx]);
       initial_fips_received[cmd_arb_idx] = 1'b1;
-      previous_fips[cmd_arb_idx] = es_item.d_data[CSRNG_BUS_WIDTH];
+      previous_fips[cmd_arb_idx] = latest_es_item.d_data[CSRNG_BUS_WIDTH];
+      latest_es_item = null;
     end
   endtask
 

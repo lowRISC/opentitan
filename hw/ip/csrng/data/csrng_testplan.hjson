@@ -25,8 +25,9 @@
       desc: '''
             This test verifies the behavior of the Interrupt State Register.
             Verify cs_cmd_req_done interrupt asserts when glen number of genbit words have been generated.
-            Verify cs_entropy_req interrupt asserts when instantiate or reseed is called with flag0
-            set to false.
+            Verify cs_entropy_req interrupt asserts once when an instantiate or reseed called with
+            flag0 set to false is blocked because no seed is available, and not when a seed is
+            requested only.
             Verify cs_hw_inst_exc interrupt asserts when any of the application interfaces responds with a CSRNG_ERROR response status signal.
             Verify cs_fatal_err interrupt asserts when any bit of err_code register is set.
             Verify that each interrupt clears back to 0 after writing the corresponding interrupt state bit.
@@ -80,6 +81,9 @@
             Verify that if CTRL.SW_APP_ENABLE and CTRL.READ_INT_STATE are set, genbits and int_state_value registers are readable, respectively, and unreadable otherwise.
             Verify commands with continuous/non-continuous valid.
             Verify that if FIPS bit drops at input from entropy source that the generated block also has FIPS low.
+            Verify that CSRNG prefetches a seed when it gets enabled and whenever the held seed has been consumed by an instantiate or reseed with flag0 false, and that every seed is used by exactly one such command.
+            Verify that disabling CSRNG discards the held seed and any seed arriving while CSRNG is disabled.
+            Verify that the seed is arbitrated between apps issuing instantiate or reseed commands that require entropy, and that commands not requiring entropy are not blocked while waiting for the seed.
             '''
       stage: V2
       tests: ["csrng_cmds"]
@@ -155,6 +159,14 @@
       name: csrng_sw_cmd_drop_cg
       desc: '''
             Covers that a word written to CMD_REQ while SW_CMD_STS.CMD_RDY is low has been dropped.
+            '''
+    }
+    {
+      name: csrng_seed_cg
+      desc: '''
+            Covers that a seed arrives while CSRNG is disabled and is discarded.
+            Covers that a command not requiring entropy completes while another app waits for the seed.
+            Covers that a command consumes the seed while another app waits for the next one.
             '''
     }
     {

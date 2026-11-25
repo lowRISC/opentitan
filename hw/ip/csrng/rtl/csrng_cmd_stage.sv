@@ -32,7 +32,10 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Halt control.
   input logic                        halt_i,
   output logic                       halted_o,
-  // Command to arbiter.
+  // Entropy arbiter signals.
+  output logic                       entropy_arb_req_o,
+  input logic                        entropy_arb_gnt_i,
+  // Command arbiter signals.
   output logic                       cmd_arb_req_o,
   output logic                       cmd_arb_sop_o,
   output logic                       cmd_arb_mop_o,
@@ -102,6 +105,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic                        invalid_acmd;
   logic                        invalid_gen_cmd;
   logic                  [2:0] acmd;
+  prim_mubi_pkg::mubi4_t       flag0;
 
   // Flops.
   logic           cmd_ack_q, cmd_ack_d;
@@ -190,11 +194,14 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Capture the application command type.
   assign acmd = sfifo_cmd_rdata[2:0];
 
+  // Capture the flag0 of the application command.
+  assign flag0 = prim_mubi_pkg::mubi4_t'(sfifo_cmd_rdata[11:8]);
+
   //---------------------------------------------------------
   // state machine to process command
   //---------------------------------------------------------
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 11 -n 8 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 12 -n 8 \
   //     -s 170131814 --language=sv
   //
   // Hamming distance histogram:
@@ -202,11 +209,11 @@ module csrng_cmd_stage import csrng_pkg::*; (
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||| (21.82%)
-  //  4: |||||||||||||||||||| (36.36%)
-  //  5: ||||||||||||||||| (30.91%)
-  //  6: ||||| (9.09%)
-  //  7: | (1.82%)
+  //  3: ||||||||||| (21.21%)
+  //  4: |||||||||||||||||||| (37.88%)
+  //  5: |||||||||||||||| (30.30%)
+  //  6: |||| (7.58%)
+  //  7: | (3.03%)
   //  8: --
   //
   // Minimum Hamming distance: 3
@@ -216,17 +223,18 @@ module csrng_cmd_stage import csrng_pkg::*; (
   //
   localparam int CmdStageStateWidth = 8;
   typedef enum logic [CmdStageStateWidth-1:0] {
-    Idle      = 8'b11110101, // idle
-    Flush     = 8'b01011011, // flush command FIFO and start over
-    ArbGnt    = 8'b00011100, // general arbiter request
-    SendSOP   = 8'b00000001, // send sop (start of packet)
-    SendMOP   = 8'b01010110, // send mop (middle of packet)
-    CmdAck    = 8'b10001101, // wait for command ack
-    GenReq    = 8'b11000000, // process gen requests
-    GenArbGnt = 8'b10010011, // generate subsequent arb request
-    GenSOP    = 8'b11101110, // generate subsequent request
-    AbortAck  = 8'b10111010, // wait for gen abort ack
-    Error     = 8'b01100111  // illegal state reached and hang
+    Idle          = 8'b11110101, // idle
+    Flush         = 8'b01011011, // flush command FIFO and start over
+    ArbGnt        = 8'b00011100, // general arbiter request
+    SendSOP       = 8'b00000001, // send sop (start of packet)
+    SendMOP       = 8'b01010110, // send mop (middle of packet)
+    CmdAck        = 8'b10001101, // wait for command ack
+    GenReq        = 8'b11000000, // process gen requests
+    GenArbGnt     = 8'b10010011, // generate subsequent arb request
+    GenSOP        = 8'b11101110, // generate subsequent request
+    AbortAck      = 8'b10111010, // wait for gen abort ack
+    Error         = 8'b01100111, // illegal state reached and hang
+    EntropyArbGnt = 8'b01101000  // entropy arbiter request
   } state_e;
 
   // SEC_CM: CMD_STAGE.FSM.SPARSE
@@ -263,6 +271,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
     cmd_arb_sop_o = 1'b0;
     cmd_arb_mop_o = 1'b0;
     cmd_arb_eop_o = 1'b0;
+    entropy_arb_req_o = 1'b0;
     cmd_stage_sm_err_o = 1'b0;
     cmd_err_ack = 1'b0;
     reseed_cnt_exceeded = 1'b0;
@@ -277,8 +286,9 @@ module csrng_cmd_stage import csrng_pkg::*; (
     if (state_q == Error) begin
       // In case we are in the Error state we must ignore the enable signal.
       cmd_stage_sm_err_o = 1'b1;
-    end else if (!cs_enable_i && state_q inside {Idle, Flush, ArbGnt, SendSOP, SendMOP, CmdAck,
-                                                 GenReq, GenArbGnt, GenSOP, AbortAck}) begin
+    end else if (!cs_enable_i && state_q inside {Idle, Flush, EntropyArbGnt, ArbGnt, SendSOP,
+                                                 SendMOP, CmdAck, GenReq, GenArbGnt, GenSOP,
+                                                 AbortAck}) begin
       // In case the module is disabled and we are in a legal state we must go into idle state.
       state_d = Idle;
     end else begin
@@ -293,22 +303,26 @@ module csrng_cmd_stage import csrng_pkg::*; (
             end
           end else if (!cmd_fifo_zero) begin
             if (acmd == INS) begin
-              if (!instantiated_i) begin
-                state_d = ArbGnt;
-              end
               if (instantiated_i) begin
+                // An instance cannot be instantiated twice.
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
+              end else if (prim_mubi_pkg::mubi4_test_false_loose(flag0)) begin
+                state_d = EntropyArbGnt;
+              end else begin
+                state_d = ArbGnt;
               end
             end else if (acmd == RES) begin
-              if (instantiated_i) begin
-                state_d = ArbGnt;
-              end
               if (!instantiated_i) begin
+                // Only an instantiated instance can be reseeded.
                 cmd_err_ack = 1'b1;
                 invalid_cmd_seq = 1'b1;
                 state_d = Idle;
+              end else if (prim_mubi_pkg::mubi4_test_false_loose(flag0)) begin
+                state_d = EntropyArbGnt;
+              end else begin
+                state_d = ArbGnt;
               end
             end else if (acmd == GEN) begin
               if (instantiated_i) begin
@@ -369,6 +383,12 @@ module csrng_cmd_stage import csrng_pkg::*; (
           cmd_fifo_pop = sfifo_cmd_rvld;
           if (!sfifo_cmd_rvld && !cmd_stage_vld_i) begin
             state_d = Idle;
+          end
+        end
+        EntropyArbGnt: begin
+          entropy_arb_req_o = 1'b1;
+          if (entropy_arb_gnt_i) begin
+            state_d = ArbGnt;
           end
         end
         ArbGnt: begin

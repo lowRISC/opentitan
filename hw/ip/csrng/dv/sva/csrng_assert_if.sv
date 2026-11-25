@@ -25,7 +25,30 @@
 `define PATH4 \
     u_csrng_core.u_csrng_main_sm
 
-interface csrng_assert_if;
+`include "prim_assert.sv"
+
+interface csrng_assert_if (
+  input logic                                 clk_i,
+  input logic                                 rst_ni,
+  input logic [prim_mubi_pkg::MuBi4Width-1:0] enable_i,
+  input logic                                 es_req_i,
+  input logic                                 seed_consumed_i
+);
+
+  // CSRNG prefetches a seed: it requests one when it gets enabled and after the held seed has been
+  // consumed.
+  localparam int unsigned MaxEsReqDelay = 2;
+
+  logic enabled;
+  assign enabled = prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(enable_i));
+
+  `ASSERT(EsReqOnEnable_A,
+          $rose(enabled) |-> ##[0:MaxEsReqDelay] es_req_i,
+          clk_i, !rst_ni || !enabled)
+
+  `ASSERT(EsReqAfterSeedUse_A,
+          seed_consumed_i |-> ##[1:MaxEsReqDelay] es_req_i,
+          clk_i, !rst_ni || !enabled)
 
   task automatic assert_off ();
     $assertoff(0, `DUT_PATH.`PATH1.u_state_regs_A);
