@@ -328,7 +328,7 @@ Which engines are present is selected at design time with the `KdfEngineSel` par
 | `KdfEngineBoth` | Software selects the engine at run time with [`KDF_ENGINE_SHADOWED`](registers.md#kdf_engine_shadowed).     |
 
 With `KdfEngineBoth`, `KDF_ENGINE_SHADOWED.SEL` selects the engine: `kMultiBitBool4False` (reset value) selects KMAC and `kMultiBitBool4True` selects OTBN.
-With `KdfEngineKmac` or `KdfEngineOtbn` the engine is hard-wired and the register value is ignored, although values other than `kMultiBitBool4False` or `kMultiBitBool4True` will raise `ERR_CODE.INVALID_OP`.
+With `KdfEngineKmac` or `KdfEngineOtbn`, the engine is hard-wired and the register value is ignored.
 Writes to `KDF_ENGINE_SHADOWED` can be locked until the next reset by clearing `KDF_ENGINE_REGWEN.EN`.
 
 The selection that is in use is latched internally and only follows `KDF_ENGINE_SHADOWED` while no operation is ongoing.
