@@ -35,7 +35,24 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Prepare Nix
+        # Only `master` uses Nix, releases from other branches do not use it.
+        if: hashFiles('.github/actions/prepare-nix/action.yml') != ''
         uses: ./.github/actions/prepare-nix
+
+      # This is a somewhat horrible hack to make this workflow usable on both `master`
+      # and on older branches (e.g. `earlgrey_1.0.0`). Essentially, if this branch uses
+      # Nix, then make sure its Verilator is visible on PATH. If it does not, then it
+      # is assumed it (i.e. the older Verilator version) should already be on PATH.
+      - name: Put Nix's Verilator on PATH
+        if: hashFiles('.github/actions/prepare-nix/action.yml') != ''
+        run: |
+          verilator="$(nix run --quiet --no-warn-dirty .#eda -- \
+            sh -c 'readlink -f "$(command -v verilator)"' | tail -n1)"
+          if [[ ! -x "$verilator" ]]; then
+            echo "::error::Could not find Verilator from Nix"
+            exit 1
+          fi
+          echo "$(dirname "$verilator")" >> "$GITHUB_PATH"
 
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
@@ -62,7 +79,7 @@ jobs:
       - name: Build
         run: |
           module load xilinx/vivado
-          nix run --quiet --no-warn-dirty .#eda -- ./bazelisk.sh build '${{ inputs.target }}'
+          ./bazelisk.sh build '${{ inputs.target }}'
 
       - name: Create release
         env:
