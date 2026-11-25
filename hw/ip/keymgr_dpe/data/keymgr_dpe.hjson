@@ -1145,7 +1145,7 @@
               name: "Disabled",
               desc: '''
                 Key manager currently disabled. Please reset the key manager.
-                Sideload keys are still valid.
+                Sideload keys stay valid after a software disable.
               '''
             },
             { value: "3",

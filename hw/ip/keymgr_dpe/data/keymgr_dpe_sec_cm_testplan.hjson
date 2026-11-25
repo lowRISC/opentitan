@@ -153,7 +153,7 @@
       name: sec_cm_ctrl_fsm_local_esc
       desc: "Verify the countermeasure(s) CTRL.FSM.LOCAL_ESC."
       stage: V2S
-      tests: []
+      tests: ["keymgr_dpe_fault_wipe"]
     }
     {
       name: sec_cm_ctrl_fsm_consistency
