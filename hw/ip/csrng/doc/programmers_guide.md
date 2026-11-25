@@ -16,11 +16,12 @@ Depending on the mode in which the CSRNG instance is running, software can use a
 
 ### Regular, non-deterministic mode
 
-If a CSRNG instance is running in regular, non-deterministic mode (`flag0` being false, see [Generated Bits (`genbits`) Interface](theory_of_operation.md#generated-bits-genbits-interface) for details), the `cs_entropy_req` interrupt will assert whenever the instance requests entropy from ENTROPY_SRC.
+If a CSRNG instance is running in regular, non-deterministic mode (`flag0` being false, see [Generated Bits (`genbits`) Interface](theory_of_operation.md#generated-bits-genbits-interface) for details), it consumes the seed held by CSRNG with every <tt>instantiate</tt> and <tt>reseed</tt> command.
+CSRNG then requests a new seed from ENTROPY_SRC.
+An <tt>instantiate</tt> or <tt>reseed</tt> command issued before the new seed has arrived is blocked until then, and the `cs_entropy_req` interrupt asserts.
 Once software observes the interrupt, it has to enable ENTROPY_SRC.
-The ENTROPY_SRC block will then perform the startup health testing and eventually deliver a new seed to the CSRNG instance.
-Note that the startup health testing may take a non-negligible time (see [Startup Health Testing](../../entropy_src/doc/theory_of_operation.md#startup-health-testing) during which the CSRNG instance is blocked.
-Thus, it is recommended that software tracks the age of the seed currently in use via the corresponding [`RESEED_COUNTER`](registers.md#reseed_counter) register to re-enable ENTROPY_SRC ahead of the `cs_entropy_req` interrupt firing.
+The ENTROPY_SRC block will then perform the startup health testing and eventually deliver a new seed to CSRNG.
+Note that the startup health testing may take a non-negligible time (see [Startup Health Testing](../../entropy_src/doc/theory_of_operation.md#startup-health-testing)).
 
 ### Fully deterministic mode
 
