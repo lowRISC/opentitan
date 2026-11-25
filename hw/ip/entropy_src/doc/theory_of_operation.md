@@ -136,7 +136,8 @@ However, if the ENTROPY_SRC block experiences internal back pressure, health tes
   Firmware is not informed when dropping entire seeds.
   When running in [Firmware Override: Extract & Insert mode](programmers_guide.md#firmware_override_-_extract_&_insert), firmware may want to infer whether the next seed is likely going to be dropped at this moment by reading the current depth of the `esfinal` FIFO from the [`DEBUG_STATUS`](registers.md#debug_status) register.
 - **Input of Observe FIFO**: When running in any of the [Firmware Override modes](programmers_guide.md#firmware_override_/_bypass_modes) health tested entropy bits are collected in the Observe FIFO for observation / extraction by firmware.
-  Whenever the Observe FIFO runs full, the [`FW_OV_RD_FIFO_OVERFLOW`](registers.md#fw_ov_rd_fifo_overflow) bit is asserted and the hardware stops collecting entropy bits in the Observe FIFO until firmware has emptied the FIFO.
+  Entropy bits that arrive while the Observe FIFO is full are dropped and the [`FW_OV_RD_FIFO_OVERFLOW`](registers.md#fw_ov_rd_fifo_overflow) bit is asserted.
+  The hardware then stops collecting entropy bits in the Observe FIFO until firmware has emptied the FIFO.
   This helps ensuring that observed / extracted entropy bits are contiguous.
 - **Input of `postht` / `esbit` FIFO**: When experiencing back pressure from the hardware conditioner (see below), health tested entropy bits may get dropped at the input of the `postht` or `esbit` FIFO when running in multi-channel or single-channel mode, respectively.
   Note that the dropped bits are still health tested and contribute to the overall results for the current window.
