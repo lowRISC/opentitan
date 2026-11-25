@@ -384,10 +384,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   join
   // when reset occurs, end this seq ASAP to avoid killing seq while sending trans
   if (do_wait_clk) begin
-    repeat($urandom_range(500, 10_000)) begin
-      if (cfg.under_reset) return;
-      cfg.clk_rst_vif.wait_clks(1);
-    end
+    int unsigned num_clks = $urandom_range(500, 10_000);
+    `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(num_clks);, wait (cfg.under_reset);)
   end
 endtask : run_tl_errors_vseq_sub
 
