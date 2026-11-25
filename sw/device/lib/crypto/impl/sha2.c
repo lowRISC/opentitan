@@ -181,7 +181,9 @@ otcrypto_status_t otcrypto_sha2_update(
 #endif
 
   // Return early if the update size is 0.
-  if (message->len == 0) {
+  if (launderw(message->len) == 0) {
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message));
+    HARDENED_CHECK_EQ(message->len, 0);
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
