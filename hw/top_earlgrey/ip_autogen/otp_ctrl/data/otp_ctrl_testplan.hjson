@@ -85,6 +85,22 @@
       tests: ["otp_ctrl_partition_walk"]
     }
     {
+      name: sw_window_access
+      desc: '''
+            Program random words of each unbuffered partition through the DAI, then read the
+            `SW_CFG_WINDOW` at the first, last and random words of every partition, and past the
+            last partition if the window extends beyond it.
+
+            **Checks**:
+            - A read in an unbuffered partition returns the OTP data.
+            - A read in a buffered partition, in the life cycle partition or past the last
+              partition gets an error response, and STATUS read right after it is unchanged.
+            - A read of a programmed word after each error response returns its data.
+            '''
+      stage: V2
+      tests: ["otp_ctrl_sw_window_access"]
+    }
+    {
       name: init_fail
       desc: '''
             Based on OTP_CTRL smoke test, this test creates OTP_CTRL's initialization failure:

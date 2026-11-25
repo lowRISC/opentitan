@@ -1594,7 +1594,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
                                                   output bit        mem_ro_err,
                                                   output bit        custom_err);
 
-    uvm_reg_addr_t addr       = block.get_word_aligned_addr(item.a_addr);
+    uvm_reg_addr_t addr       = block.get_normalized_addr(item.a_addr);
     bit [TL_AW-1:0] addr_mask = ral.get_addr_mask();
     bit [TL_AW-1:0] dai_addr  = (addr & addr_mask - SW_WINDOW_BASE_ADDR);
 
@@ -1610,6 +1610,13 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     // Also will skip checking if memory access is not allowed due to TLUL bus error.
     if (mem_access_allowed &&
         mem_ranges[0].start_addr <= addr && addr <= mem_ranges[0].end_addr) begin
+
+      // A read the window does not map gets an error response, as an out-of-bounds read does, and
+      // changes no status
+      if (!is_sw_window_mapped(dai_addr)) begin
+        custom_err = 1;
+        return 0;
+      end
 
       // If sw partition is read locked, then access policy changes from RO to no access
 % for part in read_locked_csr_parts:
