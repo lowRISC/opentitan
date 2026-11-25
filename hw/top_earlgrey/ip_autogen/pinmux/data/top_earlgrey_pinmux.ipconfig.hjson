@@ -45,6 +45,22 @@
         default_pad: 3
       }
       {
+        name: spi_host1_sd[0]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[1]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[2]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[3]
+        pads: []
+      }
+      {
         name: spi_device_sd[0]
         pads:
         [
@@ -373,22 +389,6 @@
         pads: []
       }
       {
-        name: spi_host1_sd[0]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[1]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[2]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[3]
-        pads: []
-      }
-      {
         name: sysrst_ctrl_ec_rst_l
         pads:
         [
@@ -425,6 +425,10 @@
         default_pad: 11
       }
       {
+        name: spi_device_tpm_csb
+        pads: []
+      }
+      {
         name: uart0_rx
         pads: []
       }
@@ -454,10 +458,6 @@
       }
       {
         name: i3c1_rstdet_sda
-        pads: []
-      }
-      {
-        name: spi_device_tpm_csb
         pads: []
       }
       {
@@ -520,6 +520,22 @@
         default_pad: 3
       }
       {
+        name: spi_host1_sd[0]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[1]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[2]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[3]
+        pads: []
+      }
+      {
         name: spi_device_sd[0]
         pads:
         [
@@ -848,22 +864,6 @@
         pads: []
       }
       {
-        name: spi_host1_sd[0]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[1]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[2]
-        pads: []
-      }
-      {
-        name: spi_host1_sd[3]
-        pads: []
-      }
-      {
         name: sysrst_ctrl_ec_rst_l
         pads:
         [
@@ -896,30 +896,6 @@
         default_pad: 5
       }
       {
-        name: uart0_tx
-        pads: []
-      }
-      {
-        name: uart1_tx
-        pads: []
-      }
-      {
-        name: uart2_tx
-        pads: []
-      }
-      {
-        name: uart3_tx
-        pads: []
-      }
-      {
-        name: i3c0_ctrl_sda_pu
-        pads: []
-      }
-      {
-        name: i3c1_ctrl_sda_pu
-        pads: []
-      }
-      {
         name: spi_host0_csb[1]
         pads: []
       }
@@ -941,6 +917,30 @@
       }
       {
         name: spi_host1_csb[2]
+        pads: []
+      }
+      {
+        name: uart0_tx
+        pads: []
+      }
+      {
+        name: uart1_tx
+        pads: []
+      }
+      {
+        name: uart2_tx
+        pads: []
+      }
+      {
+        name: uart3_tx
+        pads: []
+      }
+      {
+        name: i3c0_ctrl_sda_pu
+        pads: []
+      }
+      {
+        name: i3c1_ctrl_sda_pu
         pads: []
       }
       {

@@ -7941,7 +7941,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h8),
+    .RESVAL  (6'h0),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_4 (
     .clk_i   (clk_i),
@@ -7974,7 +7974,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h9),
+    .RESVAL  (6'h0),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_5 (
     .clk_i   (clk_i),
@@ -8007,7 +8007,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'ha),
+    .RESVAL  (6'h0),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_6 (
     .clk_i   (clk_i),
@@ -8040,7 +8040,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'hb),
+    .RESVAL  (6'h0),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_7 (
     .clk_i   (clk_i),
@@ -8073,7 +8073,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (6'h8),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_8 (
     .clk_i   (clk_i),
@@ -8106,7 +8106,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (6'h9),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_9 (
     .clk_i   (clk_i),
@@ -8139,7 +8139,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (6'ha),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_10 (
     .clk_i   (clk_i),
@@ -8172,7 +8172,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (6'hb),
     .Mubi    (1'b0)
   ) u_mio_periph_insel_11 (
     .clk_i   (clk_i),
@@ -13335,7 +13335,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h7),
+    .RESVAL  (7'hb),
     .Mubi    (1'b0)
   ) u_mio_outsel_6 (
     .clk_i   (clk_i),
@@ -13368,7 +13368,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h8),
+    .RESVAL  (7'hc),
     .Mubi    (1'b0)
   ) u_mio_outsel_7 (
     .clk_i   (clk_i),
@@ -13401,7 +13401,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h9),
+    .RESVAL  (7'hd),
     .Mubi    (1'b0)
   ) u_mio_outsel_8 (
     .clk_i   (clk_i),
@@ -13434,7 +13434,7 @@ module pinmux_reg_top (
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'ha),
+    .RESVAL  (7'he),
     .Mubi    (1'b0)
   ) u_mio_outsel_9 (
     .clk_i   (clk_i),

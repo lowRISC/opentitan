@@ -16653,6 +16653,22 @@
       }
       {
         instance: spi_host0
+        port: csb[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host0
+        port: csb[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host0
         port: sd[0]
         connection: muxed
         pads:
@@ -16700,6 +16716,70 @@
         attr: ""
       }
       {
+        instance: spi_host1
+        port: sck
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
         instance: spi_device
         port: sck
         connection: muxed
@@ -16720,6 +16800,14 @@
           SPI_DEV_CS_L
         ]
         default: SPI_DEV_CS_L
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_device
+        port: tpm_csb
+        connection: muxed
+        pads: []
         desc: ""
         attr: ""
       }
@@ -17470,94 +17558,6 @@
       {
         instance: i3c1
         port: rstdet_sda
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_device
-        port: tpm_csb
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host0
-        port: csb[1]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host0
-        port: csb[2]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: sck
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: csb[0]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: csb[1]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: csb[2]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: sd[0]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: sd[1]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: sd[2]
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: spi_host1
-        port: sd[3]
         connection: muxed
         pads: []
         desc: ""
@@ -17844,6 +17844,54 @@
         glob_idx: 3
       }
       {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 0
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 4
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 5
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 2
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 6
+      }
+      {
+        name: spi_host1_sd
+        width: 4
+        type: inout
+        idx: 3
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 7
+      }
+      {
         name: spi_device_sd
         width: 4
         type: inout
@@ -17857,7 +17905,7 @@
         desc: ""
         default: SPI_DEV_D0
         domain: Main
-        glob_idx: 4
+        glob_idx: 8
       }
       {
         name: spi_device_sd
@@ -17873,7 +17921,7 @@
         desc: ""
         default: SPI_DEV_D1
         domain: Main
-        glob_idx: 5
+        glob_idx: 9
       }
       {
         name: spi_device_sd
@@ -17889,7 +17937,7 @@
         desc: ""
         default: SPI_DEV_D2
         domain: Main
-        glob_idx: 6
+        glob_idx: 10
       }
       {
         name: spi_device_sd
@@ -17905,61 +17953,13 @@
         desc: ""
         default: SPI_DEV_D3
         domain: Main
-        glob_idx: 7
-      }
-      {
-        name: gpio0_gpio
-        width: 32
-        type: inout
-        idx: 0
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 8
-      }
-      {
-        name: gpio0_gpio
-        width: 32
-        type: inout
-        idx: 1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 9
-      }
-      {
-        name: gpio0_gpio
-        width: 32
-        type: inout
-        idx: 2
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 10
-      }
-      {
-        name: gpio0_gpio
-        width: 32
-        type: inout
-        idx: 3
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
         glob_idx: 11
       }
       {
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 4
+        idx: 0
         pads: []
         attr: ""
         connection: muxed
@@ -17971,7 +17971,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 5
+        idx: 1
         pads: []
         attr: ""
         connection: muxed
@@ -17983,7 +17983,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 6
+        idx: 2
         pads: []
         attr: ""
         connection: muxed
@@ -17995,7 +17995,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 7
+        idx: 3
         pads: []
         attr: ""
         connection: muxed
@@ -18007,7 +18007,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 8
+        idx: 4
         pads: []
         attr: ""
         connection: muxed
@@ -18019,7 +18019,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 9
+        idx: 5
         pads: []
         attr: ""
         connection: muxed
@@ -18031,7 +18031,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 10
+        idx: 6
         pads: []
         attr: ""
         connection: muxed
@@ -18043,7 +18043,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 11
+        idx: 7
         pads: []
         attr: ""
         connection: muxed
@@ -18055,7 +18055,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 12
+        idx: 8
         pads: []
         attr: ""
         connection: muxed
@@ -18067,7 +18067,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 13
+        idx: 9
         pads: []
         attr: ""
         connection: muxed
@@ -18079,7 +18079,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 14
+        idx: 10
         pads: []
         attr: ""
         connection: muxed
@@ -18091,7 +18091,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 15
+        idx: 11
         pads: []
         attr: ""
         connection: muxed
@@ -18103,7 +18103,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 16
+        idx: 12
         pads: []
         attr: ""
         connection: muxed
@@ -18115,7 +18115,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 17
+        idx: 13
         pads: []
         attr: ""
         connection: muxed
@@ -18127,7 +18127,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 18
+        idx: 14
         pads: []
         attr: ""
         connection: muxed
@@ -18139,7 +18139,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 19
+        idx: 15
         pads: []
         attr: ""
         connection: muxed
@@ -18151,7 +18151,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 20
+        idx: 16
         pads: []
         attr: ""
         connection: muxed
@@ -18163,7 +18163,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 21
+        idx: 17
         pads: []
         attr: ""
         connection: muxed
@@ -18175,7 +18175,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 22
+        idx: 18
         pads: []
         attr: ""
         connection: muxed
@@ -18187,7 +18187,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 23
+        idx: 19
         pads: []
         attr: ""
         connection: muxed
@@ -18199,7 +18199,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 24
+        idx: 20
         pads: []
         attr: ""
         connection: muxed
@@ -18211,7 +18211,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 25
+        idx: 21
         pads: []
         attr: ""
         connection: muxed
@@ -18223,7 +18223,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 26
+        idx: 22
         pads: []
         attr: ""
         connection: muxed
@@ -18235,7 +18235,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 27
+        idx: 23
         pads: []
         attr: ""
         connection: muxed
@@ -18247,7 +18247,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 28
+        idx: 24
         pads: []
         attr: ""
         connection: muxed
@@ -18259,7 +18259,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 29
+        idx: 25
         pads: []
         attr: ""
         connection: muxed
@@ -18271,7 +18271,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 30
+        idx: 26
         pads: []
         attr: ""
         connection: muxed
@@ -18283,7 +18283,7 @@
         name: gpio0_gpio
         width: 32
         type: inout
-        idx: 31
+        idx: 27
         pads: []
         attr: ""
         connection: muxed
@@ -18292,10 +18292,10 @@
         glob_idx: 39
       }
       {
-        name: gpio1_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
-        idx: 0
+        idx: 28
         pads: []
         attr: ""
         connection: muxed
@@ -18304,10 +18304,10 @@
         glob_idx: 40
       }
       {
-        name: gpio1_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
-        idx: 1
+        idx: 29
         pads: []
         attr: ""
         connection: muxed
@@ -18316,10 +18316,10 @@
         glob_idx: 41
       }
       {
-        name: gpio1_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
-        idx: 2
+        idx: 30
         pads: []
         attr: ""
         connection: muxed
@@ -18328,10 +18328,10 @@
         glob_idx: 42
       }
       {
-        name: gpio1_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
-        idx: 3
+        idx: 31
         pads: []
         attr: ""
         connection: muxed
@@ -18343,7 +18343,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 4
+        idx: 0
         pads: []
         attr: ""
         connection: muxed
@@ -18355,7 +18355,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 5
+        idx: 1
         pads: []
         attr: ""
         connection: muxed
@@ -18367,7 +18367,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 6
+        idx: 2
         pads: []
         attr: ""
         connection: muxed
@@ -18379,7 +18379,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 7
+        idx: 3
         pads: []
         attr: ""
         connection: muxed
@@ -18391,7 +18391,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 8
+        idx: 4
         pads: []
         attr: ""
         connection: muxed
@@ -18403,7 +18403,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 9
+        idx: 5
         pads: []
         attr: ""
         connection: muxed
@@ -18415,7 +18415,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 10
+        idx: 6
         pads: []
         attr: ""
         connection: muxed
@@ -18427,7 +18427,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 11
+        idx: 7
         pads: []
         attr: ""
         connection: muxed
@@ -18439,7 +18439,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 12
+        idx: 8
         pads: []
         attr: ""
         connection: muxed
@@ -18451,7 +18451,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 13
+        idx: 9
         pads: []
         attr: ""
         connection: muxed
@@ -18463,7 +18463,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 14
+        idx: 10
         pads: []
         attr: ""
         connection: muxed
@@ -18475,7 +18475,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 15
+        idx: 11
         pads: []
         attr: ""
         connection: muxed
@@ -18487,7 +18487,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 16
+        idx: 12
         pads: []
         attr: ""
         connection: muxed
@@ -18499,7 +18499,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 17
+        idx: 13
         pads: []
         attr: ""
         connection: muxed
@@ -18511,7 +18511,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 18
+        idx: 14
         pads: []
         attr: ""
         connection: muxed
@@ -18523,7 +18523,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 19
+        idx: 15
         pads: []
         attr: ""
         connection: muxed
@@ -18535,7 +18535,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 20
+        idx: 16
         pads: []
         attr: ""
         connection: muxed
@@ -18547,7 +18547,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 21
+        idx: 17
         pads: []
         attr: ""
         connection: muxed
@@ -18559,7 +18559,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 22
+        idx: 18
         pads: []
         attr: ""
         connection: muxed
@@ -18571,7 +18571,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 23
+        idx: 19
         pads: []
         attr: ""
         connection: muxed
@@ -18583,7 +18583,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 24
+        idx: 20
         pads: []
         attr: ""
         connection: muxed
@@ -18595,7 +18595,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 25
+        idx: 21
         pads: []
         attr: ""
         connection: muxed
@@ -18607,7 +18607,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 26
+        idx: 22
         pads: []
         attr: ""
         connection: muxed
@@ -18619,7 +18619,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 27
+        idx: 23
         pads: []
         attr: ""
         connection: muxed
@@ -18631,7 +18631,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 28
+        idx: 24
         pads: []
         attr: ""
         connection: muxed
@@ -18643,7 +18643,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 29
+        idx: 25
         pads: []
         attr: ""
         connection: muxed
@@ -18655,7 +18655,7 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 30
+        idx: 26
         pads: []
         attr: ""
         connection: muxed
@@ -18667,13 +18667,61 @@
         name: gpio1_gpio
         width: 32
         type: inout
-        idx: 31
+        idx: 27
         pads: []
         attr: ""
         connection: muxed
         desc: ""
         domain: Main
         glob_idx: 71
+      }
+      {
+        name: gpio1_gpio
+        width: 32
+        type: inout
+        idx: 28
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 72
+      }
+      {
+        name: gpio1_gpio
+        width: 32
+        type: inout
+        idx: 29
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 73
+      }
+      {
+        name: gpio1_gpio
+        width: 32
+        type: inout
+        idx: 30
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 74
+      }
+      {
+        name: gpio1_gpio
+        width: 32
+        type: inout
+        idx: 31
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 75
       }
       {
         name: i2c0_sda
@@ -18685,7 +18733,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 72
+        glob_idx: 76
       }
       {
         name: i2c0_scl
@@ -18697,7 +18745,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 73
+        glob_idx: 77
       }
       {
         name: i2c1_sda
@@ -18709,7 +18757,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 74
+        glob_idx: 78
       }
       {
         name: i2c1_scl
@@ -18721,7 +18769,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 75
+        glob_idx: 79
       }
       {
         name: i2c2_sda
@@ -18733,7 +18781,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 76
+        glob_idx: 80
       }
       {
         name: i2c2_scl
@@ -18745,7 +18793,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 77
+        glob_idx: 81
       }
       {
         name: i3c0_scl
@@ -18757,7 +18805,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 78
+        glob_idx: 82
       }
       {
         name: i3c0_sda
@@ -18769,7 +18817,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 79
+        glob_idx: 83
       }
       {
         name: i3c1_scl
@@ -18781,61 +18829,13 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 80
+        glob_idx: 84
       }
       {
         name: i3c1_sda
         width: 1
         type: inout
         idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 81
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 0
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 82
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 83
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 2
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 84
-      }
-      {
-        name: spi_host1_sd
-        width: 4
-        type: inout
-        idx: 3
         pads: []
         attr: ""
         connection: muxed
@@ -18920,7 +18920,7 @@
         glob_idx: 90
       }
       {
-        name: uart0_rx
+        name: spi_device_tpm_csb
         width: 1
         type: input
         idx: -1
@@ -18932,7 +18932,7 @@
         glob_idx: 91
       }
       {
-        name: uart1_rx
+        name: uart0_rx
         width: 1
         type: input
         idx: -1
@@ -18944,7 +18944,7 @@
         glob_idx: 92
       }
       {
-        name: uart2_rx
+        name: uart1_rx
         width: 1
         type: input
         idx: -1
@@ -18956,7 +18956,7 @@
         glob_idx: 93
       }
       {
-        name: uart3_rx
+        name: uart2_rx
         width: 1
         type: input
         idx: -1
@@ -18966,6 +18966,18 @@
         desc: ""
         domain: Main
         glob_idx: 94
+      }
+      {
+        name: uart3_rx
+        width: 1
+        type: input
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 95
       }
       {
         name: i3c0_rstdet_scl
@@ -18978,7 +18990,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 95
+        glob_idx: 96
       }
       {
         name: i3c0_rstdet_sda
@@ -18991,7 +19003,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 96
+        glob_idx: 97
       }
       {
         name: i3c1_rstdet_scl
@@ -19004,25 +19016,13 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 97
+        glob_idx: 98
       }
       {
         name: i3c1_rstdet_sda
         width: 1
         type: input
         partition: secondary
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 98
-      }
-      {
-        name: spi_device_tpm_csb
-        width: 1
-        type: input
         idx: -1
         pads: []
         attr: ""
@@ -19136,78 +19136,6 @@
         glob_idx: 89
       }
       {
-        name: uart0_tx
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 90
-      }
-      {
-        name: uart1_tx
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 91
-      }
-      {
-        name: uart2_tx
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 92
-      }
-      {
-        name: uart3_tx
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 93
-      }
-      {
-        name: i3c0_ctrl_sda_pu
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 94
-      }
-      {
-        name: i3c1_ctrl_sda_pu
-        width: 1
-        type: output
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 95
-      }
-      {
         name: spi_host0_csb
         width: 3
         type: output
@@ -19217,7 +19145,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 96
+        glob_idx: 90
       }
       {
         name: spi_host0_csb
@@ -19229,7 +19157,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 97
+        glob_idx: 91
       }
       {
         name: spi_host1_sck
@@ -19241,7 +19169,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 98
+        glob_idx: 92
       }
       {
         name: spi_host1_csb
@@ -19253,7 +19181,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 99
+        glob_idx: 93
       }
       {
         name: spi_host1_csb
@@ -19265,13 +19193,85 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 100
+        glob_idx: 94
       }
       {
         name: spi_host1_csb
         width: 3
         type: output
         idx: 2
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 95
+      }
+      {
+        name: uart0_tx
+        width: 1
+        type: output
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 96
+      }
+      {
+        name: uart1_tx
+        width: 1
+        type: output
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 97
+      }
+      {
+        name: uart2_tx
+        width: 1
+        type: output
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 98
+      }
+      {
+        name: uart3_tx
+        width: 1
+        type: output
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 99
+      }
+      {
+        name: i3c0_ctrl_sda_pu
+        width: 1
+        type: output
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 100
+      }
+      {
+        name: i3c1_ctrl_sda_pu
+        width: 1
+        type: output
+        idx: -1
         pads: []
         attr: ""
         connection: muxed
