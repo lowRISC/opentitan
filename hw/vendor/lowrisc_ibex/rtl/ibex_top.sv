@@ -98,10 +98,10 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   output logic [31:0]                                                  data_addr_o,
   output logic [31:0]                                                  data_wdata_o,
   output logic [6:0]                                                   data_wdata_intg_o,
-  output logic                                                         data_tag_o,
+  output ibex_mubi_t                                                   data_tag_o,
   input  logic [31:0]                                                  data_rdata_i,
   input  logic [6:0]                                                   data_rdata_intg_i,
-  input  logic                                                         data_tag_i,
+  input  ibex_mubi_t                                                   data_tag_i,
   input  logic                                                         data_err_i,
 
   // TRVK revocation bitmap read interface
@@ -206,7 +206,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   // Shadow core instruction interface outputs
   output logic                                                        instr_req_shadow_o,
-  output logic [31:0]                                                 instr_addr_shadow_o
+  output logic [31:0]                                                 instr_addr_shadow_o,
+
+  // Shadow TRVK revocation bitmap interface outputs
+  output logic                                                        trvk_revbm_req_shadow_o,
+  output logic [31:0]                                                 trvk_revbm_addr_shadow_o
 );
 
   localparam bit          Lockstep              = SecureIbex;
@@ -937,6 +941,18 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     // This is achieved by manually buffering each bit using prim_buf.
     // Our Xilinx and DC synthesis flows make sure that these buffers cannot be optimized away
     // using keep attributes (Vivado) and size_only constraints (DC).
+    //
+    // The lockstep taps the data and revocation bitmap interfaces of ibex_top, so with CHERIoT it
+    // covers the TRVK filter, too.
+
+    // ibex_lockstep takes the integrity and data bits of the data interface response together.
+    logic [MemDataWidth-1:0] data_rdata_bus;
+
+    assign data_rdata_bus[31:0] = data_rdata_i;
+    if (MemECC) begin : gen_data_rdata_bus_ecc
+      assign data_rdata_bus[MemDataWidth-1:32] = data_rdata_intg_i;
+    end
+
     localparam int unsigned NumBufferBits = $bits({
       hart_id_i,
       boot_addr_i,
@@ -946,17 +962,15 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       instr_addr_o,
       instr_rdata_core,
       instr_err_i,
-      trvk_req,
-      trvk_gnt,
-      trvk_rvalid,
-      trvk_we,
-      trvk_be,
-      trvk_addr,
-      trvk_wdata,
-      trvk_wtag,
-      data_rdata_core,
-      trvk_rtag,
-      trvk_err,
+      data_req_o,
+      data_gnt_i,
+      data_rvalid_i,
+      data_we_o,
+      data_be_o,
+      data_addr_o,
+      data_wdata_o,
+      data_rdata_bus,
+      data_err_i,
       rf_raddr_a,
       rf_raddr_b,
       rf_waddr_wb,
@@ -996,6 +1010,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
     logic [31:0]                  hart_id_local;
     logic [31:0]                  boot_addr_local;
+    logic [31:0]                  trvk_heap_base_addr_local;
 
     logic                         instr_req_local;
     logic                         instr_gnt_local;
@@ -1011,10 +1026,18 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic [3:0]                   data_be_local;
     logic [31:0]                  data_addr_local;
     logic [31:0]                  data_wdata_local;
-    logic                         data_tag_local;
+    ibex_mubi_t                   data_tag_local;
     logic [MemDataWidth-1:0]      data_rdata_local;
-    logic                         data_rdata_tag_local;
+    ibex_mubi_t                   data_rdata_tag_local;
     logic                         data_err_local;
+
+    logic                         trvk_revbm_req_local;
+    logic                         trvk_revbm_gnt_local;
+    logic                         trvk_revbm_rvalid_local;
+    logic [31:0]                  trvk_revbm_addr_local;
+    logic [31:0]                  trvk_revbm_rdata_local;
+    logic [6:0]                   trvk_revbm_rdata_intg_local;
+    logic                         trvk_revbm_err_local;
 
     logic [4:0]                   rf_raddr_a_local;
     logic [4:0]                   rf_raddr_b_local;
@@ -1065,17 +1088,15 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       instr_addr_o,
       instr_rdata_core,
       instr_err_i,
-      trvk_req,
-      trvk_gnt,
-      trvk_rvalid,
-      trvk_we,
-      trvk_be,
-      trvk_addr,
-      trvk_wdata,
-      trvk_wtag,
-      data_rdata_core,
-      trvk_rtag,
-      trvk_err,
+      data_req_o,
+      data_gnt_i,
+      data_rvalid_i,
+      data_we_o,
+      data_be_o,
+      data_addr_o,
+      data_wdata_o,
+      data_rdata_bus,
+      data_err_i,
       rf_raddr_a,
       rf_raddr_b,
       rf_waddr_wb,
@@ -1127,9 +1148,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       data_be_local,
       data_addr_local,
       data_wdata_local,
-      data_tag_local,
       data_rdata_local,
-      data_rdata_tag_local,
       data_err_local,
       rf_raddr_a_local,
       rf_raddr_b_local,
@@ -1170,7 +1189,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     assign rf_rcap_a_local = cheriot_vec_to_regcap(rf_rcap_a_vec_local);
     assign rf_rcap_b_local = cheriot_vec_to_regcap(rf_rcap_b_vec_local);
 
-    // Manually buffer all input signals.
+    // Manually buffer the remaining input signals.
     prim_buf #(.Width(NumBufferBits)) u_signals_prim_buf (
       .in_i(buf_in),
       .out_o(buf_out)
@@ -1181,6 +1200,67 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     assign debug_req_buf   = debug_req_local;
     assign irq_pending_buf = irq_pending_local;
     assign irq_nm_buf      = irq_nm_local;
+
+    // The CHERIoT signals get their own barrier: without the TRVK filter, they are constant or
+    // unused.
+    if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_buf
+      localparam int unsigned NumCheriotBufferBits = $bits({
+        trvk_heap_base_addr_i,
+        data_tag_o,
+        data_tag_i,
+        trvk_revbm_req_o,
+        trvk_revbm_gnt_i,
+        trvk_revbm_rvalid_i,
+        trvk_revbm_addr_o,
+        trvk_revbm_rdata_i,
+        trvk_revbm_rdata_intg_i,
+        trvk_revbm_err_i
+      });
+
+      logic [NumCheriotBufferBits-1:0] cheriot_buf_in, cheriot_buf_out;
+
+      assign cheriot_buf_in = {
+        trvk_heap_base_addr_i,
+        data_tag_o,
+        data_tag_i,
+        trvk_revbm_req_o,
+        trvk_revbm_gnt_i,
+        trvk_revbm_rvalid_i,
+        trvk_revbm_addr_o,
+        trvk_revbm_rdata_i,
+        trvk_revbm_rdata_intg_i,
+        trvk_revbm_err_i
+      };
+
+      assign {
+        trvk_heap_base_addr_local,
+        data_tag_local,
+        data_rdata_tag_local,
+        trvk_revbm_req_local,
+        trvk_revbm_gnt_local,
+        trvk_revbm_rvalid_local,
+        trvk_revbm_addr_local,
+        trvk_revbm_rdata_local,
+        trvk_revbm_rdata_intg_local,
+        trvk_revbm_err_local
+      } = cheriot_buf_out;
+
+      prim_buf #(.Width(NumCheriotBufferBits)) u_cheriot_signals_prim_buf (
+        .in_i(cheriot_buf_in),
+        .out_o(cheriot_buf_out)
+      );
+    end else begin : gen_no_cheriot_buf
+      assign trvk_heap_base_addr_local   = '0;
+      assign data_tag_local              = IbexMuBiOff;
+      assign data_rdata_tag_local        = IbexMuBiOff;
+      assign trvk_revbm_req_local        = 1'b0;
+      assign trvk_revbm_gnt_local        = 1'b0;
+      assign trvk_revbm_rvalid_local     = 1'b0;
+      assign trvk_revbm_addr_local       = '0;
+      assign trvk_revbm_rdata_local      = '0;
+      assign trvk_revbm_rdata_intg_local = '0;
+      assign trvk_revbm_err_local        = 1'b0;
+    end
 
     logic [TagSizeECC-1:0]  ic_tag_rdata_local [IC_NUM_WAYS];
     logic [LineSizeECC-1:0] ic_data_rdata_local [IC_NUM_WAYS];
@@ -1199,48 +1279,51 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic lockstep_alert_major_bus_local;
 
     ibex_lockstep #(
-      .PMPEnable            (PMPEnable),
-      .PMPGranularity       (PMPGranularity),
-      .PMPNumRegions        (PMPNumRegions),
-      .PMPRstCfg            (PMPRstCfg),
-      .PMPRstAddr           (PMPRstAddr),
-      .PMPRstMsecCfg        (PMPRstMsecCfg),
-      .MHPMCounterNum       (MHPMCounterNum),
-      .MHPMCounterWidth     (MHPMCounterWidth),
-      .RV32E                (RV32E),
-      .RV32M                (RV32M),
-      .RV32B                (RV32B),
-      .RV32ZC               (RV32ZC),
-      .BranchTargetALU      (BranchTargetALU),
-      .ICache               (ICache),
-      .ICacheECC            (ICacheECC),
-      .ICacheTweakInfection (ICacheTweakInfection),
-      .BusSizeECC           (BusSizeECC),
-      .TagSizeECC           (TagSizeECC),
-      .LineSizeECC          (LineSizeECC),
-      .BranchPredictor      (BranchPredictor),
-      .DbgTriggerEn         (DbgTriggerEn),
-      .DbgHwBreakNum        (DbgHwBreakNum),
-      .WritebackStage       (WritebackStage),
-      .ResetAll             (ResetAll),
-      .RndCnstLfsrSeed      (RndCnstLfsrSeed),
-      .RndCnstLfsrPerm      (RndCnstLfsrPerm),
-      .SecureIbex           (SecureIbex),
-      .LockstepOffset       (LockstepOffset),
-      .DummyInstructions    (DummyInstructions),
-      .RegFileECC           (RegFileLockstepECC),
-      .RegFileDataWidth     (RegFileDataWidth),
-      .RegFileDataEccWidth  (RegFileDataEccWidth),
-      .RegFileCapEccWidth   (RegFileCapEccWidth),
-      .RegFile              (RegFile),
-      .MemECC               (MemECC),
-      .DmBaseAddr           (DmBaseAddr),
-      .DmAddrMask           (DmAddrMask),
-      .DmHaltAddr           (DmHaltAddr),
-      .DmExceptionAddr      (DmExceptionAddr),
-      .CsrMvendorId         (CsrMvendorId),
-      .CsrMimpId            (CsrMimpId),
-      .BaseIsa              (BaseIsa)
+      .PMPEnable                 (PMPEnable),
+      .PMPGranularity            (PMPGranularity),
+      .PMPNumRegions             (PMPNumRegions),
+      .PMPRstCfg                 (PMPRstCfg),
+      .PMPRstAddr                (PMPRstAddr),
+      .PMPRstMsecCfg             (PMPRstMsecCfg),
+      .CheriotRevBitmapAddrWidth (CheriotRevBitmapAddrWidth),
+      .CheriotRevBitmapBaseAddr  (CheriotRevBitmapBaseAddr),
+      .TrvkNumOutstanding        (MaxOutstandingDSideAccesses),
+      .MHPMCounterNum            (MHPMCounterNum),
+      .MHPMCounterWidth          (MHPMCounterWidth),
+      .RV32E                     (RV32E),
+      .RV32M                     (RV32M),
+      .RV32B                     (RV32B),
+      .RV32ZC                    (RV32ZC),
+      .BranchTargetALU           (BranchTargetALU),
+      .ICache                    (ICache),
+      .ICacheECC                 (ICacheECC),
+      .ICacheTweakInfection      (ICacheTweakInfection),
+      .BusSizeECC                (BusSizeECC),
+      .TagSizeECC                (TagSizeECC),
+      .LineSizeECC               (LineSizeECC),
+      .BranchPredictor           (BranchPredictor),
+      .DbgTriggerEn              (DbgTriggerEn),
+      .DbgHwBreakNum             (DbgHwBreakNum),
+      .WritebackStage            (WritebackStage),
+      .ResetAll                  (ResetAll),
+      .RndCnstLfsrSeed           (RndCnstLfsrSeed),
+      .RndCnstLfsrPerm           (RndCnstLfsrPerm),
+      .SecureIbex                (SecureIbex),
+      .LockstepOffset            (LockstepOffset),
+      .DummyInstructions         (DummyInstructions),
+      .RegFileECC                (RegFileLockstepECC),
+      .RegFileDataWidth          (RegFileDataWidth),
+      .RegFileDataEccWidth       (RegFileDataEccWidth),
+      .RegFileCapEccWidth        (RegFileCapEccWidth),
+      .RegFile                   (RegFile),
+      .MemECC                    (MemECC),
+      .DmBaseAddr                (DmBaseAddr),
+      .DmAddrMask                (DmAddrMask),
+      .DmHaltAddr                (DmHaltAddr),
+      .DmExceptionAddr           (DmExceptionAddr),
+      .CsrMvendorId              (CsrMvendorId),
+      .CsrMimpId                 (CsrMimpId),
+      .BaseIsa                   (BaseIsa)
     ) u_ibex_lockstep (
       .clk_i                    (clk),
       .rst_ni                   (rst_ni),
@@ -1248,6 +1331,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .hart_id_i                (hart_id_local),
       .boot_addr_i              (boot_addr_local),
       .cheriot_enable_i         (cheriot_enable_local),
+      .trvk_heap_base_addr_i    (trvk_heap_base_addr_local),
 
       .instr_req_i              (instr_req_local),
       .instr_gnt_i              (instr_gnt_local),
@@ -1267,6 +1351,14 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .data_rdata_i             (data_rdata_local),
       .data_rdata_tag_i         (data_rdata_tag_local),
       .data_err_i               (data_err_local),
+
+      .trvk_revbm_req_i         (trvk_revbm_req_local),
+      .trvk_revbm_gnt_i         (trvk_revbm_gnt_local),
+      .trvk_revbm_rvalid_i      (trvk_revbm_rvalid_local),
+      .trvk_revbm_addr_i        (trvk_revbm_addr_local),
+      .trvk_revbm_rdata_i       (trvk_revbm_rdata_local),
+      .trvk_revbm_rdata_intg_i  (trvk_revbm_rdata_intg_local),
+      .trvk_revbm_err_i         (trvk_revbm_err_local),
 
       .rf_raddr_a_i             (rf_raddr_a_local),
       .rf_raddr_b_i             (rf_raddr_b_local),
@@ -1321,7 +1413,9 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .data_wdata_shadow_o      (data_wdata_shadow_o),
       .data_wdata_intg_shadow_o (data_wdata_intg_shadow_o),
       .instr_req_shadow_o       (instr_req_shadow_o),
-      .instr_addr_shadow_o      (instr_addr_shadow_o)
+      .instr_addr_shadow_o      (instr_addr_shadow_o),
+      .trvk_revbm_req_shadow_o  (trvk_revbm_req_shadow_o),
+      .trvk_revbm_addr_shadow_o (trvk_revbm_addr_shadow_o)
     );
 
     prim_buf u_prim_buf_alert_minor (
@@ -1357,6 +1451,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     assign data_wdata_intg_shadow_o      = '0;
     assign instr_req_shadow_o            = 1'b0;
     assign instr_addr_shadow_o           = '0;
+    assign trvk_revbm_req_shadow_o       = 1'b0;
+    assign trvk_revbm_addr_shadow_o      = '0;
 
     logic unused_scan;
     assign unused_scan = scan_rst_ni;
@@ -1368,6 +1464,35 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   //////////
 
   if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_trvk
+    // The tag crosses the boundary of ibex_top multi-bit encoded. The lockstep compares the encoded
+    // request tag, and the shadow core decodes its own copy of the response tag.
+    logic                  data_wtag, data_rtag;
+    prim_mubi_pkg::mubi4_t data_wtag_enc;
+    ibex_mubi_t            data_rtag_buf;
+
+    // The sender (AsyncOn(0), EnSecBuf(1)) and the buffer below are anchor buffers without a flop,
+    // so the four encoded bits stay separate from each other and from the logic outside Ibex. The
+    // sender is typed mubi4_t but keeps the ibex_mubi_t encoding. data_tag_i only has to be known
+    // with data_rvalid_i; a prim_mubi4_sync would assert it known at all times.
+    prim_mubi4_sender #(
+      .AsyncOn (1'b0),
+      .EnSecBuf(1'b1)
+    ) u_data_tag_sender (
+      .clk_i (clk),
+      .rst_ni,
+      .mubi_i(prim_mubi_pkg::mubi4_t'(data_wtag ? IbexMuBiOn : IbexMuBiOff)),
+      .mubi_o(data_wtag_enc)
+    );
+
+    assign data_tag_o = ibex_mubi_t'(data_wtag_enc);
+
+    prim_sec_anchor_buf #(.Width($bits(ibex_mubi_t))) u_data_tag_buf (
+      .in_i (data_tag_i),
+      .out_o(data_rtag_buf)
+    );
+
+    assign data_rtag = data_rtag_buf == IbexMuBiOn;
+
     ibex_trvk #(
       .NumOutstanding(MaxOutstandingDSideAccesses),
       .MemECC(MemECC),
@@ -1401,8 +1526,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .downstream_rdata_i     (data_rdata_i),
       .downstream_rdata_intg_i(data_rdata_intg_i),
       .downstream_err_i       (data_err_i),
-      .downstream_tag_o       (data_tag_o),
-      .downstream_tag_i       (data_tag_i),
+      .downstream_tag_o       (data_wtag),
+      .downstream_tag_i       (data_rtag),
       .revbm_req_o            (trvk_revbm_req_o),
       .revbm_gnt_i            (trvk_revbm_gnt_i),
       .revbm_rvalid_i         (trvk_revbm_rvalid_i),
@@ -1420,7 +1545,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     assign trvk_revbm_req_o           = '0;
     assign trvk_revbm_addr_o          = '0;
     assign trvk_rtag                  = 1'b0;
-    assign data_tag_o                 = 1'b0;
+    assign data_tag_o                 = IbexMuBiOff;
     assign trvk_revbm_data_intg_error = 1'b0;
     assign trvk_revbm_device_error    = 1'b0;
     assign unused_trvk = ^{
@@ -1490,6 +1615,16 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
      data_wdata_shadow_o, data_wdata_intg_shadow_o}, data_req_shadow_o)
   `ASSERT_KNOWN(IbexInstrReqShadowX, instr_req_shadow_o)
   `ASSERT_KNOWN_IF(IbexInstrReqShadowPayloadX, instr_addr_shadow_o, instr_req_shadow_o)
+  `ASSERT_KNOWN(IbexTrvkRevbmReqShadowX, trvk_revbm_req_shadow_o)
+  `ASSERT_KNOWN_IF(IbexTrvkRevbmReqShadowPayloadX, trvk_revbm_addr_shadow_o,
+    trvk_revbm_req_shadow_o)
+
+  // The lockstep compares the revocation bitmap address and the data tag without qualifying them
+  // by their request.
+  if (Lockstep) begin : g_lockstep_assert_known
+    `ASSERT_KNOWN(IbexTrvkRevbmAddrX, trvk_revbm_addr_o)
+    `ASSERT_KNOWN(IbexDataTagX, data_tag_o)
+  end
 
   // X check for top-level inputs
   `ASSERT_KNOWN(IbexTestEnX, test_en_i)

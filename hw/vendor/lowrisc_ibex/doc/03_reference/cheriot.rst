@@ -181,14 +181,19 @@ Data Memory Tag Interface
 The data memory interface gains two tag signals:
 
 ``data_tag_o``
-  1-bit output. When high, the current write transaction carries a valid capability tag or the current load transaction is a capability load.
+  ``ibex_mubi_t`` output. ``IbexMuBiOn`` when the current write transaction carries a valid capability tag or the current load transaction is a capability load, else ``IbexMuBiOff``.
 
 ``data_tag_i``
-  1-bit input. The tag bit returned from memory for a load transaction.
-  Must be driven high if and only if the loaded word has a stored/valid capability tag and the request was a capability load.
+  ``ibex_mubi_t`` input. The tag returned from memory for a load transaction.
+  Must be ``IbexMuBiOn`` if and only if the loaded word has a stored/valid capability tag and the request was a capability load, else ``IbexMuBiOff``.
+  Any value other than ``IbexMuBiOn`` reads as untagged.
+
+Both tags are multi-bit encoded, so that a single fault on the tag signals between Ibex and memory cannot turn an untagged word into a tagged one.
+Ibex reads any value other than ``IbexMuBiOn`` as untagged, but does not flag invalid encodings.
+With the :ref:`dual core lockstep<lockstep>`, each core encodes and decodes its own tag.
 
 Since Ibex only has a 32-bit interface, it reads and writes capabilities in two consecutive transactions.
-The tag bits must be set for both transactions for the capability to be considered a valid one.
+The tag must be ``IbexMuBiOn`` on both transactions for the capability to be considered a valid one.
 
 .. _cheriot-trvk:
 
@@ -197,6 +202,7 @@ TRVK Revocation Bitmap Interface (``trvk_revbm_*``)
 
 The TRVK (Temporal Revocation) filter is positioned just outside the LSU.
 It intercepts capability loads and checks whether the loaded capability has been revoked by checking the revocation bitmap.
+With the SecureIbex parameter, the shadow core of the :ref:`dual core lockstep<lockstep>` has its own TRVK.
 
 The revocation bitmap interface is an OBI compliant memory-mapped port.
 Because this port is strictly used for bitmap lookups, it only implements the read channels of the OBI standard, sharing identical handshaking semantics with the instruction and data interfaces:

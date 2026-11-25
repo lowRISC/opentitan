@@ -820,9 +820,10 @@
     }
     { name: "CORED_TAG.INTERSIG.MUBI"
       desc: '''
-        The capability tags of the data interface are multi-bit encoded between Ibex and the
-        CHERIoT memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged,
-        and a data response with an invalid encoding raises the fatal_hw_err alert.
+        The capability tags of the data interface stay multi-bit encoded between Ibex, which
+        encodes and decodes them in each lockstep copy, and the CHERIoT memory subsystem, including
+        inside the data FIFO. Only MuBi4True reads as tagged, and a data response with an invalid
+        encoding raises the fatal_hw_err alert.
       '''
     }
 % endif

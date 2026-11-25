@@ -65,6 +65,7 @@ class PmpCfgRegister : public BaseRegister {
   uint32_t RegisterClear(uint32_t newval);
 
  private:
+  uint32_t GetMmlSuppressMask(uint32_t candidate);
   uint32_t HandleReservedVals(uint32_t cfg_val);
   const uint32_t raz_mask_ = 0x9F9F9F9F;
 };

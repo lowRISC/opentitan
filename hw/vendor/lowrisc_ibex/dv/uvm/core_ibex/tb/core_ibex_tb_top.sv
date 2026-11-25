@@ -158,7 +158,7 @@ module core_ibex_tb_top;
     .data_be_o                 (data_mem_vif.be            ),
     .data_rdata_i              (data_mem_vif.rdata         ),
     .data_rdata_intg_i         (data_mem_vif.rintg         ),
-    .data_tag_i                (1'b0                       ),
+    .data_tag_i                (ibex_pkg::IbexMuBiOff      ),
     .data_wdata_o              (data_mem_vif.wdata         ),
     .data_wdata_intg_o         (data_mem_vif.wintg         ),
     .data_tag_o                (                           ),
@@ -205,7 +205,10 @@ module core_ibex_tb_top;
     .data_wdata_intg_shadow_o  (                           ),
 
     .instr_req_shadow_o        (                           ),
-    .instr_addr_shadow_o       (                           )
+    .instr_addr_shadow_o       (                           ),
+
+    .trvk_revbm_req_shadow_o   (                           ),
+    .trvk_revbm_addr_shadow_o  (                           )
   );
 
   `define IBEX_RF_PATH core_ibex_tb_top.dut.u_ibex_top.gen_regfile_ff.register_file_i
@@ -234,6 +237,13 @@ module core_ibex_tb_top;
       core_ibex_tb_top.dut.u_ibex_top.gen_cheriot_trvk.i_ibex_trvk.AlignValidOnRsp_A)
     `DV_ASSERT_CTRL("tb_no_spurious_response",
       core_ibex_tb_top.dut.u_ibex_top.gen_cheriot_trvk.i_ibex_trvk.DsRspFifoNoOverflow_A)
+    // The shadow TRVK of the lockstep receives the same, delayed responses.
+    if (SecureIbex) begin : g_shadow_trvk_assert_ctrl
+      `DV_ASSERT_CTRL("tb_no_spurious_response",
+        `IBEX_LOCKSTEP_PATH.gen_shadow_trvk.u_shadow_trvk.AlignValidOnRsp_A)
+      `DV_ASSERT_CTRL("tb_no_spurious_response",
+        `IBEX_LOCKSTEP_PATH.gen_shadow_trvk.u_shadow_trvk.DsRspFifoNoOverflow_A)
+    end
   end
 
 `ifndef DV_FCOV_DISABLE
