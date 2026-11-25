@@ -977,7 +977,7 @@ Firmware can use the hardware conditioning for the inserted entropy bits (see [`
 
 Note that if the field is set to `kMultiBitBool4True`, post-health test entropy bits do NOT continue to flow through the hardware pipeline.
 Also, the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) bit must be set.
-The observe FIFO will collect 2 kBit of contiguous entropy bits.
+The observe FIFO will collect 1 kBit of contiguous entropy bits.
 Any entropy bits arriving after the observe FIFO is full are being discarded.
 Firmware has to read out the entire observe FIFO to restart entropy collection.
 Only entropy bits inserted by firmware by writing [`FW_OV_WR_DATA`](#fw_ov_wr_data) may eventually reach the block hardware interface.
