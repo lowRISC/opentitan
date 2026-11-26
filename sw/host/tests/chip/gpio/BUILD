@@ -61,6 +61,7 @@ rust_binary(
         "src/sleep_pin_mio_dio_val.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -91,6 +92,7 @@ rust_binary(
         "src/sleep_pin_wake.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",

@@ -38,12 +38,16 @@ enum {
   kPlicTarget = 0,
 };
 
-static const uint32_t kNumDio = 16;  // top_earlgrey has 16 DIOs
+static const uint32_t kNumDio = NUM_DIO_PADS;
 
-// kDirectDio is a list of Dio index that TB cannot control the PAD value.
-// The list should be incremental order (see the code below)
-#define NUM_DIRECT_DIO 5
-static const uint32_t kDirectDio[NUM_DIRECT_DIO] = {6, 12, 13, 14, 15};
+// kDirectMio lists the INSEL values of the MIO pads whose value the TB cannot
+// control because the SPI agents drive them. The list should be in increasing
+// order (see the code below).
+#define NUM_DIRECT_MIO 5
+static const uint32_t kDirectMio[NUM_DIRECT_MIO] = {
+    kTopEarlgreyPinmuxInselSpiHostClk, kTopEarlgreyPinmuxInselSpiHostCsL,
+    kTopEarlgreyPinmuxInselSpiDevD0, kTopEarlgreyPinmuxInselSpiDevClk,
+    kTopEarlgreyPinmuxInselSpiDevCsL};
 
 // Preserve wakeup_detector_selected over multiple resets
 OT_SET_BSS_SECTION(".non_volatile_scratch", uint32_t wakeup_detector_idx;)
@@ -145,23 +149,22 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_pwrmgr_irq_set_enabled(&pwrmgr, 0, kDifToggleEnabled));
     }
 
-    // SpiDev CLK(idx 12), CS#(idx 13), D0(idx 6) and SpiHost CLK (14), CS#
-    // (15) are directly connected to the SPI IF. Cannot control them. Roll 3
-    // less and compensated later.
     if (mio0_dio1) {
       // DIO
-      pad_sel = rand_testutils_gen32_range(0, kNumDio - 1 - NUM_DIRECT_DIO);
-
-      for (int i = 0; i < NUM_DIRECT_DIO; i++) {
-        if (pad_sel >= kDirectDio[i]) {
-          pad_sel++;
-        }
-      }
+      pad_sel = rand_testutils_gen32_range(0, kNumDio - 1);
       LOG_INFO("Pad Selection: %d / %d", mio0_dio1, pad_sel);
     } else {
       // MIO: 0, 1 are tie-0, tie-1
       if (kDeviceType == kDeviceSimDV) {
-        pad_sel = rand_testutils_gen32_range(2, kTopEarlgreyPinmuxInselLast);
+        // SpiDev CLK, CS#, D0 and SpiHost CLK, CS# are driven by the SPI
+        // agents. Roll NUM_DIRECT_MIO less and compensate.
+        pad_sel = rand_testutils_gen32_range(
+            2, kTopEarlgreyPinmuxInselLast - NUM_DIRECT_MIO);
+        for (int i = 0; i < NUM_DIRECT_MIO; i++) {
+          if (pad_sel >= kDirectMio[i]) {
+            pad_sel++;
+          }
+        }
       } else {
         OTTF_WAIT_FOR(sival_mio_pad != -1, 1000000);
         pad_sel = (uint32_t)sival_mio_pad + 2;  // skip 0, 1 (see above)
@@ -237,5 +240,5 @@ bool test_main(void) {
   return false;
 }
 
-#undef NUM_DIRECT_DIO
+#undef NUM_DIRECT_MIO
 #undef NUM_LOCKED_MIO

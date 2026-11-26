@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
@@ -36,11 +37,11 @@ OTTF_DEFINE_TEST_CONFIG();
 
 #if defined(OPENTITAN_IS_EARLGREY)
 static const dt_pad_t kOptOut[] = {
-    kDtPadSpiDeviceSck,
-    kDtPadSpiDeviceCsb,
+    kDtPadSpiDevClk,
+    kDtPadSpiDevCsL,
     // Virtual open drain by default
-    kDtPadSysrstCtrlEcRstL,
-    kDtPadSysrstCtrlFlashWpL,
+    kDtPadIor8,
+    kDtPadIor9,
 };
 #elif defined(OPENTITAN_IS_DARJEELING)
 static const dt_pad_t kOptOut[] = {};
@@ -93,6 +94,13 @@ void draw_pinmux_ret(uint32_t num_pins, uint8_t *arr, const dt_pad_t *optout,
   // OptOut processing after draw.
   for (int i = 0; i < num_optout; i++) {
     arr[optout[i]] = 2;  // High-Z always
+  }
+  // Pads another device on the board can drive must not be tested and must be
+  // set to High-Z.
+  for (uint32_t i = 0; i < num_pins; ++i) {
+    if (pinmux_testutils_is_board_driven_pad((dt_pad_t)i)) {
+      arr[i] = 2;
+    }
   }
 }
 

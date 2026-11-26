@@ -22,6 +22,7 @@ OTTF_DEFINE_TEST_CONFIG();
 // PLIC structures
 static const uint32_t kPlicTarget = 0;
 static dif_gpio_t gpio;
+static dif_gpio_t gpio1;
 static dif_pwrmgr_t pwrmgr;
 static dif_pinmux_t pinmux;
 static dif_pwrmgr_domain_config_t pwrmgr_domain_cfg;
@@ -50,6 +51,9 @@ int num_gpio_pads;  // One of the above, based on the actual environment.
 unsigned gpio_mask;
 
 static int first_gpio_pin;
+
+// The GPIO pin that maps to the MIO pad 0.
+static int first_gpio_bit;
 
 /**
  * External interrupt handler.
@@ -84,7 +88,7 @@ bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
  * value for retention.
  */
 void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
-               int round) {
+               dif_gpio_t *sync_gpio, int round) {
   uint8_t gpio_val = 0;
   dif_pinmux_pad_kind_t pad_kind;
   dif_pinmux_sleep_mode_t pad_mode;
@@ -92,11 +96,13 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   LOG_INFO("Current Test Round: %1d", round);
 
   // 1. Randomly choose GPIO value
-  gpio_val = (uint8_t)(rand_testutils_gen32_range(0, gpio_mask));
+  gpio_val =
+      (uint8_t)(rand_testutils_gen32_range(0, (1u << num_gpio_pads) - 1));
 
   // 2. Drive GPIO with the chosen value.
-  CHECK_DIF_OK(dif_gpio_write_masked(gpio, (dif_gpio_mask_t)gpio_mask,
-                                     (dif_gpio_state_t)gpio_val));
+  CHECK_DIF_OK(
+      dif_gpio_write_masked(gpio, (dif_gpio_mask_t)gpio_mask,
+                            (dif_gpio_state_t)gpio_val << first_gpio_bit));
 
   // 3. Send the chosen value to SV via LOG_INFO.
   //
@@ -138,14 +144,15 @@ void gpio_test(dif_pwrmgr_t *pwrmgr, dif_pinmux_t *pinmux, dif_gpio_t *gpio,
   bool end_round = false;
   if (kDeviceType != kDeviceSimDV)
     do {
-      CHECK_DIF_OK(dif_gpio_read(gpio, 8, &end_round));
+      CHECK_DIF_OK(dif_gpio_read(sync_gpio, 26, &end_round));
     } while (!end_round);
 }
 
 /**
  * Configure GPIO
  *
- * gpio_init() configures first 8 MIO PADs to GPIO[7:0].
+ * gpio_init() connects num_gpio_pads MIO pads from first_gpio_pin on to the
+ * gpio0 pins from first_gpio_bit on.
  */
 void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   // Drive GPIO first
@@ -156,19 +163,22 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
 
   // Configure PINMUX to GPIO
   for (int i = 0; i < num_gpio_pads; i++) {
+    // The INSEL value of a pad is its MIO index plus 2.
     CHECK_DIF_OK(dif_pinmux_input_select(
         pinmux,
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpio0Gpio0 + i),
-        (dif_pinmux_index_t)(first_gpio_pin + i)));
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpio0Gpio0 +
+                             first_gpio_bit + i),
+        (dif_pinmux_index_t)(first_gpio_pin + 2 + i)));
     CHECK_DIF_OK(dif_pinmux_output_select(
         pinmux, (dif_pinmux_index_t)(first_gpio_pin + i),
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpio0Gpio0 + i)));
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpio0Gpio0 +
+                             first_gpio_bit + i)));
   }
 
   // Configure PINMUX an additional GPIO pin for the SiVal host to sync with
   // the device and indicate the round can end.
   CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpio0Gpio8,
+      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpio1Gpio26,
       (dif_pinmux_index_t)kTopEarlgreyPinmuxInselIor11));
 }
 
@@ -177,9 +187,10 @@ bool test_main(void) {
 
   num_gpio_pads =
       kDeviceType == kDeviceSimDV ? kNumGpioPadsDv : kNumGpioPadsSiVal;
-  gpio_mask = (1 << num_gpio_pads) - 1;
   first_gpio_pin = kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxMioOutIoa0
                                                : kTopEarlgreyPinmuxMioOutIob0;
+  first_gpio_bit = kDeviceType == kDeviceSimDV ? 12 : 21;
+  gpio_mask = ((1u << num_gpio_pads) - 1) << first_gpio_bit;
 
   dif_pinmux_wakeup_config_t wakeup_cfg;
 
@@ -194,6 +205,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpio1, &gpio1));
 
   // Enable all the AON interrupts used in this test.
   dif_rv_plic_irq_id_t plic_id =
@@ -226,7 +238,7 @@ bool test_main(void) {
   gpio_init(&pinmux, &gpio);
 
   for (int i = kRounds - 1; i >= 0; i--) {
-    gpio_test(&pwrmgr, &pinmux, &gpio, i);
+    gpio_test(&pwrmgr, &pinmux, &gpio, &gpio1, i);
   }
 
   return result;

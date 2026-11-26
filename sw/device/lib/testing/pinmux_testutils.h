@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "hw/top/dt/pinmux.h"
@@ -84,6 +85,17 @@ status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
  * subset of GPIOs depending on the IO allocation limitations.
  */
 uint32_t pinmux_testutils_get_testable_gpios_mask(dt_gpio_t gpio);
+
+/**
+ * Returns whether another device on the FPGA board can drive the pad.
+ *
+ * A test must not drive such a pad from the chip. Only the CW340 is described,
+ * the function returns false on every other device.
+ *
+ * @param pad A pad.
+ * @return Whether the board can drive the pad.
+ */
+bool pinmux_testutils_is_board_driven_pad(dt_pad_t pad);
 
 /**
  * Reads a pin as a four-valued strapping pin.

@@ -256,6 +256,72 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(dt_gpio_t gpio) {
   return masks[gpio];
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
+// A list specifying which pads are driven by other devices on the CW340 and
+// thus should not be driven by GPIO tests. The opposite of this table is in
+// sw/host/tests/chip/gpio/src/fpga_pads.rs.
+static const dt_pad_t kCw340BoardDrivenPads[] = {
+    // HyperDebug JTAG.
+    kDtPadIoa0,
+    kDtPadIoa4,
+    kDtPadIoa5,
+    kDtPadIoa6,
+    // HyperDebug I2C1, I2C3 and I2C2.
+    kDtPadIoa7,
+    kDtPadIoa8,
+    kDtPadIob9,
+    kDtPadIob10,
+    kDtPadIob11,
+    kDtPadIob12,
+    // HyperDebug SPI2, from its boot and in the reinit of every
+    // `transport init`.
+    kDtPadIob0,
+    kDtPadIob1,
+    kDtPadIob3,
+    // HyperDebug UART3 TX while the UART2_HOST_TX strapping is applied.
+    kDtPadIob4,
+    // I3C test board UART TX.
+    kDtPadIob7,
+    // SW straps and TAP straps.
+    kDtPadIoc0,
+    kDtPadIoc1,
+    kDtPadIoc2,
+    kDtPadIoc5,
+    kDtPadIoc8,
+    // HyperDebug UART2 TX, the console input.
+    kDtPadIoc3,
+    // HyperDebug PWM / external clock.
+    kDtPadIoc6,
+    // USB VBUS detect divider on the CW341.
+    kDtPadIoc7,
+    // HyperDebug UART5 TX and UART4 TX.
+    kDtPadIor3,
+    kDtPadIor5,
+    // HyperDebug QSPI.
+    kDtPadSpiDevD0,
+    kDtPadSpiDevD1,
+    kDtPadSpiDevD2,
+    kDtPadSpiDevD3,
+    kDtPadSpiDevClk,
+    kDtPadSpiDevCsL,
+};
+#endif
+
+bool pinmux_testutils_is_board_driven_pad(dt_pad_t pad) {
+#if defined(OPENTITAN_IS_EARLGREY)
+  if (kDeviceType == kDeviceFpgaCw340) {
+    for (size_t i = 0; i < ARRAYSIZE(kCw340BoardDrivenPads); ++i) {
+      if (kCw340BoardDrivenPads[i] == pad) {
+        return true;
+      }
+    }
+  }
+#else
+  (void)pad;
+#endif
+  return false;
+}
+
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                          dif_gpio_pin_t io, dt_pad_t pad) {
   // Turn off the pull enable on the pad and read the IO.
