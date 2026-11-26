@@ -39,7 +39,7 @@ struct Opts {
 fn spi_device_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     // Setup the SPI console with the GPIO TX indicator pin.
     let spi = transport.spi(&opts.console_spi)?;
-    let device_console_tx_ready_pin = &transport.gpio_pin("IOA5")?;
+    let device_console_tx_ready_pin = &transport.gpio_pin("IOR10")?;
     device_console_tx_ready_pin.set_mode(PinMode::Input)?;
     device_console_tx_ready_pin.set_pull_mode(PullMode::None)?;
     let spi_console_device = SpiConsoleDevice::new(

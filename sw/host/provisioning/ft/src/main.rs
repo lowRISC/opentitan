@@ -121,7 +121,7 @@ struct Opts {
     console_spi: String,
 
     /// Name of the SPI interface to connect to the OTTF console.
-    #[arg(long, default_value = "IOA5")]
+    #[arg(long, default_value = "IOR10")]
     console_tx_indicator_pin: String,
 
     /// Owner's firmware string indicating successful start up.
