@@ -189,6 +189,8 @@ module ibex_riscv_compliance (
       .trvk_heap_base_addr_i     (32'h00000000         ),
 
       .cheriot_enable_i          (ibex_pkg::IbexMuBiOff),
+      .cheriot_enable_shadow_i   (ibex_pkg::IbexMuBiOff),
+      .cheriot_enable_cmp_i      (ibex_pkg::IbexMuBiOff),
 
       .instr_req_o               (host_req[CoreI]      ),
       .instr_gnt_i               (host_gnt[CoreI]      ),

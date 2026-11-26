@@ -74,6 +74,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ibex_pkg::IC_NUM_WAYS-1:0] ram_cfg_icache_data_o,
 
   input  ibex_mubi_t                                                   cheriot_enable_i,
+  input  ibex_mubi_t                                                   cheriot_enable_shadow_i,
+  input  ibex_mubi_t                                                   cheriot_enable_cmp_i,
 
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
@@ -416,6 +418,11 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .out_o(mcounteren_writable_buf)
   );
 
+  // CHERIoT enable of the core and its register file, driven in the lockstep section below
+  // (IbexMuBiOff without CHERIoT)
+  ibex_mubi_t cheriot_enable_core;
+  ibex_mubi_t cheriot_enable_rf;
+
   // ibex_core takes integrity and data bits together. Combine the separate integrity and data
   // inputs here.
   assign data_rdata_core[31:0] = trvk_rdata;
@@ -477,7 +484,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
     .hart_id_i,
     .boot_addr_i,
-    .cheriot_enable_i,
+    .cheriot_enable_i(cheriot_enable_core),
 
     .instr_req_o,
     .instr_gnt_i,
@@ -608,7 +615,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (dummy_instr_id),
       .dummy_instr_wb_i (dummy_instr_wb),
-      .cheriot_enable_i (cheriot_enable_i),
+      .cheriot_enable_i (cheriot_enable_rf),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
@@ -636,7 +643,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i       (test_en_i),
       .dummy_instr_id_i(dummy_instr_id),
       .dummy_instr_wb_i(dummy_instr_wb),
-      .cheriot_enable_i (cheriot_enable_i),
+      .cheriot_enable_i (cheriot_enable_rf),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
@@ -664,7 +671,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i       (test_en_i),
       .dummy_instr_id_i(dummy_instr_id),
       .dummy_instr_wb_i(dummy_instr_wb),
-      .cheriot_enable_i (cheriot_enable_i),
+      .cheriot_enable_i (cheriot_enable_rf),
 
       .raddr_a_i(rf_raddr_a),
       .rdata_a_o(rf_rdata_a),
@@ -935,6 +942,10 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   // Redundant lockstep core implementation
   if (Lockstep) begin : gen_lockstep
+    // The shadow core runs at least one cycle behind the main core; ibex_lockstep has no
+    // zero-offset mode.
+    `ASSERT_INIT(IbexLockstepOffsetMin_A, LockstepOffset > 0)
+
     // SEC_CM: LOGIC.SHADOW
     // Note: certain synthesis tools like DC are very smart at optimizing away redundant logic.
     // Hence, we have to insert an optimization barrier at the IOs of the lockstep Ibex.
@@ -1000,7 +1011,6 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       fetch_enable_i,
       mcounteren_writable_i,
       core_busy_d,
-      cheriot_enable_i,
       rf_wcap,
       rf_rcap_a,
       rf_rcap_b
@@ -1047,7 +1057,6 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic [RegFileDataWidth-1:0]  rf_rdata_a_local;
     logic [RegFileDataWidth-1:0]  rf_rdata_b_local;
 
-    ibex_mubi_t                   cheriot_enable_local;
     logic [REGCAP_W-1:0]          rf_wcap_vec_local;
     logic [REGCAP_W-1:0]          rf_rcap_a_vec_local;
     logic [REGCAP_W-1:0]          rf_rcap_b_vec_local;
@@ -1126,7 +1135,6 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       fetch_enable_i,
       mcounteren_writable_i,
       core_busy_d,
-      cheriot_enable_i,
       rf_wcap,
       rf_rcap_a,
       rf_rcap_b
@@ -1179,7 +1187,6 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       fetch_enable_local,
       mcounteren_writable_local,
       core_busy_local,
-      cheriot_enable_local,
       rf_wcap_vec_local,
       rf_rcap_a_vec_local,
       rf_rcap_b_vec_local
@@ -1278,6 +1285,106 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic lockstep_alert_minor_local, lockstep_alert_major_internal_local;
     logic lockstep_alert_major_bus_local;
 
+    // CHERIoT enable countermeasures, only with CHERIoT: the shadow core has its own enable,
+    // cheriot_enable_shadow_i, which ibex_lockstep delays by LockstepOffset - 1 cycles and returns
+    // as a separate copy, and a comparison checks that copy against cheriot_enable_i.
+    // Without CHERIoT both cores run with IbexMuBiOff.
+    ibex_mubi_t cheriot_enable_shadow_cmp;
+    logic       cheriot_enable_mismatch;
+
+    if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_enable
+      // Receivers, one buffered copy per consumer: the core, the register file and the
+      // comparison. With AsyncOn(0) the primitive only buffers, so the ibex_mubi_t encoding passes
+      // through unchanged.
+      typedef enum logic [1:0] {
+        EnableCoreIdx,
+        EnableRfIdx,
+        EnableCompareIdx,
+        EnableLast
+      } cheriot_enable_pos_e;
+
+      prim_mubi_pkg::mubi4_t [EnableLast-1:0] cheriot_enable_buf;
+      prim_mubi_pkg::mubi4_t [0:0]            cheriot_enable_cmp_buf;
+      ibex_mubi_t                             cheriot_enable_main_cmp, cheriot_enable_cmp_delayed;
+
+      prim_mubi4_sync #(
+        .NumCopies(int'(EnableLast)),
+        .AsyncOn  (1'b0)
+      ) u_cheriot_enable_sync (
+        .clk_i (clk),
+        .rst_ni,
+        .mubi_i(prim_mubi_pkg::mubi4_t'(cheriot_enable_i)),
+        .mubi_o(cheriot_enable_buf)
+      );
+
+      prim_mubi4_sync #(
+        .NumCopies(1),
+        .AsyncOn  (1'b0)
+      ) u_cheriot_enable_cmp_sync (
+        .clk_i (clk),
+        .rst_ni,
+        .mubi_i(prim_mubi_pkg::mubi4_t'(cheriot_enable_cmp_i)),
+        .mubi_o(cheriot_enable_cmp_buf)
+      );
+
+      assign cheriot_enable_core = ibex_mubi_t'(cheriot_enable_buf[EnableCoreIdx]);
+      assign cheriot_enable_rf   = ibex_mubi_t'(cheriot_enable_buf[EnableRfIdx]);
+
+      assign cheriot_enable_main_cmp = ibex_mubi_t'(cheriot_enable_buf[EnableCompareIdx]);
+
+      // Once the compare enable is given (any value except IbexMuBiOff), cheriot_enable_i and the
+      // shadow enable must be valid and equal. The compare enable passes LockstepOffset - 1 flops
+      // on the core clock, like the shadow enable, so it turns the comparison on only after the
+      // delayed shadow enable has settled.
+      if (LockstepOffset > 1) begin : gen_cheriot_enable_cmp_delay
+        // Stage LockstepOffset - 1 is the input, stage 0 feeds the comparison.
+        ibex_mubi_t [LockstepOffset-1:0] cheriot_enable_cmp_q;
+
+        assign cheriot_enable_cmp_q[LockstepOffset-1] = ibex_mubi_t'(cheriot_enable_cmp_buf[0]);
+
+        for (genvar i = 0; i < LockstepOffset - 1; i++) begin : gen_stages
+          prim_flop #(
+            .Width     ($bits(ibex_mubi_t)),
+            .ResetValue(IbexMuBiOff)
+          ) u_prim_cheriot_enable_cmp_flop (
+            .clk_i (clk),
+            .rst_ni(rst_ni),
+            .d_i   (cheriot_enable_cmp_q[i+1]),
+            .q_o   (cheriot_enable_cmp_q[i])
+          );
+        end
+
+        assign cheriot_enable_cmp_delayed = cheriot_enable_cmp_q[0];
+      end else begin : gen_no_cheriot_enable_cmp_delay
+        assign cheriot_enable_cmp_delayed = ibex_mubi_t'(cheriot_enable_cmp_buf[0]);
+      end
+
+      // SEC_CM: CHERIOT_ENABLE.CTRL.REDUN
+      assign cheriot_enable_mismatch =
+          (cheriot_enable_cmp_delayed != IbexMuBiOff) &
+          (!(cheriot_enable_main_cmp inside {IbexMuBiOn, IbexMuBiOff}) |
+           !(cheriot_enable_shadow_cmp inside {IbexMuBiOn, IbexMuBiOff}) |
+           (cheriot_enable_main_cmp != cheriot_enable_shadow_cmp));
+
+      // Only valid values are checked: to fail closed, an integrator may drive all three enables
+      // invalid at once, which the comparison reports.
+      `ASSERT(IbexCheriotEnableShadowLag_A,
+              cheriot_enable_shadow_i inside {IbexMuBiOn, IbexMuBiOff} |->
+              cheriot_enable_shadow_i == $past(cheriot_enable_i))
+      `ASSERT(IbexCheriotEnableCmpEqual_A,
+              cheriot_enable_cmp_i == IbexMuBiOn |->
+              cheriot_enable_i == cheriot_enable_shadow_i &&
+              $stable(cheriot_enable_i) && $stable(cheriot_enable_shadow_i))
+    end else begin : gen_no_cheriot_enable
+      assign cheriot_enable_core     = IbexMuBiOff;
+      assign cheriot_enable_rf       = IbexMuBiOff;
+      assign cheriot_enable_mismatch = 1'b0;
+
+      logic unused_cheriot_enable;
+      assign unused_cheriot_enable = ^{cheriot_enable_i, cheriot_enable_cmp_i,
+                                       cheriot_enable_shadow_cmp};
+    end
+
     ibex_lockstep #(
       .PMPEnable                 (PMPEnable),
       .PMPGranularity            (PMPGranularity),
@@ -1330,7 +1437,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
       .hart_id_i                (hart_id_local),
       .boot_addr_i              (boot_addr_local),
-      .cheriot_enable_i         (cheriot_enable_local),
+      .cheriot_enable_shadow_i  (cheriot_enable_shadow_i),
       .trvk_heap_base_addr_i    (trvk_heap_base_addr_local),
 
       .instr_req_i              (instr_req_local),
@@ -1406,6 +1513,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .scan_rst_ni              (scan_rst_ni),
 
       .lockstep_cmp_en_o        (lockstep_cmp_en_o),
+      .cheriot_enable_shadow_o  (cheriot_enable_shadow_cmp),
       .data_req_shadow_o        (data_req_shadow_o),
       .data_we_shadow_o         (data_we_shadow_o),
       .data_be_shadow_o         (data_be_shadow_o),
@@ -1424,7 +1532,7 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     );
 
     prim_buf u_prim_buf_alert_major_internal (
-      .in_i (lockstep_alert_major_internal_local),
+      .in_i (lockstep_alert_major_internal_local | cheriot_enable_mismatch),
       .out_o(lockstep_alert_major_internal)
     );
 
@@ -1456,6 +1564,22 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
     logic unused_scan;
     assign unused_scan = scan_rst_ni;
+
+    // Without the lockstep there is no shadow core and no enable comparison. The core uses
+    // cheriot_enable_i directly with CHERIoT and IbexMuBiOff without it.
+    if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_enable
+      assign cheriot_enable_core = cheriot_enable_i;
+      assign cheriot_enable_rf   = cheriot_enable_i;
+    end else begin : gen_no_cheriot_enable
+      assign cheriot_enable_core = IbexMuBiOff;
+      assign cheriot_enable_rf   = IbexMuBiOff;
+
+      logic unused_cheriot_enable;
+      assign unused_cheriot_enable = ^cheriot_enable_i;
+    end
+
+    logic unused_cheriot_enable_shadow;
+    assign unused_cheriot_enable_shadow = ^{cheriot_enable_shadow_i, cheriot_enable_cmp_i};
   end
 
 
@@ -1631,6 +1755,8 @@ module ibex_top import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   `ASSERT_KNOWN(IbexRamCfgTagX, ram_cfg_icache_tag_i)
   `ASSERT_KNOWN(IbexRamCfgDataX, ram_cfg_icache_data_i)
   `ASSERT_KNOWN(IbexCHERIoTEnableX, cheriot_enable_i)
+  `ASSERT_KNOWN(IbexCHERIoTEnableShadowX, cheriot_enable_shadow_i)
+  `ASSERT_KNOWN(IbexCHERIoTEnableCmpX, cheriot_enable_cmp_i)
   `ASSERT_KNOWN(IbexHartIdX, hart_id_i)
   `ASSERT_KNOWN(IbexBootAddrX, boot_addr_i)
   `ASSERT_KNOWN(IbexTrvkHeapBaseAddrX, trvk_heap_base_addr_i)

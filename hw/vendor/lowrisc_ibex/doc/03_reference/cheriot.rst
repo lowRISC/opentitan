@@ -34,6 +34,7 @@ CHERIoT support requires two conditions to be met:
 
 2. **Runtime**: set ``cheriot_enable_i`` to ``ibex_pkg::IbexMuBiOn``.
    When de-asserted (``ibex_pkg::IbexMuBiOff``) the core runs as a standard RV32I processor.
+   With the :ref:`dual core lockstep<lockstep>`, ``cheriot_enable_shadow_i`` must follow ``cheriot_enable_i`` one cycle later, and ``cheriot_enable_cmp_i``, raised after the last switch, enables the comparison of the two.
 
 .. important::
    **Security Constraint:** The ``cheriot_enable_i`` signal acts as a one-way switch. To ensure security and prevent arbitrary switching between memory protection modes, the mode must either be configured at reset and kept constant, or switched exactly once from off to on during runtime.
@@ -67,8 +68,7 @@ Instructions in flight are therefore partly handled in RV32I mode and partly in 
 
 **Triggering the switch:**
 The core must trigger the switch itself, as the last step of the sequence below, for example with a store to a register that sets ``cheriot_enable_i``.
-Nothing else (for example another bus host, or a debugger through system bus access) may change ``cheriot_enable_i`` while the core runs other code.
-An external agent may only switch while the core waits in a known state: it has completed the sequence up to the switch, and it sleeps in or polls from a ``wfi`` loop with interrupts disabled (see the second example below and ``core_sleep_o``).
+Nothing else (for example another bus host, or a debugger through system bus access) may change ``cheriot_enable_i``.
 
 **Software requirements:**
 
@@ -76,8 +76,8 @@ An external agent may only switch while the core waits in a known state: it has 
 * Disable dummy instructions (``cpuctrlsts.dummy_instr_en``) before the switch, and restore the previous setting afterwards.
 * Write zero to ``x16``–``x31`` and do not write them again before the switch.
   With ``RV32E`` = 1, skip this step: ``x16``–``x31`` do not exist, and the capability metadata storage still holds valid reset values.
-* From the instruction that triggers the switch (or, with an external agent, from the first ``wfi``) until the core runs in CHERIoT mode, only use instructions that behave the same in both modes.
-  The sequence only needs ``csrr`` of ``marchid``, a conditional branch and ``wfi``.
+* From the instruction that triggers the switch until the core runs in CHERIoT mode, only use instructions that behave the same in both modes.
+  The sequence only needs ``csrr`` of ``marchid`` and a conditional branch.
   In particular, this rules out:
 
   * Compressed instructions, as several encodings decode differently in CHERIoT mode.
@@ -93,7 +93,7 @@ An external agent may only switch while the core waits in a known state: it has 
 
 * Debugging is not supported during the switch.
   The core must not halt or be in debug mode from the start of the sequence until ``mtcc`` is set up.
-* From the instruction that triggers the switch (or, with an external agent, from the first ``wfi``) until ``mtcc`` is set up, either no non-maskable interrupt (NMI) may be taken, or the NMI handler must work in both modes, including a mode change while it runs.
+* From the instruction that triggers the switch until ``mtcc`` is set up, either no non-maskable interrupt (NMI) may be taken, or the NMI handler must work in both modes, including a mode change while it runs.
   Ibex cannot mask NMIs, so without such a handler the integration must make sure that ``irq_nm_i`` is not raised in this window.
   An NMI taken earlier in the sequence must leave ``x16``–``x31`` zero.
 
@@ -113,9 +113,7 @@ The reasons are:
   In both cases, the handler fails and the interrupted context is lost.
 * ``depcc`` resets to null and is only written in CHERIoT mode.
   If the core halts in RV32I mode and resumes after the switch, ``dret`` installs an untagged PCC and the next instruction fetch faults.
-* The polling loop works in both modes: ``csrr``, ``bne`` and ``wfi`` behave the same, and PCC still holds the root executable capability, which has the **SR** permission needed for CSR accesses.
-  While the core sleeps in ``wfi``, no instruction is in flight.
-  A pending interrupt that is enabled in ``mie`` wakes the core even with ``mstatus.MIE`` = 0, and the core then continues after ``wfi`` without taking the interrupt.
+* The polling loop works in both modes: ``csrr`` and ``bne`` behave the same, and PCC still holds the root executable capability, which has the **SR** permission needed for CSR accesses.
 
 **State after the switch:**
 The special capability registers only change in CHERIoT mode, so they still hold their reset values.
@@ -125,8 +123,8 @@ PCC, ``mtcc`` and ``mepcc`` hold the root executable capability, ``mtdc`` the ro
 Software should treat them as uninitialized, as after a reset.
 PMP checks are not performed in CHERIoT mode (see :ref:`pmp`), so PMP regions and locks configured in RV32I mode no longer restrict accesses after the switch.
 
-**Examples:**
-The first example assumes that ``cheriot_enable_i`` is set by a store of ``t0`` to the address in ``a0``, which depends on the integration.
+**Example:**
+The example assumes that ``cheriot_enable_i`` is set by a store of ``t0`` to the address in ``a0``, which depends on the integration.
 ``.option arch, rv32i_zicsr`` is needed with a CHERIoT toolchain, which rejects ``x16``–``x31``.
 
 .. code-block:: text
@@ -148,20 +146,6 @@ The first example assumes that ``cheriot_enable_i`` is set by a store of ``t0`` 
    csrs   0x7C0, a1                  # restore cpuctrlsts.dummy_instr_en
    .option pop
    # Set up mtcc next, then derive capabilities before enabling interrupts.
-
-In the second example, an external agent switches while the core sleeps and then wakes it with an interrupt that is enabled in ``mie``.
-If the core wakes up before the switch, it keeps polling, which is equally safe.
-
-.. code-block:: text
-
-   # Same as above up to and including li t1, 0xCE1, without the store.
-   # The wake-up interrupt is enabled in mie, mstatus.MIE = 0.
-   1:
-   wfi                               # the agent switches while the core sleeps
-   csrr   t2, marchid
-   bne    t2, t1, 1b                 # wait until the core runs in CHERIoT mode
-   csrs   0x7C0, a1                  # restore cpuctrlsts.dummy_instr_en
-   .option pop
 
 Register File
 -------------
