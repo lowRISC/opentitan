@@ -155,6 +155,10 @@ SECTIONS {
     *(.srodata.*)
     *(.rodata)
     *(.rodata.*)
+
+    /* Ensure section end is word-aligned. */
+    . = ALIGN(4);
+    _rodata_end = .;
   } > rom
 
   /**
@@ -204,6 +208,43 @@ SECTIONS {
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
+
+  /**
+   * Fixed 8 KiB NAPOT-aligned window at the top of ROM for the FIPS KAT
+   * descriptor table and contiguous vector payloads ([0x6E000, 0x70000) on
+   * Earl Grey Gen2), leaving 184 KiB below for Mask ROM code + `.rodata` with
+   * zero dead gap.
+   *
+   * `.fips_kat` itself is bounded strictly below `_rom_chip_info_start`
+   * (0x6FF80, max 8,064 B = 0x1F80). `.chip_info` ([0x6FF80, 0x6FFE0)) is
+   * non-confidential build metadata, and [0x6FFE0, 0x70000) holds ECC-poisoned
+   * `rom_ctrl` digest words that are excluded from valid KAT table offsets by
+   * `kFipsKatMaxTableSize` (0x1F80).
+   */
+  _fips_kat_region_size = 0x2000;
+  _fips_kat_region_start = ORIGIN(rom) + LENGTH(rom) - 0x2000;
+  _fips_kat_region_end = _fips_kat_region_start + _fips_kat_region_size;
+
+  .fips_kat _fips_kat_region_start : ALIGN(4) {
+    _fips_kat_start = .;
+    KEEP(*(.fips_kat))
+    . = ALIGN(4);
+    _fips_kat_end = .;
+    ASSERT(LENGTH(rom) >= _fips_kat_region_size,
+      "Error: ROM smaller than 8 KiB .fips_kat window!");
+    ASSERT(_rodata_end <= _fips_kat_region_start,
+      "Error: .rodata overflows into .fips_kat region!");
+    ASSERT((_fips_kat_region_start & (_fips_kat_region_size - 1)) == 0,
+      "Error: .fips_kat region start is not 8 KiB NAPOT-aligned!");
+    ASSERT(_fips_kat_start == _fips_kat_region_start,
+      "Error: .fips_kat section not anchored at _fips_kat_region_start!");
+    ASSERT(_fips_kat_end <= _fips_kat_region_end,
+      "Error: .fips_kat section exceeds 8 KiB NAPOT window!");
+    ASSERT(_fips_kat_end <= _rom_chip_info_start,
+      "Error: .fips_kat section overlaps .chip_info!");
+    ASSERT((_fips_kat_region_end - _rom_chip_info_start) <= 128,
+      "Error: .chip_info exceeds kFipsKatChipInfoReservedBytes!");
+  } > rom
 
   /**
    * Immutable chip_info data, containing build-time-recorded information.

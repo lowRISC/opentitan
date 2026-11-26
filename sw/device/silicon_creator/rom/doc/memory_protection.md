@@ -105,6 +105,15 @@ for the `ROM_EXT` virtual address.
 | 14    | Stack Guard (4 bytes)         | \<none\>    | NA4             |
 | 15    | RAM                           | RW          | NAPOT           |
 
+## Transient Read-Only Access to `.fips_kat`
+
+During ROM execution, entry 2 (`ROM`, TOR, `R`) covers `[end of ROM TEXT, end of ROM)`, including the `.fips_kat` data section.
+When `ROM_EXT` hands off to BL0, ROM ePMP entries are reclaimed so Mask ROM is inaccessible by default under `mseccfg.MMWP`.
+
+To let later boot stages read embedded FIPS 140-3 Known Answer Test (KAT) vectors without exposing Mask ROM code or `.rodata`, `rom.ld` places `.fips_kat` in a fixed 8 KiB NAPOT-aligned window at the top of ROM: `[ORIGIN(rom) + LENGTH(rom) - 0x2000, ORIGIN(rom) + LENGTH(rom))` (`[0x6E000, 0x70000)` on Earl Grey Gen2, leaving 184 KiB below for Mask ROM code and `.rodata` with zero unused gap).
+`.chip_info` (`[0x6FF80, 0x6FFE0)`) holds non-confidential build metadata, while `[0x6FFE0, 0x70000)` holds ECC-poisoned `rom_ctrl` digest words that are excluded from `.fips_kat` by linker assertion (`_fips_kat_end <= _rom_chip_info_start`) and excluded from valid KAT table offsets by `kFipsKatMaxTableSize` (`0x1F80` = 8,064 B).
+While `mseccfg.RLB` is set, BL0 can transiently map only this 8 KiB window as locked read-only (`L=1`, `R=1`, `W=0`, `X=0`, `NAPOT`) in a single free ePMP slot (for example, slot 0), validate and execute its KATs within `kFipsKatMaxTableSize`, and clear the slot immediately afterward without reading `[0x6FFE0, 0x70000)`.
+
 ## Verification
 
 The ROM must verify that the ePMP configuration matches the expected configuration.
