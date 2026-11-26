@@ -36,6 +36,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/top_earlgrey/ip/aon_timer/dv/lint/{tool}"
              },
+             {    name: cheriot_mem_sys
+                  fusesoc_core: lowrisc:dv:cheriot_mem_sys_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  rel_path: "hw/ip/cheriot_mem_sys/dv/lint/{tool}"
+             },
              {    name: clkmgr
                   fusesoc_core: lowrisc:earlgrey_dv:clkmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
