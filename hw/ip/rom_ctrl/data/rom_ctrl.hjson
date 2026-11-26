@@ -35,7 +35,6 @@
       }
   ]
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
-  regwidth: "32"
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "regs" }
     { protocol: "tlul", direction: "device", name: "rom" },
