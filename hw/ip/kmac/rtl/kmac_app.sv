@@ -1347,6 +1347,7 @@ module kmac_app
   end
 
   // Sideloaded key expose control
+  // SEC_CM: KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI
   logic err_sensitive_key_used;
   assign err_key_used_but_invalid_set = (keymgr_key_used && !keymgr_key_i.valid) ||
                                         err_sensitive_key_used;

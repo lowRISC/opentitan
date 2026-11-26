@@ -42,6 +42,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:----------------------------------------|:-------------------------------------------------------------------------------------------------------|
 | KMAC.BUS.INTEGRITY                      | End-to-end bus integrity scheme.                                                                       |
 | KMAC.LC_ESCALATE_EN.INTERSIG.MUBI       | The global escalation input signal from the life cycle is multibit encoded                             |
+| KMAC.KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI | The sensitive key indicator from the key manager is multibit encoded. Invalid values count as true.    |
 | KMAC.SW_KEY.KEY.MASKING                 | Data storage and secret key are two share to guard against 1st order attack.                           |
 | KMAC.KEY.SIDELOAD                       | Key from KeyMgr is sideloaded.                                                                         |
 | KMAC.CFG_SHADOWED.CONFIG.SHADOW         | Shadowed CFG and ENTROPY_CFG registers.                                                                |

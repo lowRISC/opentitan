@@ -334,6 +334,9 @@
     { name: "LC_ESCALATE_EN.INTERSIG.MUBI"
       desc: "The global escalation input signal from the life cycle is multibit encoded"
     }
+    { name: "KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI"
+      desc: "The sensitive key indicator from the key manager is multibit encoded. Invalid values count as true."
+    }
     { name: "SW_KEY.KEY.MASKING"
       desc: '''Data storage and secret key are two share to guard against 1st
         order attack.'''

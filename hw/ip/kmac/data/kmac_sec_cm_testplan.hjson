@@ -36,6 +36,12 @@
       tests: ["{name}_lc_escalation"]
     }
     {
+      name: sec_cm_keymgr_sensitive_key_intersig_mubi
+      desc: "Verify the countermeasure(s) KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_sw_key_key_masking
       desc: "Verify the countermeasure(s) SW_KEY.KEY.MASKING."
       stage: V2S
