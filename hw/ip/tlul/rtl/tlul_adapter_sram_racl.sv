@@ -50,6 +50,7 @@ module tlul_adapter_sram_racl
   parameter bit SecFifoPtr        = 0,          // 1: Duplicated fifo pointers
   parameter bit SecFifo           = 0,          // 1: Duplicated fifos
   parameter bit EnableReadback    = 0,          // 1: Readback and check written/read data.
+  parameter bit EnableRmwIntgChk  = 0,          // 1: Check integrity of read data during RMW.
   parameter bit DataXorAddr       = 0,          // 1: XOR data and address for address protection
   parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
   parameter bit RaclErrorRsp      = EnableRacl, // 1: Return TLUL error on RACL errors
@@ -130,6 +131,7 @@ module tlul_adapter_sram_racl
     .SecFifoPtr        ( SecFifoPtr        ),
     .SecFifo           ( SecFifo           ),
     .EnableReadback    ( EnableReadback    ),
+    .EnableRmwIntgChk  ( EnableRmwIntgChk  ),
     .DataXorAddr       ( DataXorAddr       )
   ) tlul_adapter_sram (
     .clk_i,
