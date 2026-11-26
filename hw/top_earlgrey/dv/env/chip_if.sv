@@ -557,16 +557,16 @@ interface chip_if;
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] __enable_i2c = {NUM_I2CS{1'b0}}; // Internal signal.
 
-  // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12} are the i2c connections
+  // {ioa7, ioa8}, {iob12, iob11} and {iob10, iob9} are the i2c connections
   localparam int AssignedI2cSclIos [NUM_I2CS]  = {
     top_earlgrey_pkg::MioPadIoa8,
-    top_earlgrey_pkg::MioPadIob9,
-    top_earlgrey_pkg::MioPadIob11
+    top_earlgrey_pkg::MioPadIob11,
+    top_earlgrey_pkg::MioPadIob9
   };
   localparam int AssignedI2cSdaIos [NUM_I2CS] = {
     top_earlgrey_pkg::MioPadIoa7,
-    top_earlgrey_pkg::MioPadIob10,
-    top_earlgrey_pkg::MioPadIob12
+    top_earlgrey_pkg::MioPadIob12,
+    top_earlgrey_pkg::MioPadIob10
   };
 
   // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
