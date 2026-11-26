@@ -168,6 +168,7 @@ module otp_macro
     .tl_o      (tl_d2h_gated ),
     .reg2hw    (reg2hw    ),
     .hw2reg    (hw2reg    ),
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o(intg_err  ),
     .racl_policies_i,
     .racl_error_o
