@@ -63,6 +63,8 @@ static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_entropy_src_t entropy_src;
 static dif_gpio_t gpio;
+// The max-power indicator pad IOB8 can only be driven by gpio0 pin 29.
+static const dif_gpio_pin_t kMaxPowerGpioPin = 29;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
@@ -379,7 +381,7 @@ static void configure_pinmux(void) {
 
   // Configure GPIO max-power period indicator pin on IOB8.
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob8,
-                                        kTopEarlgreyPinmuxOutselGpio0Gpio0));
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio29));
 
   // UART1:
   //    RX on IOR5
@@ -1155,8 +1157,11 @@ static void max_power(void) {
                                       ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true);
 
   // Prepare GPIO register values (for max power indicator).
-  const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
-  const uint32_t gpio_off_reg_val = 1u << 16;
+  // MASKED_OUT_UPPER holds the mask in its upper and the data of pins 16-31 in
+  // its lower half.
+  const uint32_t gpio_on_reg_val =
+      (1u << kMaxPowerGpioPin) | (1u << (kMaxPowerGpioPin - 16));
+  const uint32_t gpio_off_reg_val = 1u << kMaxPowerGpioPin;
 
   check_crypto_blocks_idle();
 
@@ -1215,7 +1220,7 @@ static void max_power(void) {
   mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
 
   // Toggle GPIO pin to indicate we are in max power consumption epoch.
-  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_UPPER_REG_OFFSET,
                       gpio_on_reg_val);
 
   mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET,
@@ -1229,7 +1234,7 @@ static void max_power(void) {
     ;
 
   // Toggle GPIO pin to indicate we are out of max power consumption epoch.
-  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_UPPER_REG_OFFSET,
                       gpio_off_reg_val);
 
   LOG_INFO("Exited max power epoch.");
@@ -1371,9 +1376,9 @@ bool test_main(void) {
   if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
     configure_pinmux_sim();
   }
-  // Clear GPIO pin 0 (max power indicator pin).
+  // Enable the max power indicator pin.
   CHECK_DIF_OK(
-      dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
+      dif_gpio_output_set_enabled(&gpio, kMaxPowerGpioPin, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   configure_otbn();

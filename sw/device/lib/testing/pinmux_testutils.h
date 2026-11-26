@@ -41,9 +41,10 @@ typedef struct pinmux_testutils_mio_pin {
 void pinmux_testutils_init(dif_pinmux_t *pinmux);
 
 /**
- * Maps the chip IOs to the GPIO peripheral in input and output directions.
+ * Maps the chip IOs to the GPIO peripherals in input and output directions,
+ * per GPIO instance and pin.
  */
-extern const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins];
+extern const dt_pad_t kPinmuxTestutilsGpioPads[kDtGpioCount][kDifGpioNumPins];
 
 /**
  * Connect a peripheral I/O to a pad.
@@ -77,12 +78,12 @@ status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
                                   dt_periph_io_dir_t dir, dt_pad_t pad);
 
 /**
- * Returns the mask of testable GPIO pins.
+ * Returns the mask of testable GPIO pins of a GPIO instance.
  *
  * Returns a simulation-device-specific mask that enables testing of only a
  * subset of GPIOs depending on the IO allocation limitations.
  */
-uint32_t pinmux_testutils_get_testable_gpios_mask(void);
+uint32_t pinmux_testutils_get_testable_gpios_mask(dt_gpio_t gpio);
 
 /**
  * Reads a pin as a four-valued strapping pin.
