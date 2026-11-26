@@ -875,6 +875,7 @@ module kmac_app
     // Error out if the key is used but it is invalid. Do not transition if:
     // - A request is outstanding (valid request but no handshake in this cycle). Otherwise a valid
     //   could be dropped which could bring the hashing engine in a non recoverable state.
+    //   This is not applicable in the SW state because no app req is accepted.
     // - When the key error handling starts. Otherwise the FSM would get trapped.
     // Note, the key error is cleared when the error handling starts.
     if (err_key_used_but_invalid && !any_request_outstanding && st != StErrorKeyNotValid) begin
@@ -912,7 +913,8 @@ module kmac_app
     end
   end
 
-  assign any_request_outstanding = app_req.req_valid && !app_rsp.req_ready;
+  // Indicate if any app req is outstanding if the FSM is not in the SW state.
+  assign any_request_outstanding = (st != StSw) && app_req.req_valid && !app_rsp.req_ready;
 
   assign last_req_pending    = app_req.req_valid && app_req.req_last;
   // An empty message request issues a process command and does not forward any message data.
