@@ -38,10 +38,10 @@ proc wavedumpScope {waves simulator scope {depth 0} {fsdb_flags "+all"} {probe_f
 
     "fsdb" {
       if {$simulator eq "xcelium"} {
-        call fsdbDumpvars $depth $scope $fsdb_flags
+        call fsdbDumpvars $depth $scope {*}$fsdb_flags
         call fsdbDumpSVA $depth $scope
       } else {
-        fsdbDumpvars $depth $scope $fsdb_flags
+        fsdbDumpvars $depth $scope {*}$fsdb_flags
         fsdbDumpSVA $depth $scope
       }
     }
@@ -50,12 +50,12 @@ proc wavedumpScope {waves simulator scope {depth 0} {fsdb_flags "+all"} {probe_f
       if {$depth == 0} {
         set depth "all"
       }
-      probe "$scope" $probe_flags -depth $depth -memories -shm
+      probe "$scope" {*}$probe_flags -depth $depth -memories -shm
     }
 
     "vpd" {
       global vpd_fid
-      dump -add "$scope" -fid $vpd_fid -depth $depth $dump_flags
+      dump -add "$scope" -fid $vpd_fid -depth $depth {*}$dump_flags
     }
 
     "vcd" {
@@ -63,7 +63,7 @@ proc wavedumpScope {waves simulator scope {depth 0} {fsdb_flags "+all"} {probe_f
         if {$depth == 0} {
           set depth "all"
         }
-        probe "$scope" $probe_flags -depth $depth -memories -vcd
+        probe "$scope" {*}$probe_flags -depth $depth -memories -vcd
       }
     }
 
@@ -72,7 +72,7 @@ proc wavedumpScope {waves simulator scope {depth 0} {fsdb_flags "+all"} {probe_f
         if {$depth == 0} {
           set depth "all"
         }
-        probe "$scope" $probe_flags -depth $depth -evcd
+        probe "$scope" {*}$probe_flags -depth $depth -evcd
       }
     }
 
