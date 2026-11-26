@@ -179,11 +179,10 @@ class chip_sw_sleep_pin_mio_dio_val_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.disconnect_all_interfaces(.disconnect_default_pulls(0));
 
     // The SW test randomizes between deep and light sleep. The SW test also randomizes the
-    // retention values of DIOs during sleep. If the SW ends up picking up the CLK or CSB ports of
-    // the SPI peripherals (that have dedicated pads) for example, then setting the values
-    // ends up triggering unexpected SVA errors. So we disable SVAs in those peripherals for this
-    // test. It may also be an artifact of having external weak pulls on DIOs. TODO: revisit this
-    // once we eliminate all weak pulls on all IOs (in chip_if.sv).
+    // retention values of the pads, except SPI_DEV_CLK and SPI_DEV_CS_L. These are always high-Z.
+    // During sleep, check_pads_retention_type() switches the testbench pulls on all pads between
+    // none, pull-down and pull-up. So spi_device sees its clock and chip select float (X) and
+    // toggle, and its SVAs fire. So we disable the spi_device SVAs for this test.
     // TODO: deassert the below bit to reenable SVAs once we are back in active power.
     cfg.chip_vif.chip_sw_sleep_pin_mio_dio_val_sva_disable = 1;
 

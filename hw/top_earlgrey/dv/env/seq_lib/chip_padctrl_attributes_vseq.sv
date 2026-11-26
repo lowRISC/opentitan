@@ -24,21 +24,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   localparam prim_pad_wrapper_pkg::pad_type_e DioPadType[DioCount] = '{
     prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dp
-    prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dn
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_ec_rst_l
-    prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_flash_wp_l
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sck
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_csb
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sck
-    prim_pad_wrapper_pkg::BidirStr  // DIO spi_host0_csb0
+    prim_pad_wrapper_pkg::BidirStd  // DIO usbdev_usb_dn
   };
 
   int dio_input_pads[$];
@@ -163,12 +149,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         }
       }
     }
-    // spi_device only reads sck and csb, the top ties their periph output enables to 0.
-    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceSck] == 0;
-    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceCsb] == 0;
   }
 
   virtual task body();
+    bit enable_spi_host_save;
     // The chip_padctrl_attributes test verifies the input / output connections of the pads to
     // peripherals and fully verifies all pad attributes. In doing so, Xs may end up propagating
     // into the peripheral. We hence, disable SVAs in these blocks while the test is running.
@@ -177,6 +161,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     // Remove default pulls on these interfaces.
     cfg.chip_vif.tap_straps_if.disconnect();
     cfg.chip_vif.mios_if.disconnect();
+    // The SPI host agent drives the SPI device pads per default. Disable it for this test
+    // temporarily.
+    enable_spi_host_save = cfg.chip_vif.enable_spi_host;
+    cfg.chip_vif.enable_spi_host = 0;
 
     foreach (DioPadType[i]) begin
       if (DioPadType[i] == prim_pad_wrapper_pkg::InputStd) dio_input_pads.push_back(i);
@@ -197,11 +185,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // the FPGA target. For the ASIC target, these DIOs are connected to the padring in the same
       // way as regular DIOs.
       begin : dio_test
-        bit enable_spi_host_save = cfg.chip_vif.enable_spi_host;
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(0);
-        cfg.chip_vif.enable_spi_host = 0;
         pinmux_dio_test();
-        cfg.chip_vif.enable_spi_host = enable_spi_host_save;
         cfg.chip_vif.dios_if.disconnect();
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(1);
       end : dio_test
@@ -223,9 +208,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeRelease));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeRelease));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i(SignalProbeRelease));
     cfg.chip_vif.mios_if.disconnect();
+    // Restore the default state at the end.
+    cfg.chip_vif.cfg_default_weak_pulls_on_mios(1);
+    cfg.chip_vif.enable_spi_host = enable_spi_host_save;
 
     // Reset the DUT before reenabling the assertions.
     dut_init();
@@ -544,10 +531,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   function void pinmux_dio_drive_inputs();
     cfg.chip_vif.dios_if.pins_oe = '0;
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeForce,
-                                                                periph_to_dio[11:0]));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeForce,
-                                                                 periph_to_dio[15:14]));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i(SignalProbeForce, periph_to_dio));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
     for (int i = 0; i < DioCount; i++) begin
       cfg.chip_vif.dios_if.pins_oe[DioToDioPadMap[i]] = dio_to_periph_oe[i];

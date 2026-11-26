@@ -68,11 +68,11 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
     cfg.chip_vif.enable_spi_device(.inst_num(0), .enable(1));
 
     // The following resolves Xs due to multiple IFs driving the same signal
-    cfg.chip_vif.dios_if.set_pullup_en_pin(top_earlgrey_pkg::DioPadSpiHostCsL, 1);
-    cfg.chip_vif.dios_if.set_pulldown_en_pin(top_earlgrey_pkg::DioPadSpiDevD0, 1);
-    cfg.chip_vif.dios_if.set_pulldown_en_pin(top_earlgrey_pkg::DioPadSpiDevD1, 1);
-    cfg.chip_vif.dios_if.set_pulldown_en_pin(top_earlgrey_pkg::DioPadSpiDevD2, 1);
-    cfg.chip_vif.dios_if.set_pulldown_en_pin(top_earlgrey_pkg::DioPadSpiDevD3, 1);
+    cfg.chip_vif.mios_if.set_pullup_en_pin(top_earlgrey_pkg::MioPadSpiHostCsL, 1);
+    cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadSpiDevD0, 1);
+    cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadSpiDevD1, 1);
+    cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadSpiDevD2, 1);
+    cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadSpiDevD3, 1);
     // Resolves firing assertion due to Xs
     cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadIob4, 1);
     cfg.chip_vif.mios_if.set_pulldown_en_pin(top_earlgrey_pkg::MioPadIob2, 1);
@@ -129,14 +129,14 @@ class chip_sw_spi_device_pinmux_sleep_retention_vseq extends chip_sw_base_vseq;
 
   // Checks the spi_output are set to value
   function void check_spi_outputs(bit value);
-    `DV_CHECK_EQ_FATAL(cfg.chip_vif.dios_if.sample_pin(top_earlgrey_pkg::DioPadSpiDevD3), value,
-      $sformatf("DioPadSpiDevD3 not %0d",value))
-    `DV_CHECK_EQ_FATAL(cfg.chip_vif.dios_if.sample_pin(top_earlgrey_pkg::DioPadSpiDevD2), value,
-      $sformatf("DioPadSpiDevD2 not %0d",value))
-    `DV_CHECK_EQ_FATAL(cfg.chip_vif.dios_if.sample_pin(top_earlgrey_pkg::DioPadSpiDevD1), value,
-      $sformatf("DioPadSpiDevD1 not %0d",value))
-    `DV_CHECK_EQ_FATAL(cfg.chip_vif.dios_if.sample_pin(top_earlgrey_pkg::DioPadSpiDevD0), value,
-      $sformatf("DioPadSpiDevD0 not %0d",value))
+    `DV_CHECK_EQ_FATAL(cfg.chip_vif.mios_if.sample_pin(top_earlgrey_pkg::MioPadSpiDevD3), value,
+      $sformatf("MioPadSpiDevD3 not %0d",value))
+    `DV_CHECK_EQ_FATAL(cfg.chip_vif.mios_if.sample_pin(top_earlgrey_pkg::MioPadSpiDevD2), value,
+      $sformatf("MioPadSpiDevD2 not %0d",value))
+    `DV_CHECK_EQ_FATAL(cfg.chip_vif.mios_if.sample_pin(top_earlgrey_pkg::MioPadSpiDevD1), value,
+      $sformatf("MioPadSpiDevD1 not %0d",value))
+    `DV_CHECK_EQ_FATAL(cfg.chip_vif.mios_if.sample_pin(top_earlgrey_pkg::MioPadSpiDevD0), value,
+      $sformatf("MioPadSpiDevD0 not %0d",value))
   endfunction
 
 endclass : chip_sw_spi_device_pinmux_sleep_retention_vseq
