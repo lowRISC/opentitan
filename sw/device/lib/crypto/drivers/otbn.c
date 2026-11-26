@@ -205,6 +205,9 @@ status_t otbn_execute(void) {
   // Ensure OTBN is idle before attempting to run a command.
   HARDENED_TRY(otbn_assert_idle());
 
+  // Clear any stale recoverable error bits from a previous operation.
+  abs_mmio_write32(kBase + OTBN_ERR_BITS_REG_OFFSET, 0);
+
   // Clear any pending DONE interrupt state before starting execution.
   abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET,
                    1u << OTBN_INTR_STATE_DONE_BIT);
@@ -283,6 +286,10 @@ uint32_t otbn_instruction_count_get(void) {
  */
 static status_t otbn_run_cmd_sync(otbn_cmd_t cmd) {
   HARDENED_TRY(otbn_assert_idle());
+  // Clear any stale recoverable error bits from a previous operation so that
+  // commands which do not pulse `done_core` (such as SEC_WIPE_IMEM /
+  // SEC_WIPE_DMEM) do not observe stale ERR_BITS in `otbn_busy_wait_for_done`.
+  abs_mmio_write32(kBase + OTBN_ERR_BITS_REG_OFFSET, 0);
   uint32_t intr_enable = abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET);
   abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, 0);
   abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET,
@@ -296,15 +303,15 @@ static status_t otbn_run_cmd_sync(otbn_cmd_t cmd) {
 status_t otbn_execute_sync(void) { return otbn_run_cmd_sync(kOtbnCmdExecute); }
 
 status_t otbn_imem_sec_wipe(void) {
-  HARDENED_TRY(otbn_run_cmd_sync(kOtbnCmdSecWipeImem));
-
   crypto_state_t *state = NULL;
-  // Check whether the state is present and use it if so
+  // Invalidate the IMEM cache before issuing the secure wipe so that even if
+  // the command returns an error after scrambling IMEM, `state->imem_cache`
+  // never points to wiped memory.
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
     state->imem_cache = 0;
   }
 
-  return OTCRYPTO_OK;
+  return otbn_run_cmd_sync(kOtbnCmdSecWipeImem);
 }
 
 status_t otbn_dmem_sec_wipe(void) {
