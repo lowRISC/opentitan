@@ -35,24 +35,24 @@ Security      | [SEC_CM_SCOPED][]              | Done        | Countermeasures a
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Not Started |
-Documentation | [BLOCK_DIAGRAM][]         | Not Started |
-Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
-Documentation | [MISSING_FUNC][]          | Not Started |
-Documentation | [FEATURE_FROZEN][]        | Not Started |
-RTL           | [FEATURE_COMPLETE][]      | Not Started |
-RTL           | [PORT_FROZEN][]           | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
-RTL           | [REVIEW_TODO][]           | Not Started |
-RTL           | [STYLE_X][]               | Not Started |
-RTL           | [CDC_SYNCMACRO][]         | Not Started |
-Code Quality  | [LINT_PASS][]             | Not Started |
-Code Quality  | [CDC_SETUP][]             | Not Started |
-Code Quality  | [RDC_SETUP][]             | Not Started |
-Code Quality  | [AREA_CHECK][]            | Not Started |
-Code Quality  | [TIMING_CHECK][]          | Not Started |
-Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
+Documentation | [NEW_FEATURES][]          | Done        |
+Documentation | [BLOCK_DIAGRAM][]         | Done        |
+Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [DOC_INTEGRATION_D2][]    | Done        |
+Documentation | [MISSING_FUNC][]          | Done        |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        |
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        |
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | Done        |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Done        |
+Code Quality  | [RDC_SETUP][]             | Done        |
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        |
+Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
 [NEW_FEATURES]:          ../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../doc/project_governance/checklist/README.md#block_diagram
