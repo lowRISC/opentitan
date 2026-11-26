@@ -94,50 +94,56 @@
 #define PINMUX_PAD_ATTR_PROP_CYCLES 500
 
 /**
- * Pinmux peripheral input values for software strap pins.
+ * Pinmux peripheral input values for software strap pins: gpio1 pins 2-4, see
+ * SW_STRAP_n_GPIO.
  */
-#define SW_STRAP_0_PERIPH 22
-#define SW_STRAP_1_PERIPH 23
-#define SW_STRAP_2_PERIPH 24
+#define SW_STRAP_0_PERIPH 46
+#define SW_STRAP_1_PERIPH 47
+#define SW_STRAP_2_PERIPH 48
 
 /**
  * Pinmux MIO input selector values for software strap pins.
  */
-#define SW_STRAP_0_INSEL 24
-#define SW_STRAP_1_INSEL 25
-#define SW_STRAP_2_INSEL 26
+#define SW_STRAP_0_INSEL 36
+#define SW_STRAP_1_INSEL 37
+#define SW_STRAP_2_INSEL 38
 
 /**
  * Pads of the software strap pins.
  */
-#define SW_STRAP_0_PAD 22
-#define SW_STRAP_1_PAD 23
-#define SW_STRAP_2_PAD 24
+#define SW_STRAP_0_PAD 34
+#define SW_STRAP_1_PAD 35
+#define SW_STRAP_2_PAD 36
+
+/**
+ * Bits of the software strap pins in the DATA_IN register of their GPIO
+ * instance (gpio1 for EG).
+ */
+#define SW_STRAP_0_GPIO 2
+#define SW_STRAP_1_GPIO 3
+#define SW_STRAP_2_GPIO 4
 
 /**
  * Mask for the software strap pins.
  */
-#define SW_STRAP_MASK                                    \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (1 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_MASK \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (1 << SW_STRAP_0_GPIO))
 
 /**
  * RMA entry strap value.
  *
- * We expect strong pull-ups on SW_STRAP_2_PERIPH and SW_STRAP_1_PERIPH, and
- * strong pull-down on SW_STRAP_0_PERIPH, i.e. `11_11_00`.
+ * We expect strong pull-ups on SW_STRAP_2 and SW_STRAP_1, and strong
+ * pull-down on SW_STRAP_0, i.e. `11_11_00`.
  */
-#define SW_STRAP_RMA_ENTRY                               \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (0 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_RMA_ENTRY \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (0 << SW_STRAP_0_GPIO))
 
 /**
  * Bootstrap strap value.
  *
  * We expect strong pull-ups on all software strap pins, i.e. `11_11_11`.
  */
-#define SW_STRAP_BOOTSTRAP                               \
-  ((1 << SW_STRAP_2_PERIPH) | (1 << SW_STRAP_1_PERIPH) | \
-   (1 << SW_STRAP_0_PERIPH))
+#define SW_STRAP_BOOTSTRAP \
+  ((1 << SW_STRAP_2_GPIO) | (1 << SW_STRAP_1_GPIO) | (1 << SW_STRAP_0_GPIO))
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BASE_CHIP_H_

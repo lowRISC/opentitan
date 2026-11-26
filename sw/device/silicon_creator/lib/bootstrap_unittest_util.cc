@@ -35,7 +35,7 @@ void BootstrapTest::ExpectBootstrapRequestCheck(bool requested) {
   if (!requested) {
     pins = ~pins;
   }
-  EXPECT_ABS_READ32(TOP_EARLGREY_GPIO0_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET,
+  EXPECT_ABS_READ32(TOP_EARLGREY_GPIO1_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET,
                     pins);
 }
 

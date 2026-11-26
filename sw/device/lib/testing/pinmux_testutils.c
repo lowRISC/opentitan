@@ -15,8 +15,16 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-static const dt_gpio_t kGpioDt = kDtGpio0;
 static const dt_uart_t kUart0Dt = kDtUart0;
+
+#if defined(OPENTITAN_IS_EARLGREY)
+// The SW straps can only be read by gpio1 IOs 2-4 due to the sparse pinmux.
+static const dt_gpio_t kStrapGpioDt = kDtGpio1;
+static const dif_gpio_pin_t kStrapGpioPin0 = 2;
+#else
+static const dt_gpio_t kStrapGpioDt = kDtGpio0;
+static const dif_gpio_pin_t kStrapGpioPin0 = 22;
+#endif
 
 #if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 static const dt_pad_t kPadUart0Tx = kDtPadIoc4;
@@ -42,16 +50,15 @@ static const dt_pad_t kPadStrap2 = kDtPadGpio0Gpio24;
 #endif /* OPENTITAN_IS_* */
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
-  // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_STATUS_OK(pinmux_testutils_connect(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22),
-      kDtPeriphIoDirIn, kPadStrap0));
-  CHECK_STATUS_OK(pinmux_testutils_connect(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio23),
-      kDtPeriphIoDirIn, kPadStrap1));
-  CHECK_STATUS_OK(pinmux_testutils_connect(
-      pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio24),
-      kDtPeriphIoDirIn, kPadStrap2));
+  // Set up the SW straps.
+  const dt_pad_t strap_pads[] = {kPadStrap0, kPadStrap1, kPadStrap2};
+  for (size_t i = 0; i < ARRAYSIZE(strap_pads); ++i) {
+    dt_gpio_periph_io_t io =
+        (dt_gpio_periph_io_t)(kDtGpioPeriphIoGpio0 + kStrapGpioPin0 + i);
+    CHECK_STATUS_OK(
+        pinmux_testutils_connect(pinmux, dt_gpio_periph_io(kStrapGpioDt, io),
+                                 kDtPeriphIoDirIn, strap_pads[i]));
+  }
 
   // Configure UART0 RX input.
   CHECK_STATUS_OK(pinmux_testutils_connect(
@@ -243,9 +250,14 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 
 uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio) {
   uint32_t strap = 0;
-  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 22, kPadStrap0);
-  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 23, kPadStrap1) << 2;
-  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 24, kPadStrap2) << 4;
+  strap |=
+      pinmux_testutils_read_strap_pin(pinmux, gpio, kStrapGpioPin0, kPadStrap0);
+  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, kStrapGpioPin0 + 1,
+                                           kPadStrap1)
+           << 2;
+  strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, kStrapGpioPin0 + 2,
+                                           kPadStrap2)
+           << 4;
   return strap;
 }
 
