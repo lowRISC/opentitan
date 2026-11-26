@@ -41,8 +41,8 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
     // once turn on lc_dft_en register, will need some time to update the state register
     // two clock cycles for lc_async mode, one clock cycle for driving dft_en, one more clock cycle
     // so there is no racing condition.
-    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks(5);
-    else               cfg.clk_rst_vif.wait_clks(3);
+    if (cfg.en_dv_cdc) cfg.clk_rst_vif.wait_clks_or_rst(5);
+    else               cfg.clk_rst_vif.wait_clks_or_rst(3);
   endtask
 
   virtual task body();
@@ -63,9 +63,11 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
       cfg.otp_ctrl_vif.drive_lc_escalate_en(lc_ctrl_pkg::Off);
       // Set dft_en to On to allow the csr_test to check all registers' default value after reset.
       cfg.otp_ctrl_vif.drive_lc_dft_en(lc_ctrl_pkg::On);
-      otp_ctrl_init();
       otp_pwr_init();
       super.apply_resets_concurrently(reset_duration_ps);
+      // A DAI write, a digest calculation or an LC program request writes the OTP until the reset
+      // stops it, so only clear the OTP once the reset has been applied
+      otp_ctrl_init();
       cfg.en_scb = 1;
     end else begin
       super.apply_resets_concurrently(reset_duration_ps);

@@ -53,7 +53,7 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
 
     for (uint i = 0; i <= num_dai_op; i++) begin
       bit [TL_DW-1:0] tlul_val;
-      if (cfg.stop_transaction_generators()) return;
+      if (!cfg.clk_rst_vif.rst_n) return;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, $sformatf("starting dai access seq %0d/%0d with addr %0h in partition %0d",
@@ -93,7 +93,6 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       `uvm_info(`gfn, $sformatf("OTP_init check failure with init error = %0h", init_chk_err),
                 UVM_LOW)
       foreach(init_chk_err[i]) begin
-        if (cfg.stop_transaction_generators()) break;
         if (init_chk_err[i]) begin
           exp_status[OtpPartitionErrorIdx] |= 1;
           exp_partition_status[i] = 1;
@@ -108,7 +107,6 @@ class otp_ctrl_init_fail_vseq extends otp_ctrl_smoke_vseq;
       bit [TL_DW-1:0] addr;
 
       for (int i = 0; i < NumPart; i++) begin
-        if (cfg.stop_transaction_generators()) return;
         `DV_CHECK_RANDOMIZE_FATAL(this);
 
         if (PartInfo[i].sw_digest) begin

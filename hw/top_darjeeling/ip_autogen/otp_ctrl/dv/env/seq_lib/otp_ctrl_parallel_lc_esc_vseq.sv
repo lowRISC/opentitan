@@ -75,6 +75,9 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
   endtask
 
   virtual task set_lc_esc_and_check();
+    // A reset from the caller, as in stress_all_with_rand_reset, ends the sequence
+    if (!cfg.clk_rst_vif.rst_n) return;
+
     // Random issue key requests before lc_esc_en is issued.
     randcase
       1: req_otbn_key(0);
@@ -82,12 +85,15 @@ class otp_ctrl_parallel_lc_esc_vseq extends otp_ctrl_dai_lock_vseq;
       1: req_lc_transition(0, 0);
     endcase
 
-    if (lc_esc_drive_cond == DriveRandomly) cfg.clk_rst_vif.wait_clks($urandom_range(0, 50));
+    if (lc_esc_drive_cond == DriveRandomly) begin
+      cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(0, 50));
+    end
+    if (!cfg.clk_rst_vif.rst_n) return;
 
-    if (!cfg.under_reset) cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
+    cfg.otp_ctrl_vif.drive_lc_escalate_en(get_rand_lc_tx_val(.f_weight(0)));
 
     // Wait 5 clock cycles until async lc_escalate_en propagate to each state machine.
-    cfg.clk_rst_vif.wait_clks(5);
+    cfg.clk_rst_vif.wait_clks_or_rst(5);
 
     // After LC_escalate is On, we trigger the dai_lock_vseq to check interfaces will return
     // default values and the design won't hang.

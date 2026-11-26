@@ -141,7 +141,8 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   task body();
     for (int i = 1; i <= num_trans; i++) begin
       bit [TL_DW-1:0] tlul_val;
-      if (cfg.stop_transaction_generators()) break;
+      // A reset from the caller, as in stress_all_with_rand_reset, ends the sequence
+      if (!cfg.clk_rst_vif.rst_n) return;
       `uvm_info(`gfn, $sformatf("starting seq %0d/%0d", i, num_trans), UVM_LOW)
 
       // to avoid access locked OTP partitions, issue reset and clear the OTP memory to all 0.
@@ -183,7 +184,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
 
       for (int i = 0; i < num_dai_op; i++) begin
         bit [TL_DW-1:0] rdata0, rdata1, backdoor_rd_val;
-        if (cfg.stop_transaction_generators()) break;
+        if (!cfg.clk_rst_vif.rst_n) return;
 
         `DV_CHECK_RANDOMIZE_FATAL(this)
         // recalculate part_idx in case some test turn off constraint dai_wr_legal_addr_c

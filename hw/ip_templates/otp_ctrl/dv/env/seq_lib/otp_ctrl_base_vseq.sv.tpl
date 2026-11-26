@@ -79,7 +79,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     cfg.backdoor_clear_mem = 0;
     // reset power init pin and lc pins
     if (do_otp_ctrl_init && do_apply_reset) otp_ctrl_init();
-    cfg.clk_rst_vif.wait_clks($urandom_range(0, 10));
+    cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(0, 10));
     if (do_otp_pwr_init && do_apply_reset) otp_pwr_init();
     callback_vseq.post_otp_pwr_init();
   endtask
@@ -193,7 +193,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
       if ($urandom_range(0, 1)) csr_rd(.ptr(ral.direct_access_regwen), .value(val));
     end
     wait_dai_op_done();
-    rd_and_clear_intrs();
+    if (cfg.clk_rst_vif.rst_n) rd_and_clear_intrs();
     dai_wr_inprogress = 0;
   endtask : dai_wr
 
@@ -215,6 +215,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
 
     wait_dai_op_done();
+    if (!cfg.clk_rst_vif.rst_n) return;
     csr_rd(ral.direct_access_rdata[0], rdata0);
     if (is_secret(addr) || is_digest(addr)) csr_rd(ral.direct_access_rdata[1], rdata1);
     rd_and_clear_intrs();
@@ -225,7 +226,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
                             bit [TL_DW-1:0] exp_data1 = 0);
     bit [TL_DW-1:0] rdata0, rdata1;
     dai_rd(addr, rdata0, rdata1);
-    if (!cfg.under_reset) begin
+    if (cfg.clk_rst_vif.rst_n) begin
       `DV_CHECK_EQ(rdata0, exp_data0, $sformatf("dai addr %0h rdata0 readout mismatch", addr))
       if (is_secret(addr) || is_digest(addr)) begin
         `DV_CHECK_EQ(rdata1, exp_data1, $sformatf("dai addr %0h rdata1 readout mismatch", addr))
@@ -246,6 +247,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     end
     do_digest_cal = 1;
     wait_dai_op_done();
+    if (!cfg.clk_rst_vif.rst_n) return;
     digest_calculated[part_idx] = 1;
     rd_and_clear_intrs();
   endtask
@@ -405,11 +407,10 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   endtask
 
   // For a DAI interface operation to finish, either way until status dai_idle is set, or check
-  // err_code and see if fatal error happened. In any case, break out of this wait if there
-  // is a need to stop transaction generators, since a spinwait will otherwise just stop
-  // when it times-out.
+  // err_code and see if fatal error happened. A reset also ends the wait, since csr_spinwait stops
+  // when it sees one. The scoreboard predicts the end of the operation only when a STATUS read
+  // shows DAI_IDLE, so after a reset the caller must not read registers that depend on it.
   virtual task wait_dai_op_done();
-    if (cfg.stop_transaction_generators()) return;
     fork begin
       fork
         begin
@@ -425,12 +426,6 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
             csr_rd(.ptr(ral.err_code[DaiIdx].err_code), .value(err_val), .backdoor(1));
             // Break if error will cause fatal alerts
             if (err_val inside {OTP_TERMINAL_ERRS}) break;
-          end
-        end
-        begin
-          forever begin
-            cfg.clk_rst_vif.wait_clks(1);
-            if (cfg.stop_transaction_generators()) break;
           end
         end
       join_any
@@ -462,7 +457,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   // The following interface requests are separated to blocking and non-blocking accesses.
   // The non-blocking access is mainly used when lc_escalate_en is On, which acts like a reset and
   // move all design state machines to ErrorSt. Thus pending request will never get a response
-  // until reset.
+  // until reset. No request starts during a reset, which ends the sequence.
   virtual task req_sram_key(int index, bit blocking = default_req_blocking);
     // Return if the request is already high, this is mainly due to lc_escalate_en On.
     if (cfg.m_sram_pull_agent_cfg[index].vif.req === 1'b1) return;
@@ -482,7 +477,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_sram_key_sub(int index);
     push_pull_host_seq#(.DeviceDataWidth(SRAM_DATA_SIZE)) sram_pull_seq;
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     `uvm_create_on(sram_pull_seq, p_sequencer.sram_pull_sequencer_h[index]);
     `DV_CHECK_RANDOMIZE_FATAL(sram_pull_seq)
     `uvm_send(sram_pull_seq)
@@ -510,7 +505,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_otbn_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(OTBN_DATA_SIZE)) otbn_pull_seq;
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     `uvm_create_on(otbn_pull_seq, p_sequencer.otbn_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(otbn_pull_seq)
     `uvm_send(otbn_pull_seq)
@@ -535,7 +530,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_nvm_addr_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(NVM_DATA_SIZE)) nvm_addr_pull_seq;
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     `uvm_create_on(nvm_addr_pull_seq, p_sequencer.nvm_addr_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(nvm_addr_pull_seq)
     `uvm_send(nvm_addr_pull_seq)
@@ -559,7 +554,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
   virtual task req_nvm_data_key_sub();
     push_pull_host_seq#(.DeviceDataWidth(NVM_DATA_SIZE)) nvm_data_pull_seq;
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     `uvm_create_on(nvm_data_pull_seq, p_sequencer.nvm_data_pull_sequencer_h);
     `DV_CHECK_RANDOMIZE_FATAL(nvm_data_pull_seq)
     `uvm_send(nvm_data_pull_seq)
@@ -590,7 +585,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0]                   intr_val;
     push_pull_host_seq#(.HostDataWidth(LC_PROG_DATA_SIZE), .DeviceDataWidth(1))
                         lc_prog_pull_seq;
-    wait(cfg.under_reset == 0);
+    if (!cfg.clk_rst_vif.rst_n) return;
     `uvm_create_on(lc_prog_pull_seq, p_sequencer.lc_prog_pull_sequencer_h);
 
     if (!wr_blank_err) begin
@@ -623,7 +618,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
         bit [TL_AW-1:0] rand_addr = $urandom_range(0, NUM_PRIM_REG - 1) * 4;
         bit [TL_AW-1:0] tlul_addr =
             cfg.ral_models["otp_macro_prim_reg_block"].get_addr_from_offset(rand_addr);
-        if (cfg.stop_transaction_generators()) break;
+        if (!cfg.clk_rst_vif.rst_n) break;
         rand_drive_dft_en();
         `DV_CHECK_STD_RANDOMIZE_FATAL(data)
         test_access_en = cfg.otp_ctrl_vif.lc_dft_en_i == lc_ctrl_pkg::On;

@@ -25,6 +25,7 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
   task body();
     int check_wait_cycles;
     super.body();
+    if (!cfg.clk_rst_vif.rst_n) return;
 
     // For stress_all_with_rand_reset test, if previous lc_esc_en is not cleared, then skip the
     // background check.
@@ -55,11 +56,13 @@ class otp_ctrl_background_chks_vseq extends otp_ctrl_dai_lock_vseq;
       // Wait for fatal alert
       `DV_SPINWAIT_EXIT(
          wait(cfg.m_alert_agent_cfgs["fatal_check_error"].vif.alert_tx_final.alert_p);,
-         cfg.clk_rst_vif.wait_clks(check_wait_cycles);,
+         cfg.clk_rst_vif.wait_clks_or_rst(check_wait_cycles);,
          $sformatf("Timeout waiting for alert %0s", "fatal_check_error"))
+      if (!cfg.clk_rst_vif.rst_n) return;
       check_fatal_alert_nonblocking("fatal_check_error");
 
-      cfg.clk_rst_vif.wait_clks($urandom_range(50, 1000));
+      cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(50, 1000));
+      if (!cfg.clk_rst_vif.rst_n) return;
       csr_rd_check(.ptr(ral.status.timeout_error), .compare_value(1));
     end
   endtask

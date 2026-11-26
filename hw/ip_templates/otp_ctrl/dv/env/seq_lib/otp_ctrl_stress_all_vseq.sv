@@ -67,9 +67,11 @@ class otp_ctrl_stress_all_vseq extends otp_ctrl_base_vseq;
 
       // This is for otp_ctrl_stress_all_with_rand_reset.
       // We need to reset for each vseq, but in otp_ctrl_stress_all_with_rand_reset, reset should be
-      // issued in upper seq. So, wait forever until reset is issued and this vseq is killed by
-      // upper seq.
-      if (!do_apply_reset) wait(0);
+      // issued in upper seq. So, wait until that reset is asserted and end this vseq.
+      if (!do_apply_reset) begin
+        wait (!cfg.clk_rst_vif.rst_n);
+        return;
+      end
 
       // This is only valid for stress_all sequence.
       // For stress_all_with_rand_reset sequence, the logic will be gated at previous line and will
