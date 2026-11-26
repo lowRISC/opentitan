@@ -156,6 +156,26 @@
       tests: []
     }
     {
+      name: sec_cm_cheriot_enable_ctrl_redun
+      desc: '''
+            Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.REDUN.
+
+            The main core and the lockstep shadow core receive separate CHERIoT enables
+            (`cheriot_enable_i` and `cheriot_enable_shadow_i` of `ibex_top`), which Ibex compares
+            while the switch keeps the compare enable (`cheriot_enable_cmp_i`) on: at all times
+            except in the staging steps of a switch to CHERIoT mode.
+
+            Before the lock, or once the switch has reached its final state in either mode, force
+            the enable of one core, anywhere between the switch's enable flop and the receivers in
+            Ibex, for one cycle to the other valid value or to an invalid value. Check that Ibex
+            sets ERR_STATUS.FATAL_CORE_ERR, raises the `fatal_hw_err` alert and stops fetching. Also
+            check that a regular switch to either mode, in which the shadow core's enable trails the
+            main core's by one cycle, raises no alert.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_cheriot_enable_ctrl_mubi
       desc: "Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.MUBI."
       stage: V2S

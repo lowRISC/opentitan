@@ -152,6 +152,8 @@ default clocking @(posedge clk_i); endclocking
 // exist on ibex_top, so provide nets for the `.*` connection below: drive the
 // inputs to their inactive values and leave the outputs as sinks.
 ibex_mubi_t  cheriot_enable_i;
+ibex_mubi_t  cheriot_enable_shadow_i;
+ibex_mubi_t  cheriot_enable_cmp_i;
 logic [31:0] trvk_heap_base_addr_i;
 ibex_mubi_t  data_tag_o;
 ibex_mubi_t  data_tag_i;
@@ -164,6 +166,8 @@ logic [ 6:0] trvk_revbm_rdata_intg_i;
 logic        trvk_revbm_err_i;
 
 assign cheriot_enable_i        = IbexMuBiOff;
+assign cheriot_enable_shadow_i = IbexMuBiOff;
+assign cheriot_enable_cmp_i    = IbexMuBiOff;
 assign trvk_heap_base_addr_i   = 32'b0;
 assign data_tag_i              = IbexMuBiOff;
 assign trvk_revbm_gnt_i        = 1'b0;

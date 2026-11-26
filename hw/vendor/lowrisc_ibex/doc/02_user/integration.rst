@@ -139,6 +139,8 @@ Instantiation Template
 
       // CHERIoT configuration
       .cheriot_enable_i             ( ),
+      .cheriot_enable_shadow_i      ( ),
+      .cheriot_enable_cmp_i         ( ),
       .hart_id_i                    ( ),
       .boot_addr_i                  ( ),
       .trvk_heap_base_addr_i        ( ),
@@ -434,13 +436,34 @@ Interfaces
 |                              |                         |     | ``IbexMuBiOn`` enables CHERIoT         |
 |                              |                         |     | instructions and capability registers. |
 |                              |                         |     | Only active when                       |
-|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
-|                              |                         |     | Tie to ``IbexMuBiOff`` to always run   |
-|                              |                         |     | in RV32I mode.                         |
+|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``;  |
+|                              |                         |     | otherwise ignored, the core runs with  |
+|                              |                         |     | ``IbexMuBiOff``. Tie to                |
+|                              |                         |     | ``IbexMuBiOff`` to always run in RV32I |
+|                              |                         |     | mode.                                  |
 |                              |                         |     | Switching at runtime requires a        |
 |                              |                         |     | specific software sequence and system  |
 |                              |                         |     | conditions, see                        |
 |                              |                         |     | :ref:`details <cheriot-mode-switch>`.  |
++------------------------------+-------------------------+-----+----------------------------------------+
+| ``cheriot_enable_shadow_i``  | ibex_mubi_t             | in  | CHERIoT enable of the lockstep shadow  |
+|                              |                         |     | core. Must follow ``cheriot_enable_i`` |
+|                              |                         |     | one ``clk_i`` cycle later, while the   |
+|                              |                         |     | core clock runs (see :ref:`lockstep`). |
+|                              |                         |     | Only relevant when                     |
+|                              |                         |     | ``SecureIbex == 1`` and                |
+|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
++------------------------------+-------------------------+-----+----------------------------------------+
+| ``cheriot_enable_cmp_i``     | ibex_mubi_t             | in  | Any value except ``IbexMuBiOff``       |
+|                              |                         |     | checks that ``cheriot_enable_i`` and   |
+|                              |                         |     | ``cheriot_enable_shadow_i`` are valid  |
+|                              |                         |     | and equal. A mismatch or an invalid    |
+|                              |                         |     | value raises an internal major alert.  |
+|                              |                         |     | Turn it on only after the last change  |
+|                              |                         |     | of either enable, once both hold the   |
+|                              |                         |     | same valid value. Only relevant when   |
+|                              |                         |     | ``SecureIbex == 1`` and                |
+|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
 +------------------------------+-------------------------+-----+----------------------------------------+
 | ``hart_id_i``                | 32                      | in  | Hart ID, usually static, can be read   |
 |                              |                         |     | from :ref:`csr-mhartid` CSR            |
