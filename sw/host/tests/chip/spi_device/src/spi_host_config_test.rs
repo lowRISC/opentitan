@@ -123,8 +123,7 @@ fn main() -> Result<()> {
         backdoor_cpha: test_utils::object::symbol_addr(&object, "backdoor_cpha")?,
         backdoor_cpol: test_utils::object::symbol_addr(&object, "backdoor_cpol")?,
         backdoor_data: test_utils::object::symbol_addr(&object, "backdoor_data")?,
-        gpio_pins: &transport
-            .gpio_pins(&["IOR10", "IOR11", "IOR12", "IOR13"].map(str::to_owned))?,
+        gpio_pins: &transport.gpio_pins(&["IOB0", "IOB3", "IOB1", "IOB2"].map(str::to_owned))?,
         cpol: 0,
         cpha: 0,
     };

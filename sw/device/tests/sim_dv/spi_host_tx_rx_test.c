@@ -43,14 +43,14 @@ static dif_pinmux_t pinmux;
 
 // pinmap defined in chip_if.sv (spi_device1_if)
 static const top_earlgrey_muxed_pads_t spi_host1_muxed_pads[8] = {
-    kTopEarlgreyMuxedPadsIob0,   // sck
-    kTopEarlgreyMuxedPadsIob1,   // csb[0]
-    kTopEarlgreyMuxedPadsIob7,   // csb[1]
-    kTopEarlgreyMuxedPadsIoc10,  // csb[2]
-    kTopEarlgreyMuxedPadsIob6,   // sio[3]
-    kTopEarlgreyMuxedPadsIob5,   // sio[2]
-    kTopEarlgreyMuxedPadsIob4,   // sio[1]
-    kTopEarlgreyMuxedPadsIob3,   // sio[0]
+    kTopEarlgreyMuxedPadsIob3,  // sck
+    kTopEarlgreyMuxedPadsIob0,  // csb[0]
+    kTopEarlgreyMuxedPadsIob5,  // csb[1]
+    kTopEarlgreyMuxedPadsIob7,  // csb[2]
+    kTopEarlgreyMuxedPadsIob6,  // sio[3]
+    kTopEarlgreyMuxedPadsIob4,  // sio[2]
+    kTopEarlgreyMuxedPadsIob2,  // sio[1]
+    kTopEarlgreyMuxedPadsIob1,  // sio[0]
 };
 
 // For spi_host1
@@ -84,40 +84,40 @@ typedef struct pinmux_select {
 static const pinmux_select_t pinmux_out_config[] = {
     // spi_host0
     {
-        .pad = kTopEarlgreyPinmuxMioOutIoa3,
+        .pad = kTopEarlgreyPinmuxMioOutIoa2,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost0Csb1,  // CSB[1]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIoa6,
+        .pad = kTopEarlgreyPinmuxMioOutIoa3,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost0Csb2,  // CSB[2]
     },
     // spi_host1
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob0,
+        .pad = kTopEarlgreyPinmuxMioOutIob3,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sck,  // SCK
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob1,
+        .pad = kTopEarlgreyPinmuxMioOutIob0,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb0,  // CSB[0]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob7,
+        .pad = kTopEarlgreyPinmuxMioOutIob5,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb1,  // CSB[1]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIoc10,
+        .pad = kTopEarlgreyPinmuxMioOutIob7,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb2,  // CSB[2]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob3,
+        .pad = kTopEarlgreyPinmuxMioOutIob1,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd0,  // sio[0]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob4,
+        .pad = kTopEarlgreyPinmuxMioOutIob2,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd1,  // sio[1]
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob5,
+        .pad = kTopEarlgreyPinmuxMioOutIob4,
         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd2,  // sio[2]
     },
     {
@@ -129,15 +129,15 @@ static const pinmux_select_t pinmux_out_config[] = {
 static const pinmux_select_t pinmux_in_config[] = {
     // spi_host1
     {
-        .pad = kTopEarlgreyPinmuxInselIob3,
+        .pad = kTopEarlgreyPinmuxInselIob1,
         .peripheral = kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,  // sio[0]
     },
     {
-        .pad = kTopEarlgreyPinmuxInselIob4,
+        .pad = kTopEarlgreyPinmuxInselIob2,
         .peripheral = kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,  // sio[1]
     },
     {
-        .pad = kTopEarlgreyPinmuxInselIob5,
+        .pad = kTopEarlgreyPinmuxInselIob4,
         .peripheral = kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,  // sio[2]
     },
     {

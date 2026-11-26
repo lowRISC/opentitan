@@ -464,6 +464,9 @@ static void configure_pinmux(void) {
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
   if (kDeviceType == kDeviceFpgaCw305 || kDeviceType == kDeviceFpgaCw310) {
+    // TODO: The sparse pinmux only allows spi_host1 sd[0:3] on IOB1, IOB2, IOB4
+    // and IOB6, so the SD selections below are dropped, and IOB4 is the UART2
+    // RX pad above. No CW305/CW310 exec env runs this test on Earlgrey.
     // SPI Host 1:
     //    CSB on IOB0
     //    SCK on IOB3
@@ -515,38 +518,38 @@ static void configure_pinmux_sim(void) {
   const pinmux_pad_attributes_t pinmux_pad_attributes[] = {
       // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
       {
-          .pad = kDtPadSpiHost0Sd0,
+          .pad = kDtPadSpiHostD0,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd1,
+          .pad = kDtPadSpiHostD1,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd2,
+          .pad = kDtPadSpiHostD2,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd3,
+          .pad = kDtPadSpiHostD3,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       // Enable pull-ups for spi_host_1 data pins to avoid floating inputs.
       {
-          .pad = kDtPadIob3,  // SD0
+          .pad = kDtPadIob1,  // SD0
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadIob4,  // SD1
+          .pad = kDtPadIob2,  // SD1
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadIob5,  // SD2
+          .pad = kDtPadIob4,  // SD2
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
@@ -562,33 +565,33 @@ static void configure_pinmux_sim(void) {
                                   ARRAYSIZE(pinmux_pad_attributes));
 
   // SPI Host 1 (from chip_if.sv):
-  //    CSB on IOB1
-  //    SCK on IOB0
-  //    SD0 on IOB3
-  //    SD1 on IOB4
-  //    SD2 on IOB5
+  //    CSB on IOB0
+  //    SCK on IOB3
+  //    SD0 on IOB1
+  //    SD1 on IOB2
+  //    SD2 on IOB4
   //    SD3 on IOB6
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob5,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd2));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob6,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd3));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-      kTopEarlgreyPinmuxInselIob3));
+      kTopEarlgreyPinmuxInselIob1));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-      kTopEarlgreyPinmuxInselIob4));
+      kTopEarlgreyPinmuxInselIob2));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-      kTopEarlgreyPinmuxInselIob5));
+      kTopEarlgreyPinmuxInselIob4));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
       kTopEarlgreyPinmuxInselIob6));

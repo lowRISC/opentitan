@@ -257,22 +257,22 @@ bool test_main(void) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sck,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostClk,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd0,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD0,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd1,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD1,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD2,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD3,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
   }
 
   const uint32_t spi_host_clock_freq_hz =
