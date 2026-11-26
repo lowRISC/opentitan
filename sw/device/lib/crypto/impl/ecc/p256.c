@@ -72,6 +72,10 @@ enum {
       (kOtbnWideWordNumWords -
        (kP256MaskedScalarShareWords % kOtbnWideWordNumWords)) %
       kOtbnWideWordNumWords,
+  /**
+   * Size of the OTBN attestation seed buffer in 32-bit words.
+   */
+  kOtbnAttestationSeedBufferWords = 2 * kOtbnWideWordNumWords,
   /*
    * The expected instruction counts for constant time functions.
    */
@@ -122,7 +126,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_write_attestation_seed(
       OTBN_ADDR_T_INIT(run_p256, attestation_additional_seed);
   if (attestation_seed == NULL) {
     // No attestation seed is used.
-    return otbn_dmem_set(kDiceAttestationMaxSeedLength, 0,
+    return otbn_dmem_set(kOtbnAttestationSeedBufferWords, 0,
                          kOtbnVarBootAttestationAdditionalSeed);
   }
 
@@ -136,7 +140,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_write_attestation_seed(
   HARDENED_TRY(otbn_dmem_write(attestation_seed->len, attestation_seed->data,
                                kOtbnVarBootAttestationAdditionalSeed));
   // Pad the remainder by zeros.
-  return otbn_dmem_set(kDiceAttestationMaxSeedLength - attestation_seed->len, 0,
+  return otbn_dmem_set(kOtbnAttestationSeedBufferWords - attestation_seed->len,
+                       0,
                        kOtbnVarBootAttestationAdditionalSeed +
                            attestation_seed->len * sizeof(uint32_t));
 }
