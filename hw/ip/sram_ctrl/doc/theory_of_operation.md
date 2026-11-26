@@ -115,6 +115,20 @@ Read accesses however always take 1 cycle, no matter whether the access is a ful
 Note that this has been implemented in this way to not overly complicate the design, and since it is assumed that sub-word write operations happen relatively infrequently.
 For full write throughput, a more elaborate write buffering scheme would be required.
 
+#### Read-Modify-Write Integrity Check
+
+By default, the integrity of the data word read during a read-modify-write operation is not checked.
+The integrity bits are recomputed over the merged word and written back to the memory.
+This is required since a sub-word write to a memory location that has not been initialized would otherwise trigger an integrity error.
+
+Once SW knows that the memory has been fully initialized, it can enable the integrity check of the read data by writing kMultiBitBool4True to [`RMW_INTG_CHECK.EN`](registers.md#rmw_intg_check).
+If the check is enabled and the read data has an integrity error, [`STATUS.RMW_INTG_ERROR`](registers.md#status) is set, a `fatal_error` alert is triggered and the SRAM controller escalates locally, i.e., the scrambling key is reset and all subsequent memory accesses are blocked.
+This condition is terminal.
+
+The check is only performed on the read of a read-modify-write operation and does not alter the timing of any memory access.
+Changes to [`RMW_INTG_CHECK`](registers.md#rmw_intg_check) only take effect once no transaction is in flight.
+[`RMW_INTG_CHECK`](registers.md#rmw_intg_check) can be locked by clearing [`RMW_INTG_CHECK_REGWEN`](registers.md#rmw_intg_check_regwen).
+
 ### ECC Error Handling and Correction
 
 This memory utilizes a SECDED ECC code stored alongside the data in the underlying memory primitive to enhance data integrity.

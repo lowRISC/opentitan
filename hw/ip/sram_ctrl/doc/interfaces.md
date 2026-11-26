@@ -53,9 +53,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                        |
-|:-------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_error  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, or if the initialization mechanism has reached an invalid state. |
+| Alert Name   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+|:-------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_error  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, if the initialization mechanism has reached an invalid state, if a readback check fails (see [`READBACK`](registers.md#readback)), if a multi-bit encoding error is detected inside the RAM modules (see [`STATUS.SRAM_ALERT`](registers.md#status)), or if the read-modify-write integrity check is enabled and fails (see [`RMW_INTG_CHECK`](registers.md#rmw_intg_check)). |
 
 ## Security Countermeasures
 
