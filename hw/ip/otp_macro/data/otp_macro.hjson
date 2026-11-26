@@ -43,13 +43,6 @@
   scan_reset: "true", // Enable `scan_rst_ni` port
   scan_en: "true",    // Enable `scan_en_i` port
 
-  available_output_list: [
-    { name: "test",
-      width: 8,
-      desc: "Test-related GPIOs. Only active in DFT-enabled life cycle states."
-    }
-  ],
-
   regwidth: "32",
   param_list: [
     { name: "Width",
@@ -95,11 +88,6 @@
   ],
   alert_list: [],
   features: []
-    countermeasures: [
-    { name: "BUS.INTEGRITY",
-      desc: "End-to-end bus integrity scheme."
-    }
-  ]
   inter_signal_list: [
     // AST observability control
     { struct: "ast_obs_ctrl",
@@ -214,6 +202,9 @@
   ],
 
   countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: "The life cycle control signals are multibit encoded."
     }
