@@ -29,10 +29,6 @@ static const dif_gpio_pin_t kStrapGpioPin0 = 22;
 #if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 static const dt_pad_t kPadUart0Tx = kDtPadIoc4;
 static const dt_pad_t kPadUart0Rx = kDtPadIoc3;
-#define HAS_UART1
-static const dt_uart_t kUart1Dt = kDtUart1;
-static const dt_pad_t kPadUart1Tx = kDtPadIob5;
-static const dt_pad_t kPadUart1Rx = kDtPadIob4;
 static const dt_pad_t kPadStrap0 = kDtPadIoc0;
 static const dt_pad_t kPadStrap1 = kDtPadIoc1;
 static const dt_pad_t kPadStrap2 = kDtPadIoc2;
@@ -40,7 +36,6 @@ static const dt_pad_t kPadStrap2 = kDtPadIoc2;
 #elif defined(OPENTITAN_IS_DARJEELING)
 static const dt_pad_t kPadUart0Tx = kDtPadUart0Tx;
 static const dt_pad_t kPadUart0Rx = kDtPadUart0Rx;
-/* No UART1 */
 static const dt_pad_t kPadStrap0 = kDtPadGpio0Gpio22;
 static const dt_pad_t kPadStrap1 = kDtPadGpio0Gpio23;
 static const dt_pad_t kPadStrap2 = kDtPadGpio0Gpio24;
@@ -84,17 +79,6 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
         dif_pinmux_pad_write_attrs_dt(pinmux, kPadUart0Rx, in_attr, &out_attr));
   };
 #endif
-
-#ifdef HAS_UART1
-  // Configure UART1 RX input.
-  CHECK_STATUS_OK(pinmux_testutils_connect(
-      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoRx), kDtPeriphIoDirIn,
-      kPadUart1Rx));
-  // Configure UART1 TX output.
-  CHECK_STATUS_OK(pinmux_testutils_connect(
-      pinmux, dt_uart_periph_io(kUart1Dt, kDtUartPeriphIoTx), kDtPeriphIoDirOut,
-      kPadUart1Tx));
-#endif /* HAS_UART1 */
 
 #ifdef OPENTITAN_IS_EARLGREY
   // Configure a higher drive strength for the USB_P and USB_N pads because

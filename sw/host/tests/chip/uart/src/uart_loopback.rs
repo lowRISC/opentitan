@@ -18,6 +18,7 @@ use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::uart::console::UartConsole;
+use test_uarts::select_uart;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -85,10 +86,6 @@ fn uart_loopback(
 ) -> Result<()> {
     const TEST_DATA: [u8; 14] = *b"Loopback test!";
 
-    let uart = transport.uart("dut")?;
-    std::thread::sleep(Duration::from_millis(100));
-    uart.clear_rx_buffer()?;
-
     let TestData {
         uart_idx,
         uart_idx_addr,
@@ -96,9 +93,13 @@ fn uart_loopback(
     } = test_data;
 
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
-    MemWriteReq::execute(console, *uart_idx_addr, &[*uart_idx])?;
+    let (console, uart) = select_uart(transport, console, *uart_idx_addr, *uart_idx)?;
+    let console = &*console;
 
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
+    // Drop the console output of uart0 when it is the UART under test.
+    std::thread::sleep(Duration::from_millis(100));
+    uart.clear_rx_buffer()?;
     MemWriteReq::execute(console, *test_phase_addr, &[TestPhase::Line as u8])?;
     log::info!("Starting line loopback test");
 

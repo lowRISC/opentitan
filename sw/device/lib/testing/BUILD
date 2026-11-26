@@ -614,6 +614,7 @@ cc_library(
     deps = [
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",

@@ -13,37 +13,18 @@
 #include "sw/device/lib/dif/dif_uart.h"
 
 /**
- * Define the available platforms which uart is mapped
- */
-typedef enum uart_pinmux_platform_id {
-  kUartPinmuxPlatformIdFpgaCw310 = 0,
-  kUartPinmuxPlatformIdDvsim,
-  kUartPinmuxPlatformIdSilicon,
-  kUartPinmuxPlatformIdCount,
-} uart_pinmux_platform_id_t;
-
-/**
- * Define the available external channels that a UART could be connected to.
- */
-typedef enum uart_pinmux_channel {
-  kUartPinmuxChannelConsole,
-  kUartPinmuxChannelDut,
-  kUartPinmuxChannelCount,
-} uart_pinmux_channel_t;
-
-/**
- * Connect the uart pins to mio pins via pinmux based on the platform the test
- * is running.
+ * Connect the uart pins to its mio pads via pinmux.
+ *
+ * Each UART uses a fixed pad pair, which is wired to a host UART on the boards
+ * and to a UART agent in DV.
  *
  * @param pimmux A pinmux handler.
  * @param uart_idx The index of the UART to configure.
- * @param platform The platform which the test is running.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t uart_idx,
-                                      uart_pinmux_channel_t channel);
+                                      uint8_t uart_idx);
 
 /**
  * Disconnect the uart input pins from mio pads and wire it to zero.

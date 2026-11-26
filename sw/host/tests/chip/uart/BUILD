@@ -2,9 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "test_uarts",
+    srcs = [
+        "src/test_uarts.rs",
+    ],
+    deps = [
+        "//sw/host/opentitanlib",
+        "@crate_index//:anyhow",
+    ],
+)
 
 rust_binary(
     name = "uart_tx_rx",
@@ -12,6 +23,7 @@ rust_binary(
         "src/uart_tx_rx.rs",
     ],
     deps = [
+        ":test_uarts",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -28,6 +40,7 @@ rust_binary(
         "src/uart_baud_rate.rs",
     ],
     deps = [
+        ":test_uarts",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -43,6 +56,7 @@ rust_binary(
         "src/uart_loopback.rs",
     ],
     deps = [
+        ":test_uarts",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -58,6 +72,7 @@ rust_binary(
         "src/uart_parity_break.rs",
     ],
     deps = [
+        ":test_uarts",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",

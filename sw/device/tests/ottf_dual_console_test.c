@@ -15,7 +15,7 @@
 /**
  * Test the ability to have several independent consoles. The main
  * console is connected to the "console" UART and a secondary console
- * is created which is connected to the "dut" UART.
+ * is created on UART2, which is connected to the "ot_uart2" UART.
  */
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -26,9 +26,8 @@ static ottf_console_t debug_console;
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, /* uart= */ 1,
-                                               kUartPinmuxChannelDut));
-  ottf_console_configure_uart(&debug_console, TOP_EARLGREY_UART1_BASE_ADDR);
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, /* uart= */ 2));
+  ottf_console_configure_uart(&debug_console, TOP_EARLGREY_UART2_BASE_ADDR);
   LOG_INFO("Main UART console");
   base_fprintf(ottf_console_get_buffer_sink(&debug_console),
                "Second UART console\n");

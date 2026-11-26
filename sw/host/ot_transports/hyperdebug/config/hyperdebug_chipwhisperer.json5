@@ -249,9 +249,31 @@
       "name": "console",
       "alias_of": "UART2"
     },
+    // The Opentitan chip's UARTs can only be multiplexed to certain pads for some tops.
+    // These aliases map the chip's UARTs (ot_uartN) to host's UARTs based on the FPGA pinout.
     {
-      "name": "dut",
+      "name": "ot_uart0",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART2"
+    },
+    {
+      "name": "ot_uart1",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART4"
+    },
+    {
+      "name": "ot_uart2",
+      "baudrate": 115200,
+      "parity": "None",
       "alias_of": "UART3"
+    },
+    {
+      "name": "ot_uart3",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART5"
     }
   ],
   "strappings": [

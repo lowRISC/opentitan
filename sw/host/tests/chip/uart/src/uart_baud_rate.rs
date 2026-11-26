@@ -17,6 +17,7 @@ use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::{MemRead32Req, MemWriteReq};
 use opentitanlib::uart::console::UartConsole;
+use test_uarts::{ot_uart, select_uart};
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -88,9 +89,11 @@ fn main() -> Result<()> {
 
     // Reset baud rate to the default.
     // HyperDebug doesn't seem to clear this properly between tests.
-    let uart = transport.uart("dut")?;
-    uart.set_baudrate(115200)?;
-    uart.clear_rx_buffer()?;
+    for uart_idx in 0..4 {
+        let uart = ot_uart(&transport, uart_idx)?;
+        uart.set_baudrate(115200)?;
+        uart.clear_rx_buffer()?;
+    }
 
     Ok(())
 }
@@ -110,10 +113,11 @@ fn uart_baud_rate(
         test_phase_addr,
     } = test_data;
 
-    let uart = transport.uart("dut")?;
-
+    // Wait until device is ready. Then send command and select proper UARTs for console and test.
+    // The device switches the console to a different UART when testing uart0.
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
-    MemWriteReq::execute(console, *uart_idx_addr, &[*uart_idx])?;
+    let (console, uart) = select_uart(transport, console, *uart_idx_addr, *uart_idx)?;
+    let console = &*console;
 
     // Keep repeating the test for various Bauds until the device tells us it's
     // `PASS`ed.

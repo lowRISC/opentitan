@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "hw/top/dt/pinmux.h"
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -36,19 +37,15 @@ static dt_uart_t get_uart_instance(uint8_t uart_idx) {
 }
 
 /**
- * Get the appropriate pads for a UART instance and channel based on the
- * platform. This replicates the original behavior with different mappings for
- * DV vs synthesized platforms.
+ * Get the pads of a UART instance.
  *
  * @param uart_dt UART DT instance.
- * @param channel The channel to connect the UART to.
  * @param rx_pad Output parameter for RX pad.
  * @param tx_pad Output parameter for TX pad.
  * @return OK_STATUS if successful, error status otherwise.
  */
-static status_t get_uart_pads_for_channel(dt_uart_t uart_dt,
-                                          uart_pinmux_channel_t channel,
-                                          dt_pad_t *rx_pad, dt_pad_t *tx_pad) {
+static status_t get_uart_pads(dt_uart_t uart_dt, dt_pad_t *rx_pad,
+                              dt_pad_t *tx_pad) {
 #if defined(OPENTITAN_IS_DARJEELING)
   // Darjeeling only has UART0 and uses dedicated pads
   if (uart_dt != kDtUart0) {
@@ -56,44 +53,47 @@ static status_t get_uart_pads_for_channel(dt_uart_t uart_dt,
   }
   *rx_pad = kDtPadUart0Rx;
   *tx_pad = kDtPadUart0Tx;
-#elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-  // For Earlgrey and EnglishBreakfast platforms
-  // For DV platform, each UART has its own specific mapping
-  if (kDeviceType == kDeviceSimDV) {
-    switch (uart_dt) {
-      case kDtUart0:
-        *rx_pad = kDtPadIoc3;
-        *tx_pad = kDtPadIoc4;
-        break;
-      case kDtUart1:
-        *rx_pad = kDtPadIob4;
-        *tx_pad = kDtPadIob5;
-        break;
-      case kDtUart2:
-        *rx_pad = kDtPadIoa4;
-        *tx_pad = kDtPadIoa5;
-        break;
-      case kDtUart3:
-        *rx_pad = kDtPadIoa0;
-        *tx_pad = kDtPadIoa1;
-        break;
-      default:
-        return INVALID_ARGUMENT();
-    }
-  } else {
-    // For synthesized platforms, use channel-based mapping
-    switch (channel) {
-      case kUartPinmuxChannelConsole:
-        *rx_pad = kDtPadIoc3;
-        *tx_pad = kDtPadIoc4;
-        break;
-      case kUartPinmuxChannelDut:
-        *rx_pad = kDtPadIob4;
-        *tx_pad = kDtPadIob5;
-        break;
-      default:
-        return INVALID_ARGUMENT();
-    }
+#elif defined(OPENTITAN_IS_EARLGREY)
+  // Each UART can only reach a few pads. In DV these pairs connect to the UART
+  // agents so keep AssignedUart*Ios in chip_if.sv in sync. On the CW340 they
+  // connect to the HyperDebug UARTs. HD's UART1 and UART3 use IOR pads there.
+  bool fpga = kDeviceType == kDeviceFpgaCw340;
+  switch (uart_dt) {
+    case kDtUart0:
+      *rx_pad = kDtPadIoc3;
+      *tx_pad = kDtPadIoc4;
+      break;
+    case kDtUart1:
+      // On the CW340 the HyperDebug UART4 nets carry IOR5/IOR6, IOA0/IOA1 are
+      // the JTAG pads.
+      *rx_pad = fpga ? kDtPadIor5 : kDtPadIoa0;
+      *tx_pad = fpga ? kDtPadIor6 : kDtPadIoa1;
+      break;
+    case kDtUart2:
+      *rx_pad = kDtPadIob4;
+      *tx_pad = kDtPadIob5;
+      break;
+    case kDtUart3:
+      // On the CW340 the HyperDebug UART5 nets carry IOR3/IOR4, IOA4/IOA5 are
+      // the JTAG pads.
+      *rx_pad = fpga ? kDtPadIor3 : kDtPadIoa4;
+      *tx_pad = fpga ? kDtPadIor4 : kDtPadIoa5;
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+  switch (uart_dt) {
+    case kDtUart0:
+      *rx_pad = kDtPadIoc3;
+      *tx_pad = kDtPadIoc4;
+      break;
+    case kDtUart1:
+      *rx_pad = kDtPadIob4;
+      *tx_pad = kDtPadIob5;
+      break;
+    default:
+      return INVALID_ARGUMENT();
   }
 #else
   return UNIMPLEMENTED();
@@ -103,10 +103,7 @@ static status_t get_uart_pads_for_channel(dt_uart_t uart_dt,
 }
 
 status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
-                                      uint8_t uart_idx,
-                                      uart_pinmux_channel_t channel) {
-  TRY_CHECK(channel < kUartPinmuxChannelCount, "Channel out of bounds");
-
+                                      uint8_t uart_idx) {
   dt_uart_t uart_dt = get_uart_instance(uart_idx);
   TRY_CHECK(uart_dt < kDtUartCount, "UART index out of bounds");
 
@@ -114,9 +111,9 @@ status_t uart_testutils_select_pinmux(const dif_pinmux_t *pinmux,
   dt_periph_io_t rx_periph_io = dt_uart_periph_io(uart_dt, kDtUartPeriphIoRx);
   dt_periph_io_t tx_periph_io = dt_uart_periph_io(uart_dt, kDtUartPeriphIoTx);
 
-  // Get the appropriate pads for this UART instance and channel
+  // Get the pads of this UART instance
   dt_pad_t rx_pad, tx_pad;
-  TRY(get_uart_pads_for_channel(uart_dt, channel, &rx_pad, &tx_pad));
+  TRY(get_uart_pads(uart_dt, &rx_pad, &tx_pad));
 
   // Connect RX input using low-level pinmux functions
   TRY(dif_pinmux_mio_select_input(pinmux, rx_periph_io, rx_pad));

@@ -101,14 +101,12 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart));
 
   if (uart_idx == 0) {
-    CHECK_STATUS_OK(
-        uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
+    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 2));
     ottf_console_configure_uart(ottf_console_get(),
-                                TOP_EARLGREY_UART1_BASE_ADDR);
+                                TOP_EARLGREY_UART2_BASE_ADDR);
   }
 
-  CHECK_STATUS_OK(
-      uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, uart_idx));
 
   size_t baud_count = ARRAYSIZE(kBauds);
 
