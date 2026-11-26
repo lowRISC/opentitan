@@ -42,6 +42,13 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   // hardware-backed or non-symmetric keys.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
 
+  // Override the CMVP service indicator for non-approved symmetric key modes
+  // (TDES and HMAC-SHA-1).
+  if ((key->config.key_mode >> 16) == kOtcryptoKeyTypeTdes ||
+      key->config.key_mode == kOtcryptoKeyModeHmacSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+
   // Get pointers to the shares within the keyblob. Fails if the key length
   // doesn't match the mode.
   uint32_t *share0;
