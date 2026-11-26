@@ -129,8 +129,14 @@ fn main() -> Result<()> {
         cpha: 0,
     };
     for pin in ctx.gpio_pins {
-        pin.set_mode(PinMode::OpenDrain)?;
-        pin.set_pull_mode(PullMode::PullUp)?;
+        // Release the pins to open-drain high in the same call that sets the mode. Otherwise the
+        // HyperDebug pulls them low until the bit-banging starts.
+        pin.set(
+            Some(PinMode::OpenDrain),
+            Some(true),
+            Some(PullMode::PullUp),
+            None,
+        )?;
     }
     ctx.cpol = 0;
     ctx.cpha = 0;
