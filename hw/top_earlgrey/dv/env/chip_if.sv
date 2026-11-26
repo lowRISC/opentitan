@@ -496,12 +496,12 @@ interface chip_if;
 
   // Functional (muxed) interface: UARTs.
   localparam int AssignedUartTxIos[NUM_UARTS] = {
-      top_earlgrey_pkg::MioPadIoc4, top_earlgrey_pkg::MioPadIob5,
-      top_earlgrey_pkg::MioPadIoa5, top_earlgrey_pkg::MioPadIoa1
+      top_earlgrey_pkg::MioPadIoc4, top_earlgrey_pkg::MioPadIoa1,
+      top_earlgrey_pkg::MioPadIob5, top_earlgrey_pkg::MioPadIoa5
   };
   localparam int AssignedUartRxIos[NUM_UARTS] = {
-      top_earlgrey_pkg::MioPadIoc3, top_earlgrey_pkg::MioPadIob4,
-      top_earlgrey_pkg::MioPadIoa4, top_earlgrey_pkg::MioPadIoa0
+      top_earlgrey_pkg::MioPadIoc3, top_earlgrey_pkg::MioPadIoa0,
+      top_earlgrey_pkg::MioPadIob4, top_earlgrey_pkg::MioPadIoa4
   };
   bit [NUM_UARTS-1:0] __enable_uart;  // Internal signal.
 
