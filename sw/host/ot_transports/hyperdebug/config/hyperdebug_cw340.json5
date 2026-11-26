@@ -2,6 +2,27 @@
   "includes": ["/__builtin__/hyperdebug_chipwhisperer.json5"],
   "interface": "hyper340",
   "pins": [
+    // The HyperDebug SPI2 pins sit on the OT_IOB0/IOB3/IOB1 nets, which the chip's SPI_HOST1
+    // drives. So SPI2 is of no use and we release the pins by default.
+    {
+      "name": "CN9_25",
+      "mode": "Input"
+    },
+    {
+      "name": "CN9_27",
+      "mode": "Input"
+    },
+    {
+      "name": "CN9_8",
+      "mode": "Input"
+    },
+    // The HyperDebug UART3 TX sits on the OT_IOB4 net. This is the D2 of the SPI_HOST1. It must
+    // not be driven by default. Tests that want to use ot_uart2 can apply the UART2_HOST_TX
+    // strapping.
+    {
+      "name": "CN10_14",
+      "mode": "Input"
+    },
     {
       "name": "RESET",
       "mode": "OpenDrain",
@@ -22,11 +43,6 @@
       "name": "SPI_DEV_D1",
       "mode": "Alternate",
       "alias_of": "CN10_10"
-    },
-    {
-      "name": "SPI_DEV_SCK",
-      "mode": "Alternate",
-      "alias_of": "CN10_24"
     },
     {
       "name": "SPI_TPM_SCK",
@@ -57,6 +73,16 @@
     }
   ],
   "strappings": [
+    // Strapping to enable the HyperDebug UART3 TX connecting to ot_uart2.
+    {
+      "name": "UART2_HOST_TX",
+      "pins": [
+        {
+          "name": "CN10_14",
+          "mode": "Alternate"
+        }
+      ]
+    },
     {
       "name": "SPI_TPM",
       "pins": [

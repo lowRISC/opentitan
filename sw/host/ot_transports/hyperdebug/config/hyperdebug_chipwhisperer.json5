@@ -1,4 +1,6 @@
 {
+  // Pad aliases shared by the ChipWhisperer boards, following the CW341 pinout (pins_cw341.xdc).
+  // CW310 is not updated for sparse pinmux. See hyperdebug_cw310.json5.
   "includes": [
     "/__builtin__/hyperdebug.json5",
     "/__builtin__/opentitan.json5"
@@ -15,30 +17,22 @@
       "mode": "OpenDrain",
       "level": true,
       "pull_mode": "PullUp",
-      "alias_of": "IOR4"
-    },
-    {
-      "name": "DFT_STRAP0",
-      "mode": "Alternate",
-      "alias_of": "IOC3"
-    },
-    {
-      "name": "DFT_STRAP1",
-      "mode": "Alternate",
-      "alias_of": "IOC4"
+      "alias_of": "IOA6"
     },
     {
       "name": "IOA0",
-      "alias_of": "CN8_6"
+      "alias_of": "CN7_7"
     },
     {
       "name": "IOA1",
-      "alias_of": "CN8_8"
+      "alias_of": "CN7_5"
     },
     {
+      // This net / the IOA2 pad is the SPIDFU rescue trigger. It must read low unless a test uses
+      // this pad for other functions. We pull it down weakly on the HD so OT can overdrive it.
       "name": "IOA2",
-      "mode": "PushPull",
-      "level": false,
+      "mode": "Input",
+      "pull_mode": "PullDown",
       "alias_of": "CN9_29"
     },
     {
@@ -47,15 +41,15 @@
     },
     {
       "name": "IOA4",
-      "alias_of": "CN8_10"
+      "alias_of": "CN7_3"
     },
     {
       "name": "IOA5",
-      "alias_of": "CN8_12"
+      "alias_of": "CN7_1"
     },
     {
       "name": "IOA6",
-      "alias_of": "CN7_20"
+      "alias_of": "CN7_16"
     },
     {
       "name": "IOA7",
@@ -146,10 +140,6 @@
       "alias_of": "CN10_7"
     },
     {
-      "name": "IOC7",
-      "alias_of": "CN10_18"
-    },
-    {
       "name": "IOC8",
       "alias_of": "CN8_16"
     },
@@ -171,31 +161,31 @@
     },
     {
       "name": "IOR0",
-      "alias_of": "CN7_7"
+      "alias_of": "CN7_20"
     },
     {
       "name": "IOR1",
-      "alias_of": "CN7_5"
-    },
-    {
-      "name": "IOR2",
-      "alias_of": "CN7_3"
-    },
-    {
-      "name": "IOR3",
-      "alias_of": "CN7_1"
-    },
-    {
-      "name": "IOR4",
-      "alias_of": "CN7_16"
-    },
-    {
-      "name": "IOR5",
       "alias_of": "CN9_14"
     },
     {
-      "name": "IOR6",
+      "name": "IOR2",
       "alias_of": "CN9_16"
+    },
+    {
+      "name": "IOR3",
+      "alias_of": "CN8_10"
+    },
+    {
+      "name": "IOR4",
+      "alias_of": "CN8_12"
+    },
+    {
+      "name": "IOR5",
+      "alias_of": "CN8_6"
+    },
+    {
+      "name": "IOR6",
+      "alias_of": "CN8_8"
     },
     {
       "name": "IOR7",
@@ -265,21 +255,6 @@
     }
   ],
   "strappings": [
-    {
-      "name": "PRERESET_DFT_DISABLE",
-      "pins": [
-        {
-          "name": "DFT_STRAP0",
-          "mode": "PushPull",
-          "level": false
-        },
-        {
-          "name": "DFT_STRAP1",
-          "mode": "PushPull",
-          "level": false
-        }
-      ]
-    },
     {
       "name": "TRST",
       "pins": [
