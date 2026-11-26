@@ -73,6 +73,12 @@ typedef enum dif_sram_ctrl_status {
    * `dif_sram_ctrl_wipe` has completed.
    */
   kDifSramCtrlStatusInitDone = (0x1 << 5),
+  /**
+   * Integrity check of the data read during a read-modify-write operation
+   * failed. This error triggers a fatal_error alert. This condition is
+   * terminal.
+   */
+  kDifSramCtrlStatusRmwIntgErr = (0x1 << 8),
 } dif_sram_ctrl_status_t;
 
 /**
@@ -99,6 +105,13 @@ typedef enum dif_sram_ctrl_lock {
    * `dif_sram_ctrl_readback_set`.
    */
   kDifSramCtrlLockReadback,
+  /**
+   * Read-modify-write integrity check lock. When locked, enabling or disabling
+   * the integrity check of the data read during a read-modify-write operation
+   * is not available anymore. Includes the following API:
+   * `dif_sram_ctrl_rmw_intg_check_set`.
+   */
+  kDifSramCtrlLockRmwIntgCheck,
 } dif_sram_ctrl_lock_t;
 
 /**
@@ -214,6 +227,22 @@ dif_result_t dif_sram_ctrl_exec_set_enabled(const dif_sram_ctrl_t *sram_ctrl,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_sram_ctrl_readback_set(const dif_sram_ctrl_t *sram_ctrl,
                                         dif_toggle_t state);
+
+/**
+ * Sets whether the integrity check of the data read during a read-modify-write
+ * operation is enabled or disabled.
+ *
+ * The check must only be enabled once every word of the SRAM holds valid
+ * integrity bits (e.g., after `dif_sram_ctrl_wipe` has completed). Otherwise,
+ * a sub-word write to an uninitialized location triggers a fatal error.
+ *
+ * @param sram_ctrl A SRAM Controller handle.
+ * @param state The new toggle state for the read-modify-write integrity check.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_sram_ctrl_rmw_intg_check_set(const dif_sram_ctrl_t *sram_ctrl,
+                                              dif_toggle_t state);
 
 /**
  * Queries the SRAM Controller status.
