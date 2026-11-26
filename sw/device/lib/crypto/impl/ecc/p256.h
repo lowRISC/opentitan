@@ -84,7 +84,7 @@ enum {
   /**
    * Maximum length of the attestation seed for the CDI key.
    */
-  kDiceAttestationMaxSeedLength = 512 / 32,
+  kDiceAttestationMaxSeedLength = kP256MaskedScalarShareWords,
 };
 
 /**
