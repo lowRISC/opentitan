@@ -43,6 +43,7 @@
 | csrng.[`INT_STATE_HALT_ENABLE`](#int_state_halt_enable)                 | 0x8c     |        4 | Internal state halt enable register                                        |
 | csrng.[`INT_STATE_HALT`](#int_state_halt)                               | 0x90     |        4 | Internal state halt register                                               |
 | csrng.[`INT_STATE_STS`](#int_state_sts)                                 | 0x94     |        4 | Internal state halt status register                                        |
+| csrng.[`SEED_CLEAR`](#seed_clear)                                       | 0x98     |        4 | Seed clear register                                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -967,6 +968,29 @@ Restoring the internal state via [`INT_STATE_VAL`](#int_state_val) discards any 
 ### INT_STATE_STS . HALTED
 Reflects whether the instance selected by [`INT_STATE_NUM`](#int_state_num) has quiesced following [`INT_STATE_HALT`](#int_state_halt), such that its internal state stays constant while it is read/written via [`INT_STATE_VAL.`](#int_state_val)
 Also see [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state), which fires when an instance has halted.
+
+## SEED_CLEAR
+Seed clear register
+- Offset: `0x98`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "SEED_CLEAR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                  |
+|:------:|:------:|:-------:|:--------------------------------------|
+|  31:1  |        |         | Reserved                              |
+|   0    |  rw1s  |   0x0   | [SEED_CLEAR](#seed_clear--seed_clear) |
+
+### SEED_CLEAR . SEED_CLEAR
+Writing 1 discards the seed held by CSRNG, after which CSRNG requests a new seed from ENTROPY_SRC if CSRNG is enabled.
+This is needed after reconfiguring ENTROPY_SRC while CSRNG stays enabled, as the held seed was produced with the old configuration.
+A seed that has already been granted to an instantiate or reseed command is not discarded and is used by that command.
+If CSRNG holds no seed, the write has no effect.
 
 
 <!-- END CMDGEN -->

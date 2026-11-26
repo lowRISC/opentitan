@@ -554,6 +554,17 @@ TEST_F(StopTest, Locked) {
   EXPECT_EQ(dif_csrng_stop(&csrng_), kDifLocked);
 }
 
+class ClearSeedTest : public DifCsrngTest {};
+
+TEST_F(ClearSeedTest, BadArgs) {
+  EXPECT_DIF_BADARG(dif_csrng_clear_seed(nullptr));
+}
+
+TEST_F(ClearSeedTest, Clear) {
+  EXPECT_WRITE32(CSRNG_SEED_CLEAR_REG_OFFSET, 1);
+  EXPECT_DIF_OK(dif_csrng_clear_seed(&csrng_));
+}
+
 class AlertTest : public DifCsrngTest {};
 
 TEST_F(AlertTest, BadArgs) {

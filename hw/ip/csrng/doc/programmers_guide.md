@@ -8,6 +8,10 @@ CSRNG may only be disabled if all EDNs are disabled.
 
 The recommended enable sequence for the entropy complex is to first enable ENTROPY_SRC, then CSRNG, and finally the EDNs.
 
+CSRNG holds a seed from ENTROPY_SRC for the next <tt>instantiate</tt> or <tt>reseed</tt> command.
+When reconfiguring ENTROPY_SRC while CSRNG stays enabled, software has to write [`SEED_CLEAR`](registers.md#seed_clear) after disabling ENTROPY_SRC to discard the seed produced with the old configuration.
+A seed that has already been granted to a command is still used by it, so software should only issue the commands that must use the new configuration after the write.
+
 ## Running CSRNG with ENTROPY_SRC disabled
 
 Once the entropy complex has been enabled and all configured CSRNG instances have been seeded with entropy, software can again disable ENTROPY_SRC (and the PTRNG noise source to e.g. save power) while CSRNG and the EDNs remain running to keep serving entropy to consumers.

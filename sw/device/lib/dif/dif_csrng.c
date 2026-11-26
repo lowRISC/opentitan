@@ -425,6 +425,14 @@ dif_result_t dif_csrng_stop(const dif_csrng_t *csrng) {
   return kDifOk;
 }
 
+dif_result_t dif_csrng_clear_seed(const dif_csrng_t *csrng) {
+  if (csrng == NULL) {
+    return kDifBadArg;
+  }
+  mmio_region_write32(csrng->base_addr, CSRNG_SEED_CLEAR_REG_OFFSET, 1);
+  return kDifOk;
+}
+
 dif_result_t dif_csrng_get_recoverable_alerts(const dif_csrng_t *csrng,
                                               uint32_t *alerts) {
   if (csrng == NULL || alerts == NULL) {

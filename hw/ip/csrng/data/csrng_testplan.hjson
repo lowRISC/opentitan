@@ -108,6 +108,16 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: seed_clear
+      desc: '''
+            Verify that writing SEED_CLEAR discards the held seed if it hasn't been granted to a command yet and that CSRNG then requests a new seed.
+            Verify that the following instantiate or reseed command uses the new seed.
+            Verify that writing SEED_CLEAR while the seed is granted to a command doesn't discard it.
+            '''
+      stage: V2
+      tests: ["csrng_intr"]
+    }
+    {
       name: life cycle
       desc: '''
             Verify that lc_hw_debug_en_i selects the seed diversification value.
@@ -192,6 +202,8 @@
             Covers that a seed arrives while CSRNG is disabled and is discarded.
             Covers that a command not requiring entropy completes while another app waits for the seed.
             Covers that a command consumes the seed while another app waits for the next one.
+            Covers that the held seed is discarded via SEED_CLEAR.
+            Covers that SEED_CLEAR is written while the seed is granted to a command, which keeps it.
             '''
     }
     {
