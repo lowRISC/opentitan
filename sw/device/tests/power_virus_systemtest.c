@@ -434,31 +434,31 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c0Sda));
 
   // I2C1:
-  //    SCL on IOB9
-  //    SDA on IOB10
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-                                       kTopEarlgreyPinmuxInselIob9));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-                                       kTopEarlgreyPinmuxInselIob10));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                                        kTopEarlgreyPinmuxOutselI2c1Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
-                                        kTopEarlgreyPinmuxOutselI2c1Sda));
-
-  // I2C2:
   //    SCL on IOB11
   //    SDA on IOB12
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
                                        kTopEarlgreyPinmuxInselIob11));
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
                                        kTopEarlgreyPinmuxInselIob12));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
-                                        kTopEarlgreyPinmuxOutselI2c2Scl));
+                                        kTopEarlgreyPinmuxOutselI2c1Scl));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
+                                        kTopEarlgreyPinmuxOutselI2c1Sda));
+
+  // I2C2:
+  //    SCL on IOB9
+  //    SDA on IOB10
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxInselIob9));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+                                       kTopEarlgreyPinmuxInselIob10));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
+                                        kTopEarlgreyPinmuxOutselI2c2Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
 
   // Apply this configuration only for the FPGA.

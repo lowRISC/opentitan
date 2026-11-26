@@ -70,6 +70,19 @@
       "mode": "Alternate",
       "pull_mode": "PullUp",
       "alias_of": "IOA8"
+    },
+    // The chip i2c1 runs on IOB11/IOB12, the HyperDebug I2C2 port.
+    // TODO: The HyperDebug internal pull-up is the only pull on these nets. There is no pull up on
+    //       the CW340.
+    {
+      "name": "IOB11",
+      "mode": "Alternate",
+      "pull_mode": "PullUp"
+    },
+    {
+      "name": "IOB12",
+      "mode": "Alternate",
+      "pull_mode": "PullUp"
     }
   ],
   "strappings": [

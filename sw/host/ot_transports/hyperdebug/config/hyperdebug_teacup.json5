@@ -461,6 +461,10 @@
       "bits_per_sec": 100000,
       "address": 0x11,
       "alias_of": "I2C4"
+    },
+    {
+      "name": "OT_I2C1",
+      "alias_of": "I2C2"
     }
   ],
   "uarts": [

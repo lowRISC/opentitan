@@ -70,8 +70,49 @@ static status_t get_i2c_pads_for_platform(dt_i2c_t i2c_dt,
   }
   *sda_pad = kDtPadI2c0Sda;
   *scl_pad = kDtPadI2c0Scl;
-#elif defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
-  // For Earlgrey and EnglishBreakfast platforms
+#elif defined(OPENTITAN_IS_EARLGREY)
+  // Each instance can only reach a few pads (SDA / SCL):
+  // - i2c0: IOA7/IOB10/IOR13 / IOA8/IOB9/IOR12
+  // - i2c1: IOB11/IOB12/IOR11 / IOB11/IOB12/IOR10
+  // - i2c2: IOA7/IOB9/IOB10/IOC12 / IOA8/IOB9/IOB10/IOC9
+  switch (platform) {
+    case I2cPinmuxPlatformIdSilicon:
+    case I2cPinmuxPlatformIdCw340:
+    case I2cPinmuxPlatformIdHyper310:  // CW310 HyperDebug
+      if (i2c_dt == kDtI2c1) {
+        *sda_pad = kDtPadIob12;
+        *scl_pad = kDtPadIob11;
+      } else {
+        *sda_pad = kDtPadIoa7;
+        *scl_pad = kDtPadIoa8;
+      }
+      break;
+    case I2cPinmuxPlatformIdDvsim:  // DV, one agent per instance
+      switch (i2c_dt) {
+        case kDtI2c0:
+          *sda_pad = kDtPadIoa7;
+          *scl_pad = kDtPadIoa8;
+          break;
+        case kDtI2c1:
+          *sda_pad = kDtPadIob12;
+          *scl_pad = kDtPadIob11;
+          break;
+        case kDtI2c2:
+          *sda_pad = kDtPadIob10;
+          *scl_pad = kDtPadIob9;
+          break;
+        default:
+          return INVALID_ARGUMENT();
+      }
+      break;
+    case I2cPinmuxPlatformIdCw310Pmod:  // CW310 PMOD
+      *sda_pad = kDtPadIob12;
+      *scl_pad = kDtPadIob11;
+      break;
+    default:
+      return INVALID_ARGUMENT();
+  }
+#elif defined(OPENTITAN_IS_ENGLISHBREAKFAST)
   switch (platform) {
     case I2cPinmuxPlatformIdSilicon:
     case I2cPinmuxPlatformIdCw340:
