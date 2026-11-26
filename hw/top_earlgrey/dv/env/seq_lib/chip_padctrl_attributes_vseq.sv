@@ -121,6 +121,56 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     }
   }
 
+  // Constraints due to the sparse pinmux
+  // This test does randomize:
+  // - which peripheral output is used to drive the pad
+  // - which peripheral input is used to sample the pad
+  //
+  // This randomization must be constraint to legal options / what the sparse pinmux matrix allows.
+  // For this we generate a list of legal choices based on the pinmux capabilities. We use the RTL
+  // constants MioOutselLegal/MioPeriphInselLegal to generate these constraints. Constraining this
+  // test on constants defining the RTL is ok here as this test does not check if the desired
+  // connectivity is correct. It just checks the pad's behaviour.
+  //
+  // The outsel/insel randomization must come before the MIO map constraints. Otherwise the MIO map
+  // can fail on impossible input sets. This is ensured with solve-before constraint and by
+  // sampling the pairs together.
+
+  // This are the legal options:
+  // - mio_outsel_legal: Per pad a list which peripheral output is legal
+  // - mio_insel_legal:  Per peripheral input which pad is legal.
+  // The extra entry covers the count value.
+  bit mio_outsel_legal[MioPadCount][MioOutCount+1];
+  bit mio_insel_legal[MioInCount][MioPadCount+1];
+
+  constraint outsel_legal_c {
+    solve outsel_value_kind before periph_to_mio_map;
+    foreach (outsel_value_kind[i]) {
+      outsel_value_kind[i] == OutselPad -> mio_outsel_legal[i][periph_to_mio_map[i]];
+    }
+  }
+
+  constraint insel_legal_c {
+    solve insel_value_kind before mio_to_periph_map;
+    foreach (insel_value_kind[i]) {
+      insel_value_kind[i] == InselPad -> mio_insel_legal[i][mio_to_periph_map[i]];
+    }
+  }
+
+  function void pre_randomize();
+    super.pre_randomize();
+    for (int i = 0; i < MioPadCount; i++) begin
+      for (int j = 0; j < MioOutCount; j++) begin
+        mio_outsel_legal[i][j] = pinmux_pkg::MioOutselLegal[i][j + int'(OutselPad)];
+      end
+    end
+    for (int i = 0; i < MioInCount; i++) begin
+      for (int j = 0; j < MioPadCount; j++) begin
+        mio_insel_legal[i][j] = pinmux_pkg::MioPeriphInselLegal[i][j + int'(InselPad)];
+      end
+    end
+  endfunction
+
   // For DIO pinmux testing.
   //
   // Pads are either analog, input only or bidirectional. For bidirectional, only drive either the
@@ -303,8 +353,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // Program the MIO outsel registers based on the values randomized.
   task pinmux_mio_outsel_config();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_map)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(outsel_value_kind)
+    // Randomize together to increase the chance of valid results.
+    // See the constraints for more details.
+    `DV_CHECK_FATAL(randomize(periph_to_mio_map, outsel_value_kind))
     for (int i = 0; i < MioPadCount; i++) begin
       uvm_reg_data_t value = int'(outsel_value_kind[i]);
       if (outsel_value_kind[i] == OutselPad) begin
@@ -386,6 +437,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   task pinmux_mio_insel_test();
     int iterations;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(iterations, iterations inside {[5:20]};)
+    // Some MIO outsel registers reset to a peripheral output, keep the chip from driving the pads.
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, '0));
     for (int i = 1; i <= iterations; i++) begin
       `uvm_info(`gfn, $sformatf("pinmux_insel_test %0d/%0d", i, iterations), UVM_LOW)
       pinmux_mio_pad_attr_config();
@@ -416,8 +469,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // Program the MIO insel registers based on the values randomized.
   task pinmux_mio_insel_config();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(mio_to_periph_map)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(insel_value_kind)
+    // Randomize together to increase the chance of valid results.
+    // See the constraints for more details.
+    `DV_CHECK_FATAL(randomize(mio_to_periph_map, insel_value_kind))
     for (int i = 0; i < MioInCount; i++) begin
       uvm_reg_data_t value = int'(insel_value_kind[i]);
       if (insel_value_kind[i] == InselPad) begin
