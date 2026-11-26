@@ -71,7 +71,7 @@ static char make_printable(char c, char replacement) {
 static const size_t kExpectedUsbCharsRecved = 6;
 static size_t usb_chars_recved_total;
 
-static dif_gpio_t gpio;
+static demo_gpio_t gpio;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart;
 
@@ -105,43 +105,15 @@ static void usb_send_str(const char *string, usb_testutils_ss_ctx_t *ss_ctx) {
   }
 }
 
-// These GPIO bits control USB PHY configuration
-static const uint32_t kPinflipMask = (1 << 8);
-static const uint32_t kDiffXcvrMask = (1 << 9);
-static const uint32_t kUPhyMask = (1 << 10);
-
-static dif_pinmux_index_t leds[] = {
-    kTopEarlgreyPinmuxMioOutIor10,
-    kTopEarlgreyPinmuxMioOutIor11,
-    kTopEarlgreyPinmuxMioOutIor12,
-    kTopEarlgreyPinmuxMioOutIor13,
-};
-
-static dif_pinmux_index_t switches[] = {
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob9,
-    kTopEarlgreyPinmuxInselIob10,
-    kTopEarlgreyPinmuxInselIor5,
-};
-
-void configure_pinmux(void) {
-  pinmux_testutils_init(&pinmux);
-  // Hook up some LEDs.
-  for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpio0Gpio0 + i;
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
-  }
-  // Hook up DIP switches.
-  for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpio0Gpio8 + i;
-    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
-  }
-}
+// These switches control USB PHY configuration
+static const uint32_t kPinflipMask = (1 << 0);
+static const uint32_t kDiffXcvrMask = (1 << 1);
+static const uint32_t kUPhyMask = (1 << 2);
 
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  configure_pinmux();
+  pinmux_testutils_init(&pinmux);
 
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
@@ -159,10 +131,7 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(dif_gpio_init(
-      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
-  // Enable GPIO: 0-7 and 16 is input; 8-15 is output.
-  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0x000ff));
+  demo_gpio_init(&pinmux, &gpio);
 
   LOG_INFO("Hello, USB!");
   LOG_INFO("Built at: " __DATE__ ", " __TIME__);
@@ -172,8 +141,7 @@ void _ottf_main(void) {
   // Call `usbdev_init` here so that DPI will not start until the
   // simulation has finished all of the printing, which takes a while
   // if `--trace` was passed in.
-  uint32_t gpio_state;
-  CHECK_DIF_OK(dif_gpio_read_all(&gpio, &gpio_state));
+  uint32_t gpio_state = demo_gpio_read(&gpio);
   bool pinflip = gpio_state & kPinflipMask ? true : false;
   bool differential_xcvr = gpio_state & kDiffXcvrMask ? true : false;
   bool uphy = gpio_state & kUPhyMask ? true : false;
@@ -225,7 +193,7 @@ void _ottf_main(void) {
       CHECK_DIF_OK(dif_uart_bytes_receive(&uart, 1, &rcv_char, NULL));
       CHECK_DIF_OK(dif_uart_byte_send_polled(&uart, rcv_char));
 
-      CHECK_DIF_OK(dif_gpio_write_all(&gpio, (uint32_t)rcv_char << 8));
+      demo_gpio_leds_write(&gpio, rcv_char);
 
       if (rcv_char == '/') {
         uint32_t usb_irq_state =
