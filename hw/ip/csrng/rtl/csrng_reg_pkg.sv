@@ -14,7 +14,7 @@ package csrng_reg_pkg;
   parameter int BlockAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegs = 38;
+  parameter int NumRegs = 39;
 
   // Alert indices
   typedef enum int {
@@ -158,6 +158,10 @@ package csrng_reg_pkg;
   typedef struct packed {
     logic [3:0]  q;
   } csrng_reg2hw_int_state_halt_reg_t;
+
+  typedef struct packed {
+    logic        q;
+  } csrng_reg2hw_seed_clear_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -367,44 +371,51 @@ package csrng_reg_pkg;
     } halted;
   } csrng_hw2reg_int_state_sts_reg_t;
 
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } csrng_hw2reg_seed_clear_reg_t;
+
   // Register -> HW type
   typedef struct packed {
-    csrng_reg2hw_intr_state_reg_t intr_state; // [211:208]
-    csrng_reg2hw_intr_enable_reg_t intr_enable; // [207:204]
-    csrng_reg2hw_intr_test_reg_t intr_test; // [203:196]
-    csrng_reg2hw_alert_test_reg_t alert_test; // [195:192]
-    csrng_reg2hw_ctrl_reg_t ctrl; // [191:172]
-    csrng_reg2hw_cmd_req_reg_t cmd_req; // [171:139]
-    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [138:106]
-    csrng_reg2hw_genbits_reg_t genbits; // [105:73]
-    csrng_reg2hw_int_state_read_enable_reg_t int_state_read_enable; // [72:70]
-    csrng_reg2hw_int_state_num_reg_t int_state_num; // [69:65]
-    csrng_reg2hw_int_state_val_reg_t int_state_val; // [64:31]
-    csrng_reg2hw_fips_force_reg_t fips_force; // [30:28]
-    csrng_reg2hw_gen_abort_mreg_t [2:0] gen_abort; // [27:16]
-    csrng_reg2hw_err_code_test_reg_t err_code_test; // [15:10]
-    csrng_reg2hw_int_state_write_enable_reg_t int_state_write_enable; // [9:7]
-    csrng_reg2hw_int_state_halt_enable_reg_t int_state_halt_enable; // [6:4]
-    csrng_reg2hw_int_state_halt_reg_t int_state_halt; // [3:0]
+    csrng_reg2hw_intr_state_reg_t intr_state; // [212:209]
+    csrng_reg2hw_intr_enable_reg_t intr_enable; // [208:205]
+    csrng_reg2hw_intr_test_reg_t intr_test; // [204:197]
+    csrng_reg2hw_alert_test_reg_t alert_test; // [196:193]
+    csrng_reg2hw_ctrl_reg_t ctrl; // [192:173]
+    csrng_reg2hw_cmd_req_reg_t cmd_req; // [172:140]
+    csrng_reg2hw_reseed_interval_reg_t reseed_interval; // [139:107]
+    csrng_reg2hw_genbits_reg_t genbits; // [106:74]
+    csrng_reg2hw_int_state_read_enable_reg_t int_state_read_enable; // [73:71]
+    csrng_reg2hw_int_state_num_reg_t int_state_num; // [70:66]
+    csrng_reg2hw_int_state_val_reg_t int_state_val; // [65:32]
+    csrng_reg2hw_fips_force_reg_t fips_force; // [31:29]
+    csrng_reg2hw_gen_abort_mreg_t [2:0] gen_abort; // [28:17]
+    csrng_reg2hw_err_code_test_reg_t err_code_test; // [16:11]
+    csrng_reg2hw_int_state_write_enable_reg_t int_state_write_enable; // [10:8]
+    csrng_reg2hw_int_state_halt_enable_reg_t int_state_halt_enable; // [7:5]
+    csrng_reg2hw_int_state_halt_reg_t int_state_halt; // [4:1]
+    csrng_reg2hw_seed_clear_reg_t seed_clear; // [0:0]
   } csrng_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [285:278]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [277:182]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [181:174]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [173:172]
-    csrng_hw2reg_genbits_reg_t genbits; // [171:140]
-    csrng_hw2reg_int_state_num_regwen_reg_t int_state_num_regwen; // [139:139]
-    csrng_hw2reg_int_state_num_reg_t int_state_num; // [138:135]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [134:103]
-    csrng_hw2reg_gen_abort_mreg_t [2:0] gen_abort; // [102:88]
-    csrng_hw2reg_gen_abort_status_mreg_t [2:0] gen_abort_status; // [87:82]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [81:65]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [64:33]
-    csrng_hw2reg_err_code_reg_t err_code; // [32:13]
-    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [12:6]
-    csrng_hw2reg_int_state_sts_reg_t int_state_sts; // [5:0]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [287:280]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [279:184]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [183:176]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [175:174]
+    csrng_hw2reg_genbits_reg_t genbits; // [173:142]
+    csrng_hw2reg_int_state_num_regwen_reg_t int_state_num_regwen; // [141:141]
+    csrng_hw2reg_int_state_num_reg_t int_state_num; // [140:137]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [136:105]
+    csrng_hw2reg_gen_abort_mreg_t [2:0] gen_abort; // [104:90]
+    csrng_hw2reg_gen_abort_status_mreg_t [2:0] gen_abort_status; // [89:84]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [83:67]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [66:35]
+    csrng_hw2reg_err_code_reg_t err_code; // [34:15]
+    csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [14:8]
+    csrng_hw2reg_int_state_sts_reg_t int_state_sts; // [7:2]
+    csrng_hw2reg_seed_clear_reg_t seed_clear; // [1:0]
   } csrng_hw2reg_t;
 
   // Register offsets
@@ -446,6 +457,7 @@ package csrng_reg_pkg;
   parameter logic [BlockAw-1:0] CSRNG_INT_STATE_HALT_ENABLE_OFFSET = 8'h 8c;
   parameter logic [BlockAw-1:0] CSRNG_INT_STATE_HALT_OFFSET = 8'h 90;
   parameter logic [BlockAw-1:0] CSRNG_INT_STATE_STS_OFFSET = 8'h 94;
+  parameter logic [BlockAw-1:0] CSRNG_SEED_CLEAR_OFFSET = 8'h 98;
 
   // Reset values for hwext registers and their fields
   parameter logic [3:0] CSRNG_INTR_TEST_RESVAL = 4'h 0;
@@ -509,11 +521,12 @@ package csrng_reg_pkg;
     CSRNG_INT_STATE_HALT_ENABLE_REGWEN,
     CSRNG_INT_STATE_HALT_ENABLE,
     CSRNG_INT_STATE_HALT,
-    CSRNG_INT_STATE_STS
+    CSRNG_INT_STATE_STS,
+    CSRNG_SEED_CLEAR
   } csrng_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] CSRNG_PERMIT [38] = '{
+  parameter logic [3:0] CSRNG_PERMIT [39] = '{
     4'b 0001, // index[ 0] CSRNG_INTR_STATE
     4'b 0001, // index[ 1] CSRNG_INTR_ENABLE
     4'b 0001, // index[ 2] CSRNG_INTR_TEST
@@ -551,7 +564,8 @@ package csrng_reg_pkg;
     4'b 0001, // index[34] CSRNG_INT_STATE_HALT_ENABLE_REGWEN
     4'b 0001, // index[35] CSRNG_INT_STATE_HALT_ENABLE
     4'b 0001, // index[36] CSRNG_INT_STATE_HALT
-    4'b 0001  // index[37] CSRNG_INT_STATE_STS
+    4'b 0001, // index[37] CSRNG_INT_STATE_STS
+    4'b 0001  // index[38] CSRNG_SEED_CLEAR
   };
 
 endpackage

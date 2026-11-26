@@ -62,13 +62,22 @@ class csrng_intr_vseq extends csrng_base_vseq;
     string seed_vld_path = "tb.dut.u_csrng_core.seed_vld_q";
     cs_item = csrng_item::type_id::create("cs_item");
 
-    // Wait until CSRNG holds a seed, then stop entropy_src from delivering the next one.
-    `DV_SPINWAIT(
-      do begin
-        cfg.clk_rst_vif.wait_clks(1);
-        `DV_CHECK(uvm_hdl_read(seed_vld_path, seed_vld))
-      end while (!seed_vld);,
-      "timeout waiting for CSRNG to hold a seed")
+    // Wait until CSRNG holds a seed, discard it via SEED_CLEAR and wait until CSRNG holds a new
+    // one. Then stop entropy_src from delivering the next one.
+    for (int i = 0; i < 2; i++) begin
+      `DV_SPINWAIT(
+        do begin
+          cfg.clk_rst_vif.wait_clks(1);
+          `DV_CHECK(uvm_hdl_read(seed_vld_path, seed_vld))
+        end while (!seed_vld);,
+        "timeout waiting for CSRNG to hold a seed")
+      if (i == 0) begin
+        fork
+          csr_wr(.ptr(ral.seed_clear), .value(1'b1));
+          `DV_WAIT(cfg.csrng_path_vif.seed_cleared_i, "SEED_CLEAR didn't discard the seed")
+        join
+      end
+    end
     cfg.csrng_agents_vif.drive_entropy_src_disable(1);
 
     // Requesting a seed alone doesn't set the interrupt.

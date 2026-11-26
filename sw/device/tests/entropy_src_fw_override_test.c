@@ -319,7 +319,13 @@ static status_t entropy_config(
   return OK_STATUS();
 }
 
-// Configure the entropy complex.
+/*
+ * Disable the interrupt handler and then produce seeds until there are no
+ * outstanding entropy requests from CSRNG. Then, disable the entropy source,
+ * clear the entropy seed buffer in CSRNG, and let CSRNG trigger another entropy
+ * request. Check that this triggers an entropy request interrupt inside CSRNG.
+ * Re-enable the entropy source and the interrupt handler.
+ */
 static status_t reenable_entropy_src(
     dif_entropy_src_single_bit_mode_t single_bit_mode,
     bool bypass_conditioner) {
@@ -369,6 +375,10 @@ static status_t reenable_entropy_src(
   // Disable the entropy source.
   LOG_INFO("Disabling entropy_src");
   TRY(dif_entropy_src_set_enabled(&entropy_src, kDifToggleDisabled));
+
+  // Discard the seed held by CSRNG, such that CSRNG requests a new one while
+  // ENTROPY_SRC is disabled.
+  CHECK_DIF_OK(dif_csrng_clear_seed(&csrng));
 
   // Wait for CSRNG to request a seed while ENTROPY_SRC is diabled.
   do {

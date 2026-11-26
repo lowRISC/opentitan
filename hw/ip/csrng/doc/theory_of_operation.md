@@ -443,6 +443,7 @@ For details on how to accelerate this process, refer to [Uninstantiating CSRNG t
 While CSRNG is enabled and holds no seed, it asserts `es_req` and keeps it asserted until ENTROPY_SRC returns a 384-bit seed on `es_bits` with a single cycle pulse on `es_ack`.
 The seed is held until an `instantiate` or `reseed` command with `flag0` not set has consumed it, after which CSRNG requests the next seed.
 Disabling CSRNG discards the held seed.
+Writing [`SEED_CLEAR`](registers.md#seed_clear) also discards the held seed unless it has already been granted to an `instantiate` or `reseed` command, after which CSRNG requests a new seed.
 If CSRNG gets disabled while `es_req` is asserted, it keeps `es_req` asserted until `es_ack` and discards a seed returned while it is disabled.
 The `es_fips` signal indicates whether the seed is FIPS/CC compliant.
 The following waveform shows an example of how the entropy source hardware interface works.

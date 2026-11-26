@@ -160,8 +160,8 @@ static void csrng_generate_output_check(void) {
 }
 
 /**
- * Verifies that the entropy req interrupt is triggered on CSRNG instantiate and
- * reseed commands.
+ * Verifies that the entropy req interrupt is triggered when CSRNG instantiate
+ * and reseed commands are blocked because no seed is available.
  */
 static void test_csrng_sw_entropy_req_interrupt(
     const dif_csrng_seed_material_t *seed_material) {
@@ -172,12 +172,14 @@ static void test_csrng_sw_entropy_req_interrupt(
 
   CHECK_STATUS_OK(csrng_testutils_cmd_ready_wait(&csrng));
   plic_interrupts_enable();
+  CHECK_DIF_OK(dif_csrng_clear_seed(&csrng));
   CHECK_DIF_OK(dif_csrng_instantiate(&csrng, kDifCsrngEntropySrcToggleEnable,
                                      seed_material));
   irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   csrng_generate_output_check();
 
   plic_interrupts_enable();
+  CHECK_DIF_OK(dif_csrng_clear_seed(&csrng));
   CHECK_DIF_OK(dif_csrng_reseed(&csrng, seed_material));
   irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   csrng_generate_output_check();
@@ -204,8 +206,8 @@ static void edn_ready_wait(const dif_edn_t *edn) {
 /**
  * Configures the `edn` instance.
  *
- * Verifies that the entropy req interrupt is triggered on EDN instantiate and
- * reseed commands.
+ * Verifies that the entropy req interrupt is triggered when EDN instantiate and
+ * reseed commands are blocked because no seed is available.
  *
  * @param edn A EDN instance.
  * @param irq_flag_id The interrupt flag ID to poll after each command is sent
@@ -218,6 +220,7 @@ static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
 
   edn_ready_wait(edn);
   plic_interrupts_enable();
+  CHECK_DIF_OK(dif_csrng_clear_seed(&csrng));
   CHECK_DIF_OK(
       dif_edn_instantiate(edn, kDifEdnEntropySrcToggleEnable, seed_material));
   irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
@@ -225,6 +228,7 @@ static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
 
   edn_ready_wait(edn);
   plic_interrupts_enable();
+  CHECK_DIF_OK(dif_csrng_clear_seed(&csrng));
   CHECK_DIF_OK(dif_edn_reseed(edn, seed_material));
   irq_block_wait(kTestIrqFlagIdCsrngEntropyReq);
   irq_block_wait(irq_flag_id);

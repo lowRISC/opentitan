@@ -95,6 +95,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [SeedLen-1:0]          seed_diversification;
 
   logic                        seed_consumed;
+  logic                        seed_clear;
   logic                        es_handshake;
   logic                        entropy_starved;
   logic                        entropy_starved_posedge;
@@ -1151,16 +1152,24 @@ module csrng_core import csrng_pkg::*; #(
   assign seed_consumed = ctr_drbg_cmd_req && ctr_drbg_cmd_ack &&
                          (acmd_q inside {INS, RES}) && !flag0_fo[0];
 
-  // A seed is valid from its arrival until it has been consumed.
-  assign seed_vld_d = !cs_enable_fo[6] ? 1'b0 :
-                      es_handshake     ? 1'b1 :
-                      seed_consumed    ? 1'b0 :
+  // SW can only clear a held seed that hasn't been granted yet, as the granted command uses it.
+  assign seed_clear = reg2hw.seed_clear.q && entropy_arb_ready_q && !(|entropy_arb_gnt);
+
+  // SEED_CLEAR always self-clears the cycle after being written.
+  assign hw2reg.seed_clear.de = 1'b1;
+  assign hw2reg.seed_clear.d  = 1'b0;
+
+  // A seed is valid from its arrival until it has been consumed or cleared.
+  assign seed_vld_d = !cs_enable_fo[6]            ? 1'b0 :
+                      es_handshake                ? 1'b1 :
+                      seed_consumed || seed_clear ? 1'b0 :
                       seed_vld_q;
 
-  // The seed can be granted once, from its arrival until the entropy arbiter grants it.
-  assign entropy_arb_ready_d = !cs_enable_fo[7] ? 1'b0 :
-                               es_handshake     ? 1'b1 :
-                               |entropy_arb_gnt ? 1'b0 :
+  // The seed can be granted once, from its arrival until the entropy arbiter grants it or it is
+  // cleared.
+  assign entropy_arb_ready_d = !cs_enable_fo[7]                 ? 1'b0 :
+                               es_handshake                     ? 1'b1 :
+                               (|entropy_arb_gnt) || seed_clear ? 1'b0 :
                                entropy_arb_ready_q;
 
   //-------------------------------------

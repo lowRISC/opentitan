@@ -386,6 +386,12 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "gen_abort_status_0", "gen_abort_status_1", "gen_abort_status_2": begin
       end
+      "seed_clear": begin
+        // The DUT clears the request in the cycle after it got written.
+        if (addr_phase_write) begin
+          void'(csr.predict(.value(1'b0), .kind(UVM_PREDICT_DIRECT)));
+        end
+      end
       "int_state_halt_enable_regwen": begin
       end
       "int_state_halt_enable": begin
@@ -631,7 +637,14 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK_FATAL(uvm_hdl_check_path(cmd_arb_idx_q_path))
     forever begin
       cfg.clk_rst_vif.wait_n_clks(1);
-      if (cfg.under_reset || !cfg.csrng_path_vif.seed_consumed_i) continue;
+      if (cfg.under_reset) continue;
+      // A seed cleared via SEED_CLEAR is discarded without being used.
+      if (cfg.csrng_path_vif.seed_cleared_i) begin
+        `DV_CHECK(latest_es_item != null, "Seed cleared but none was received")
+        latest_es_item = null;
+        continue;
+      end
+      if (!cfg.csrng_path_vif.seed_consumed_i) continue;
       if (latest_es_item == null) begin
         // The seed may only have been dropped by a disable that has not reached the DUT yet.
         `DV_CHECK_NE(`gmv(ral.ctrl.enable), MuBi4True, "Seed consumed but none was received")

@@ -6,7 +6,8 @@
 
 interface csrng_path_if
 (
-  input seed_consumed_i
+  input seed_consumed_i,
+  input seed_cleared_i
 );
 
   import uvm_pkg::*;

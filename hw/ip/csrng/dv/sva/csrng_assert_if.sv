@@ -32,11 +32,12 @@ interface csrng_assert_if (
   input logic                                 rst_ni,
   input logic [prim_mubi_pkg::MuBi4Width-1:0] enable_i,
   input logic                                 es_req_i,
-  input logic                                 seed_consumed_i
+  input logic                                 seed_consumed_i,
+  input logic                                 seed_cleared_i
 );
 
   // CSRNG prefetches a seed: it requests one when it gets enabled and after the held seed has been
-  // consumed.
+  // consumed or cleared.
   localparam int unsigned MaxEsReqDelay = 2;
 
   logic enabled;
@@ -47,7 +48,7 @@ interface csrng_assert_if (
           clk_i, !rst_ni || !enabled)
 
   `ASSERT(EsReqAfterSeedUse_A,
-          seed_consumed_i |-> ##[1:MaxEsReqDelay] es_req_i,
+          seed_consumed_i || seed_cleared_i |-> ##[1:MaxEsReqDelay] es_req_i,
           clk_i, !rst_ni || !enabled)
 
   task automatic assert_off ();

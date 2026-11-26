@@ -640,6 +640,15 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_stop(const dif_csrng_t *csrng);
 
 /**
+ * Invalidate a potential entropy seed currently held in the input buffer.
+ *
+ * @param csrng A CSRNG handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_csrng_clear_seed(const dif_csrng_t *csrng);
+
+/**
  * Gets the recoverable alerts currently recorded in the CSRNG block.
  *
  * This function returns the alerts in a bitset whose indices are given by

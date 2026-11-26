@@ -52,9 +52,9 @@ module csrng_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [37:0] reg_we_check;
+  logic [38:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(38)
+    .OneHotWidth(39)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -290,6 +290,9 @@ module csrng_reg_top (
   logic int_state_sts_halted_qs;
   logic int_state_sts_genbits_vld_qs;
   logic int_state_sts_gen_in_progress_qs;
+  logic seed_clear_we;
+  logic seed_clear_qs;
+  logic seed_clear_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2542,8 +2545,37 @@ module csrng_reg_top (
   );
 
 
+  // R[seed_clear]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_seed_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
-  logic [37:0] addr_hit;
+    // from register interface
+    .we     (seed_clear_we),
+    .wd     (seed_clear_wd),
+
+    // from internal hardware
+    .de     (hw2reg.seed_clear.de),
+    .d      (hw2reg.seed_clear.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.seed_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (seed_clear_qs)
+  );
+
+
+
+  logic [38:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == CSRNG_INTR_ENABLE_OFFSET);
@@ -2583,6 +2615,7 @@ module csrng_reg_top (
     addr_hit[35] = (reg_addr == CSRNG_INT_STATE_HALT_ENABLE_OFFSET);
     addr_hit[36] = (reg_addr == CSRNG_INT_STATE_HALT_OFFSET);
     addr_hit[37] = (reg_addr == CSRNG_INT_STATE_STS_OFFSET);
+    addr_hit[38] = (reg_addr == CSRNG_SEED_CLEAR_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2627,7 +2660,8 @@ module csrng_reg_top (
                (addr_hit[34] & (|(CSRNG_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(CSRNG_PERMIT[35] & ~reg_be))) |
                (addr_hit[36] & (|(CSRNG_PERMIT[36] & ~reg_be))) |
-               (addr_hit[37] & (|(CSRNG_PERMIT[37] & ~reg_be)))));
+               (addr_hit[37] & (|(CSRNG_PERMIT[37] & ~reg_be))) |
+               (addr_hit[38] & (|(CSRNG_PERMIT[38] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2783,6 +2817,9 @@ module csrng_reg_top (
   assign int_state_halt_we = addr_hit[36] & reg_we & !reg_error;
 
   assign int_state_halt_wd = reg_wdata[3:0];
+  assign seed_clear_we = addr_hit[38] & reg_we & !reg_error;
+
+  assign seed_clear_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -2824,6 +2861,7 @@ module csrng_reg_top (
     reg_we_check[35] = int_state_halt_enable_gated_we;
     reg_we_check[36] = int_state_halt_we;
     reg_we_check[37] = 1'b0;
+    reg_we_check[38] = seed_clear_we;
   end
 
   // Read data return
@@ -3024,6 +3062,10 @@ module csrng_reg_top (
         reg_rdata_next[0] = int_state_sts_halted_qs;
         reg_rdata_next[1] = int_state_sts_genbits_vld_qs;
         reg_rdata_next[2] = int_state_sts_gen_in_progress_qs;
+      end
+
+      addr_hit[38]: begin
+        reg_rdata_next[0] = seed_clear_qs;
       end
 
       default: begin

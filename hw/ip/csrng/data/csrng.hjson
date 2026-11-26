@@ -1121,5 +1121,25 @@
         }
       ]
     },
+    {
+      name: "SEED_CLEAR",
+      desc: "Seed clear register",
+      swaccess: "rw1s",
+      hwaccess: "hrw",
+      tags: [// This register self-clears every cycle and a write discards the held seed.
+             "excl:CsrAllTests:CsrExclWrite"]
+      fields: [
+        { bits: "0",
+          name: "SEED_CLEAR",
+          resval: 0
+          desc: '''
+                Writing 1 discards the seed held by CSRNG, after which CSRNG requests a new seed from ENTROPY_SRC if CSRNG is enabled.
+                This is needed after reconfiguring ENTROPY_SRC while CSRNG stays enabled, as the held seed was produced with the old configuration.
+                A seed that has already been granted to an instantiate or reseed command is not discarded and is used by that command.
+                If CSRNG holds no seed, the write has no effect.
+                '''
+        }
+      ]
+    },
   ]
 }
