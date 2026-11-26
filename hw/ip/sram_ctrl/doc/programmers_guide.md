@@ -17,7 +17,14 @@ However, since the scrambling key defaults to a predefined value, it is recommen
     - In case the scrambling key seeds have been fully provisioned to OTP, this bit should be set to 0x1. A value of 0x0 indicates that the OTP could be malfunctioning or has been tampered with.
     - If the scrambling seeds have not yet been provisioned to OTP, this bit is set to 0x0. The scrambling key will in that case still be ephemeral, but the key seed mixed in as part of the key derivation process will be set to a predefined netlist constant.
 
-4. (optional) Lock down write access to [`CTRL`](registers.md#ctrl) by writing to [`CTRL_REGWEN`](registers.md#ctrl_regwen) if future key renewals and initializations should be disallowed until the next system reset.
+4. (optional) Enable the read-modify-write integrity check by writing kMultiBitBool4True to [`RMW_INTG_CHECK.EN`](registers.md#rmw_intg_check) and lock it by writing to [`RMW_INTG_CHECK_REGWEN`](registers.md#rmw_intg_check_regwen).
+   This must only be done once every word of the memory holds valid integrity bits, e.g., after the initialization in step 2 has completed.
+   Otherwise, a sub-word write to a location that has not been initialized triggers a fatal error.
+   Note that requesting a new scrambling key without re-initializing the memory afterwards leaves the memory without valid integrity bits.
+   Hence, SW should either lock [`CTRL`](registers.md#ctrl) as described in step 5, or always re-initialize the memory after a key renewal.
+   For memories whose contents are retained across resets, the check must only be re-enabled if the memory has been initialized since the last key renewal.
+
+5. (optional) Lock down write access to [`CTRL`](registers.md#ctrl) by writing to [`CTRL_REGWEN`](registers.md#ctrl_regwen) if future key renewals and initializations should be disallowed until the next system reset.
 
 Note that before (re-)requesting an updated SRAM key it is imperative to make sure that:
 - The memory contents are not needed anymore. Requesting a key implicitly wipes all data in the SRAM.
