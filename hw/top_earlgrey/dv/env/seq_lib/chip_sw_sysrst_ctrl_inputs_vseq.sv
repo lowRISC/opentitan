@@ -7,12 +7,12 @@ class chip_sw_sysrst_ctrl_inputs_vseq extends chip_sw_base_vseq;
 
   `uvm_object_new
 
-  localparam string PAD_KEY0_PATH = "tb.dut.IOB3";
-  localparam string PAD_KEY1_PATH = "tb.dut.IOB6";
-  localparam string PAD_KEY2_PATH = "tb.dut.IOB8";
-  localparam string PAD_PWRB_PATH = "tb.dut.IOR13";
-  localparam string PAD_ACPRES_PATH = "tb.dut.IOC7";
-  localparam string PAD_LIDOPEN_PATH = "tb.dut.IOC9";
+  localparam string PAD_KEY0_PATH = "tb.dut.IOR1";
+  localparam string PAD_KEY1_PATH = "tb.dut.IOR3";
+  localparam string PAD_KEY2_PATH = "tb.dut.IOR5";
+  localparam string PAD_PWRB_PATH = "tb.dut.IOR0";
+  localparam string PAD_ACPRES_PATH = "tb.dut.IOR2";
+  localparam string PAD_LIDOPEN_PATH = "tb.dut.IOR11";
   localparam string PAD_ECRST_PATH = "tb.dut.IOR8";
   localparam string PAD_FLASHWP_PATH = "tb.dut.IOR9";
   localparam uint NUM_TEST_PHASES = 10;

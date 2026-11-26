@@ -310,19 +310,26 @@ interface chip_if;
     .pins(mios[top_earlgrey_pkg::MioPadIor9])
   );
 
-  // Functional (dedicated) interface (inout): power button.
+  // Functional (muxed) interface: power button.
   pins_if #(.Width(1), .PullStrength("Weak")) pwrb_in_if(
-    .pins(mios[top_earlgrey_pkg::MioPadIor13])
-  );  // TODO: move to R0.
+    .pins(mios[top_earlgrey_pkg::MioPadIor0])
+  );
 
-  // Functional (muxed) interface: sysrst_ctrl.
+  // Functional (muxed) interface: sysrst_ctrl inputs except the power button, indexed by
+  // chip_env_pkg::sysrst_ctrl_pad_in_idx_e. Each input can only be muxed to a single pad.
   // TODO: Replace with sysrst_ctrl IP level interface.
-  // TODO; combine all into 1 single sysrst_ctrl_if.
-  pins_if #(.Width(8), .PullStrength("Weak")) sysrst_ctrl_if(
-    .pins({mios[top_earlgrey_pkg::MioPadIor6], mios[top_earlgrey_pkg::MioPadIor5],
-           mios[top_earlgrey_pkg::MioPadIoc9], mios[top_earlgrey_pkg::MioPadIoc7],
-           mios[top_earlgrey_pkg::MioPadIob9], mios[top_earlgrey_pkg::MioPadIob8],
-           mios[top_earlgrey_pkg::MioPadIob6], mios[top_earlgrey_pkg::MioPadIob3]})
+  pins_if #(.Width(5), .PullStrength("Weak")) sysrst_ctrl_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIor11], mios[top_earlgrey_pkg::MioPadIor2],
+           mios[top_earlgrey_pkg::MioPadIor5], mios[top_earlgrey_pkg::MioPadIor3],
+           mios[top_earlgrey_pkg::MioPadIor1]})
+  );
+
+  // Functional (muxed) interface: sysrst_ctrl outputs, indexed by
+  // chip_env_pkg::sysrst_ctrl_pad_out_idx_e. Each output can only be muxed to a single pad.
+  pins_if #(.Width(6), .PullStrength("Weak")) sysrst_ctrl_out_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIor4], mios[top_earlgrey_pkg::MioPadIor12],
+           mios[top_earlgrey_pkg::MioPadIor10], mios[top_earlgrey_pkg::MioPadIor7],
+           mios[top_earlgrey_pkg::MioPadIor13], mios[top_earlgrey_pkg::MioPadIor6]})
   );
 
   // Functional (muxed) interface: DFT straps.
@@ -986,6 +993,7 @@ interface chip_if;
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
     sysrst_ctrl_if.disconnect();
+    sysrst_ctrl_out_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();

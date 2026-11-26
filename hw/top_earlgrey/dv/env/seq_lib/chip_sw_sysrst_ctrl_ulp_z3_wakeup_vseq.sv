@@ -33,28 +33,24 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
   virtual task pre_start();
     super.pre_start();
     // Initialize the pad input to 0 to avoid having X values in the initial test phase.
-    // The following correspond to IOR13, IOC7, IOC9 respectively
     cfg.chip_vif.pwrb_in_if.pins_pd[0] = 1;
-    cfg.chip_vif.sysrst_ctrl_if.pins_pd[4] = 1;
-    cfg.chip_vif.sysrst_ctrl_if.pins_pd[5] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadAcPresent] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadLidOpen] = 1;
   endtask
 
   virtual task post_start();
     //cfg.chip_vif.pwrb_in_if.disconnect();
     //cfg.chip_vif.sysrst_ctrl_if.disconnect();
     cfg.chip_vif.pwrb_in_if.pins_pd[0] = 1;
-    cfg.chip_vif.sysrst_ctrl_if.pins_pd[4] = 1;
-    cfg.chip_vif.sysrst_ctrl_if.pins_pd[5] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadAcPresent] = 1;
+    cfg.chip_vif.sysrst_ctrl_if.pins_pd[SysrstCtrlPadLidOpen] = 1;
     super.post_start();
   endtask
 
   virtual function void drive_zero_pads();
-    // PAD_PWRB_PATH <-> IOR13
     cfg.chip_vif.pwrb_in_if.drive_pin(0, 1'b0);
-    // PAD_ACPRESENT_PATH <-> IOC7
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(4, 1'b0);
-    // PAD_LIDOPEN_PATH <-> IOC9
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(5, 1'b0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadAcPresent, 1'b0);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadLidOpen, 1'b0);
   endfunction
 
   virtual task glitch_lid_open();
@@ -62,12 +58,11 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     bit glitchy_bit = 1'b1;
     // The following loop ends before the second sampling of debounce happens
     for (int i = 0; i < glitch_loop_cnt ; i++) begin
-      // PAD_LIDOPEN_PATH <- glitchy_bit;
-      cfg.chip_vif.sysrst_ctrl_if.drive_pin(5, glitchy_bit);
+      cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadLidOpen, glitchy_bit);
       cfg.chip_vif.aon_clk_por_rst_if.wait_clks(1);
       glitchy_bit = ~glitchy_bit;
     end
-    cfg.chip_vif.sysrst_ctrl_if.drive_pin(5, 1'b1);
+    cfg.chip_vif.sysrst_ctrl_if.drive_pin(SysrstCtrlPadLidOpen, 1'b1);
   endtask
 
   virtual function void write_test_phase(test_phases_e phase);
@@ -79,8 +74,7 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
 
   virtual function void check_wakeup_pin();
     logic wakeup_result;
-    // Read PAD_Z3WAKEUP_PATH <-> IOB7
-    wakeup_result = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);
+    wakeup_result = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadZ3Wakeup);
     `DV_CHECK_EQ_FATAL(wakeup_result, 1'b1);
   endfunction
 
@@ -102,12 +96,6 @@ class chip_sw_sysrst_ctrl_ulp_z3_wakeup_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest,
              "wait for initial test state",
              5_000_000)
-
-    // TODO(lowRISC/opentitan:#13373): Revisit pad assignments.
-    // pinmux_wkup_vif (at Iob7) is re-used for PinZ3WakeupOut
-    // due to lack of unused pins. Disable the default drive
-    // to this pin.
-    cfg.chip_vif.pinmux_wkup_if.drive_en_pin(0, 0);
 
     write_test_phase(PHASE_INIT);
     sync_with_sw();

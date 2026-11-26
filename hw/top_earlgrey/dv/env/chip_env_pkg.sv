@@ -150,11 +150,24 @@ package chip_env_pkg;
     PorPinBoth
   } por_pin_e;
 
-  typedef enum bit[1:0] {
+  // Pin indices of chip_if.sysrst_ctrl_if (inputs except pwrb_in).
+  typedef enum bit[2:0] {
     SysrstCtrlPadKey0 = 0,
     SysrstCtrlPadKey1 = 1,
-    SysrstCtrlPadKey2 = 2
-  } sysrst_ctrl_pad_key_idx_e;
+    SysrstCtrlPadKey2 = 2,
+    SysrstCtrlPadAcPresent = 3,
+    SysrstCtrlPadLidOpen = 4
+  } sysrst_ctrl_pad_in_idx_e;
+
+  // Pin indices of chip_if.sysrst_ctrl_out_if.
+  typedef enum bit[2:0] {
+    SysrstCtrlPadKey0Out = 0,
+    SysrstCtrlPadKey1Out = 1,
+    SysrstCtrlPadKey2Out = 2,
+    SysrstCtrlPadPwrbOut = 3,
+    SysrstCtrlPadBatDisable = 4,
+    SysrstCtrlPadZ3Wakeup = 5
+  } sysrst_ctrl_pad_out_idx_e;
 
   // Typical SPI flash opcodes.
   typedef enum bit [7:0] {

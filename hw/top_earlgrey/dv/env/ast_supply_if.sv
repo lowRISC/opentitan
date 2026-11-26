@@ -30,10 +30,8 @@ interface ast_supply_if (
   // assertions in pwrmgr.
   localparam int CyclesBeforeReenablingAssert = 7;
 
-  // index of key0 input pin in top_earlgrey
-  localparam int DioSysrstCtrlEcRstL = 10;
-  // index of key input pin in top_earlgrey
-  localparam int MioInSysrstCtrlKey0In = 46;
+  // Index of the sysrst_ctrl key0 input pad in top_earlgrey.
+  localparam int MioPadSysrstCtrlKey0In = top_earlgrey_pkg::MioPadIor1;
 
   function static void force_vcaon_pok(bit value);
     force top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
@@ -111,7 +109,7 @@ interface ast_supply_if (
 
   task static force_key0_i(bit value);
     `uvm_info("ast_supply_if", $sformatf("forcing key0 input to %b", value), UVM_MEDIUM)
-    force top_earlgrey.mio_in_i[MioInSysrstCtrlKey0In] = value;
+    force top_earlgrey.mio_in_i[MioPadSysrstCtrlKey0In] = value;
   endtask
 
 endinterface
