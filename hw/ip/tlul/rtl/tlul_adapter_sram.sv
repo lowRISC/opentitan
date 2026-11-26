@@ -402,12 +402,10 @@ module tlul_adapter_sram
   assign d_data = (vld_rd_rsp & ~d_error) ? rspfifo_rdata.data   // valid read
                                           : error_blanking_data; // write or TL-UL error
 
-  // If this a write response with data fields set to 0, we have to set all ECC bits correctly
-  // since we are using an inverted Hsiao code.
+  // The integrity has to match d_data, so it is selected the same way.
   logic [DataIntgWidth-1:0] data_intg;
-  assign data_intg = (reqfifo_rdata.error) ? error_blanking_integ    : // TL-UL error
-                     (vld_rd_rsp)          ? rspfifo_rdata.data_intg : // valid read
-                     prim_secded_pkg::SecdedInv3932ZeroEcc;            // valid write
+  assign data_intg = (vld_rd_rsp & ~d_error) ? rspfifo_rdata.data_intg // valid read
+                                             : error_blanking_integ;   // write or error
 
   // When an error is seen on an incoming transaction it gets an immediate response without
   // performing an SRAM request. It may be the transaction receives a ready the first cycle it is
