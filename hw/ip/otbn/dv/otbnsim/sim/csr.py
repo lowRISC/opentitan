@@ -9,6 +9,7 @@ from .flags import FlagGroups
 from .ispr import DumbISPR
 from .kmac_ispr import KmacStatusCSR, KmacCtrlCSR, KmacCfgCSR, KmacStrbCSR
 from .mai_ispr import MaiCtrlCSR, MaiStatusCSR
+from .keymgr_ispr import KeymgrCtrlCSR, KeymgrStatusCSR
 from .trace import Trace
 from .wsr import WSRFile, URNDWSR
 
@@ -81,6 +82,8 @@ class CSRFile:
         self.MAI_CTRL = MaiCtrlCSR()
         self.MAI_STATUS = MaiStatusCSR()
         self.INSN_CNT = WrapperCSR(read_func=ext_regs.read_insn_cnt)
+        self.KEYMGR_STATUS = KeymgrStatusCSR('KEYMGR_STATUS', 32)
+        self.KEYMGR_CTRL = KeymgrCtrlCSR('KEYMGR_CTRL')
 
         # This does not include all CSR addresses because:
         # - FG0 and FG1 map to the same underlying register.
@@ -99,6 +102,8 @@ class CSRFile:
             CsrAddrs.URND: self.URND,
             CsrAddrs.MAI_STATUS: self.MAI_STATUS,
             CsrAddrs.INSN_CNT: self.INSN_CNT,
+            CsrAddrs.KEYMGR_STATUS: self.KEYMGR_STATUS,
+            CsrAddrs.KEYMGR_CTRL: self.KEYMGR_CTRL,
         }
 
     @staticmethod
@@ -174,6 +179,8 @@ class CSRFile:
         self.KMAC_STRB.commit()
         self.MAI_CTRL.commit()
         self.MAI_STATUS.commit()
+        self.KEYMGR_CTRL.commit()
+        self.KEYMGR_STATUS.commit()
 
     def abort(self) -> None:
         self.flags.abort()
@@ -185,6 +192,8 @@ class CSRFile:
         self.MAI_CTRL.abort()
         # MAI_STATUS is always committed because only the MAI updates it.
         self.MAI_STATUS.commit()
+        self.KEYMGR_CTRL.abort()
+        self.KEYMGR_STATUS.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -196,6 +205,8 @@ class CSRFile:
         ret += self.KMAC_STRB.changes()
         ret += self.MAI_CTRL.changes()
         ret += self.MAI_STATUS.changes()
+        ret += self.KEYMGR_CTRL.changes()
+        ret += self.KEYMGR_STATUS.changes()
         return ret
 
     def wipe(self) -> None:

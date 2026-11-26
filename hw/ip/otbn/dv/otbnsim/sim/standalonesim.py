@@ -43,6 +43,9 @@ class StandaloneSim(OTBNSim):
         # mode, so enable it here so tests can exercise it.
         self.state.urnd_ctrl_enabled = True
 
+        # Enable the keymgr interface in standalone mode.
+        self.state.keymgr.fully_functional = True
+
         while True:
             # If there's a RND request, respond immediately
             if self.state.ext_regs.read('RND_REQ', True):

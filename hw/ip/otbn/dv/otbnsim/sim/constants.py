@@ -95,11 +95,13 @@ class CsrAddrs(IntEnum):
     KMAC_CFG = 0x7dd
     KMAC_STRB = 0x7de
     MAI_CTRL = 0x7e0
+    KEYMGR_CTRL = 0x7e2
     RND = 0xfc0
     URND = 0xfc1
     URND_STATUS = 0xfc2
     INSN_CNT = 0xfc3
     MAI_STATUS = 0xfca
+    KEYMGR_STATUS = 0xfcc
 
 
 @unique
@@ -122,6 +124,10 @@ class WsrAddrs(IntEnum):
     MAI_IN1_S0 = 14
     MAI_IN1_S1 = 15
     URND_STATE = 16
+    KEYMGR_MSG_S0_L = 17
+    KEYMGR_MSG_S0_H = 18
+    KEYMGR_MSG_S1_L = 19
+    KEYMGR_MSG_S1_H = 20
 
 
 class Permutation:
