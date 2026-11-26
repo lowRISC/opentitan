@@ -478,6 +478,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   if (internal_ctx.input_len > 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // External-IV AES-GCM encryption is not CMVP-approved; only streaming
+  // decryption contexts are approved.
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
@@ -523,6 +528,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  // External-IV AES-GCM encryption is not CMVP-approved; only streaming
+  // decryption contexts are approved.
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
