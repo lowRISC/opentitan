@@ -315,9 +315,10 @@ The lockstep detects faults; it does not correct them:
 - A fault is flagged `LockstepOffset + 1` cycles after the main copy produced the wrong output,
   which has left the subsystem by then.
 - What both copies share is not covered: the CSRs, the clock, the reset, the comparators, the
-  interrupt and the alert senders. For the sweep configuration, `TBRE.CONFIG.SHADOW`
-  protects the stored registers, and each copy reads them only in the cycle a start is taken, into
-  its own copy for the sweep; the read-out in that cycle and `TBRE_START` remain shared.
+  interrupt and the alert senders. For the sweep configuration, `TBRE.CONFIG.SHADOW` protects the
+  stored registers, and each copy reads them in the cycle its own start is taken, into its own copy
+  for the sweep, so only a fault on the read-out that lasts from one read to the other reaches both
+  copies; `TBRE_START` remains shared.
 - A fault that changes no output raises no alert, and no output is compared before the comparison
   starts after reset.
 
