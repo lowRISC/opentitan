@@ -39,7 +39,7 @@ struct Params<'a> {
 static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0_in, key1_in
-        output_pins: vec!["IOR6", "IOR7"],
+        output_pins: vec!["IOR1", "IOR3"],
         open_drain: vec![false, false],
         // ec_rst, flash_wp
         input_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],

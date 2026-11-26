@@ -70,7 +70,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
 
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In,
-      kTopEarlgreyPinmuxInselIor13));
+      kTopEarlgreyPinmuxInselIor1));
 
   // Wait for sysrst.
   busy_spin_micros(10 * 1000);

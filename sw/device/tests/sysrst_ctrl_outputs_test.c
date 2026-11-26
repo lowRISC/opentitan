@@ -55,18 +55,11 @@ static const dt_sysrst_ctrl_periph_io_t kPeripheralInputs[] = {
     kDtSysrstCtrlPeriphIoPwrbIn,
 };
 
-static const dt_pad_t kInputPadsDV[] = {
-    kDtPadIob3,
-    kDtPadIob6,
-    kDtPadIob8,
-    kDtPadIor13,
-};
-
-static const dt_pad_t kInputPadsReal[] = {
-    kDtPadIor10,
-    kDtPadIor11,
-    kDtPadIor12,
+static const dt_pad_t kInputPads[] = {
+    kDtPadIor1,
+    kDtPadIor3,
     kDtPadIor5,
+    kDtPadIor0,
 };
 
 static const dt_sysrst_ctrl_periph_io_t kPeripheralOutputs[] = {
@@ -75,11 +68,8 @@ static const dt_sysrst_ctrl_periph_io_t kPeripheralOutputs[] = {
     kDtSysrstCtrlPeriphIoBatDisable, kDtSysrstCtrlPeriphIoZ3Wakeup,
 };
 
-static const dt_pad_t kOutputPadsDV[] = {
-    kDtPadIob9, kDtPadIor5, kDtPadIor6, kDtPadIoc7, kDtPadIoc9, kDtPadIob7,
-};
-static const dt_pad_t kOutputPadsReal[] = {
-    kDtPadIor6, kDtPadIor7, kDtPadIob0, kDtPadIob1, kDtPadIob2, kDtPadIob3,
+static const dt_pad_t kOutputPads[] = {
+    kDtPadIor6, kDtPadIor13, kDtPadIor7, kDtPadIor10, kDtPadIor12, kDtPadIor4,
 };
 
 static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {
@@ -102,21 +92,17 @@ static volatile const uint8_t kTestPhaseReal = kTestPhaseSetup;
 static void pinmux_setup(void) {
   /* On real devices, we also need to configure the DIO pins */
   if (kDeviceType != kDeviceSimDV) {
-    sysrst_ctrl_testutils_setup_dio(&pinmux);
+    sysrst_ctrl_testutils_setup_io(&pinmux);
     // Release pins so the host can control them.
     sysrst_ctrl_testutils_release_dio(&sysrst_ctrl, true, true);
     // Disable the EC reset pulse so that it does not interfere with the test.
     sysrst_ctrl_testutils_set_ec_rst_pulse_width(&sysrst_ctrl, 0);
   }
-  const dif_pinmux_index_t *kInputPads =
-      kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kNumMioInputs; ++i) {
     CHECK_DIF_OK(dif_pinmux_mio_select_input(
         &pinmux, dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kPeripheralInputs[i]),
         kInputPads[i]));
   }
-  const dif_pinmux_index_t *kOutputPads =
-      kDeviceType == kDeviceSimDV ? kOutputPadsDV : kOutputPadsReal;
   for (int i = 0; i < kNumMioOutputs; ++i) {
     CHECK_DIF_OK(dif_pinmux_mio_select_output(
         &pinmux, kOutputPads[i],

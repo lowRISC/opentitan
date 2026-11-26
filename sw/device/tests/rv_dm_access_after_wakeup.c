@@ -133,7 +133,7 @@ bool test_main(void) {
       CHECK_DIF_OK(dif_pinmux_mio_select_input(
           &pinmux,
           dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kDtSysrstCtrlPeriphIoPwrbIn),
-          kDtPadIor13));
+          kDtPadIor0));
 
       // Put the device in a normal sleep.
       put_to_sleep(&pwrmgr, /*deep_sleep=*/false);

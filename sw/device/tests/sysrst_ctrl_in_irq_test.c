@@ -58,18 +58,10 @@ static const dif_pinmux_index_t kPeripheralInputs[] = {
     kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen,
 };
 
-static const dif_pinmux_index_t kInputPadsDV[] = {
-    kTopEarlgreyPinmuxInselIob3, kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8, kTopEarlgreyPinmuxInselIor13,
-    kTopEarlgreyPinmuxInselIoc7, kTopEarlgreyPinmuxInselIoc9,
-};
-
-// We need different pins on the hyperdebug boards since certain
-// pins are not routed to the hyperdebug.
-static const dif_pinmux_index_t kInputPadsReal[] = {
-    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor5,
-    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
+static const dif_pinmux_index_t kInputPads[] = {
+    kTopEarlgreyPinmuxInselIor1, kTopEarlgreyPinmuxInselIor3,
+    kTopEarlgreyPinmuxInselIor5, kTopEarlgreyPinmuxInselIor0,
+    kTopEarlgreyPinmuxInselIor2, kTopEarlgreyPinmuxInselIor11,
 };
 
 void test_phase_sync(void) {
@@ -274,14 +266,12 @@ bool test_main(void) {
 
   // On real devices, we also need to configure the DIO pins.
   if (kDeviceType != kDeviceSimDV) {
-    sysrst_ctrl_testutils_setup_dio(&pinmux);
+    sysrst_ctrl_testutils_setup_io(&pinmux);
     // Release pins so the host can control them.
     sysrst_ctrl_testutils_release_dio(&sysrst_ctrl, true, true);
     // Disable the EC reset pulse so that it does not interfere with the test.
     sysrst_ctrl_testutils_set_ec_rst_pulse_width(&sysrst_ctrl, 0);
   }
-  const dif_pinmux_index_t *kInputPads =
-      kDeviceType == kDeviceSimDV ? kInputPadsDV : kInputPadsReal;
   for (int i = 0; i < kOutputNumMioPads; ++i) {
     CHECK_DIF_OK(
         dif_pinmux_input_select(&pinmux, kPeripheralInputs[i], kInputPads[i]));

@@ -8,6 +8,7 @@ use std::time::Duration;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
+use opentitanlib::io::gpio::PinMode;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
@@ -22,7 +23,8 @@ struct Opts {
 }
 
 fn sleep_all_resets_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let ioc0_pin = transport.gpio_pin("Ioc0")?;
+    let key0_pin = transport.gpio_pin("Ior1")?;
+    key0_pin.set(Some(PinMode::PushPull), Some(false), None, None)?;
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     loop {
@@ -33,11 +35,11 @@ fn sleep_all_resets_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             "FAIL" => return Err(anyhow!("Failure result: {:?}", vec)),
             _ => {}
         };
-        log::info!("Sending rst via ioc0");
-        ioc0_pin.write(true)?;
+        log::info!("Sending rst via ior1");
+        key0_pin.write(true)?;
         // Hold it up for some time before a transition low.
         std::thread::sleep(Duration::from_millis(1));
-        ioc0_pin.write(false)?;
+        key0_pin.write(false)?;
     }
 }
 

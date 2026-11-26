@@ -46,10 +46,10 @@ const DEBOUNCE_SW_VALUE_USEC: u64 = 100;
 static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // pwrb_in_i, ac_present_i, lid_open_i
-        output_pins: vec!["IOR10", "IOR11", "IOR12"],
+        output_pins: vec!["IOR0", "IOR2", "IOR11"],
         open_drain: vec![false, false, false],
         // z3_wakeup, ec_rst, flash_wp
-        input_pins: vec!["IOR5", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
+        input_pins: vec!["IOR4", "SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
         pullup_pins: vec!["SYSRST_CTRL_EC_RST_L", "SYSRST_CTRL_FLASH_WP_L"],
     }
 });
@@ -114,10 +114,10 @@ fn chip_sw_sysrst_ctrl_ulp_z3_wakeup(
     let mut gpio_mon = GpioMon::start(
         transport,
         &[
-            ("IOR10", "pwrb_in_i"),
-            ("IOR11", "ac_present_i"),
-            ("IOR12", "lid_open_i"),
-            ("IOR5", "z3_wakeup"),
+            ("IOR0", "pwrb_in_i"),
+            ("IOR2", "ac_present_i"),
+            ("IOR11", "lid_open_i"),
+            ("IOR4", "z3_wakeup"),
             ("SYSRST_CTRL_EC_RST_L", "ec_rst_l"),
         ],
         true,

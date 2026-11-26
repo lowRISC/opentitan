@@ -39,7 +39,7 @@ fn test_access_after_wakeup(
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset(UartRx::Clear)?;
 
-    let power_button = transport.gpio_pin("Ior13")?;
+    let power_button = transport.gpio_pin("Ior0")?;
     power_button.set_mode(PinMode::PushPull)?;
     power_button.write(true)?;
 

@@ -40,11 +40,11 @@ static CONFIG: LazyLock<Config> = LazyLock::new(|| {
         /* The order of those pins must match the order in the DV's set_pad
          * function, that is:  power button, key0, key1, key2, AC, EC, WP. */
         output_pins: vec![
+            "IOR0",
+            "IOR1",
+            "IOR3",
             "IOR5",
-            "IOR10",
-            "IOR11",
-            "IOR12",
-            "IOR6",
+            "IOR2",
             "SYSRST_CTRL_EC_RST_L",
             "SYSRST_CTRL_FLASH_WP_L",
         ],

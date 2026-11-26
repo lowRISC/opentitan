@@ -40,12 +40,12 @@ static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0, key1, key2, pwrb_in, ac_present_in, lid_open, ec_rst, flash_wp
         output_pins: vec![
-            "IOR10",
-            "IOR11",
-            "IOR12",
+            "IOR1",
+            "IOR3",
             "IOR5",
-            "IOR6",
-            "IOR7",
+            "IOR0",
+            "IOR2",
+            "IOR11",
             "SYSRST_CTRL_EC_RST_L",
             "SYSRST_CTRL_FLASH_WP_L",
         ],
