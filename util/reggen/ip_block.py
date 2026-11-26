@@ -222,6 +222,25 @@ def _add_generated_localparam(params: ReggenParams, what: str, name: str,
                    unpacked_dimensions=None))
 
 
+def _hjson_loads(txt: str, where: str) -> object:
+    '''Parse hjson text, rejecting a key repeated within one object.
+
+    The hook runs on every object at any depth, including objects inside
+    lists. A key may still appear in several different objects. The hjson
+    parser keeps only the last value of a repeated key, so an earlier value
+    would be dropped without any error.
+    '''
+    def no_duplicates(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        ret: dict[str, object] = {}
+        for key, value in pairs:
+            if key in ret:
+                raise ValueError(f'Duplicate key {key!r} in {where}.')
+            ret[key] = value
+        return ret
+
+    return hjson.loads(txt, use_decimal=True, object_pairs_hook=no_duplicates)
+
+
 @dataclass
 class IpBlock:
     name: str
@@ -548,9 +567,8 @@ class IpBlock:
                   where: str,
                   node: str = '') -> 'IpBlock':
         '''Load an IpBlock from an hjson description in txt'''
-        return IpBlock.from_raw(param_defaults,
-                                hjson.loads(txt, use_decimal=True), where,
-                                node)
+        return IpBlock.from_raw(param_defaults, _hjson_loads(txt, where),
+                                where, node)
 
     @staticmethod
     def from_path(path: str,
@@ -673,7 +691,7 @@ class IpBlock:
 
     def alias_from_text(self, scrub: bool, txt: str, where: str) -> None:
         '''Load alias regblocks from an hjson description in txt'''
-        self.alias_from_raw(scrub, hjson.loads(txt, use_decimal=True), where)
+        self.alias_from_raw(scrub, _hjson_loads(txt, where), where)
 
     def alias_from_path(self, scrub: bool, path: str) -> None:
         '''Load alias regblocks from an hjson description in a file at path'''
