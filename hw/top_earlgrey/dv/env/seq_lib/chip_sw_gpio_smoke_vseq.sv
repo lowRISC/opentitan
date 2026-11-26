@@ -46,31 +46,36 @@ class chip_sw_gpio_smoke_vseq extends chip_sw_base_vseq;
     // Wait until we reach the SW test state.
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInTest)
 
-    // The SW test drives the same patterns from each GPIO instance in turn, on the same pads.
+    // The SPI host agent drives the SPI_DEV pads, which gpio0 pins 6-11 reach, so disable SPI
+    // agent for this test.
+    cfg.chip_vif.enable_spi_host = 0;
+
+    // The SW test drives the same patterns from each GPIO instance in turn, each on its own pads.
     for (int inst = 0; inst < NUM_GPIO_INSTS; inst++) begin
       `uvm_info(`gfn, $sformatf("Starting GPIO output test on instance %0d", inst), UVM_LOW)
       for (int i = 0; i < num_gpio_vals; i++) begin
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === gpio_vals[i][NUM_GPIOS-1:0]);,
-                     $sformatf("Timed out waiting for GPIOs == %0h", gpio_vals[i][NUM_GPIOS-1:0]),
-                     TIMEOUT_NS,
-                    `gfn)
+        wait_gpios(inst, gpio_vals[i][NUM_GPIOS-1:0]);
       end
 
       // Test walking 1s and 0s.
       for (int i = 0; i < NUM_GPIOS; i++) begin
         logic [NUM_GPIOS-1:0] exp_gpios = (1 << i);
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === exp_gpios);,
-                     $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                     TIMEOUT_NS,
-                    `gfn)
-
-        exp_gpios = ~exp_gpios;
-        `DV_SPINWAIT(wait(cfg.chip_vif.gpios_if.pins === exp_gpios);,
-                     $sformatf("Timed out waiting for GPIOs == %0h", exp_gpios),
-                     TIMEOUT_NS,
-                    `gfn)
+        wait_gpios(inst, exp_gpios);
+        wait_gpios(inst, ~exp_gpios);
       end
     end
+  endtask
+
+  // Waits until the tested pins of GPIO instance `inst` show the value `val`.
+  virtual task wait_gpios(int inst, logic [NUM_GPIOS-1:0] val);
+    gpio_pads_vif gpios = cfg.gpio_pads_vifs[inst];
+    bit [NUM_GPIOS-1:0] mask = GpioPadsMask[inst];
+    `DV_SPINWAIT(while ((gpios.pins & mask) !== (val & mask)) begin
+                   @(gpios.pins);
+                 end,
+                 $sformatf("Timed out waiting for GPIO%0d == %0h", inst, val),
+                 TIMEOUT_NS,
+                 `gfn)
   endtask
 
 endclass

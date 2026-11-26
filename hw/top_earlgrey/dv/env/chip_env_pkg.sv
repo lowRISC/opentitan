@@ -77,6 +77,7 @@ package chip_env_pkg;
   typedef virtual ast_supply_if        ast_supply_vif;
   typedef virtual ast_ext_clk_if       ast_ext_clk_vif;
   typedef virtual usb20_if             usb20_vif;
+  typedef virtual pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpio_pads_vif;
 
   // Types of memories in the chip.
   //

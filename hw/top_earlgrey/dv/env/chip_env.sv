@@ -85,6 +85,14 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get usb20_vif from uvm_config_db")
     end
 
+    foreach (cfg.gpio_pads_vifs[i]) begin
+      if (!uvm_config_db#(gpio_pads_vif)::get(
+              this, "", $sformatf("gpio_pads_vif%0d", i), cfg.gpio_pads_vifs[i]
+          )) begin
+        `uvm_fatal(`gfn, $sformatf("failed to get gpio_pads_vif%0d from uvm_config_db", i))
+      end
+    end
+
     // create components
     foreach (m_uart_agents[i]) begin
       m_uart_agents[i] = uart_agent::type_id::create($sformatf("m_uart_agent%0d", i), this);

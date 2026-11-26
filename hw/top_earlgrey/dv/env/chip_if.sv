@@ -453,6 +453,23 @@ interface chip_if;
            mios[top_earlgrey_pkg::MioPadIoa1], mios[top_earlgrey_pkg::MioPadIoa0]})
   );
 
+  // Functional (muxed) interfaces: the pads of each GPIO instance. All GPIO connect to one pad.
+  // gpio0 pin k reaches MIO pad k and gpio1 pin k MIO pad 32 + k. gpio1 pins 29-31 reach
+  // the pads of pins 25-27 again so they are left unconnected here.
+  wire [2:0] gpio1_unused_pins;
+  pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpio0_pads_if(
+    .pins(mios[top_earlgrey_pkg::MioPadIob10:top_earlgrey_pkg::MioPadSpiHostD0])
+  );
+  pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpio1_pads_if(
+    .pins({gpio1_unused_pins, mios[top_earlgrey_pkg::MioPadIor13:top_earlgrey_pkg::MioPadIob11]})
+  );
+  initial begin
+    uvm_config_db#(virtual pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")))::set(
+        null, "*.env", "gpio_pads_vif0", gpio0_pads_if);
+    uvm_config_db#(virtual pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")))::set(
+        null, "*.env", "gpio_pads_vif1", gpio1_pads_if);
+  end
+
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
 
   // To connect the JTAG interface to chip IOs, just set the TAP strap to the desired value.
@@ -998,6 +1015,8 @@ interface chip_if;
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
+    gpio0_pads_if.disconnect();
+    gpio1_pads_if.disconnect();
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();

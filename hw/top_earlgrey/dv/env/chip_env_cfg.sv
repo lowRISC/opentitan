@@ -69,6 +69,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   ast_supply_vif     ast_supply_vif;
   ast_ext_clk_vif    ast_ext_clk_vif;
   usb20_vif          usb20_vif;
+  // The pads of each GPIO instance.
+  gpio_pads_vif      gpio_pads_vifs[NUM_GPIO_INSTS];
 
   // Number of Virtual Targets that each I3C instance implements, out of the `I3cMaxTargets` that
   // the CSRs describe. `chip_base_test` fills these from the elaborated top-level parameters
