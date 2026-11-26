@@ -373,9 +373,33 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `creator_seed` is 256-bit creator secret received from the `SECRET2` OTP partition..
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 
+`AdvDataWidth` is 32 × `NumSwBindingReg` + 256 + 256 + 128 + 256 × `NumRomDigestInputs`, plus 256 if `NumBootStages` is 2.
+With `NumSwBindingReg` = 8, `NumBootStages` = 4 and `NumRomDigestInputs` = 1, it is 1152 bits.
+
+The key manager sends the input to the KDF engine from bit 0 upward in 64-bit words, so byte `k` of the message is bits `8k+7:8k`.
+Each field is placed from its own bit 0, and the bits above the last field are 0.
+The software binding is `SW_BINDING_0` to `SW_BINDING_n`, with `SW_BINDING_0` at its bit 0.
+The fields of each boot stage, starting at bit 0, are:
+
+| Boot stage                     | Fields, from bit 0                                                                                               |
+|--------------------------------|------------------------------------------------------------------------------------------------------------------|
+| Creator (`NumBootStages` = 4)  | `hw_revision_seed`, `rom_descriptors` (digest 0 first), `health_st_measurement`, `device_identifier`, software binding |
+| Creator (`NumBootStages` = 2)  | `creator_seed`, `rom_descriptors` (digest 0 first), `health_st_measurement`, `device_identifier`, `hw_revision_seed`, software binding |
+| CreatorInt                     | `field_entropy`, software binding                                                                                |
+| OwnerInt                       | `creator_seed`, software binding                                                                                 |
+| Owner                          | `owner_seed`, software binding                                                                                   |
+
+Later boot stages use the software binding alone.
+If `CONTROL_SHADOWED.SW_BINDING_ONLY` is set, the input is the software binding alone.
+While `ENFORCE_SW_BINDING` is set, an advance from these boot stages without `SW_BINDING_ONLY` fails (see !!ENFORCE_SW_BINDING).
+
 During key generation operations, KDF inputs are 0 padded to `GenDataWidth` bits. Some diversification constants are:
 * `dest_seed` is a 256-bit diversification value for each cryptographic key type {AES, KMAC, OTBN, HMAC}.
 * `output_key` is a 256-bit diversification value for distinguishing software and sideload keys.
+
+`GenDataWidth` is 32 + 32 × `NumSaltReg` + 512, which is 800 bits with `NumSaltReg` = 8.
+The fields, starting at bit 0, are `output_key`, `dest_seed`, the salt (`SALT_0` at its bit 0) and `KEY_VERSION`.
+If the source slot is not valid, the operation fails and the KDF receives copies of a 32-bit LFSR output instead.
 
 ### Life Cycle Connection
 The function of the key manager is directly managed by the [life cycle controller](../../lc_ctrl/README.md#key_manager_en).
