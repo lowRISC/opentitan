@@ -37,6 +37,7 @@
               "{conn_csvs_dir}/clkmgr_trans.csv",
               "{conn_csvs_dir}/jtag.csv",
               "{conn_csvs_dir}/lc_ctrl_broadcast.csv",
+              "{conn_csvs_dir}/pwrmgr_clkmgr.csv",
               "{conn_csvs_dir}/pwrmgr_rstmgr.csv",
               "{conn_csvs_dir}/rstmgr_resets_o.csv",
               "{conn_csvs_dir}/rstmgr_rst_en.csv",
