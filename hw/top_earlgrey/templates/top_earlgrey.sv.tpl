@@ -51,18 +51,15 @@ module top_${top["name"]} #(
   };
 % endif\
 
-% if feature_info["ast_is_internal"]:
-  // Clockmgr and rstmgr info from AON to MAIN
-  // TODO: Manual wiring due to topgen limitation that signals defined as 'top' in the hjson are
-  //       local to the PD the IP is in.
-  clkmgr_pkg::clkmgr_out_t    clkmgr_clocks;
-  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_cg_en;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_resets;
-  rstmgr_pkg::rstmgr_rst_en_t rstmgr_rst_en;
-
-  // Expose scan clock to padring
-  assign padring_scan_clk_o = ast_clk_src_sys;
-% endif
+<%
+  ## Every clkmgr and rstmgr struct stays in the power domain of its partition here, so this top has
+  ## nothing to wire between its power domains. topgen does not connect the signals of
+  ## inter_module.top across power domains, so stop if a struct ever crosses.
+  crossing = [p.port for d in top['power']['domains']
+              for p in lib.get_manager_struct_ports(top, d, feature_info["ast_is_internal"])
+              if p.direction == 'input']
+  assert not crossing, f"clkmgr or rstmgr structs cross between power domains: {crossing}"
+%>\
 
 % for pd in reversed(top["power"]["domains"]):
 <%
@@ -75,6 +72,10 @@ module top_${top["name"]} #(
   ${top["name"]}_pd_${pd.lower()} #(
 <%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=pd, feedthrough=True" />\
   ) ${top["name"]}_pd_${pd.lower()} (
+% if pd == "Main" and feature_info["ast_is_internal"]:
+    // Raw system clock of the AST as scan clock for the padring
+    .padring_scan_clk_o(padring_scan_clk_o),
+% endif
 <%include file="/toplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=pd" />\
 
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target='', domain=pd, inter_pd=True, feedthrough=False, last_snippet=False" />\

@@ -257,8 +257,9 @@ module chip_englishbreakfast_verilator (
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
+  // The top outputs the clocks and resets of the primary partitions of the clkmgr and the rstmgr.
+  clkmgr_pkg::clkmgr_out_primary_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_primary_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -429,17 +430,17 @@ module chip_englishbreakfast_verilator (
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_clocks.clk_io_div4_secure),
-    .clk_ast_adc_i (clkmgr_clocks.clk_aon_secure),
+    .clk_ast_adc_i (clkmgr_clocks.clk_aon_gated_secure),
     .clk_ast_alert_i (clkmgr_clocks.clk_io_div4_secure),
     .clk_ast_es_i (clkmgr_clocks.clk_main_secure),
     .clk_ast_rng_i (clkmgr_clocks.clk_main_secure),
     .clk_ast_usb_i (clkmgr_clocks.clk_usb_peri),
-    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_tlul_ni (rstmgr_resets.rst_lc_io_div4_n),
+    .rst_ast_adc_ni (rstmgr_resets.rst_sys_aon_n),
+    .rst_ast_alert_ni (rstmgr_resets.rst_lc_io_div4_n),
+    .rst_ast_es_ni (rstmgr_resets.rst_sys_n),
+    .rst_ast_rng_ni (rstmgr_resets.rst_sys_n),
+    .rst_ast_usb_ni (rstmgr_resets.rst_usb_n),
     .clk_ast_ext_i         ( ext_clk ),
 
     // pok test for FPGA
@@ -587,6 +588,7 @@ module chip_englishbreakfast_verilator (
     .pwrmgr_ast_rsp_i         (pwrmgr_ast_rsp     ),
     .por_n_i                  (por_n              ),
     .rstmgr_resets_o          (rstmgr_resets      ),
+    .rstmgr_resets_secondary_o(                   ),
     .rstmgr_rst_en_o          (                   ),
     .usbdev_usb_rx_d_i        (usb_rx_d           ),
     .usbdev_usb_tx_d_o        (usb_tx_d           ),

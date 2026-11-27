@@ -3,7 +3,7 @@
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_darjeeling/ip_autogen/clkmgr/data/clkmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`clkmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
-- Other Clocks: **`clk_main_i`**, **`clk_io_i`**, **`clk_aon_i`**
+- Other Clocks: **`clk_main_i`**, **`clk_io_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
@@ -11,14 +11,20 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct          | Type    | Act   |   Width | Description   |
-|:------------|:-------------------------|:--------|:------|--------:|:--------------|
-| clocks      | clkmgr_pkg::clkmgr_out   | uni     | req   |       1 |               |
-| cg_en       | clkmgr_pkg::clkmgr_cg_en | uni     | req   |       1 |               |
-| jitter_en   | prim_mubi_pkg::mubi4     | uni     | req   |       1 |               |
-| pwr         | pwr_clk                  | req_rsp | rsp   |       1 |               |
-| idle        | prim_mubi_pkg::mubi4     | uni     | rcv   |       4 |               |
-| tl          | tlul_pkg::tl             | req_rsp | rsp   |       1 |               |
+| Port Name          | Package::Struct                  | Type    | Act   |   Width | Description                                                                                                                                                                                                      |
+|:-------------------|:---------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| clocks             | clkmgr_pkg::clkmgr_out_primary   | uni     | req   |       1 | Clocks hosted in the primary partition.                                                                                                                                                                          |
+| clocks_secondary   | clkmgr_pkg::clkmgr_out_secondary | uni     | req   |       1 | Clocks hosted in the secondary partition.                                                                                                                                                                        |
+| cg_en              | clkmgr_pkg::clkmgr_cg_en_primary | uni     | req   |       1 | Clock gating indications for all the clocks (output by the primary partition).                                                                                                                                   |
+| main_pd_aon_clk_en | logic                            | uni     | rcv   |       1 | The clkmgr uses this signal to gate clk_aon to the Main power domain during a power-down. The gate prevents glitches on the clock. See the pwrmgr interface definition for more details of main_pd_aon_clk_en_o. |
+| intraip_s2p        | clkmgr_pkg::intraip_s2p          | uni     | req   |       1 | Secondary-to-primary partition communication.                                                                                                                                                                    |
+| intraip_s2p        | clkmgr_pkg::intraip_s2p          | uni     | rcv   |       1 | Secondary-to-primary partition communication.                                                                                                                                                                    |
+| intraip_p2s        | clkmgr_pkg::intraip_p2s          | uni     | req   |       1 | Primary-to-secondary partition communication.                                                                                                                                                                    |
+| intraip_p2s        | clkmgr_pkg::intraip_p2s          | uni     | rcv   |       1 | Primary-to-secondary partition communication.                                                                                                                                                                    |
+| jitter_en          | prim_mubi_pkg::mubi4             | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| pwr                | pwr_clk                          | req_rsp | rsp   |       1 |                                                                                                                                                                                                                  |
+| idle               | prim_mubi_pkg::mubi4             | uni     | rcv   |       4 |                                                                                                                                                                                                                  |
+| tl                 | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                  |
 
 ## Security Alerts
 

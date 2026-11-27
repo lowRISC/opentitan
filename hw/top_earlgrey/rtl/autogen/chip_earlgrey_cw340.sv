@@ -999,7 +999,7 @@ module chip_earlgrey_cw340 #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_earlgrey.earlgrey_pd_aon.u_clkmgr.idle_i[trigger_sel];
+  assign clk_trans_idle = top_earlgrey.earlgrey_pd_main.u_clkmgr_part_primary.idle_i[trigger_sel];
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;

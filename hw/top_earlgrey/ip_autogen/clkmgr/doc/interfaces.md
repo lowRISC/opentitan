@@ -3,7 +3,7 @@
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`clkmgr`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**
-- Other Clocks: **`clk_main_i`**, **`clk_io_i`**, **`clk_usb_i`**, **`clk_aon_i`**, **`clk_io_div4_i`**
+- Other Clocks: **`clk_main_i`**, **`clk_io_i`**, **`clk_usb_i`**, **`clk_io_div4_i`**
 - Bus Device Interfaces (TL-UL): **`tl`**
 - Bus Host Interfaces (TL-UL): *none*
 - Peripheral Pins for Chip IO: *none*
@@ -11,24 +11,30 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name         | Package::Struct          | Type    | Act   |   Width | Description                                              |
-|:------------------|:-------------------------|:--------|:------|--------:|:---------------------------------------------------------|
-| clocks            | clkmgr_pkg::clkmgr_out   | uni     | req   |       1 |                                                          |
-| cg_en             | clkmgr_pkg::clkmgr_cg_en | uni     | req   |       1 |                                                          |
-| lc_hw_debug_en    | lc_ctrl_pkg::lc_tx       | uni     | rcv   |       1 |                                                          |
-| io_clk_byp_req    | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
-| io_clk_byp_ack    | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
-| all_clk_byp_req   | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
-| all_clk_byp_ack   | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
-| hi_speed_sel      | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
-| div_step_down_req | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 |                                                          |
-| lc_clk_byp_req    | lc_ctrl_pkg::lc_tx       | uni     | rcv   |       1 |                                                          |
-| lc_clk_byp_ack    | lc_ctrl_pkg::lc_tx       | uni     | req   |       1 |                                                          |
-| jitter_en         | prim_mubi_pkg::mubi4     | uni     | req   |       1 |                                                          |
-| pwr               | pwr_clk                  | req_rsp | rsp   |       1 |                                                          |
-| idle              | prim_mubi_pkg::mubi4     | uni     | rcv   |       4 |                                                          |
-| calib_rdy         | prim_mubi_pkg::mubi4     | uni     | rcv   |       1 | Indicates clocks are calibrated and frequencies accurate |
-| tl                | tlul_pkg::tl             | req_rsp | rsp   |       1 |                                                          |
+| Port Name          | Package::Struct                  | Type    | Act   |   Width | Description                                                                                                                                                                                                      |
+|:-------------------|:---------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| clocks             | clkmgr_pkg::clkmgr_out_primary   | uni     | req   |       1 | Clocks hosted in the primary partition.                                                                                                                                                                          |
+| clocks_secondary   | clkmgr_pkg::clkmgr_out_secondary | uni     | req   |       1 | Clocks hosted in the secondary partition.                                                                                                                                                                        |
+| cg_en              | clkmgr_pkg::clkmgr_cg_en_primary | uni     | req   |       1 | Clock gating indications for all the clocks (output by the primary partition).                                                                                                                                   |
+| main_pd_aon_clk_en | logic                            | uni     | rcv   |       1 | The clkmgr uses this signal to gate clk_aon to the Main power domain during a power-down. The gate prevents glitches on the clock. See the pwrmgr interface definition for more details of main_pd_aon_clk_en_o. |
+| intraip_s2p        | clkmgr_pkg::intraip_s2p          | uni     | req   |       1 | Secondary-to-primary partition communication.                                                                                                                                                                    |
+| intraip_s2p        | clkmgr_pkg::intraip_s2p          | uni     | rcv   |       1 | Secondary-to-primary partition communication.                                                                                                                                                                    |
+| intraip_p2s        | clkmgr_pkg::intraip_p2s          | uni     | req   |       1 | Primary-to-secondary partition communication.                                                                                                                                                                    |
+| intraip_p2s        | clkmgr_pkg::intraip_p2s          | uni     | rcv   |       1 | Primary-to-secondary partition communication.                                                                                                                                                                    |
+| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 |                                                                                                                                                                                                                  |
+| io_clk_byp_req     | prim_mubi_pkg::mubi4             | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| io_clk_byp_ack     | prim_mubi_pkg::mubi4             | uni     | rcv   |       1 |                                                                                                                                                                                                                  |
+| all_clk_byp_req    | prim_mubi_pkg::mubi4             | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| all_clk_byp_ack    | prim_mubi_pkg::mubi4             | uni     | rcv   |       1 |                                                                                                                                                                                                                  |
+| hi_speed_sel       | prim_mubi_pkg::mubi4             | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| div_step_down_req  | prim_mubi_pkg::mubi4             | uni     | rcv   |       1 |                                                                                                                                                                                                                  |
+| lc_clk_byp_req     | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 |                                                                                                                                                                                                                  |
+| lc_clk_byp_ack     | lc_ctrl_pkg::lc_tx               | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| jitter_en          | prim_mubi_pkg::mubi4             | uni     | req   |       1 |                                                                                                                                                                                                                  |
+| pwr                | pwr_clk                          | req_rsp | rsp   |       1 |                                                                                                                                                                                                                  |
+| idle               | prim_mubi_pkg::mubi4             | uni     | rcv   |       4 |                                                                                                                                                                                                                  |
+| calib_rdy          | prim_mubi_pkg::mubi4             | uni     | rcv   |       1 | Indicates clocks are calibrated and frequencies accurate                                                                                                                                                         |
+| tl                 | tlul_pkg::tl                     | req_rsp | rsp   |       1 |                                                                                                                                                                                                                  |
 
 ## Security Alerts
 

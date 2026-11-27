@@ -79,6 +79,10 @@ module clkmgr_bind;
 
 
   // AON clock gating enables.
+  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_gated_powerup (
+    .cg_en(cg_en_o.aon_gated_powerup == prim_mubi_pkg::MuBi4True)
+  );
+
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_infra (
     .cg_en(cg_en_o.aon_infra == prim_mubi_pkg::MuBi4True)
   );

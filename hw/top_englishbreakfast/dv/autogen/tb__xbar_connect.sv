@@ -107,8 +107,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr_part_primary, tl, aon, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr_part_primary, tl, aon, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main, clk_i)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
 `endif

@@ -70,6 +70,7 @@
         {
           clk_io_powerup: io
           clk_aon_powerup: aon
+          clk_aon_gated_powerup: aon
           clk_main_powerup: main
         }
       }
@@ -176,7 +177,7 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
@@ -191,6 +192,7 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: false
         sw: false
@@ -205,7 +207,6 @@
         domains:
         [
           Main
-          Aon
         ]
         shadowed: true
         sw: false
@@ -219,6 +220,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -2639,7 +2641,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_powerup
-        clk_slow_i: clkmgr_clocks.clk_aon_powerup
+        clk_slow_i: clkmgr_clocks_secondary.clk_aon_powerup
         clk_lc_i: clkmgr_clocks.clk_io_powerup
         clk_esc_i: clkmgr_clocks.clk_io_secure
       }
@@ -2904,6 +2906,30 @@
           conn_type: true
         }
         {
+          name: main_pd_aon_clk_en
+          desc:
+            '''
+            The clkmgr uses this signal to gate clk_aon to the Main power domain. The clock is
+            passed from the Aon power domain, where it is free-running, to the Main power domain.
+            To prevent glitches, the clock is enabled after the isolation (pwr_clamp) is released
+            and gated before the isolation is asserted. In the slow FSM's terminal state, the
+            clock is gated in the same cycle as the isolation is asserted. This signal is
+            synchronous to the always-on clock (clk_slow_i/clk_aon) and is the inverse of the
+            pwr_clamp_env signal.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: pwrmgr
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: pwrmgr_main_pd_aon_clk_en
+          index: -1
+        }
+        {
           name: rom_ctrl
           struct: pwrmgr_data
           package: rom_ctrl_pkg
@@ -3010,13 +3036,13 @@
       template_type: rstmgr
       clock_srcs:
       {
+        clk_aon_i: aon
+        clk_por_i: io
         clk_i:
         {
           clock: io
           group: powerup
         }
-        clk_por_i: io
-        clk_aon_i: aon
         clk_main_i: main
         clk_io_i: io
       }
@@ -3026,25 +3052,44 @@
         rst_ni:
         {
           name: lc_io
-          domain: Aon
+          domain: Main
         }
         rst_por_ni:
         {
           name: por_io
-          domain: Aon
+          domain: Main
         }
       }
       domain: Aon
+      domain_secondary: Aon
       attr: ipgen
+      clock_srcs_secondary:
+      {
+        clk_aon_i: aon
+      }
+      clock_group_secondary: powerup
+      reset_connections_secondary:
+      {
+        rst_aon_ni:
+        {
+          name: por_aon
+          domain: Aon
+        }
+      }
       clock_connections:
       {
-        clk_i: clkmgr_clocks.clk_io_powerup
+        clk_aon_i: clkmgr_clocks.clk_aon_gated_powerup
         clk_por_i: clkmgr_clocks.clk_io_powerup
-        clk_aon_i: clkmgr_clocks.clk_aon_powerup
+        clk_i: clkmgr_clocks.clk_io_powerup
         clk_main_i: clkmgr_clocks.clk_main_powerup
         clk_io_i: clkmgr_clocks.clk_io_powerup
       }
+      clock_connections_secondary:
+      {
+        clk_aon_i: clkmgr_clocks_secondary.clk_aon_powerup
+      }
       param_decl: {}
+      is_split_ip: true
       memory: {}
       param_list:
       [
@@ -3056,6 +3101,7 @@
             When 0, there are no consistency checks.
             '''
           type: bit
+          partition: both
           default: 1'b1
           local: "false"
           expose: "true"
@@ -3065,6 +3111,7 @@
           name: SecMaxSyncDelay
           desc: The maximum synchronization delay for parent / child reset checks.
           type: int
+          partition: both
           default: "2"
           local: "false"
           expose: "true"
@@ -3084,6 +3131,7 @@
           type: uni
           act: rcv
           width: 2
+          partition: secondary
           inst_name: rstmgr
           default: ""
           package: ""
@@ -3103,6 +3151,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          partition: secondary
           inst_name: rstmgr
           default: ""
           package: pwrmgr_pkg
@@ -3113,7 +3162,7 @@
         {
           name: resets
           desc: Leaf resets fed to the system.
-          struct: rstmgr_out
+          struct: rstmgr_out_primary
           package: rstmgr_pkg
           type: uni
           act: req
@@ -3126,9 +3175,25 @@
           conn_type: true
         }
         {
+          name: resets_secondary
+          desc: Leaf resets fed to the system.
+          struct: rstmgr_out_secondary
+          package: rstmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: rstmgr
+          default: ""
+          top_signame: rstmgr_resets_secondary
+          index: -1
+          external: true
+          conn_type: true
+        }
+        {
           name: rst_en
           desc: Low-power-group outputs used by alert handler.
-          struct: rstmgr_rst_en
+          struct: rstmgr_rst_en_primary
           package: rstmgr_pkg
           type: uni
           act: req
@@ -3180,11 +3245,72 @@
           type: uni
           act: req
           width: 1
+          partition: secondary
           inst_name: rstmgr
           default: ""
           end_idx: -1
           top_type: broadcast
           top_signame: rstmgr_sw_rst_req
+          index: -1
+        }
+        {
+          name: intraip_s2p
+          desc: Secondary-to-primary partition communication
+          struct: intraip_s2p
+          package: rstmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: rstmgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rstmgr_intraip_s2p
+          index: -1
+        }
+        {
+          name: intraip_s2p
+          desc: Secondary-to-primary partition communication
+          struct: intraip_s2p
+          package: rstmgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rstmgr
+          default: ""
+          domain: Aon
+          top_signame: rstmgr_intraip_s2p
+          index: -1
+        }
+        {
+          name: intraip_p2s
+          desc: Primary-to-secondary partition communication
+          struct: intraip_p2s
+          package: rstmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rstmgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rstmgr_intraip_p2s
+          index: -1
+        }
+        {
+          name: intraip_p2s
+          desc: Primary-to-secondary partition communication
+          struct: intraip_p2s
+          package: rstmgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: rstmgr
+          default: ""
+          domain: Aon
+          top_signame: rstmgr_intraip_p2s
           index: -1
         }
         {
@@ -3230,11 +3356,6 @@
           group: ast
           clock: io
         }
-        clk_aon_i:
-        {
-          group: ast
-          clock: aon
-        }
       }
       clock_group: powerup
       reset_connections:
@@ -3242,60 +3363,83 @@
         rst_ni:
         {
           name: lc_io
-          domain: Aon
+          domain: Main
         }
         rst_aon_ni:
         {
           name: lc_aon
-          domain: Aon
+          domain: Main
         }
         rst_io_ni:
         {
           name: lc_io
-          domain: Aon
+          domain: Main
         }
         rst_main_ni:
         {
           name: lc
-          domain: Aon
+          domain: Main
         }
         rst_root_ni:
         {
           name: por_io
-          domain: Aon
+          domain: Main
         }
         rst_root_io_ni:
         {
           name: por_io
-          domain: Aon
+          domain: Main
         }
         rst_root_main_ni:
         {
           name: por
-          domain: Aon
+          domain: Main
         }
       }
       domain: Aon
+      domain_secondary: Aon
       ipgen_params:
       {
         ext_clk_bypass: false
       }
       attr: ipgen
+      clock_srcs_secondary:
+      {
+        clk_aon_i:
+        {
+          group: ast
+          clock: aon
+        }
+      }
+      clock_group_secondary: powerup
+      reset_connections_secondary:
+      {
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Aon
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_powerup
         clk_main_i: clk_main_i
         clk_io_i: clk_io_i
+      }
+      clock_connections_secondary:
+      {
         clk_aon_i: clk_aon_i
       }
       param_decl: {}
+      is_split_ip: true
       memory: {}
       param_list: []
       inter_signal_list:
       [
         {
           name: clocks
-          struct: clkmgr_out
+          desc: Clocks hosted in the primary partition.
+          struct: clkmgr_out_primary
           package: clkmgr_pkg
           type: uni
           act: req
@@ -3308,8 +3452,25 @@
           conn_type: true
         }
         {
+          name: clocks_secondary
+          desc: Clocks hosted in the secondary partition.
+          struct: clkmgr_out_secondary
+          package: clkmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: clkmgr
+          default: ""
+          top_signame: clkmgr_clocks_secondary
+          index: -1
+          external: true
+          conn_type: true
+        }
+        {
           name: cg_en
-          struct: clkmgr_cg_en
+          desc: Clock gating indications for all the clocks (output by the primary partition).
+          struct: clkmgr_cg_en_primary
           package: clkmgr_pkg
           type: uni
           act: req
@@ -3320,6 +3481,86 @@
           index: -1
           external: true
           conn_type: true
+        }
+        {
+          name: main_pd_aon_clk_en
+          desc:
+            '''
+            The clkmgr uses this signal to gate clk_aon to the Main power domain during a
+            power-down. The gate prevents glitches on the clock. See the pwrmgr interface
+            definition for more details of main_pd_aon_clk_en_o.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: clkmgr
+          default: ""
+          package: ""
+          domain: Aon
+          top_signame: pwrmgr_main_pd_aon_clk_en
+          index: -1
+        }
+        {
+          name: intraip_s2p
+          desc: Secondary-to-primary partition communication.
+          struct: intraip_s2p
+          package: clkmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: clkmgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: clkmgr_intraip_s2p
+          index: -1
+        }
+        {
+          name: intraip_s2p
+          desc: Secondary-to-primary partition communication.
+          struct: intraip_s2p
+          package: clkmgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: clkmgr
+          default: ""
+          domain: Aon
+          top_signame: clkmgr_intraip_s2p
+          index: -1
+        }
+        {
+          name: intraip_p2s
+          desc: Primary-to-secondary partition communication.
+          struct: intraip_p2s
+          package: clkmgr_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: clkmgr
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: clkmgr_intraip_p2s
+          index: -1
+        }
+        {
+          name: intraip_p2s
+          desc: Primary-to-secondary partition communication.
+          struct: intraip_p2s
+          package: clkmgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: clkmgr
+          default: ""
+          domain: Aon
+          top_signame: clkmgr_intraip_p2s
+          index: -1
         }
         {
           name: jitter_en
@@ -3341,6 +3582,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          partition: secondary
           inst_name: clkmgr
           default: ""
           package: pwrmgr_pkg
@@ -3405,12 +3647,12 @@
         rst_ni:
         {
           name: lc_io
-          domain: Aon
+          domain: Main
         }
         rst_aon_ni:
         {
           name: lc_aon
-          domain: Aon
+          domain: Main
         }
       }
       domain: Main
@@ -3418,7 +3660,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_powerup
-        clk_aon_i: clkmgr_clocks_i.clk_aon_powerup
+        clk_aon_i: clkmgr_clocks_i.clk_aon_gated_powerup
       }
       param_decl: {}
       memory: {}
@@ -3518,7 +3760,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_io_timers
-        clk_aon_i: clkmgr_clocks.clk_aon_timers
+        clk_aon_i: clkmgr_clocks_secondary.clk_aon_timers
       }
       param_decl: {}
       memory: {}
@@ -3770,7 +4012,7 @@
       clock_connections:
       {
         clk_i: clkmgr_clocks.clk_main_infra
-        clk_aon_i: clkmgr_clocks.clk_aon_infra
+        clk_aon_i: clkmgr_clocks_secondary.clk_aon_infra
       }
       param_decl: {}
       param_list: []
@@ -11412,6 +11654,10 @@
       [
         clkmgr.pwr
       ]
+      pwrmgr.main_pd_aon_clk_en:
+      [
+        clkmgr.main_pd_aon_clk_en
+      ]
       pwrmgr.pwr_otp:
       [
         otp_ctrl.pwr_otp
@@ -11703,6 +11949,22 @@
       [
         aon_timer.aon_timer_rst_req
         soc_proxy.rst_req_external
+      ]
+      rstmgr.intraip_s2p.secondary:
+      [
+        rstmgr.intraip_s2p.primary
+      ]
+      rstmgr.intraip_p2s.primary:
+      [
+        rstmgr.intraip_p2s.secondary
+      ]
+      clkmgr.intraip_s2p.secondary:
+      [
+        clkmgr.intraip_s2p.primary
+      ]
+      clkmgr.intraip_p2s.primary:
+      [
+        clkmgr.intraip_p2s.secondary
       ]
       main.tl_rv_core_ibex__corei:
       [
@@ -12064,8 +12326,10 @@
     top:
     [
       clkmgr.clocks
+      clkmgr.clocks_secondary
       clkmgr.cg_en
       rstmgr.resets
+      rstmgr.resets_secondary
       rstmgr.rst_en
       rv_core_ibex.irq_timer
       rv_core_ibex.hart_id
@@ -12098,6 +12362,7 @@
       pwrmgr.boot_status: pwrmgr_boot_status_obs
       pwrmgr.ext_rst_ack: pwrmgr_ext_rst_ack
       clkmgr.clocks: ""
+      clkmgr.clocks_secondary: ""
       clkmgr.cg_en: ""
       clkmgr.jitter_en: clk_main_jitter_en
       dma.sys: dma_sys
@@ -12157,6 +12422,7 @@
       otp_macro.cfg: otp_cfg
       rstmgr.por_n: por_n
       rstmgr.resets: ""
+      rstmgr.resets_secondary: ""
       rstmgr.rst_en: ""
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
@@ -18394,6 +18660,14 @@
           {
             unused: true
           }
+          rstmgr.resets_secondary:
+          {
+            unused: true
+          }
+          clkmgr.clocks_secondary:
+          {
+            unused: true
+          }
           rstmgr.rst_en:
           {
             unused: true
@@ -18670,6 +18944,14 @@
             signal: ext_racl_error
           }
           clkmgr.cg_en:
+          {
+            unused: true
+          }
+          rstmgr.resets_secondary:
+          {
+            unused: true
+          }
+          clkmgr.clocks_secondary:
           {
             unused: true
           }
@@ -19173,7 +19455,7 @@
       handler: alert_handler
       module_name: rstmgr
       desc: rstmgr fatal_fault alert
-      lpg_name: powerup_lc_io_Aon
+      lpg_name: powerup_lc_io_Main
       lpg_idx: 7
     }
     {
@@ -19184,7 +19466,7 @@
       handler: alert_handler
       module_name: rstmgr
       desc: rstmgr fatal_cnsty_fault alert
-      lpg_name: powerup_lc_io_Aon
+      lpg_name: powerup_lc_io_Main
       lpg_idx: 7
     }
     {
@@ -19195,7 +19477,7 @@
       handler: alert_handler
       module_name: clkmgr
       desc: clkmgr recov_fault alert
-      lpg_name: powerup_lc_io_Aon
+      lpg_name: powerup_lc_io_Main
       lpg_idx: 7
     }
     {
@@ -19206,7 +19488,7 @@
       handler: alert_handler
       module_name: clkmgr
       desc: clkmgr fatal_fault alert
-      lpg_name: powerup_lc_io_Aon
+      lpg_name: powerup_lc_io_Main
       lpg_idx: 7
     }
     {
@@ -19217,7 +19499,7 @@
       handler: alert_handler
       module_name: pinmux
       desc: pinmux fatal_fault alert
-      lpg_name: powerup_lc_io_Aon
+      lpg_name: powerup_lc_io_Main
       lpg_idx: 7
     }
     {
@@ -19229,7 +19511,7 @@
       module_name: aon_timer
       desc: aon_timer fatal_fault alert
       lpg_name: timers_lc_io_Aon
-      lpg_idx: 8
+      lpg_idx: 9
     }
     {
       name: soc_proxy_fatal_alert_intg
@@ -19240,7 +19522,7 @@
       module_name: soc_proxy
       desc: soc_proxy fatal_alert_intg alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: sram_ctrl_ret_fatal_error
@@ -19251,7 +19533,7 @@
       module_name: sram_ctrl_ret
       desc: sram_ctrl_ret fatal_error alert
       lpg_name: infra_lc_io_Aon
-      lpg_idx: 11
+      lpg_idx: 12
     }
     {
       name: rv_dm_fatal_fault
@@ -19262,7 +19544,7 @@
       module_name: rv_dm
       desc: rv_dm fatal_fault alert
       lpg_name: infra_sys_Main
-      lpg_idx: 12
+      lpg_idx: 13
     }
     {
       name: rv_plic_fatal_fault
@@ -19273,7 +19555,7 @@
       module_name: rv_plic
       desc: rv_plic fatal_fault alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: aes_recov_ctrl_update_err
@@ -19284,7 +19566,7 @@
       module_name: aes
       desc: aes recov_ctrl_update_err alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 14
+      lpg_idx: 15
     }
     {
       name: aes_fatal_fault
@@ -19295,7 +19577,7 @@
       module_name: aes
       desc: aes fatal_fault alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 14
+      lpg_idx: 15
     }
     {
       name: hmac_fatal_fault
@@ -19306,7 +19588,7 @@
       module_name: hmac
       desc: hmac fatal_fault alert
       lpg_name: hmac_trans_lc_Main
-      lpg_idx: 15
+      lpg_idx: 16
     }
     {
       name: kmac_recov_operation_err
@@ -19317,7 +19599,7 @@
       module_name: kmac
       desc: kmac recov_operation_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 16
+      lpg_idx: 17
     }
     {
       name: kmac_fatal_fault_err
@@ -19328,7 +19610,7 @@
       module_name: kmac
       desc: kmac fatal_fault_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 16
+      lpg_idx: 17
     }
     {
       name: otbn_fatal
@@ -19339,7 +19621,7 @@
       module_name: otbn
       desc: otbn fatal alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 17
+      lpg_idx: 18
     }
     {
       name: otbn_recov
@@ -19350,7 +19632,7 @@
       module_name: otbn
       desc: otbn recov alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 17
+      lpg_idx: 18
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -19361,7 +19643,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe recov_operation_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -19372,7 +19654,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe fatal_fault_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: csrng_recov_alert
@@ -19383,7 +19665,7 @@
       module_name: csrng
       desc: csrng recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: csrng_fatal_alert
@@ -19394,7 +19676,7 @@
       module_name: csrng
       desc: csrng fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: entropy_src_recov_alert
@@ -19405,7 +19687,7 @@
       module_name: entropy_src
       desc: entropy_src recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: entropy_src_fatal_alert
@@ -19416,7 +19698,7 @@
       module_name: entropy_src
       desc: entropy_src fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: edn0_recov_alert
@@ -19427,7 +19709,7 @@
       module_name: edn0
       desc: edn0 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: edn0_fatal_alert
@@ -19438,7 +19720,7 @@
       module_name: edn0
       desc: edn0 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: edn1_recov_alert
@@ -19449,7 +19731,7 @@
       module_name: edn1
       desc: edn1 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: edn1_fatal_alert
@@ -19460,7 +19742,7 @@
       module_name: edn1
       desc: edn1 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -19471,7 +19753,7 @@
       module_name: sram_ctrl_main
       desc: sram_ctrl_main fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: sram_ctrl_mbox_fatal_error
@@ -19482,7 +19764,7 @@
       module_name: sram_ctrl_mbox
       desc: sram_ctrl_mbox fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: rom_ctrl0_fatal
@@ -19493,7 +19775,7 @@
       module_name: rom_ctrl0
       desc: rom_ctrl0 fatal alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: rom_ctrl1_fatal
@@ -19504,7 +19786,7 @@
       module_name: rom_ctrl1
       desc: rom_ctrl1 fatal alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: dma_fatal_fault
@@ -19515,7 +19797,7 @@
       module_name: dma
       desc: dma fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx0_fatal_fault
@@ -19526,7 +19808,7 @@
       module_name: mbx0
       desc: mbx0 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx0_recov_fault
@@ -19537,7 +19819,7 @@
       module_name: mbx0
       desc: mbx0 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx1_fatal_fault
@@ -19548,7 +19830,7 @@
       module_name: mbx1
       desc: mbx1 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx1_recov_fault
@@ -19559,7 +19841,7 @@
       module_name: mbx1
       desc: mbx1 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx2_fatal_fault
@@ -19570,7 +19852,7 @@
       module_name: mbx2
       desc: mbx2 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx2_recov_fault
@@ -19581,7 +19863,7 @@
       module_name: mbx2
       desc: mbx2 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx3_fatal_fault
@@ -19592,7 +19874,7 @@
       module_name: mbx3
       desc: mbx3 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx3_recov_fault
@@ -19603,7 +19885,7 @@
       module_name: mbx3
       desc: mbx3 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx4_fatal_fault
@@ -19614,7 +19896,7 @@
       module_name: mbx4
       desc: mbx4 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx4_recov_fault
@@ -19625,7 +19907,7 @@
       module_name: mbx4
       desc: mbx4 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx5_fatal_fault
@@ -19636,7 +19918,7 @@
       module_name: mbx5
       desc: mbx5 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx5_recov_fault
@@ -19647,7 +19929,7 @@
       module_name: mbx5
       desc: mbx5 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx6_fatal_fault
@@ -19658,7 +19940,7 @@
       module_name: mbx6
       desc: mbx6 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx6_recov_fault
@@ -19669,7 +19951,7 @@
       module_name: mbx6
       desc: mbx6 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_jtag_fatal_fault
@@ -19680,7 +19962,7 @@
       module_name: mbx_jtag
       desc: mbx_jtag fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_jtag_recov_fault
@@ -19691,7 +19973,7 @@
       module_name: mbx_jtag
       desc: mbx_jtag recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_pcie0_fatal_fault
@@ -19702,7 +19984,7 @@
       module_name: mbx_pcie0
       desc: mbx_pcie0 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_pcie0_recov_fault
@@ -19713,7 +19995,7 @@
       module_name: mbx_pcie0
       desc: mbx_pcie0 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_pcie1_fatal_fault
@@ -19724,7 +20006,7 @@
       module_name: mbx_pcie1
       desc: mbx_pcie1 fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: mbx_pcie1_recov_fault
@@ -19735,7 +20017,7 @@
       module_name: mbx_pcie1
       desc: mbx_pcie1 recov_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: soc_dbg_ctrl_fatal_fault
@@ -19768,7 +20050,7 @@
       module_name: racl_ctrl
       desc: racl_ctrl fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: racl_ctrl_recov_ctrl_update_err
@@ -19779,7 +20061,7 @@
       module_name: racl_ctrl
       desc: racl_ctrl recov_ctrl_update_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: ac_range_check_recov_ctrl_update_err
@@ -19790,7 +20072,7 @@
       module_name: ac_range_check
       desc: ac_range_check recov_ctrl_update_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: ac_range_check_fatal_fault
@@ -19801,7 +20083,7 @@
       module_name: ac_range_check
       desc: ac_range_check fatal_fault alert
       lpg_name: secure_lc_Main
-      lpg_idx: 13
+      lpg_idx: 14
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -19812,7 +20094,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -19823,7 +20105,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -19834,7 +20116,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -19845,7 +20127,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 10
+      lpg_idx: 11
     }
   ]
   outgoing_alert: {}
@@ -22584,6 +22866,7 @@
         {
           clk_io_powerup: io
           clk_aon_powerup: aon
+          clk_aon_gated_powerup: aon
           clk_main_powerup: main
         }
       }
@@ -22597,7 +22880,7 @@
       }
     }
     {
-      name: powerup_lc_io_Aon
+      name: powerup_lc_io_Main
       clock_group:
       {
         name: powerup
@@ -22608,6 +22891,7 @@
         {
           clk_io_powerup: io
           clk_aon_powerup: aon
+          clk_aon_gated_powerup: aon
           clk_main_powerup: main
         }
       }
@@ -22617,6 +22901,31 @@
       reset_connection:
       {
         name: lc_io
+        domain: Main
+      }
+    }
+    {
+      name: powerup_por_aon_Aon
+      clock_group:
+      {
+        name: powerup
+        src: top
+        sw_cg: no
+        unique: no
+        clocks:
+        {
+          clk_io_powerup: io
+          clk_aon_powerup: aon
+          clk_aon_gated_powerup: aon
+          clk_main_powerup: main
+        }
+      }
+      clock_connection: clkmgr_clocks_secondary.clk_aon_powerup
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: por_aon
         domain: Aon
       }
     }
@@ -24620,6 +24929,30 @@
         conn_type: true
       }
       {
+        name: main_pd_aon_clk_en
+        desc:
+          '''
+          The clkmgr uses this signal to gate clk_aon to the Main power domain. The clock is
+          passed from the Aon power domain, where it is free-running, to the Main power domain.
+          To prevent glitches, the clock is enabled after the isolation (pwr_clamp) is released
+          and gated before the isolation is asserted. In the slow FSM's terminal state, the
+          clock is gated in the same cycle as the isolation is asserted. This signal is
+          synchronous to the always-on clock (clk_slow_i/clk_aon) and is the inverse of the
+          pwr_clamp_env signal.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: pwrmgr
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: pwrmgr_main_pd_aon_clk_en
+        index: -1
+      }
+      {
         name: rom_ctrl
         struct: pwrmgr_data
         package: rom_ctrl_pkg
@@ -24721,6 +25054,7 @@
         type: uni
         act: rcv
         width: 2
+        partition: secondary
         inst_name: rstmgr
         default: ""
         package: ""
@@ -24740,6 +25074,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        partition: secondary
         inst_name: rstmgr
         default: ""
         package: pwrmgr_pkg
@@ -24750,7 +25085,7 @@
       {
         name: resets
         desc: Leaf resets fed to the system.
-        struct: rstmgr_out
+        struct: rstmgr_out_primary
         package: rstmgr_pkg
         type: uni
         act: req
@@ -24763,9 +25098,25 @@
         conn_type: true
       }
       {
+        name: resets_secondary
+        desc: Leaf resets fed to the system.
+        struct: rstmgr_out_secondary
+        package: rstmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: rstmgr
+        default: ""
+        top_signame: rstmgr_resets_secondary
+        index: -1
+        external: true
+        conn_type: true
+      }
+      {
         name: rst_en
         desc: Low-power-group outputs used by alert handler.
-        struct: rstmgr_rst_en
+        struct: rstmgr_rst_en_primary
         package: rstmgr_pkg
         type: uni
         act: req
@@ -24817,11 +25168,72 @@
         type: uni
         act: req
         width: 1
+        partition: secondary
         inst_name: rstmgr
         default: ""
         end_idx: -1
         top_type: broadcast
         top_signame: rstmgr_sw_rst_req
+        index: -1
+      }
+      {
+        name: intraip_s2p
+        desc: Secondary-to-primary partition communication
+        struct: intraip_s2p
+        package: rstmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: rstmgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rstmgr_intraip_s2p
+        index: -1
+      }
+      {
+        name: intraip_s2p
+        desc: Secondary-to-primary partition communication
+        struct: intraip_s2p
+        package: rstmgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rstmgr
+        default: ""
+        domain: Aon
+        top_signame: rstmgr_intraip_s2p
+        index: -1
+      }
+      {
+        name: intraip_p2s
+        desc: Primary-to-secondary partition communication
+        struct: intraip_p2s
+        package: rstmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rstmgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rstmgr_intraip_p2s
+        index: -1
+      }
+      {
+        name: intraip_p2s
+        desc: Primary-to-secondary partition communication
+        struct: intraip_p2s
+        package: rstmgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: rstmgr
+        default: ""
+        domain: Aon
+        top_signame: rstmgr_intraip_p2s
         index: -1
       }
       {
@@ -24842,7 +25254,8 @@
       }
       {
         name: clocks
-        struct: clkmgr_out
+        desc: Clocks hosted in the primary partition.
+        struct: clkmgr_out_primary
         package: clkmgr_pkg
         type: uni
         act: req
@@ -24855,8 +25268,25 @@
         conn_type: true
       }
       {
+        name: clocks_secondary
+        desc: Clocks hosted in the secondary partition.
+        struct: clkmgr_out_secondary
+        package: clkmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: clkmgr
+        default: ""
+        top_signame: clkmgr_clocks_secondary
+        index: -1
+        external: true
+        conn_type: true
+      }
+      {
         name: cg_en
-        struct: clkmgr_cg_en
+        desc: Clock gating indications for all the clocks (output by the primary partition).
+        struct: clkmgr_cg_en_primary
         package: clkmgr_pkg
         type: uni
         act: req
@@ -24867,6 +25297,86 @@
         index: -1
         external: true
         conn_type: true
+      }
+      {
+        name: main_pd_aon_clk_en
+        desc:
+          '''
+          The clkmgr uses this signal to gate clk_aon to the Main power domain during a
+          power-down. The gate prevents glitches on the clock. See the pwrmgr interface
+          definition for more details of main_pd_aon_clk_en_o.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: clkmgr
+        default: ""
+        package: ""
+        domain: Aon
+        top_signame: pwrmgr_main_pd_aon_clk_en
+        index: -1
+      }
+      {
+        name: intraip_s2p
+        desc: Secondary-to-primary partition communication.
+        struct: intraip_s2p
+        package: clkmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: clkmgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: clkmgr_intraip_s2p
+        index: -1
+      }
+      {
+        name: intraip_s2p
+        desc: Secondary-to-primary partition communication.
+        struct: intraip_s2p
+        package: clkmgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: clkmgr
+        default: ""
+        domain: Aon
+        top_signame: clkmgr_intraip_s2p
+        index: -1
+      }
+      {
+        name: intraip_p2s
+        desc: Primary-to-secondary partition communication.
+        struct: intraip_p2s
+        package: clkmgr_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: clkmgr
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: clkmgr_intraip_p2s
+        index: -1
+      }
+      {
+        name: intraip_p2s
+        desc: Primary-to-secondary partition communication.
+        struct: intraip_p2s
+        package: clkmgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: clkmgr
+        default: ""
+        domain: Aon
+        top_signame: clkmgr_intraip_p2s
+        index: -1
       }
       {
         name: jitter_en
@@ -24888,6 +25398,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        partition: secondary
         inst_name: clkmgr
         default: ""
         package: pwrmgr_pkg
@@ -33202,7 +33713,7 @@
       }
       {
         package: clkmgr_pkg
-        struct: clkmgr_out
+        struct: clkmgr_out_primary
         domain: Aon
         inter_pd: false
         signame: clkmgr_clocks_o
@@ -33221,7 +33732,26 @@
       }
       {
         package: clkmgr_pkg
-        struct: clkmgr_cg_en
+        struct: clkmgr_out_secondary
+        domain: Aon
+        inter_pd: false
+        signame: clkmgr_clocks_secondary_o
+        signame_chip:
+        {
+          asic: ""
+          verilator: ""
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: true
+        index: -1
+        netname: clkmgr_clocks_secondary
+      }
+      {
+        package: clkmgr_pkg
+        struct: clkmgr_cg_en_primary
         domain: Aon
         inter_pd: false
         signame: clkmgr_cg_en_o
@@ -34433,7 +34963,7 @@
       }
       {
         package: rstmgr_pkg
-        struct: rstmgr_out
+        struct: rstmgr_out_primary
         domain: Aon
         inter_pd: false
         signame: rstmgr_resets_o
@@ -34452,7 +34982,26 @@
       }
       {
         package: rstmgr_pkg
-        struct: rstmgr_rst_en
+        struct: rstmgr_out_secondary
+        domain: Aon
+        inter_pd: false
+        signame: rstmgr_resets_secondary_o
+        signame_chip:
+        {
+          asic: ""
+          verilator: ""
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: true
+        index: -1
+        netname: rstmgr_resets_secondary
+      }
+      {
+        package: rstmgr_pkg
+        struct: rstmgr_rst_en_primary
         domain: Aon
         inter_pd: false
         signame: rstmgr_rst_en_o
@@ -35055,6 +35604,18 @@
         act: req
         suffix: rsp
         default: pwrmgr_pkg::PWR_CLK_RSP_DEFAULT
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        signame: pwrmgr_main_pd_aon_clk_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
       }
       {
         package: ""
@@ -35785,6 +36346,54 @@
         act: rcv
         suffix: ""
         default: "'0"
+      }
+      {
+        package: rstmgr_pkg
+        struct: intraip_s2p
+        domain: Aon
+        signame: rstmgr_intraip_s2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rstmgr_pkg::INTRAIP_S2P_DEFAULT
+      }
+      {
+        package: rstmgr_pkg
+        struct: intraip_p2s
+        domain: Aon
+        signame: rstmgr_intraip_p2s
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: rstmgr_pkg::INTRAIP_P2S_DEFAULT
+      }
+      {
+        package: clkmgr_pkg
+        struct: intraip_s2p
+        domain: Aon
+        signame: clkmgr_intraip_s2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: clkmgr_pkg::INTRAIP_S2P_DEFAULT
+      }
+      {
+        package: clkmgr_pkg
+        struct: intraip_p2s
+        domain: Aon
+        signame: clkmgr_intraip_p2s
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: clkmgr_pkg::INTRAIP_P2S_DEFAULT
       }
       {
         package: tlul_pkg
@@ -37598,7 +38207,7 @@
       }
       {
         package: clkmgr_pkg
-        struct: clkmgr_out
+        struct: clkmgr_out_primary
         signame: clkmgr_clocks
         domain: Aon
         width: 1
@@ -37608,7 +38217,17 @@
       }
       {
         package: clkmgr_pkg
-        struct: clkmgr_cg_en
+        struct: clkmgr_out_secondary
+        signame: clkmgr_clocks_secondary
+        domain: Aon
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: clkmgr_pkg
+        struct: clkmgr_cg_en_primary
         signame: clkmgr_cg_en
         domain: Aon
         width: 1
@@ -37618,7 +38237,7 @@
       }
       {
         package: rstmgr_pkg
-        struct: rstmgr_out
+        struct: rstmgr_out_primary
         signame: rstmgr_resets
         domain: Aon
         width: 1
@@ -37628,7 +38247,17 @@
       }
       {
         package: rstmgr_pkg
-        struct: rstmgr_rst_en
+        struct: rstmgr_out_secondary
+        signame: rstmgr_resets_secondary
+        domain: Aon
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: rstmgr_pkg
+        struct: rstmgr_rst_en_primary
         signame: rstmgr_rst_en
         domain: Aon
         width: 1

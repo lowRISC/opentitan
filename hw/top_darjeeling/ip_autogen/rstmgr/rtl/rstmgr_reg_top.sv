@@ -9,8 +9,6 @@
 module rstmgr_reg_top (
   input clk_i,
   input rst_ni,
-  input clk_por_i,
-  input rst_por_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
@@ -128,9 +126,11 @@ module rstmgr_reg_top (
   logic alert_test_fatal_cnsty_fault_wd;
   logic alert_test_regwen_qs;
   logic alert_test_regwen_wd;
+  logic reset_req_re;
   logic reset_req_we;
   logic [3:0] reset_req_qs;
   logic [3:0] reset_req_wd;
+  logic reset_info_re;
   logic reset_info_we;
   logic reset_info_por_qs;
   logic reset_info_por_wd;
@@ -140,9 +140,11 @@ module rstmgr_reg_top (
   logic reset_info_sw_reset_wd;
   logic [4:0] reset_info_hw_req_qs;
   logic [4:0] reset_info_hw_req_wd;
+  logic alert_regwen_re;
   logic alert_regwen_we;
   logic alert_regwen_qs;
   logic alert_regwen_wd;
+  logic alert_info_ctrl_re;
   logic alert_info_ctrl_we;
   logic alert_info_ctrl_en_qs;
   logic alert_info_ctrl_en_wd;
@@ -152,9 +154,11 @@ module rstmgr_reg_top (
   logic [3:0] alert_info_attr_qs;
   logic alert_info_re;
   logic [31:0] alert_info_qs;
+  logic cpu_regwen_re;
   logic cpu_regwen_we;
   logic cpu_regwen_qs;
   logic cpu_regwen_wd;
+  logic cpu_info_ctrl_re;
   logic cpu_info_ctrl_we;
   logic cpu_info_ctrl_en_qs;
   logic cpu_info_ctrl_en_wd;
@@ -182,11 +186,10 @@ module rstmgr_reg_top (
   logic sw_rst_ctrl_n_2_we;
   logic sw_rst_ctrl_n_2_qs;
   logic sw_rst_ctrl_n_2_wd;
+  logic err_code_re;
   logic err_code_reg_intg_err_qs;
   logic err_code_reset_consistency_err_qs;
   logic err_code_fsm_err_qs;
-  // Define register CDC handling.
-  // CDC handling is done on a per-reg instead of per-field boundary.
 
   // Register instances
   // R[alert_test]: V(True)
@@ -257,243 +260,153 @@ module rstmgr_reg_top (
   );
 
 
-  // R[reset_req]: V(False)
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
+  // R[reset_req]: V(True)
+  logic reset_req_qe;
+  logic [0:0] reset_req_flds_we;
+  assign reset_req_qe = &reset_req_flds_we;
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_reset_req (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (reset_req_re),
     .we     (reset_req_we),
     .wd     (reset_req_wd),
-
-    // from internal hardware
-    .de     (hw2reg.reset_req.de),
     .d      (hw2reg.reset_req.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (reset_req_flds_we[0]),
     .q      (reg2hw.reset_req.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (reset_req_qs)
   );
+  assign reg2hw.reset_req.qe = reset_req_qe;
 
 
-  // R[reset_info]: V(False)
+  // R[reset_info]: V(True)
+  logic reset_info_qe;
+  logic [3:0] reset_info_flds_we;
+  assign reset_info_qe = &reset_info_flds_we;
   //   F[por]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_reset_info_por (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (reset_info_re),
     .we     (reset_info_we),
     .wd     (reset_info_por_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .d      (hw2reg.reset_info.por.d),
+    .qre    (),
+    .qe     (reset_info_flds_we[0]),
+    .q      (reg2hw.reset_info.por.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (reset_info_por_qs)
   );
+  assign reg2hw.reset_info.por.qe = reset_info_qe;
 
   //   F[low_power_exit]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_reset_info_low_power_exit (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (reset_info_re),
     .we     (reset_info_we),
     .wd     (reset_info_low_power_exit_wd),
-
-    // from internal hardware
-    .de     (hw2reg.reset_info.low_power_exit.de),
     .d      (hw2reg.reset_info.low_power_exit.d),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .qre    (),
+    .qe     (reset_info_flds_we[1]),
+    .q      (reg2hw.reset_info.low_power_exit.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (reset_info_low_power_exit_qs)
   );
+  assign reg2hw.reset_info.low_power_exit.qe = reset_info_qe;
 
   //   F[sw_reset]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_reset_info_sw_reset (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (reset_info_re),
     .we     (reset_info_we),
     .wd     (reset_info_sw_reset_wd),
-
-    // from internal hardware
-    .de     (hw2reg.reset_info.sw_reset.de),
     .d      (hw2reg.reset_info.sw_reset.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (reset_info_flds_we[2]),
     .q      (reg2hw.reset_info.sw_reset.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (reset_info_sw_reset_qs)
   );
+  assign reg2hw.reset_info.sw_reset.qe = reset_info_qe;
 
   //   F[hw_req]: 7:3
-  prim_subreg #(
-    .DW      (5),
-    .SwAccess(prim_subreg_pkg::SwAccessW1C),
-    .RESVAL  (5'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (5)
   ) u_reset_info_hw_req (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (reset_info_re),
     .we     (reset_info_we),
     .wd     (reset_info_hw_req_wd),
-
-    // from internal hardware
-    .de     (hw2reg.reset_info.hw_req.de),
     .d      (hw2reg.reset_info.hw_req.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (reset_info_flds_we[3]),
     .q      (reg2hw.reset_info.hw_req.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (reset_info_hw_req_qs)
   );
+  assign reg2hw.reset_info.hw_req.qe = reset_info_qe;
 
 
-  // R[alert_regwen]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+  // R[alert_regwen]: V(True)
+  logic alert_regwen_qe;
+  logic [0:0] alert_regwen_flds_we;
+  assign alert_regwen_qe = &alert_regwen_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_alert_regwen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (alert_regwen_re),
     .we     (alert_regwen_we),
     .wd     (alert_regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .d      (hw2reg.alert_regwen.d),
+    .qre    (),
+    .qe     (alert_regwen_flds_we[0]),
+    .q      (reg2hw.alert_regwen.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (alert_regwen_qs)
   );
+  assign reg2hw.alert_regwen.qe = alert_regwen_qe;
 
 
-  // R[alert_info_ctrl]: V(False)
+  // R[alert_info_ctrl]: V(True)
+  logic alert_info_ctrl_qe;
+  logic [1:0] alert_info_ctrl_flds_we;
+  assign alert_info_ctrl_qe = &alert_info_ctrl_flds_we;
   // Create REGWEN-gated WE signal
   logic alert_info_ctrl_gated_we;
   assign alert_info_ctrl_gated_we = alert_info_ctrl_we & alert_regwen_qs;
   //   F[en]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_alert_info_ctrl_en (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (alert_info_ctrl_re),
     .we     (alert_info_ctrl_gated_we),
     .wd     (alert_info_ctrl_en_wd),
-
-    // from internal hardware
-    .de     (hw2reg.alert_info_ctrl.en.de),
     .d      (hw2reg.alert_info_ctrl.en.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (alert_info_ctrl_flds_we[0]),
     .q      (reg2hw.alert_info_ctrl.en.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (alert_info_ctrl_en_qs)
   );
+  assign reg2hw.alert_info_ctrl.en.qe = alert_info_ctrl_qe;
 
   //   F[index]: 7:4
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_alert_info_ctrl_index (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (alert_info_ctrl_re),
     .we     (alert_info_ctrl_gated_we),
     .wd     (alert_info_ctrl_index_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.alert_info_ctrl.index.d),
+    .qre    (),
+    .qe     (alert_info_ctrl_flds_we[1]),
     .q      (reg2hw.alert_info_ctrl.index.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (alert_info_ctrl_index_qs)
   );
+  assign reg2hw.alert_info_ctrl.index.qe = alert_info_ctrl_qe;
 
 
   // R[alert_info_attr]: V(True)
@@ -528,96 +441,64 @@ module rstmgr_reg_top (
   );
 
 
-  // R[cpu_regwen]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
+  // R[cpu_regwen]: V(True)
+  logic cpu_regwen_qe;
+  logic [0:0] cpu_regwen_flds_we;
+  assign cpu_regwen_qe = &cpu_regwen_flds_we;
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_cpu_regwen (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (cpu_regwen_re),
     .we     (cpu_regwen_we),
     .wd     (cpu_regwen_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
+    .d      (hw2reg.cpu_regwen.d),
+    .qre    (),
+    .qe     (cpu_regwen_flds_we[0]),
+    .q      (reg2hw.cpu_regwen.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (cpu_regwen_qs)
   );
+  assign reg2hw.cpu_regwen.qe = cpu_regwen_qe;
 
 
-  // R[cpu_info_ctrl]: V(False)
+  // R[cpu_info_ctrl]: V(True)
+  logic cpu_info_ctrl_qe;
+  logic [1:0] cpu_info_ctrl_flds_we;
+  assign cpu_info_ctrl_qe = &cpu_info_ctrl_flds_we;
   // Create REGWEN-gated WE signal
   logic cpu_info_ctrl_gated_we;
   assign cpu_info_ctrl_gated_we = cpu_info_ctrl_we & cpu_regwen_qs;
   //   F[en]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_cpu_info_ctrl_en (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (cpu_info_ctrl_re),
     .we     (cpu_info_ctrl_gated_we),
     .wd     (cpu_info_ctrl_en_wd),
-
-    // from internal hardware
-    .de     (hw2reg.cpu_info_ctrl.en.de),
     .d      (hw2reg.cpu_info_ctrl.en.d),
-
-    // to internal hardware
-    .qe     (),
+    .qre    (),
+    .qe     (cpu_info_ctrl_flds_we[0]),
     .q      (reg2hw.cpu_info_ctrl.en.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (cpu_info_ctrl_en_qs)
   );
+  assign reg2hw.cpu_info_ctrl.en.qe = cpu_info_ctrl_qe;
 
   //   F[index]: 7:4
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_cpu_info_ctrl_index (
-    // sync clock and reset required for this register
-    .clk_i   (clk_por_i),
-    .rst_ni  (rst_por_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (cpu_info_ctrl_re),
     .we     (cpu_info_ctrl_gated_we),
     .wd     (cpu_info_ctrl_index_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
+    .d      (hw2reg.cpu_info_ctrl.index.d),
+    .qre    (),
+    .qe     (cpu_info_ctrl_flds_we[1]),
     .q      (reg2hw.cpu_info_ctrl.index.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (cpu_info_ctrl_index_qs)
   );
+  assign reg2hw.cpu_info_ctrl.index.qe = cpu_info_ctrl_qe;
 
 
   // R[cpu_info_attr]: V(True)
@@ -841,88 +722,49 @@ module rstmgr_reg_top (
   );
 
 
-  // R[err_code]: V(False)
+  // R[err_code]: V(True)
   //   F[reg_intg_err]: 0:0
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_code_reg_intg_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.reg_intg_err.de),
     .d      (hw2reg.err_code.reg_intg_err.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
-    .q      (reg2hw.err_code.reg_intg_err.q),
+    .q      (),
     .ds     (),
-
-    // to register interface (read)
     .qs     (err_code_reg_intg_err_qs)
   );
 
   //   F[reset_consistency_err]: 1:1
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_code_reset_consistency_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.reset_consistency_err.de),
     .d      (hw2reg.err_code.reset_consistency_err.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
-    .q      (reg2hw.err_code.reset_consistency_err.q),
+    .q      (),
     .ds     (),
-
-    // to register interface (read)
     .qs     (err_code_reset_consistency_err_qs)
   );
 
   //   F[fsm_err]: 2:2
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+  prim_subreg_ext #(
+    .DW    (1)
   ) u_err_code_fsm_err (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
+    .re     (err_code_re),
     .we     (1'b0),
     .wd     ('0),
-
-    // from internal hardware
-    .de     (hw2reg.err_code.fsm_err.de),
     .d      (hw2reg.err_code.fsm_err.d),
-
-    // to internal hardware
+    .qre    (),
     .qe     (),
-    .q      (reg2hw.err_code.fsm_err.q),
+    .q      (),
     .ds     (),
-
-    // to register interface (read)
     .qs     (err_code_fsm_err_qs)
   );
 
@@ -983,9 +825,11 @@ module rstmgr_reg_top (
   assign alert_test_fatal_cnsty_fault_wd = reg_wdata[1];
 
   assign alert_test_regwen_wd = reg_wdata[31];
+  assign reset_req_re = addr_hit[1] & reg_re & !reg_error;
   assign reset_req_we = addr_hit[1] & reg_we & !reg_error;
 
   assign reset_req_wd = reg_wdata[3:0];
+  assign reset_info_re = addr_hit[2] & reg_re & !reg_error;
   assign reset_info_we = addr_hit[2] & reg_we & !reg_error;
 
   assign reset_info_por_wd = reg_wdata[0];
@@ -995,9 +839,11 @@ module rstmgr_reg_top (
   assign reset_info_sw_reset_wd = reg_wdata[2];
 
   assign reset_info_hw_req_wd = reg_wdata[7:3];
+  assign alert_regwen_re = addr_hit[3] & reg_re & !reg_error;
   assign alert_regwen_we = addr_hit[3] & reg_we & !reg_error;
 
   assign alert_regwen_wd = reg_wdata[0];
+  assign alert_info_ctrl_re = addr_hit[4] & reg_re & !reg_error;
   assign alert_info_ctrl_we = addr_hit[4] & reg_we & !reg_error;
 
   assign alert_info_ctrl_en_wd = reg_wdata[0];
@@ -1005,9 +851,11 @@ module rstmgr_reg_top (
   assign alert_info_ctrl_index_wd = reg_wdata[7:4];
   assign alert_info_attr_re = addr_hit[5] & reg_re & !reg_error;
   assign alert_info_re = addr_hit[6] & reg_re & !reg_error;
+  assign cpu_regwen_re = addr_hit[7] & reg_re & !reg_error;
   assign cpu_regwen_we = addr_hit[7] & reg_we & !reg_error;
 
   assign cpu_regwen_wd = reg_wdata[0];
+  assign cpu_info_ctrl_re = addr_hit[8] & reg_re & !reg_error;
   assign cpu_info_ctrl_we = addr_hit[8] & reg_we & !reg_error;
 
   assign cpu_info_ctrl_en_wd = reg_wdata[0];
@@ -1033,6 +881,7 @@ module rstmgr_reg_top (
   assign sw_rst_ctrl_n_2_we = addr_hit[16] & reg_we & !reg_error;
 
   assign sw_rst_ctrl_n_2_wd = reg_wdata[0];
+  assign err_code_re = addr_hit[17] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin

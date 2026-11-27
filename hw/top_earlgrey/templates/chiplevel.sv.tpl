@@ -1071,10 +1071,16 @@ module chip_${top["name"]}_${target["name"]} #(
   //
   // Note that on the CW305, GPIO[9,8] are connected to LED[5(Green),7(Red)].
 
+<%
+  # The idle indication is an input of the primary partition of the clkmgr.
+  clkmgr = lib.find_module(top["module"], "clkmgr")
+  clkmgr_idle_hier = (f'top_{top["name"]}.{top["name"]}_pd_{clkmgr["domain"].lower()}.'
+                      f'u_{lib.instance_name_for_partition(clkmgr["name"], clkmgr)}.idle_i')
+%>\
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i;
+  assign clk_trans_idle = ${clkmgr_idle_hier};
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1086,7 +1092,7 @@ module chip_${top["name"]}_${target["name"]} #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i[trigger_sel];
+  assign clk_trans_idle = ${clkmgr_idle_hier}[trigger_sel];
   % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;

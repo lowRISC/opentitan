@@ -2,12 +2,21 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// The overall clock manager
+// Primary partition of the split clock manager.
+//
+// The primary partition hosts everything except the always-on clocks:
+//  - the register file and the alerts,
+//  - the clock dividers and the root gating,
+//  - the measurement logic and the bypass handshake,
+//  - every gated clock family.
+// The secondary partition hosts the always-on clock buffers. This partition outputs the clocks of
+// every module outside the always-on power domain and of the rstmgr's primary partition, and all
+// the clock gating indications.
 
 
 `include "prim_assert.sv"
 
-  module clkmgr
+  module clkmgr_part_primary
     import clkmgr_pkg::*;
     import clkmgr_reg_pkg::*;
     import lc_ctrl_pkg::lc_tx_t;
@@ -29,8 +38,11 @@
   input rst_main_ni,
   input clk_io_i,
   input rst_io_ni,
-  input clk_aon_i,
+  // The clock measurement uses the always-on clocks of the secondary partition as its reference. So
+  // this partition also takes their resets. The clocks themselves come from the secondary
+  // partition.
   input rst_aon_ni,
+
 
   // Resets for derived clocks
   // clocks are derived locally
@@ -48,13 +60,6 @@
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
-  // pwrmgr interface
-  input pwrmgr_pkg::pwr_clk_req_t pwr_i,
-  output pwrmgr_pkg::pwr_clk_rsp_t pwr_o,
-
-  // dft interface
-  input prim_mubi_pkg::mubi4_t scanmode_i,
-
   // idle hints
   // SEC_CM: IDLE.INTERSIG.MUBI
   input prim_mubi_pkg::mubi4_t [3:0] idle_i,
@@ -63,11 +68,14 @@
   output mubi4_t jitter_en_o,
 
   // clock gated indications going to alert handlers
-  output clkmgr_cg_en_t cg_en_o,
+  output clkmgr_cg_en_primary_t cg_en_o,
 
   // clock output interface
-  output clkmgr_out_t clocks_o
+  output clkmgr_out_primary_t clocks_o,
 
+  // inter-partition signalling
+  input intraip_s2p_t intraip_s2p_i,
+  output intraip_p2s_t intraip_p2s_o
 );
 
   import prim_mubi_pkg::MuBi4False;
@@ -91,13 +99,11 @@
     .clk_i(clk_io_i),
     .clk_o(clk_io)
   );
+  // The secondary partition buffers the root clocks of its sources once, and sends them here
+  // through intraip_s2p. The always-on clock arrives gated.
   logic clk_aon;
-  prim_clock_buf #(
-    .NoFpgaBuf(1'b1)
-  ) u_clk_aon_buf (
-    .clk_i(clk_aon_i),
-    .clk_o(clk_aon)
-  );
+  assign clk_aon = intraip_s2p_i.clk_aon;
+
 
   ////////////////////////////////////////////////////
   // External step down request
@@ -183,51 +189,31 @@
   // completely untouched. The only reason they are here is for easier
   // bundling management purposes through clocks_o
   ////////////////////////////////////////////////////
+  // clock gated indication for alert handler: these clocks are never gated.
   prim_clock_buf u_clk_io_powerup_buf (
     .clk_i(clk_io),
     .clk_o(clocks_o.clk_io_powerup)
   );
 
-  // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.io_powerup = MuBi4False;
-  prim_clock_buf u_clk_aon_powerup_buf (
-    .clk_i(clk_aon),
-    .clk_o(clocks_o.clk_aon_powerup)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_powerup = MuBi4False;
   prim_clock_buf u_clk_main_powerup_buf (
     .clk_i(clk_main),
     .clk_o(clocks_o.clk_main_powerup)
   );
 
-  // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.main_powerup = MuBi4False;
-  prim_clock_buf u_clk_aon_infra_buf (
-    .clk_i(clk_aon),
-    .clk_o(clocks_o.clk_aon_infra)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_infra = MuBi4False;
-  prim_clock_buf u_clk_aon_timers_buf (
-    .clk_i(clk_aon),
-    .clk_o(clocks_o.clk_aon_timers)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_timers = MuBi4False;
 
   ////////////////////////////////////////////////////
   // Distribute pwrmgr ip_clk_en requests to each family
   ////////////////////////////////////////////////////
+  // The power manager's requests arrive through the secondary partition, which is in the power
+  // manager's power domain.
   // clk_main family
   logic pwrmgr_main_en;
-  assign pwrmgr_main_en = pwr_i.main_ip_clk_en;
+  assign pwrmgr_main_en = intraip_s2p_i.main_ip_clk_en;
   // clk_io family
   logic pwrmgr_io_en;
-  assign pwrmgr_io_en = pwr_i.io_ip_clk_en;
+  assign pwrmgr_io_en = intraip_s2p_i.io_ip_clk_en;
 
   ////////////////////////////////////////////////////
   // Root gating
@@ -241,7 +227,7 @@
   clkmgr_root_ctrl u_main_root_ctrl (
     .clk_i(clk_main),
     .rst_ni(rst_root_main_ni),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .async_en_i(pwrmgr_main_en),
     .en_o(clk_main_en),
     .clk_o(clk_main_root)
@@ -255,7 +241,7 @@
     .clk_i,
     .rst_ni(rst_root_ni),
     .ens_i(main_ens),
-    .status_o(pwr_o.main_status)
+    .status_o(intraip_p2s_o.main_status)
   );
 
   // clk_io family
@@ -266,7 +252,7 @@
   clkmgr_root_ctrl u_io_root_ctrl (
     .clk_i(clk_io),
     .rst_ni(rst_root_io_ni),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .async_en_i(pwrmgr_io_en),
     .en_o(clk_io_en),
     .clk_o(clk_io_root)
@@ -280,7 +266,7 @@
     .clk_i,
     .rst_ni(rst_root_ni),
     .ens_i(io_ens),
-    .status_o(pwr_o.io_status)
+    .status_o(intraip_p2s_o.io_status)
   );
 
   ////////////////////////////////////////////////////
@@ -379,9 +365,9 @@
   ////////////////////////////////////////////////////
   // Clocks with only root gate
   ////////////////////////////////////////////////////
+  // clock gated indication for alert handler
   assign clocks_o.clk_io_infra = clk_io_root;
 
-  // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_infra (
@@ -392,7 +378,6 @@
   );
   assign clocks_o.clk_main_infra = clk_main_root;
 
-  // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_main_infra (
@@ -403,7 +388,6 @@
   );
   assign clocks_o.clk_io_secure = clk_io_root;
 
-  // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_secure (
@@ -414,7 +398,6 @@
   );
   assign clocks_o.clk_main_secure = clk_main_root;
 
-  // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_main_secure (
@@ -425,7 +408,6 @@
   );
   assign clocks_o.clk_io_timers = clk_io_root;
 
-  // clock gated indication for alert handler
   prim_mubi4_sender #(
     .ResetValue(MuBi4True)
   ) u_prim_mubi4_sender_clk_io_timers (
@@ -458,7 +440,7 @@
   ) u_clk_io_peri_scanmode_sync  (
     .clk_i,
     .rst_ni,
-    .mubi_i(scanmode_i),
+    .mubi_i(intraip_s2p_i.scanmode),
     .mubi_o(clk_io_peri_scanmode)
   );
 
@@ -501,7 +483,7 @@
     .en_i(clk_main_en),
     .idle_i(idle_i[HintMainAes]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_aes_hint.q),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .alert_cg_en_o(cg_en_o.main_aes),
     .clk_o(clocks_o.clk_main_aes),
     .clk_reg_i(clk_i),
@@ -523,7 +505,7 @@
     .en_i(clk_main_en),
     .idle_i(idle_i[HintMainHmac]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_hmac_hint.q),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .alert_cg_en_o(cg_en_o.main_hmac),
     .clk_o(clocks_o.clk_main_hmac),
     .clk_reg_i(clk_i),
@@ -545,7 +527,7 @@
     .en_i(clk_main_en),
     .idle_i(idle_i[HintMainKmac]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_kmac_hint.q),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .alert_cg_en_o(cg_en_o.main_kmac),
     .clk_o(clocks_o.clk_main_kmac),
     .clk_reg_i(clk_i),
@@ -567,7 +549,7 @@
     .en_i(clk_main_en),
     .idle_i(idle_i[HintMainOtbn]),
     .sw_hint_i(reg2hw.clk_hints.clk_main_otbn_hint.q),
-    .scanmode_i,
+    .scanmode_i(intraip_s2p_i.scanmode),
     .alert_cg_en_o(cg_en_o.main_otbn),
     .clk_o(clocks_o.clk_main_otbn),
     .clk_reg_i(clk_i),
@@ -597,17 +579,35 @@
 
 
   ////////////////////////////////////////////////////
+  // Routing. This partition outputs the clocks of the modules in the power domain it serves.
+  ////////////////////////////////////////////////////
+  // The clocks that come from a source of the secondary partition. This partition buffers them
+  // again from the root clock.
+  prim_clock_buf u_clk_aon_gated_powerup_buf (
+    .clk_i(clk_aon),
+    .clk_o(clocks_o.clk_aon_gated_powerup)
+  );
+
+  // Assign the clock gating indications of the clocks that the secondary partition generates. A
+  // clock that this partition also buffers is a feed-through clock, which is never gated. So this
+  // partition drives its indication, and only the other indications cross.
+  assign cg_en_o.aon_powerup = intraip_s2p_i.cg_en_aon_powerup;
+  assign cg_en_o.aon_gated_powerup = MuBi4False;
+  assign cg_en_o.aon_infra = intraip_s2p_i.cg_en_aon_infra;
+  assign cg_en_o.aon_timers = intraip_s2p_i.cg_en_aon_timers;
+
+  ////////////////////////////////////////////////////
   // Assertions
   ////////////////////////////////////////////////////
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
   `ASSERT_KNOWN(AlertsKnownO_A,   alert_tx_o)
-  `ASSERT_KNOWN(PwrMgrKnownO_A, pwr_o)
   `ASSERT_KNOWN(JitterEnableKnownO_A, jitter_en_o)
-  `ASSERT_KNOWN(ClocksKownO_A, clocks_o)
+  `ASSERT_KNOWN(ClocksKnownO_A, clocks_o)
+
   `ASSERT_KNOWN(CgEnKnownO_A, cg_en_o)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
-endmodule // clkmgr
+endmodule // clkmgr_part_primary

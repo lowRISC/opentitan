@@ -13,6 +13,7 @@
         aon: false
         freq: 100000000
         ref: false
+        clkmgr_partition: primary
       }
       io:
       {
@@ -20,6 +21,7 @@
         aon: false
         freq: 96000000
         ref: false
+        clkmgr_partition: primary
       }
       usb:
       {
@@ -27,6 +29,7 @@
         aon: false
         freq: 48000000
         ref: false
+        clkmgr_partition: primary
       }
       aon:
       {
@@ -34,6 +37,7 @@
         aon: true
         freq: 200000
         ref: false
+        clkmgr_partition: secondary
       }
     }
     derived_clks:
@@ -62,21 +66,37 @@
         {
           src_name: main
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_i:
         {
           src_name: io
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_usb_i:
         {
           src_name: usb
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_i:
         {
           src_name: aon
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            secondary
+          ]
         }
       }
       ft_clks:
@@ -85,41 +105,82 @@
         {
           src_name: io_div4
           endpoint_ip: pwrmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_powerup:
         {
           src_name: aon
           endpoint_ip: pwrmgr
+          out_partitions:
+          [
+            secondary
+          ]
+        }
+        clk_aon_gated_powerup:
+        {
+          src_name: aon
+          endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_powerup:
         {
           src_name: main
           endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_powerup:
         {
           src_name: io
           endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_usb_powerup:
         {
           src_name: usb
           endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
-        clk_aon_secure:
+        clk_aon_gated_secure:
         {
           src_name: aon
           endpoint_ip: ast
+          out_partitions:
+          [
+            primary
+          ]
         }
-        clk_aon_peri:
+        clk_aon_gated_peri:
         {
           src_name: aon
           endpoint_ip: usbdev
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_timers:
         {
           src_name: aon
           endpoint_ip: aon_timer
+          out_partitions:
+          [
+            secondary
+          ]
         }
       }
       rg_clks:
@@ -128,36 +189,64 @@
         {
           src_name: main
           endpoint_ip: flash_ctrl
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_div4_infra:
         {
           src_name: io_div4
           endpoint_ip: flash_ctrl
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_infra:
         {
           src_name: io
           endpoint_ip: peri
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_usb_infra:
         {
           src_name: usb
           endpoint_ip: peri
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_div4_secure:
         {
           src_name: io_div4
           endpoint_ip: ast
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_secure:
         {
           src_name: main
           endpoint_ip: ast
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_div4_timers:
         {
           src_name: io_div4
           endpoint_ip: rv_timer
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
       sw_clks:
@@ -166,16 +255,28 @@
         {
           src_name: io_div4
           endpoint_ip: uart0
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_peri:
         {
           src_name: io
           endpoint_ip: spi_host0
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_usb_peri:
         {
           src_name: usb
           endpoint_ip: usbdev
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
       hint_clks:
@@ -184,6 +285,10 @@
         {
           src_name: main
           endpoint_ip: aes
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
     }

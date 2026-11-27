@@ -7,6 +7,13 @@ from ipgen.clkmgr_gen import (config_clk_meas, get_all_srcs, get_rg_srcs,
 all_srcs = get_all_srcs(src_clks, derived_clks)
 rg_srcs = get_rg_srcs(typed_clocks)
 sw_clk_keys = get_sw_clk_keys(typed_clocks)
+from ipgen.manager_split import clkmgr_split_srcs
+# The partition that receives a source clock hosts its clocks (the clock_srcs of the top). A derived
+# clock comes from a source of the primary partition, which has the dividers (clkmgr_gen checks).
+primary_srcs, aon_src = clkmgr_split_srcs(src_clks)
+# The one always-on source clock, which the secondary partition receives. topgen checks that
+# there is exactly one.
+aon = aon_src['name']
 %>
 # CLKMGR register template
 #
@@ -44,22 +51,39 @@ sw_clk_keys = get_sw_clk_keys(typed_clocks)
       dif_stage:          "S1",
     }
   ]
+  // The scan mode enters one partition only (scan_partition), the one in the power domain where the
+  // top generates it, and reaches the other partition through intraip_s2p or intraip_p2s. In the
+  // current tops that is the secondary partition, in the always-on power domain. A top that
+  // generates it in the power domain that powers down would need the primary partition.
   scan: "true",
-  clocking: [
-    {clock: "clk_i", reset: "rst_ni", primary: true},
-    {reset: "rst_root_ni"},
-% for src in src_clks.values():
-    {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni"},
+  scan_partition: "secondary",
+  is_split_ip: "true",
+  clocking: {
+    primary: [
+      {clock: "clk_i", reset: "rst_ni", primary: true},
+      {reset: "rst_root_ni"},
+% for src in primary_srcs:
+      {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni"},
 % endfor
+      // The clock measurement of the primary partition uses the always-on clocks as its reference,
+      // so the primary partition also takes their resets.
+      {reset: "rst_${aon}_ni"},
 % for src in derived_clks.values():
-    {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni", internal: true},
+      {clock: "clk_${src['name']}_i", reset: "rst_${src['name']}_ni", internal: true},
 % endfor
 % for root, clk_family in parent_child_clks.items():
   % for clk in clk_family:
-    {reset: "rst_root_${clk}_ni"},
+      {reset: "rst_root_${clk}_ni"},
   % endfor
 % endfor
-  ]
+    ],
+    // The always-on source clock enters the block in the secondary partition, which buffers it and
+    // forwards it to the primary partition, gated around the clamp of the primary partition's power
+    // domain. Each partition has its own port for the reset of the source.
+    secondary: [
+      {clock: "clk_${aon}_i", reset: "rst_${aon}_ni", primary: true},
+    ],
+  },
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -153,18 +177,95 @@ sw_clk_keys = get_sw_clk_keys(typed_clocks)
 ]
 
   inter_signal_list: [
-    { struct:  "clkmgr_out",
+    { struct:  "clkmgr_out_primary",
       type:    "uni",
       name:    "clocks",
       act:     "req",
+      partition: "primary",
       package: "clkmgr_pkg",
+      desc:    '''
+        Clocks hosted in the primary partition.
+      '''
     },
 
-    { struct:  "clkmgr_cg_en",
+    { struct:  "clkmgr_out_secondary",
+      type:    "uni",
+      name:    "clocks_secondary",
+      act:     "req",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Clocks hosted in the secondary partition.
+      '''
+    },
+
+    { struct:  "clkmgr_cg_en_primary",
       type:    "uni",
       name:    "cg_en",
       act:     "req",
+      partition: "primary",
       package: "clkmgr_pkg",
+      desc:    '''
+        Clock gating indications for all the clocks (output by the primary partition).
+      '''
+    },
+
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "main_pd_aon_clk_en",
+      act:     "rcv",
+      package: "",
+      partition: "secondary",
+      desc:    '''The clkmgr uses this signal to gate clk_aon to the Main power domain during a
+               power-down. The gate prevents glitches on the clock. See the pwrmgr interface
+               definition for more details of main_pd_aon_clk_en_o.
+               ''',
+    },
+    // Intra-IP signalling between the partitions. Each direction has a req end in the partition
+    // that drives it and a rcv end in the partition that receives it. topgen connects the two ends.
+    { struct:  "intraip_s2p",
+      type:    "uni",
+      name:    "intraip_s2p",
+      act:     "req",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Secondary-to-primary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_s2p",
+      type:    "uni",
+      name:    "intraip_s2p",
+      act:     "rcv",
+      partition: "primary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Secondary-to-primary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_p2s",
+      type:    "uni",
+      name:    "intraip_p2s",
+      act:     "req",
+      partition: "primary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Primary-to-secondary partition communication.
+      '''
+    },
+
+    { struct:  "intraip_p2s",
+      type:    "uni",
+      name:    "intraip_p2s",
+      act:     "rcv",
+      partition: "secondary",
+      package: "clkmgr_pkg",
+      desc:    '''
+        Primary-to-secondary partition communication.
+      '''
     },
 % if ext_clk_bypass:
 
@@ -253,6 +354,8 @@ sw_clk_keys = get_sw_clk_keys(typed_clocks)
       type:    "req_rsp",
       name:    "pwr",
       act:     "rsp",
+      // The power manager is in the same power domain as the secondary partition.
+      partition: "secondary",
     },
 
     { struct:  "mubi4",
