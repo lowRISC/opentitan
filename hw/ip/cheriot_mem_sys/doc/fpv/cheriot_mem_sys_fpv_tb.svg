@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="742" viewBox="-10 -10 840 742" font-family="sans-serif" font-size="14" fill="#1f1f1f">
+<rect x="-10" y="-10" width="840" height="742" fill="#ffffff"/>
+<rect x="0" y="0" width="260" height="560" rx="6" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="420" y="0" width="400" height="560" rx="6" fill="#eef7ea" stroke="#82b366" stroke-width="1"/>
+<rect x="0" y="630" width="358.2" height="92" rx="6" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"/>
+<rect x="20" y="40" width="220" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="61.15" font-size="14" font-weight="bold" text-anchor="middle">Ports of the subsystem</text>
+<text x="130" y="75.72" font-size="11" fill="#5c5c5c" text-anchor="middle">seven TL-UL ports, tag sideband,</text>
+<text x="130" y="89.47" font-size="11" fill="#5c5c5c" text-anchor="middle">alert, interrupt</text>
+<rect x="20" y="130" width="220" height="80" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="161.15" font-size="14" font-weight="bold" text-anchor="middle">Tag path</text>
+<text x="130" y="175.72" font-size="11" fill="#5c5c5c" text-anchor="middle">core's tag filter with the WTRC,</text>
+<text x="130" y="189.47" font-size="11" fill="#5c5c5c" text-anchor="middle">2:1 tag arbiter, RMW filter</text>
+<rect x="20" y="230" width="220" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="251.15" font-size="14" font-weight="bold" text-anchor="middle">Access path</text>
+<text x="130" y="265.73" font-size="11" fill="#5c5c5c" text-anchor="middle">four access checkers,</text>
+<text x="130" y="279.48" font-size="11" fill="#5c5c5c" text-anchor="middle">4:1 arbiter</text>
+<rect x="20" y="310" width="220" height="70" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="336.15" font-size="14" font-weight="bold" text-anchor="middle">Revocation engine</text>
+<text x="130" y="350.73" font-size="11" fill="#5c5c5c" text-anchor="middle">filters, sweep control,</text>
+<text x="130" y="364.48" font-size="11" fill="#5c5c5c" text-anchor="middle">core write watch</text>
+<rect x="20" y="400" width="220" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="434.9" font-size="14" text-anchor="middle">Register file</text>
+<rect x="20" y="480" width="220" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="130" y="508.02" font-size="14" font-weight="bold" text-anchor="middle">Alert logic</text>
+<text x="130" y="522.6" font-size="11" fill="#5c5c5c" text-anchor="middle">alert sender</text>
+<rect x="440" y="40" width="360" height="60" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="61.15" font-size="14" font-weight="bold" text-anchor="middle">TL-UL ABVIP</text>
+<text x="620" y="75.72" font-size="11" fill="#5c5c5c" text-anchor="middle">one instance per TL-UL port: plays the</text>
+<text x="620" y="89.47" font-size="11" fill="#5c5c5c" text-anchor="middle">host, plays the device or checks both ends</text>
+<rect x="440" y="130" width="360" height="80" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="161.15" font-size="14" font-weight="bold" text-anchor="middle">Tag path checker</text>
+<text x="620" y="175.72" font-size="11" fill="#5c5c5c" text-anchor="middle">tag filter, WTRC, 2:1 tag arbiter,</text>
+<text x="620" y="189.47" font-size="11" fill="#5c5c5c" text-anchor="middle">RMW filter, alert on a tag path fault</text>
+<rect x="440" y="230" width="360" height="60" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="251.15" font-size="14" font-weight="bold" text-anchor="middle">Meta access checker</text>
+<text x="620" y="265.73" font-size="11" fill="#5c5c5c" text-anchor="middle">access checkers, 4:1 arbiter,</text>
+<text x="620" y="279.48" font-size="11" fill="#5c5c5c" text-anchor="middle">protection of the tag store</text>
+<rect x="440" y="310" width="360" height="70" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="336.15" font-size="14" font-weight="bold" text-anchor="middle">Revocation engine checker</text>
+<text x="620" y="350.73" font-size="11" fill="#5c5c5c" text-anchor="middle">sweep, decision and clears, core write</text>
+<text x="620" y="364.48" font-size="11" fill="#5c5c5c" text-anchor="middle">watch, errors, alert on an engine fault</text>
+<rect x="440" y="400" width="360" height="60" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="421.15" font-size="14" font-weight="bold" text-anchor="middle">CSR checker</text>
+<text x="620" y="435.73" font-size="11" fill="#5c5c5c" text-anchor="middle">every register field: reset value,</text>
+<text x="620" y="449.48" font-size="11" fill="#5c5c5c" text-anchor="middle">access type, lock, error answers</text>
+<rect x="440" y="480" width="360" height="60" rx="4" fill="#eef7ea" stroke="#82b366" stroke-width="1.2"/>
+<text x="620" y="501.15" font-size="14" font-weight="bold" text-anchor="middle">Register interface and alert checker</text>
+<text x="620" y="515.73" font-size="11" fill="#5c5c5c" text-anchor="middle">what the engine receives, broken integrity,</text>
+<text x="620" y="529.48" font-size="11" fill="#5c5c5c" text-anchor="middle">the fatal alert on alert_tx_o</text>
+<polygon points="440,70 431,73.5 431,66.5" fill="#7a7a7a"/>
+<polyline points="240,70 432,70" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<polygon points="440,170 431,173.5 431,166.5" fill="#7a7a7a"/>
+<polyline points="240,170 432,170" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<polygon points="440,260 431,263.5 431,256.5" fill="#7a7a7a"/>
+<polyline points="240,260 432,260" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<polygon points="440,345 431,348.5 431,341.5" fill="#7a7a7a"/>
+<polyline points="240,345 432,345" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<polygon points="440,430 431,433.5 431,426.5" fill="#7a7a7a"/>
+<polyline points="240,430 432,430" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<polygon points="440,510 431,513.5 431,506.5" fill="#7a7a7a"/>
+<polyline points="240,510 432,510" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3" stroke-linejoin="round"/>
+<rect x="10" y="644" width="28" height="16" rx="2" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="10" y="668" width="28" height="16" rx="2" fill="#eef7ea" stroke="#82b366" stroke-width="1"/>
+<line x1="10" y1="700" x2="38" y2="700" fill="none" stroke="#7a7a7a" stroke-width="1.4" stroke-dasharray="4 3"/>
+<text x="8" y="20.68" font-size="13" font-family="monospace" font-weight="bold" fill="#3d5f8f">cheriot_mem_sys</text>
+<text x="428" y="20.68" font-size="13" font-family="monospace" font-weight="bold" fill="#5b8f43">cheriot_mem_sys_fpv_checker</text>
+<text x="340" y="62.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">TL-UL ports</text>
+<text x="340" y="147.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">ports between blocks,</text>
+<text x="340" y="162.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">alert request</text>
+<text x="340" y="237.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">requester ports,</text>
+<text x="340" y="252.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">meta_sram_tl</text>
+<text x="340" y="322.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">ports inside the</text>
+<text x="340" y="337.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">engine, interrupt</text>
+<text x="340" y="407.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">regs_tl_d,</text>
+<text x="340" y="422.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">reg2hw, hw2reg</text>
+<text x="340" y="487.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">fault inputs,</text>
+<text x="340" y="502.7" font-size="12" font-family="monospace" fill="#7a7a7a" text-anchor="middle">alert pairs</text>
+<text x="410" y="594.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">bind cheriot_mem_sys cheriot_mem_sys_fpv_checker (.*, ports between blocks,</text>
+<text x="410" y="612.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">reg2hw, hw2reg, fault inputs of the alert logic)</text>
+<text x="48" y="656.55" font-size="13">Design (RTL)</text>
+<text x="48" y="680.55" font-size="13">Testbench: the shared parts and the checkers</text>
+<text x="48" y="704.55" font-size="13">Watched through the bind</text>
+</svg>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="1116" viewBox="-10 -10 1100 1116" font-family="sans-serif" font-size="14" fill="#1f1f1f">
+<rect x="-10" y="-10" width="1100" height="1116" fill="#ffffff"/>
+<rect x="20" y="90" width="1060" height="710" rx="6" fill="#f8f9fa" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="50" y="130" width="220" height="330" rx="6" fill="#f8f9fa" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="460" y="130" width="260" height="250" rx="6" fill="#f8f9fa" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="800" y="130" width="260" height="150" rx="6" fill="#f8f9fa" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="50" y="540" width="700" height="210" rx="6" fill="#f8f9fa" stroke="#9a9a9a" stroke-width="1" stroke-dasharray="4 3"/>
+<rect x="0" y="980" width="384.29" height="116" rx="6" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"/>
+<rect x="30" y="0" width="120" height="40" rx="4" fill="#f3effa" stroke="#7e6bb5" stroke-width="1.2"/>
+<text x="90" y="24.9" font-size="14" text-anchor="middle">Ibex core</text>
+<rect x="300" y="0" width="600" height="40" rx="4" fill="#f3effa" stroke="#7e6bb5" stroke-width="1.2"/>
+<text x="600" y="24.9" font-size="14" font-family="monospace" text-anchor="middle">xbar_main</text>
+<rect x="940" y="0" width="120" height="40" rx="4" fill="#f3effa" stroke="#7e6bb5" stroke-width="1.2"/>
+<text x="1000" y="24.9" font-size="14" text-anchor="middle">alert handler</text>
+<rect x="80" y="170" width="160" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="160" y="198.03" font-size="14" font-weight="bold" text-anchor="middle">core's tag filter</text>
+<text x="160" y="212.6" font-size="11" fill="#5c5c5c" text-anchor="middle">with the WTRC</text>
+<rect x="80" y="280" width="160" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="160" y="309.9" font-size="14" text-anchor="middle">2:1 tag arbiter</text>
+<rect x="80" y="380" width="160" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="160" y="409.9" font-size="14" text-anchor="middle">RMW filter</text>
+<rect x="490" y="170" width="200" height="170" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="590" y="246.15" font-size="14" font-weight="bold" text-anchor="middle">Revocation engine</text>
+<text x="590" y="260.73" font-size="11" fill="#5c5c5c" text-anchor="middle">filters, sweep control,</text>
+<text x="590" y="274.48" font-size="11" fill="#5c5c5c" text-anchor="middle">core write watch</text>
+<rect x="820" y="170" width="110" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="875" y="204.9" font-size="14" text-anchor="middle">Register file</text>
+<rect x="950" y="170" width="100" height="60" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="1000" y="198.03" font-size="14" font-weight="bold" text-anchor="middle">Alert logic</text>
+<text x="1000" y="212.6" font-size="11" fill="#5c5c5c" text-anchor="middle">alert sender</text>
+<rect x="80" y="580" width="640" height="70" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="613.02" font-size="14" font-weight="bold" text-anchor="middle">Access checkers</text>
+<text x="400" y="627.6" font-size="11" fill="#5c5c5c" text-anchor="middle">one per requester: the tag path, the engine, revbm_tl_d, corerevbm_tl</text>
+<rect x="320" y="680" width="160" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="709.9" font-size="14" text-anchor="middle">4:1 arbiter</text>
+<rect x="320" y="910" width="160" height="40" rx="4" fill="#f3effa" stroke="#7e6bb5" stroke-width="1.2"/>
+<text x="400" y="934.9" font-size="14" text-anchor="middle">meta SRAM</text>
+<polygon points="90,170 86.5,161 93.5,161" fill="#2b2b2b"/>
+<polyline points="90,40 90,162" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="300,20 291,23.5 291,16.5" fill="#2b2b2b"/>
+<polyline points="210,170 210,20 292,20" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="160,280 156.5,271 163.5,271" fill="#2b2b2b"/>
+<polyline points="160,230 160,272" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="160,380 156.5,371 163.5,371" fill="#2b2b2b"/>
+<polyline points="160,330 160,372" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="670,40 673.5,49 666.5,49" fill="#2b2b2b"/>
+<polyline points="670,170 670,48" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="875,170 871.5,161 878.5,161" fill="#2b2b2b"/>
+<polyline points="875,40 875,162" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="1000,170 996.5,161 1003.5,161" fill="#2b2b2b"/>
+<polygon points="1000,40 1003.5,49 996.5,49" fill="#2b2b2b"/>
+<polyline points="1000,162 1000,48" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="400,680 396.5,671 403.5,671" fill="#2b2b2b"/>
+<polyline points="400,650 400,672" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="400,910 396.5,901 403.5,901" fill="#2b2b2b"/>
+<polyline points="400,730 400,902" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="490,200 481,203.5 481,196.5" fill="#2f5f9e"/>
+<polyline points="240,200 482,200" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="240,305 249,301.5 249,308.5" fill="#2f5f9e"/>
+<polyline points="490,305 248,305" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="690,200 699,196.5 699,203.5" fill="#2f5f9e"/>
+<polyline points="820,200 698,200" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="310,580 306.5,571 313.5,571" fill="#2f5f9e"/>
+<polyline points="240,395 310,395 310,572" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="240,415 249,411.5 249,418.5" fill="#2f5f9e"/>
+<polyline points="370,580 370,415 248,415" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="570,580 566.5,571 573.5,571" fill="#2f5f9e"/>
+<polyline points="570,340 570,572" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="660,340 663.5,349 656.5,349" fill="#2f5f9e"/>
+<polyline points="660,580 660,348" fill="none" stroke="#2f5f9e" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="10" y="994" width="28" height="16" rx="2" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="10" y="1018" width="28" height="16" rx="2" fill="#f3effa" stroke="#7e6bb5" stroke-width="1"/>
+<rect x="10" y="1042" width="28" height="16" rx="2" fill="#ffffff" stroke="#2b2b2b" stroke-width="1" stroke-dasharray="4 3"/>
+<line x1="10" y1="1074" x2="38" y2="1074" fill="none" stroke="#2f5f9e" stroke-width="1.4"/>
+<text x="1072" y="788.42" font-size="13" font-weight="bold" fill="#444444" text-anchor="end">Whole subsystem proof: every block real, bounded depth</text>
+<text x="262" y="448.43" font-size="13" font-weight="bold" fill="#444444" text-anchor="end">Tag path proof</text>
+<text x="468" y="150.68" font-size="13" font-weight="bold" fill="#444444">Revocation engine proof</text>
+<text x="1052" y="268.43" font-size="13" font-weight="bold" fill="#444444" text-anchor="end">Registers and alert proofs</text>
+<text x="742" y="738.42" font-size="13" font-weight="bold" fill="#444444" text-anchor="end">Meta access proof</text>
+<text x="94" y="109.2" font-size="12" font-family="monospace" fill="#2b2b2b">cored_tl_d</text>
+<text x="255" y="12.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">cored_tl_h</text>
+<text x="674" y="109.2" font-size="12" font-family="monospace" fill="#2b2b2b">tbre_tl_h</text>
+<text x="871" y="109.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="end">regs_tl_d</text>
+<text x="996" y="101.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="end">alert_tx_o,</text>
+<text x="996" y="116.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="end">alert_rx_i</text>
+<text x="404" y="824.2" font-size="12" font-family="monospace" fill="#2b2b2b">meta_sram_tl</text>
+<text x="365" y="165.47" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">core answers in order,</text>
+<text x="365" y="179.22" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">core meta request held,</text>
+<text x="365" y="192.97" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">RMW request answered</text>
+<text x="365" y="319.73" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">engine's meta requests,</text>
+<text x="365" y="333.48" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">engine faults have causes</text>
+<text x="755" y="179.22" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">register</text>
+<text x="755" y="192.97" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="middle">file model</text>
+<text x="306" y="484.48" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="end">RMW filter</text>
+<text x="306" y="498.23" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="end">takes answers</text>
+<text x="374" y="494.48" font-size="11" font-family="monospace" fill="#2f5f9e">access request answered,</text>
+<text x="374" y="508.23" font-size="11" font-family="monospace" fill="#2f5f9e">tag port answers in order</text>
+<text x="566" y="456.98" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="end">bitmap answer</text>
+<text x="566" y="470.73" font-size="11" font-family="monospace" fill="#2f5f9e" text-anchor="end">taken</text>
+<text x="664" y="456.98" font-size="11" font-family="monospace" fill="#2f5f9e">access request</text>
+<text x="664" y="470.73" font-size="11" font-family="monospace" fill="#2f5f9e">answered</text>
+<text x="48" y="1006.55" font-size="13">Real RTL in the proof drawn around it</text>
+<text x="48" y="1030.55" font-size="13">Neighbour: the assumptions model it</text>
+<text x="48" y="1054.55" font-size="13">One proof: every block outside it is cut</text>
+<text x="48" y="1078.55" font-size="13">Contract: proven at its start, assumed at its arrow</text>
+</svg>
