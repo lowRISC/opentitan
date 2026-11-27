@@ -37,16 +37,16 @@ module i3c_queues
   output logic  [DataWidth-1:0] rdata_o,
 
   // Writes to logical queues.
-  input                         buf_wready_i[NumQueues],
-  input                         buf_full_i[NumQueues],
-  output logic                  buf_wvalid_o[NumQueues],
+  input         [NumQueues-1:0] buf_wready_i,
+  input         [NumQueues-1:0] buf_full_i,
+  output logic  [NumQueues-1:0] buf_wvalid_o,
   output logic  [DataWidth-1:0] buf_wdata_o,
 
   // Reads from logical queues.
-  input                         buf_rvalid_i[NumQueues],
+  input         [NumQueues-1:0] buf_rvalid_i,
   input         [DataWidth-1:0] buf_rdata_i[NumQueues],
-  input                         buf_empty_i[NumQueues],
-  output logic                  buf_rready_o[NumQueues],
+  input         [NumQueues-1:0] buf_empty_i,
+  output logic  [NumQueues-1:0] buf_rready_o,
 
   // Diagnostic error indicator.
   output                        err_o
