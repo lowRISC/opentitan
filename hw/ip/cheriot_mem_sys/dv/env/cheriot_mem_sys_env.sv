@@ -14,6 +14,10 @@ class cheriot_mem_sys_env extends cip_base_env #(
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    if (!uvm_config_db#(tagged_regions_t)::get(this, "", "tagged_regions",
+                                               cfg.tagged_regions)) begin
+      `uvm_fatal(`gfn, "failed to get tagged_regions from uvm_config_db")
+    end
   endfunction
 
   function void connect_phase(uvm_phase phase);
