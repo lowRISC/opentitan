@@ -63,11 +63,13 @@ The unofficial guides are not formally supported by the OpenTitan project. YMMV.
 *Skip this step if using the Docker container.*
 
 A number of software packages from the distribution's package manager are required.
-On Ubuntu 20.04, the required packages can be installed with the following command.
+On Ubuntu 22.04, the required packages can be installed with the following command.
 
 ```sh
 sed '/^#/d' ./apt-requirements.txt | xargs sudo apt install -y
 ```
+
+> **Note:** On newer Debian/Ubuntu distributions (such as Debian 13 or Ubuntu 24.04+), `libncursesw5` is no longer available (superseded by `libncursesw6`). It is only needed for older prebuilt toolchains and can be omitted if you build with Bazel.
 
 ## Step 3: Install Python libraries needed
 
@@ -100,6 +102,8 @@ pip3 install "setuptools<66.0.0"
 
 pip3 install -r python-requirements.txt --require-hashes
 ```
+
+> **Note:** `python-requirements.txt` is compiled against Python 3.10. On newer host Python versions (for example Python 3.13), `pip3 install --require-hashes` may fail on version-specific transitive dependencies. If you only build and run tests through `./bazelisk.sh`, Bazel automatically fetches its own hermetic Python 3.10 runtime and dependencies, so the host virtual environment is only needed when invoking standalone helper scripts directly.
 
 ## Step 4: Set up your simulation tool or FPGA
 
@@ -145,7 +149,7 @@ The example below is for a generic linux OS:
 
 ```console
 export VERIBLE_VERSION={{#tool-version verible }}
-wget https:wget https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
+wget https://github.com/chipsalliance/verible/releases/download/${VERIBLE_VERSION}/verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
 tar -xf verible-${VERIBLE_VERSION}-linux-static-x86_64.tar.gz
 ```
 

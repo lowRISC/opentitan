@@ -13,42 +13,39 @@ See the instructions described [here](../../getting_started/setup_fpga.md).
 
 ### Boot ROM development
 
-The FPGA bitstream is built after compiling whatever code is sitting in `sw/device/lib/testing/test_rom`.
-This binary is used to initialize internal FPGA memory and is part of the bitstream directly.
-
-To update this content without rebuilding the FPGA, you must use the dedicated `bkdr_loader` IP to program the ROM.
-First, you must flash the existing base bitstream onto the FPGA with `opentitantool`.
-Then, you can use the backdoor loader to overwrite the ROM image on the FPGA.
+The FPGA bitstream is built with a minimal stub ROM (`sw/device/lib/testing/stub_rom`), and the actual boot ROM (`test_rom` or `mask_rom`) is loaded dynamically over JTAG via the dedicated `bkdr_loader` IP.
+First, flash the base bitstream onto the FPGA with `opentitantool`.
+Then, use the backdoor loader to program the ROM (and OTP/RRAM) image into FPGA memory.
 See the [FPGA Setup guide](../../getting_started/setup_fpga.md#programming-the-fpga-with-rom--otp-images) for a detailed guide on how this can be done.
 
 ### General Software Development
 
-After building, the FPGA bitstream contains only the boot ROM.
-Using this boot ROM, the FPGA is able to load additional software to the emulated flash, such as software in the `sw/device/tests` and `sw/device/examples` and `sw/device/crypto` directories.
+Once the base bitstream and a boot ROM (such as `test_rom`) are loaded on the FPGA, the boot ROM can bootstrap additional software into emulated non-volatile memory, such as software in the `sw/device/tests`, `sw/device/examples`, and `sw/device/crypto` directories.
 To load additional software, `opentitantool` is required.
 
 Note that whichever binary you wish to load needs to be built first.
-For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that is able to fit in the emulated flash space.
-The example below builds the `hello_world` image and loads it onto the FPGA.
+For the purpose of this demonstration, we will use `sw/device/examples/hello_world`, but it applies to any software image that fits in emulated NVM space.
+The example below builds the `hello_world` image and loads it onto the FPGA (assuming `test_rom` is already loaded on the board, e.g. from running `bazel test --test_timeout=300 //sw/device/tests:uart_smoketest_fpga_cw340_test_rom` once after power-on):
 
 ```console
 $ cd ${REPO_TOP}
-$ bazel run //sw/host/opentitantool fpga set-pll # This needs to be done only once.
-$ bazel build //sw/device/examples/hello_world:hello_world_fpga_cw340_bin
-$ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //sw/device/examples/hello_world:hello_world_fpga_cw340_bin)
+$ bazel run //sw/host/opentitantool -- --interface=cw340 fpga set-pll # This needs to be done only once.
+$ bazel build --output_groups=fpga_cw340_binary //sw/device/examples/hello_world
+$ bazel run //sw/host/opentitantool -- --interface=hyper340 \
+    --exec="bootstrap --clear-uart=true $(ci/scripts/target-location.sh //sw/device/examples/hello_world --output_groups=fpga_cw340_binary)" \
+    console
 ```
 
 Uart output:
 ```
-I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-I00001 test_rom.c:118] Test ROM complete, jumping to flash!
-I00000 hello_world.c:66] Hello World!
-I00001 hello_world.c:67] Built at: Jun 13 2022, 14:16:59
-I00002 demos.c:18] Watch the LEDs!
-I00003 hello_world.c:74] Try out the switches on the board
-I00004 hello_world.c:75] or type anything into the console window.
-I00005 hello_world.c:76] The LEDs show the ASCII code of the last character.
+I00001 test_rom.c:221] kBuildInfo: scm_revision=...
+I00002 test_rom.c:271] Test ROM complete, jumping to NVM (addr: 30000480)!
+I00000 hello_world.c:81] Hello World!
+I00001 hello_world.c:82] Built at: ...
+I00002 demos.c:17] Watch the LEDs!
+I00003 hello_world.c:89] Try out USERDIP switches 0-thru-3 on the board
+I00004 hello_world.c:90] or type anything into the console window.
+I00005 hello_world.c:93] The LEDs show the lower nibble of the ASCII code of the last character.
 ```
 
 For more details on the exact operation of the loading flow and how the boot ROM processes incoming data, please refer to the [boot ROM readme](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/testing/test_rom).
@@ -76,8 +73,8 @@ The following command could easily save hours compared to a naive `git bisect`:
 ./bazelisk.sh run //util/fpga:bitstream_bisect -- \
     --good HEAD~30 \
     --bad HEAD \
-    --fast-command "./bazelisk.sh test //sw/device/tests:uart_smoketest_fpga_cw340_rom" \
-    --slow-command "./bazelisk.sh test --define bitstream=vivado //sw/device/tests:uart_smoketest_fpga_cw340_rom"
+    --fast-command "./bazelisk.sh test --test_timeout=300 //sw/device/tests:uart_smoketest_fpga_cw340_rom_with_fake_keys" \
+    --slow-command "./bazelisk.sh test --test_timeout=300 --define bitstream=vivado //sw/device/tests:uart_smoketest_fpga_cw340_rom_with_fake_keys"
 ```
 
 One caveat is that neither `git bisect` nor `:bitstream_bisect` will help if the FPGA somehow retains state between tests.
@@ -104,10 +101,10 @@ These cached bitstreams can be downloaded and used as-is, or with additional pro
 
 ### Building bitstreams on CI and uploading artifacts to GCS
 
-The `chip_earlgrey_cw340` CI job builds the `//hw/bitstream/vivado:fpga_cw340` target which will build a bitstream with the test ROM and RMA OTP image.
+The `chip_earlgrey_cw340` CI job builds the `//hw/bitstream/vivado:fpga_cw340` target which builds a base bitstream initialized with a stub ROM (`stub_rom`).
 The following files are produced as a result:
 
-* `lowrisc_systems_chip_earlgrey_cw340_0.1.bit` (Base CW340 bitstream - Test ROM and RMA OTP images)
+* `lowrisc_systems_chip_earlgrey_cw340_0.1.bit` (Base CW340 bitstream with stub ROM; actual ROM and OTP/RRAM images are loaded via `bkdr_loader`)
 * `lowrisc_systems_chip_earlgrey_cw340_0.1.runs` (information about the Synthesis & Implementation runs)
 * `memories.mmi` (a dummy MMI file used by the legacy bitstream splicing flow - to be removed in the future).
 
