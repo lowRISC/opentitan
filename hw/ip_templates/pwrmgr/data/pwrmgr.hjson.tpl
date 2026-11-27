@@ -75,6 +75,7 @@
             low power mode.
             '''
     }
+% if 'usb' in src_clks:
     { name: "PWRMGR.CLOCK_CONTROL.USB_IN_LOW_POWER",
       desc: '''Controls whether the USB clock remains active in
             low power mode.
@@ -83,6 +84,7 @@
     { name: "PWRMGR.CLOCK_CONTROL.USB_WHEN_ACTIVE",
       desc: "Controls whether the USB clock is enabled in active state."
     }
+% endif
     { name: "PWRMGR.LOW_POWER.ENTRY",
       desc: '''Controls of low power entry, and cases when low power is
             not entered due to interrupts or specific units getting busy.
