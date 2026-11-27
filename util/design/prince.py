@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Implementation of PRINCE cipher for use in ROM/FLASH scrambling scripts.'''
 
-from typing import List
+from typing import Callable, List
 
 PRINCE_SBOX4 = [
     0xb, 0xf, 0x3, 0x2,
@@ -129,14 +129,21 @@ def prince_inv_round(rc: int, key: int, data: int) -> int:
     return data
 
 
-def prince(data: int, key: int, num_rounds_half: int) -> int:
-    '''Run the PRINCE cipher
+def prince_no_lookup(data: int, key: int, num_rounds_half: int) -> int:
+    """Run the PRINCE cipher, computing step-by-step without any lookup tables.
 
     This uses the new keyschedule proposed by Dinur in "Cryptanalytic
     Time-Memory-Data Tradeoffs for FX-Constructions with Applications to PRINCE
     and PRIDE".
 
-    '''
+    Args:
+        data: The data word to apply PRINCE64 to.
+        key: The key to use for scrambling.
+        num_rounds_half: The number of half-rounds of PRINCE64 to apply.
+
+    Returns:
+        The result of the PRINCE64 block cipher.
+    """
     assert 0 <= data < (1 << 64)
     assert 0 <= key < (1 << 128)
     assert 0 <= num_rounds_half <= 5
@@ -173,3 +180,161 @@ def prince(data: int, key: int, num_rounds_half: int) -> int:
     data ^= k0_prime
 
     return data
+
+
+# We can achieve faster cipher times by using a T-table implementation, with lookup
+# tables mixing S-boxes and diffusion into precomputed lookup tables. This is
+# better for a Python implementation with interpreter overhead and no bit-slicing.
+def _make_linear_byte_luts(func: Callable[[int], int]) -> list[list[int]]:
+    """Construct a list of 8 byte-wise lookup tables for a given linear mapping.
+
+    As long as `func` is linear over GF(2), then it can be expressed as some
+    XOR of its inputs without any scalars. In this case, we can split it into
+    smaller lookup tables which we then XOR together. The size of these tables
+    is arbitrary: bytes are nice to work with and make small 256-entry tables.
+
+    Args:
+        func: Some function linear over GF(2).
+
+    Returns:
+        A list of 8 tables, where each table maps [0,255] to [0,2^64-1].
+    """
+    # We can quickly compute the tables by taking advantage of `func`'s
+    # linearity, forming a basis vector for each bit and using bottom-up DP.
+    basis = [func(1 << i) for i in range(64)]
+
+    tables = []
+    for byte_index in range(8):
+        table = [0] * 256
+        # Base case: table[0] = 0, as 0 is the identity for XOR
+        for value in range(1, 256):
+            # Get the lowest set bit of `value` via the 2C representation
+            low = value & -value
+            # Recursive case: `value ^ low` < `value` so this mapping is already computed.
+            # Use our linear property to compute `table[value] (where `j` is `byte_index`):
+            # tables[j][value] = tables[j][(value ^ low) ^ low]                 [using XOR]
+            #                  = func(((value ^ low) << 8j) ^ (low << 8j))      [by definition]
+            #                  = func((value ^ low) << 8j) ^ func(low << 8j)    [by linearity]
+            #                  = tables[j][value ^ low] ^ func(1 << (8j + t))   [see below]
+            #                  = table[value ^ low] ^ basis[8j + t]             [substitution]
+            # where `t` is just `low.bit_length() - 1`, i.e. the number of 0 LSBs.
+            table[value] = table[value ^ low] ^ basis[8 * byte_index + low.bit_length() - 1]
+        tables.append(table)
+
+    return tables
+
+
+def _pre_compose_sbox(tables: list[list[int]], coefficients: list[int]) -> list[list[int]]:
+    """Compose a given S-box with a set of linear byte lookup tables.
+
+    The input S-box is applied at a byte granularity, such that we simply re-index
+    the given linear lookup tables to apply the S-box before the linear layer. Note
+    that this approach does not work *after* a linear layer, since the output of a
+    linear layer may mix several input bytes.
+
+    Args:
+        tables: The byte-wise lookup tables corresponding to some linear mapping.
+        coefficients: The coefficients of the S-box to apply.
+
+    Returns:
+        A list of tables corresponding to a composition with the S-box applied before
+        the given linear mapping.
+    """
+    # We tabulate a byte-wise S-box layer based on the input coefficients.
+    sbox8 = [sbox(value, 8, coefficients) for value in range(256)]
+    # This S-box layer is then used to re-index each input byte table.
+    return [[table[sbox8[value]] for value in range(256)] for table in tables]
+
+
+def _make_sbox_byte_luts(coefficients: list[int]) -> list[list[int]]:
+    """Construct a list of 8 byte-wise lookup tables for an S-box.
+
+    Apply the input S-box at a byte granularity, constructing the lookup table
+    for such an S-box and shifting it to the relevant byte for each table.
+
+    Args:
+        coefficients: The coefficients of the S-box to apply.
+
+    Returns:
+        A list of 8 tables, where each table maps [0,255] to [0,2^64-1].
+    """
+    return [[sbox(value, 8, coefficients) << (8 * byte_index) for value in range(256)]
+            for byte_index in range(8)]
+
+
+def _apply_luts(tables: list[list[int]], data: int) -> int:
+    """Apply a list of 8 byte-wise lookup tables to a 64-bit word.
+
+    Args:
+        tables: The byte-wise lookup tables corresponding to some linear mapping.
+        data: The 64-bit word to apply the mapping of lookup tables to.
+
+    Returns:
+        The result of applying the lookup tables to each byte of the data, and
+        then XORing the results together.
+    """
+    # This is the hot loop for the cipher, so we manually unroll for performance
+    t0, t1, t2, t3, t4, t5, t6, t7 = tables
+    return (t0[data & 0xff] ^ t1[(data >> 8) & 0xff] ^ t2[(data >> 16) & 0xff] ^
+            t3[(data >> 24) & 0xff] ^ t4[(data >> 32) & 0xff] ^
+            t5[(data >> 40) & 0xff] ^ t6[(data >> 48) & 0xff] ^ t7[data >> 56])
+
+
+# Forward round (see `prince_fwd_round`): S (S-box), then M' (mixing matrix), then SR (shift rows)
+_FORWARD_LOOKUPS = _pre_compose_sbox(
+    _make_linear_byte_luts(lambda x: prince_shiftrows(prince_mult_prime(x), False)), PRINCE_SBOX4
+)
+# Middle round (see `prince_no_lookup`, between the forward and inverse rounds):
+# S, then M', then S^-1 (the inverse S-box, which must be applied separately)
+_MIDDLE_LOOKUPS = _pre_compose_sbox(_make_linear_byte_luts(prince_mult_prime), PRINCE_SBOX4)
+# Inverse round (see `prince_inv_round`): SR^-1, M' (is its own inverse), S^-1 (again, separate)
+_INVERSE_LOOKUPS = _make_linear_byte_luts(lambda x: prince_mult_prime(prince_shiftrows(x, True)))
+_SBOX_INVERSE_LOOKUPS = _make_sbox_byte_luts(PRINCE_SBOX4_INV)
+
+
+def prince(data: int, key: int, num_rounds_half: int) -> int:
+    """Run the PRINCE cipher, optimized using a T-table approach.
+
+    This is an optimized implementation of `prince_no_lookup` (which instead computes
+    the block cipher step-by-step) using a T-table implementation. The forward half
+    and middle rounds merge the S-box with the linear (diffusion) layer. The inverse
+    half applies the inverse S-box as a separate lookup, which means this is not
+    the fully-merged T-table implementation. This avoids per-key setup and simplifies
+    the implementation, but adds an extra lookup per half round (except the last).
+
+    Args:
+        data: The data word to apply PRINCE64 to.
+        key: The key to use for scrambling.
+        num_rounds_half: The number of half-rounds of PRINCE64 to apply.
+
+    Returns:
+        The result of the PRINCE64 block cipher.
+    """
+    assert 0 <= data < (1 << 64)
+    assert 0 <= key < (1 << 128)
+    assert 0 <= num_rounds_half <= 5
+
+    k1 = key & ((1 << 64) - 1)
+    k0 = key >> 64
+
+    k0_rot1 = ((k0 & 1) << 63) | (k0 >> 1)
+    k0_prime = k0_rot1 ^ (k0 >> 63)
+
+    data ^= k0 ^ k1 ^ PRINCE_ROUND_CONSTS[0]
+
+    for half_round_index in range(num_rounds_half):
+        round_idx = 1 + half_round_index
+        rc = PRINCE_ROUND_CONSTS[round_idx]
+        rk = k0 if round_idx & 1 else k1
+        data = _apply_luts(_FORWARD_LOOKUPS, data) ^ rc ^ rk
+
+    data = _apply_luts(_SBOX_INVERSE_LOOKUPS, _apply_luts(_MIDDLE_LOOKUPS, data))
+
+    for half_round_index in range(num_rounds_half):
+        round_idx = 11 - num_rounds_half + half_round_index
+        rc = PRINCE_ROUND_CONSTS[round_idx]
+        rk = k1 if round_idx & 1 else k0
+        data ^= rk ^ rc
+        data = _apply_luts(_SBOX_INVERSE_LOOKUPS, _apply_luts(_INVERSE_LOOKUPS, data))
+
+    return data ^ PRINCE_ROUND_CONSTS[11] ^ k1 ^ k0_prime
