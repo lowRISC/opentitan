@@ -703,7 +703,7 @@
       name: "HW_EXC_STS",
       desc: "Hardware instance exception status register",
       swaccess: "rw0c",
-      hwaccess: "hwo",
+      hwaccess: "hrw",
       fields: [
         { bits: "15:0",
           name: "HW_EXC_STS",

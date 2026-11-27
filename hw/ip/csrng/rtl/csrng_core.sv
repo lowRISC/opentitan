@@ -1214,8 +1214,8 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
   // Misc status
 
-  assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
-  assign hw2reg.hw_exc_sts.d  = MaxNumInstances'(hw_exception_sts);
+  assign hw2reg.hw_exc_sts.de = cs_enable_fo[50] && (|hw_exception_sts);
+  assign hw2reg.hw_exc_sts.d  = reg2hw.hw_exc_sts.q | MaxNumInstances'(hw_exception_sts);
 
   // unused signals
   logic               unused_err_code_test_bit;
