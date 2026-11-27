@@ -37,29 +37,29 @@ Code Quality  | [LINT_SETUP][]                 | Done        |
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Not Started |
-Documentation | [BLOCK_DIAGRAM][]         | Not Started |
-Documentation | [DOC_INTERFACE][]         | Not Started |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Not Started |
-Documentation | [MISSING_FUNC][]          | Not Started |
-Documentation | [FEATURE_FROZEN][]        | Not Started |
-RTL           | [FEATURE_COMPLETE][]      | Not Started |
-RTL           | [PORT_FROZEN][]           | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
-RTL           | [REVIEW_TODO][]           | Not Started |
-RTL           | [STYLE_X][]               | Not Started |
-RTL           | [CDC_SYNCMACRO][]         | Not Started |
-Code Quality  | [LINT_PASS][]             | Not Started |
-Code Quality  | [CDC_SETUP][]             | Not Started |
-Code Quality  | [RDC_SETUP][]             | Not Started |
-Code Quality  | [AREA_CHECK][]            | Not Started |
-Code Quality  | [TIMING_CHECK][]          | Not Started |
-Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
+Documentation | [NEW_FEATURES][]          | Done        | New features of note: ALERT_TEST REGWEN (https://github.com/lowRISC/opentitan/pull/30515) and CHERIoT-friendly registers (https://github.com/lowRISC/opentitan/pull/31519).
+Documentation | [BLOCK_DIAGRAM][]         | Done        | Updated block diagram with new features.
+Documentation | [DOC_INTERFACE][]         | Done        |
+Documentation | [DOC_INTEGRATION_D2][]    | Done        |
+Documentation | [MISSING_FUNC][]          | Done        |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        |
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
+RTL           | [REVIEW_TODO][]           | Done        | No TODOs in design code.
+RTL           | [STYLE_X][]               | Done        | Assertions added.
+RTL           | [CDC_SYNCMACRO][]         | Done        | Only CDC sync was `prim_flop_2sync` in `prim_filter_ctr`.
+Code Quality  | [LINT_PASS][]             | Done        | Waivers removed.
+Code Quality  | [CDC_SETUP][]             | Waived      | Being done at top-level.
+Code Quality  | [RDC_SETUP][]             | Waived      | Being done at top-level.
+Code Quality  | [AREA_CHECK][]            | Waived      | Being done at top-level.
+Code Quality  | [TIMING_CHECK][]          | Waived      | Being done at top-level.
+Security      | [SEC_CM_DOCUMENTED][]     | N/A         |
 
 [NEW_FEATURES]:          ../../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         ../../../../../doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: ../../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    ../../../../../doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          ../../../../../doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        ../../../../../doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      ../../../../../doc/project_governance/checklist/README.md#feature_complete
