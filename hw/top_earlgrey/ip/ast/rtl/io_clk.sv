@@ -16,6 +16,8 @@ module io_clk (
   input rst_io_clk_ni,               // IO Clock Logic reset
   input clk_src_io_en_i,             // IO Source Clock Enable
   input scan_mode_i,                 // Scan Mode
+  input ext_beacon_val_i,            // IO External Reference (Pulse) Valid (Beacon)
+  input ext_beacon_pulse_i,          // IO External Reference Pulse (Beacon)
   input io_osc_cal_i,                // IO Oscillator Calibrated
 `ifdef AST_BYPASS_CLK
   input clk_io_ext_i,                // FPGA/VERILATOR Clock input
@@ -29,11 +31,26 @@ logic clk, osc_en, io_clk_en;
 assign osc_en = (clk_src_io_en_i && clk_io_pd_ni && rst_io_clk_ni);
 assign io_clk_en = scan_mode_i || osc_en;
 
+  logic ref_pulse_re, ext_beacon_val_io ;
+  assign ref_pulse_re = ext_beacon_pulse_i && ext_beacon_val_i;
+// Valid
+///////////////////////////////////////
+prim_flop_2sync #(
+  .Width ( 1 ),
+  .ResetValue ( 1'b0 )
+) u_ext_beacon_val (
+  .clk_i  ( clk ),
+  .rst_ni ( rst_io_clk_ni ),
+  .d_i    ( ext_beacon_val_i ),
+  .q_o    ( ext_beacon_val_io )
+);
 // Clock Oscilator
 ///////////////////////////////////////
 io_osc u_io_osc (
   .vcore_pok_h_i ( vcore_pok_h_i ),
   .io_en_i ( io_clk_en ),
+  .io_ref_pulse_i ( ref_pulse_re ),
+  .io_ref_val_i ( ext_beacon_val_io ),
   .io_osc_cal_i ( io_osc_cal_i ),
 `ifdef AST_BYPASS_CLK
   .clk_io_ext_i ( clk_io_ext_i ),
