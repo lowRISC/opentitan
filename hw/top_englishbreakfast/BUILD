@@ -2,9 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
-load("//rules:fusesoc.bzl", "fusesoc_build")
-load("//hw/top:defs.bzl", "opentitan_select_top_attr")
+load(
+    "//rules/opentitan:defs.bzl",
+    "OPENTITAN_BASE_PLATFORM",
+)
 
 filegroup(
     name = "rtl_files",
@@ -16,4 +17,12 @@ filegroup(
         "//hw/top_englishbreakfast/ip:rtl_files",
     ],
     visibility = ["//visibility:public"],
+)
+
+platform(
+    name = "platform",
+    flags = [
+        "--features=-rv32_bitmanip",
+    ],
+    parents = [OPENTITAN_BASE_PLATFORM],
 )

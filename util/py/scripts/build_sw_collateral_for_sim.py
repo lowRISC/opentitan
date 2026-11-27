@@ -95,6 +95,7 @@ BAZEL_STARLARK_FILE_FILES_QUERY = (
 
 # The following dict maps rule kinds to the starlark expression required
 # to print the files we need to deploy from them.
+# FIXME: might need some fixing with the changes done to the rules
 BAZEL_STARLARK_QUERY_RULE_KIND = {
     "opentitan_test": BAZEL_STARLARK_FILE_DATA_RUNFILES_FILES_QUERY,
     "opentitan_binary": BAZEL_STARLARK_FILE_FILES_QUERY,

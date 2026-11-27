@@ -40,27 +40,18 @@ def opentitan_if_ip(ip, obj, default):
     )
     ```
     """
-    compatible_tops = []
-    for top in ALL_TOPS:
-        for _ip in top.ips:
-            if _ip.name == ip:
-                compatible_tops.append(top.name)
-                break
-
     return select({
-        "@lowrisc_opentitan//hw/top:is_{}".format(top): obj
-        for top in compatible_tops
-    } | {
+        "@lowrisc_opentitan//hw/top:has_{}".format(ip): obj,
         "//conditions:default": default,
     })
 
 def opentitan_for_ip(objs_by_ip):
     """
-    Build a list of objects selecting them according to the supported IPs.
+    Build a list of objects by selecting them according to the supported IPs.
 
     Given a dictionary that specifies a list of objects to include for each
     supported IP, return a list obtained by concatenating the lists for the
-    IPs supported by the active top.
+    IPs supported by the active top. The return list may involve select expressions.
 
     Example:
     ```python
@@ -77,14 +68,10 @@ def opentitan_for_ip(objs_by_ip):
     )
     ```
     """
-    objs_for_top = {"//conditions:default": []}
-    for top in ALL_TOPS:
-        top_flag = "@lowrisc_opentitan//hw/top:is_{}".format(top.name)
-        top_ips = {ip.name: True for ip in top.ips}
-        for candidate_ip, objs in objs_by_ip.items():
-            if candidate_ip in top_ips:
-                objs_for_top.setdefault(top_flag, []).extend(objs)
-    return select(objs_for_top)
+    res = []
+    for ip, objs in objs_by_ip.items():
+        res += opentitan_if_ip(ip, objs, [])
+    return res
 
 def opentitan_require_ip(ip):
     """
@@ -238,6 +225,18 @@ def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None,
     `fn` will be called for each top that has this IP's attribute and the returned value will be
     inserted into the select expression. `fn` defaults to the identity function if not
     provided, returning the attribute itself.
+    Therefore informally the select will look like:
+    ```py
+    select({
+      <if top A has IP and requested attribute>: fn(<top A IP attr>),
+      <if top B has IP and requested attribute>: fn(<top B IP attr>),
+      .. and so on for all tops with the given attribute ..
+    })
+    ```
+    The condition expressing the presence of the IP in a top A is equivalent to a `target_compatible_with` built as follows:
+    ```
+    [@lowrisc_opentitan//hw/top:is_{top A}] + [{top A}.ip_constraints.get(ipname, [])]
+    ```
 
     If `required` is set to `True`, the selection expression will only contain branches
     for tops containing the (IP and the) IP attribute and an error message will be set in
@@ -251,7 +250,7 @@ def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None,
         return fn(x) if fn != None else x
 
     branches = {
-        "@lowrisc_opentitan//hw/top:is_{}".format(top.name): maybe_fn(get_ip_attr(top, ipname, attr_name))
+        "@lowrisc_opentitan//hw/top:is_{}_and_has_{}".format(top.name, ipname): maybe_fn(get_ip_attr(top, ipname, attr_name))
         for top in ALL_TOPS
         if has_ip_attr(top, ipname, attr_name)
     }

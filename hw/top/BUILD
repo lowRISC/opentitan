@@ -3,13 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:util.bzl", "flatten")
+load("@bazel_skylib//lib:selects.bzl", "selects")
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
     "opentitan_ip_rust_module",
 )
-load("//rules/opentitan:hw.bzl", "get_top_attr")
+load("//rules/opentitan:hw.bzl", "get_top_attr", "has_ip")
 load(
     "//hw/top:defs.bzl",
     "ALL_IP_NAMES",
@@ -51,6 +52,35 @@ string_flag(
         },
     )
     for top in ALL_TOP_NAMES
+]
+
+# Config settings to test against top selection + IP presence in selected top.
+# This includes the `ip_constraints` coming from each top.
+[
+    selects.config_setting_group(
+        name = "is_{}_and_has_{}".format(
+            top.name,
+            ip,
+        ),
+        match_all = [":is_{}".format(top.name)] +
+                    ([] if has_ip(top, ip) else ["@platforms//:incompatible"]) +
+                    get_top_attr(top, "ip_constraints", False, {}).get(ip, []),
+    )
+    for top in ALL_TOPS
+    for ip in ALL_IP_NAMES
+]
+
+# Config setting to test against IP presence in the selected top.
+# This includes the `ip_constraints` coming from each top.
+[
+    selects.config_setting_group(
+        name = "has_{}".format(ip),
+        match_any = [
+            ":is_{}_and_has_{}".format(top, ip)
+            for top in ALL_TOP_NAMES
+        ],
+    )
+    for ip in ALL_IP_NAMES
 ]
 
 # Config settings to test against seeds.

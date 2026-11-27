@@ -8,8 +8,11 @@ load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_files"
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "rram_otp_image")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
+DEFAULT_PLATFORM_KEY = "default"
+
 # ExecEnvInfo provider fields and whether the field is required.
 _FIELDS = {
+    "label": ("label", False),
     "design": ("attr.design", True),
     "exec_env": ("attr.exec_env", False),
     "libs": ("attr.libs", True),
@@ -37,6 +40,7 @@ _FIELDS = {
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
     "slot_spec": ("attr.slot_spec", False),
+    "platform_key": ("attr.platform_key", False),
 }
 
 _NESTED_FIELDS = {
@@ -250,6 +254,10 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("openocd_adapter_config", None),
             allow_single_file = True,
             doc = "OpenOCD adapter configuration for this environment",
+        ),
+        "platform_key": attr.string(
+            default = DEFAULT_PLATFORM_KEY,
+            doc = "This key indicates which platform to use in the dictionary given by the `platforms` attribute of the top",
         ),
     }
 
