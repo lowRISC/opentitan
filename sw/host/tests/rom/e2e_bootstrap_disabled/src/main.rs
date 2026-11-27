@@ -45,10 +45,10 @@ fn test_bootstrap_disabled_requested(opts: &Opts, transport: &TransportWrapper) 
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
-    // Now check whether the SPI device is responding to status messages
-    log::info!("Issuing SPI READ_STATUS");
+    // Now check that the SPI device is not responding as a flash.
+    log::info!("Issuing SPI READ_SFDP");
     let spi = transport.spi("BOOTSTRAP")?;
-    assert_eq!(SpiFlash::read_status(&*spi)?, 0xFF);
+    assert!(!SpiFlash::sfdp_present(&*spi)?);
     Ok(())
 }
 
@@ -73,10 +73,10 @@ fn test_bootstrap_disabled_not_requested(opts: &Opts, transport: &TransportWrapp
     if result != ExitStatus::ExitSuccess {
         bail!("FAIL: {:?}", result);
     };
-    // Now check whether the SPI device is responding to status messages
-    log::info!("Issuing SPI READ_STATUS");
+    // Now check that the SPI device is not responding as a flash.
+    log::info!("Issuing SPI READ_SFDP");
     let spi = transport.spi("BOOTSTRAP")?;
-    assert_eq!(SpiFlash::read_status(&*spi)?, 0xFF);
+    assert!(!SpiFlash::sfdp_present(&*spi)?);
     Ok(())
 }
 
