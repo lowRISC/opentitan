@@ -21,16 +21,20 @@ module tb;
   wire                          rram_test_analog;
 
   // Interfaces
-  clk_rst_if                    clk_rst_if    (.clk(clk),     .rst_n(rst_n));
+  clk_rst_if                    clk_rst_if    (.clk(clk), .rst_n(rst_n));
   clk_rst_if                    otp_clk_rst_if(.clk(clk_otp), .rst_n(rst_otp_n));
-  tl_if                         tl_core_if    (.clk(clk),     .rst_n(rst_n));
-  tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
-  tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
+  tl_if                         tl_core_if    (.clk(clk), .rst_n(rst_n));
+  tl_if                         tl_host_if    (.clk(clk), .rst_n(rst_n));
+  tl_if                         tl_prim_if    (.clk(clk), .rst_n(rst_n));
   nvm_otp_key_if                otp_key_if    (.clk_i(clk_otp), .rst_ni(rst_otp_n));
+  rram_macro_if                 macro_if      (.clk_i(clk), .rst_ni (rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
   rram_ctrl_pkg::rram_macro_rsp_t rram_rsp;
+
+  assign macro_if.req = rram_req;
+  assign macro_if.rsp = rram_rsp;
 
   otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_macro_req;
   otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_macro_rsp;
@@ -163,6 +167,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
     uvm_config_db#(virtual nvm_otp_key_if)::set(null, "*.env", "otp_key_vif", otp_key_if);
+    uvm_config_db#(virtual rram_macro_if)::set(null, "*.env", "macro_vif", macro_if);
 
     uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", "data_bkdr_util", data_bkdr_util);
     uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", "info_bkdr_util", info_bkdr_util);

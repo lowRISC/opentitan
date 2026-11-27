@@ -12,6 +12,9 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   // Config for an agent that acts as otp_ctrl and responds to key requests from rram_ctrl
   rand nvm_otp_key_agent_cfg m_key_agent_cfg;
 
+  // Config for a passive agent that monitors transactions between rram_ctrl and rram_macro
+  rram_macro_agent_cfg m_macro_agent_cfg;
+
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Configuration / helpers from the tb
   //
@@ -39,6 +42,10 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   // Name of the RAL model tied to the RRAM macro's primitive interface (tl_prim).
   const string prim_ral_name = "rram_macro_prim_reg_block";
 
+  // A timeout that should be used in the scoreboard to wait until any pending transactions have
+  // cleared.
+  int unsigned m_phase_end_timeout_ns = 100;
+
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -57,6 +64,7 @@ function rram_ctrl_env_cfg::new(string name="");
   super.new(name);
 
   m_key_agent_cfg = nvm_otp_key_agent_cfg::type_id::create("m_key_agent_cfg");
+  m_macro_agent_cfg = rram_macro_agent_cfg::type_id::create("m_macro_agent_cfg");
 endfunction : new
 
 function void rram_ctrl_env_cfg::set_is_active(bit active);
