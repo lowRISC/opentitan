@@ -236,10 +236,10 @@ static status_t internal_p256_keygen_start(
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
     HARDENED_TRY(p256_sideload_keygen_start());
     should_wipe = kHardenedBoolFalse;
-    return otcrypto_eval_exit(OTCRYPTO_OK);
+    return OTCRYPTO_OK;
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    return otcrypto_eval_exit(p256_keygen_start());
+    return p256_keygen_start();
   }
   return OTCRYPTO_BAD_ARGS;
 }
@@ -492,8 +492,13 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen(
 otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256);
   HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
-  return otcrypto_ecdh_p256_async_finalize(shared_secret);
+  otcrypto_status_t status = otcrypto_ecdh_p256_async_finalize(shared_secret);
+  if (status_ok(status)) {
+    otcrypto_cmvp_end_service();
+  }
+  return status;
 }
 
 otcrypto_status_t otcrypto_ecc_p256_point_on_curve(
@@ -642,7 +647,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
 
 otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  return otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_FINALIZE);
+  otcrypto_status_t status =
+      otcrypto_ecdsa_p256_keygen_async_finalize(private_key, public_key);
+  if (status_ok(status)) {
+    otcrypto_cmvp_end_service();
+  }
+  return status;
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(

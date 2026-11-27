@@ -406,8 +406,13 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen(
 otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
                                      const otcrypto_unblinded_key_t *public_key,
                                      otcrypto_blinded_key_t *shared_secret) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P384);
   HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
-  return otcrypto_ecdh_p384_async_finalize(shared_secret);
+  otcrypto_status_t status = otcrypto_ecdh_p384_async_finalize(shared_secret);
+  if (status_ok(status)) {
+    otcrypto_cmvp_end_service();
+  }
+  return status;
 }
 
 otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
