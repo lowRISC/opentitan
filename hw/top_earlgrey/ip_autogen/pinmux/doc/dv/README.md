@@ -33,3 +33,6 @@ In the pinmux_assert_fpv module, we declared four symbolic variables (`mio_sel_i
 Detailed explanation is listed in the [Symbolic Variables](../../../../../formal/README.md#symbolic-variables) section.
 
 [Testplan](../../data/pinmux_fpv_testplan.hjson)
+
+The [FPV testplan](../fpv/README.md) plans a second pinmux FPV environment.
+The testbench that this page describes stays as it is.

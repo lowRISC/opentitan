@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="942" viewBox="-10 -10 820 942" font-family="sans-serif" font-size="14" fill="#1f1f1f">
+<rect x="-10" y="-10" width="820" height="942" fill="#ffffff"/>
+<rect x="260" y="0" width="280" height="800" rx="6" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="0" y="830" width="337.56" height="92" rx="6" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"/>
+<rect x="280" y="30" width="240" height="70" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="63.02" font-size="14" font-weight="bold" text-anchor="middle">Register block</text>
+<text x="400" y="77.6" font-size="11" fill="#5c5c5c" text-anchor="middle">TL-UL device, alert sender</text>
+<rect x="280" y="130" width="240" height="120" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="181.15" font-size="14" font-weight="bold" text-anchor="middle">Pad data path</text>
+<text x="400" y="195.72" font-size="11" fill="#5c5c5c" text-anchor="middle">muxing matrix, retention,</text>
+<text x="400" y="209.47" font-size="11" fill="#5c5c5c" text-anchor="middle">pad attributes</text>
+<rect x="280" y="290" width="240" height="335" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="453.65" font-size="14" text-anchor="middle">Strap sampling and</text>
+<text x="400" y="471.15" font-size="14" text-anchor="middle">TAP selection</text>
+<rect x="280" y="630" width="240" height="30" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="649.9" font-size="14" text-anchor="middle">Wakeup detectors</text>
+<rect x="280" y="680" width="240" height="100" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="400" y="734.9" font-size="14" text-anchor="middle">USB wakeup module</text>
+<rect x="0" y="40" width="110" height="50" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="55" y="69.9" font-size="14" text-anchor="middle">TL-UL host</text>
+<rect x="0" y="130" width="110" height="120" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="55" y="194.9" font-size="14" text-anchor="middle">Peripherals</text>
+<rect x="0" y="290" width="110" height="490" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="55" y="531.15" font-size="14" text-anchor="middle">Power</text>
+<text x="55" y="548.65" font-size="14" text-anchor="middle">manager</text>
+<rect x="700" y="30" width="100" height="70" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="61.15" font-size="14" text-anchor="middle">Alert</text>
+<text x="750" y="78.65" font-size="14" text-anchor="middle">handler</text>
+<rect x="700" y="130" width="100" height="120" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="194.9" font-size="14" text-anchor="middle">Pad ring</text>
+<rect x="700" y="290" width="100" height="90" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="331.15" font-size="14" text-anchor="middle">Life cycle</text>
+<text x="750" y="348.65" font-size="14" text-anchor="middle">controller</text>
+<rect x="700" y="400" width="100" height="60" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="434.9" font-size="14" font-family="monospace" text-anchor="middle">rv_dm</text>
+<rect x="700" y="480" width="100" height="110" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="531.15" font-size="14" text-anchor="middle">DFT TAP,</text>
+<text x="750" y="548.65" font-size="14" text-anchor="middle">AST</text>
+<rect x="700" y="596" width="100" height="44" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="614.15" font-size="14" text-anchor="middle">RRAM</text>
+<text x="750" y="631.65" font-size="14" text-anchor="middle">macro</text>
+<rect x="700" y="680" width="100" height="100" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="750" y="726.15" font-size="14" text-anchor="middle">usbdev,</text>
+<text x="750" y="743.65" font-size="14" text-anchor="middle">USB PHY</text>
+<polygon points="110,65 124,76 124,70 266,70 266,76 280,65 266,54 266,60 124,60 124,54" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="280,160 271,163.5 271,156.5" fill="#2b2b2b"/>
+<polyline points="110,160 272,160" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="110,210 119,206.5 119,213.5" fill="#2b2b2b"/>
+<polyline points="280,210 118,210" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="280,240 271,243.5 271,236.5" fill="#2b2b2b"/>
+<polyline points="110,300 200,300 200,240 272,240" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="280,330 271,333.5 271,326.5" fill="#2b2b2b"/>
+<polyline points="110,330 272,330" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="110,645 119,641.5 119,648.5" fill="#2b2b2b"/>
+<polyline points="280,645 118,645" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="110,730 119,726.5 119,733.5" fill="#2b2b2b"/>
+<polyline points="280,730 118,730" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,50 691,53.5 691,46.5" fill="#2b2b2b"/>
+<polyline points="520,50 692,50" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,85 529,81.5 529,88.5" fill="#2b2b2b"/>
+<polyline points="700,85 528,85" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,160 691,163.5 691,156.5" fill="#2b2b2b"/>
+<polyline points="520,160 692,160" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,210 529,206.5 529,213.5" fill="#2b2b2b"/>
+<polyline points="700,210 528,210" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,305 529,301.5 529,308.5" fill="#2b2b2b"/>
+<polyline points="700,305 528,305" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,335 529,331.5 529,338.5" fill="#2b2b2b"/>
+<polyline points="700,335 528,335" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,365 529,361.5 529,368.5" fill="#2b2b2b"/>
+<polygon points="700,365 691,368.5 691,361.5" fill="#2b2b2b"/>
+<polyline points="528,365 692,365" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,415 529,411.5 529,418.5" fill="#2b2b2b"/>
+<polygon points="700,415 691,418.5 691,411.5" fill="#2b2b2b"/>
+<polyline points="528,415 692,415" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,445 691,448.5 691,441.5" fill="#2b2b2b"/>
+<polyline points="520,445 692,445" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,495 529,491.5 529,498.5" fill="#2b2b2b"/>
+<polygon points="700,495 691,498.5 691,491.5" fill="#2b2b2b"/>
+<polyline points="528,495 692,495" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,525 691,528.5 691,521.5" fill="#2b2b2b"/>
+<polyline points="520,525 692,525" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,555 529,551.5 529,558.5" fill="#2b2b2b"/>
+<polyline points="700,555 528,555" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,585 529,581.5 529,588.5" fill="#2b2b2b"/>
+<polyline points="700,585 528,585" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,618 529,614.5 529,621.5" fill="#2b2b2b"/>
+<polygon points="700,618 691,621.5 691,614.5" fill="#2b2b2b"/>
+<polyline points="528,618 692,618" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="520,700 529,696.5 529,703.5" fill="#2b2b2b"/>
+<polyline points="700,700 528,700" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,730 691,733.5 691,726.5" fill="#2b2b2b"/>
+<polyline points="520,730 692,730" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="700,760 691,763.5 691,756.5" fill="#2b2b2b"/>
+<polyline points="520,760 692,760" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="400,290 396.5,281 403.5,281" fill="#2b2b2b"/>
+<polygon points="400,250 403.5,259 396.5,259" fill="#2b2b2b"/>
+<polyline points="400,282 400,258" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="10" y="844" width="28" height="16" rx="2" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="10" y="868" width="28" height="16" rx="2" fill="#ffffff" stroke="#2b2b2b" stroke-width="1"/>
+<polygon points="24,894 30,900 24,906 18,900" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="268" y="20.68" font-size="13" font-family="monospace" font-weight="bold" fill="#3d5f8f">pinmux</text>
+<text x="195" y="46.15" font-size="14" fill="#2b2b2b" text-anchor="middle">tl_i, tl_o</text>
+<text x="195" y="152.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">periph_to_*_i</text>
+<text x="195" y="202.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">*_to_periph_o</text>
+<text x="155" y="292.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">sleep_en_i</text>
+<text x="195" y="322.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">strap_en_i</text>
+<text x="195" y="637.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">pin_wkup_req_o</text>
+<text x="195" y="722.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">usb_wkup_req_o</text>
+<text x="620" y="44.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">alert_tx_o</text>
+<text x="620" y="79.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">alert_rx_i</text>
+<text x="620" y="154.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">mio_*_o, dio_*_o</text>
+<text x="620" y="204.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">mio_in_i, dio_in_i</text>
+<text x="620" y="299.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">lc_*_i</text>
+<text x="620" y="329.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">strap_en_override_i</text>
+<text x="620" y="359.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">lc_jtag</text>
+<text x="620" y="409.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">rv_jtag</text>
+<text x="620" y="439.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">pinmux_hw_debug_en_o</text>
+<text x="620" y="489.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">dft_jtag</text>
+<text x="620" y="519.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">dft_strap_test_o</text>
+<text x="620" y="549.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">dft_hold_tap_sel_i</text>
+<text x="620" y="579.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">scanmode_i</text>
+<text x="620" y="612.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">rram_jtag</text>
+<text x="620" y="694.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">usbdev_*_i</text>
+<text x="620" y="724.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">usbdev_*_o</text>
+<text x="620" y="754.2" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">usb_d*pullup_en_o</text>
+<text x="404" y="266.7" font-size="12" font-family="monospace" fill="#2b2b2b">JTAG and</text>
+<text x="404" y="281.7" font-size="12" font-family="monospace" fill="#2b2b2b">strap pads</text>
+<polygon points="260,59 266,65 260,71 254,65" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,154 266,160 260,166 254,160" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,204 266,210 260,216 254,210" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,234 266,240 260,246 254,240" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,324 266,330 260,336 254,330" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,639 266,645 260,651 254,645" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="260,724 266,730 260,736 254,730" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,44 546,50 540,56 534,50" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,79 546,85 540,91 534,85" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,154 546,160 540,166 534,160" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,204 546,210 540,216 534,210" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,299 546,305 540,311 534,305" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,329 546,335 540,341 534,335" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,359 546,365 540,371 534,365" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,409 546,415 540,421 534,415" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,439 546,445 540,451 534,445" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,489 546,495 540,501 534,495" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,519 546,525 540,531 534,525" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,549 546,555 540,561 534,555" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,579 546,585 540,591 534,585" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,612 546,618 540,624 534,618" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,694 546,700 540,706 534,700" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,724 546,730 540,736 534,730" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="540,754 546,760 540,766 534,760" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="48" y="856.55" font-size="13">The pinmux, the design under verification</text>
+<text x="48" y="880.55" font-size="13">A neighbour in Earl Grey, outside the proof</text>
+<text x="48" y="904.55" font-size="13">A pinmux port: the FPV boundary</text>
+</svg>

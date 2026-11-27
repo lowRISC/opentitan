@@ -42,3 +42,6 @@ Detailed explanation is listed in the [Symbolic Variables](../../../../../formal
 
 ## Testplan
 [Testplan](../../data/pinmux_fpv_testplan.hjson)
+
+The [FPV testplan](../fpv/README.md) plans a second pinmux FPV environment.
+The testbench that this page describes stays as it is.
