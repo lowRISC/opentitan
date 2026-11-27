@@ -626,6 +626,12 @@ class sram_ctrl_scoreboard #(parameter int MemDepth = 1024) extends cip_base_sco
       "readback": begin
         // do nothing
       end
+      "rmw_intg_check_regwen": begin
+        // do nothing
+      end
+      "rmw_intg_check": begin
+        // do nothing
+      end
       "status": begin
         if (addr_phase_read) begin
           void'(ral.status.predict(.value(exp_status), .kind(UVM_PREDICT_READ)));

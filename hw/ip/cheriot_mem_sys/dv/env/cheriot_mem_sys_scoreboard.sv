@@ -62,7 +62,11 @@ class cheriot_mem_sys_scoreboard extends cip_base_scoreboard #(
       "alert_test": begin
         // do_alert_check is disabled above, so no set_exp_alert() call here yet.
       end
-      "tbre_base_addr", "tbre_num_caps", "tbre_start": begin
+      "recov_err_code", "fatal_err_code": begin
+        // Only set by shadow register and TL-UL integrity errors, which no sequence checked by
+        // this scoreboard causes.
+      end
+      "tbre_base_addr_shadowed", "tbre_num_caps_shadowed", "tbre_start": begin
       end
       "intr_enable", "intr_test": begin
         // The interrupt test sequence checks the interrupt pin and INTR_STATE itself.

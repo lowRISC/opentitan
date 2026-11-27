@@ -29,6 +29,7 @@ filesets:
       - seq_lib/ibex_icache_back_line_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_many_errors_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_ecc_vseq.sv: {is_include_file: true}
+      - seq_lib/ibex_icache_ecc_back_line_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_combo_vseq.sv: {is_include_file: true}
       - seq_lib/ibex_icache_reset_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource

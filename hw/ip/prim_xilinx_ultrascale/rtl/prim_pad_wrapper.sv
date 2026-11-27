@@ -10,8 +10,8 @@
 module prim_pad_wrapper
   import prim_pad_wrapper_pkg::*;
 #(
-  // These parameters are ignored in this Xilinx variant.
   parameter pad_type_e PadType = BidirStd,
+  // These parameters are ignored in this Xilinx variant.
   parameter pad_orient_e PadOrient = OrientH,
   parameter scan_role_e ScanRole = NoScan
 ) (
@@ -70,7 +70,8 @@ module prim_pad_wrapper
   end else if (PadType == BidirTol ||
                PadType == DualBidirTol ||
                PadType == BidirOd ||
-               PadType == BidirStd) begin : gen_bidir
+               PadType == BidirStd ||
+               PadType == BidirStr) begin : gen_bidir
 
     // virtual open drain emulation
     logic oe_n, out;

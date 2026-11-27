@@ -1705,7 +1705,6 @@ module keymgr_dpe_reg_top (
   );
 
 
-  // Subregister 0 of Multireg key_version
   // R[key_version]: V(False)
   // Create REGWEN-gated WE signal
   logic key_version_gated_we;
@@ -1730,7 +1729,7 @@ module keymgr_dpe_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.key_version[0].q),
+    .q      (reg2hw.key_version.q),
     .ds     (),
 
     // to register interface (read)

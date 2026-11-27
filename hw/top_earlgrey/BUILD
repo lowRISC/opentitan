@@ -387,6 +387,7 @@ sim_verilator(
         "//hw:verilator",
     ],
     exec_env = "sim_verilator",
+    openocd_adapter_config = "//util/openocd/interface:sim-jtagdpi.cfg",
     param = {
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,

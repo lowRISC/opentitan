@@ -213,7 +213,7 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
     i--;
     is_lt = is_lt | (!is_gt && (a[i] < b[i]));
     is_gt = is_gt | (!is_lt && (a[i] > b[i]));
-  } while (i != 0);
+  } while (launderw(i) != 0);
   HARDENED_CHECK_EQ(i, 0);
 
   return is_lt && !is_gt ? kHardenedBoolTrue : kHardenedBoolFalse;
@@ -232,19 +232,20 @@ otcrypto_status_t otcrypto_rsa_public_key_construct(
 #endif
   HARDENED_TRY(rsa_mode_check(public_key->key_mode));
 
-  if (is_even(modulus->data[0])) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, NULL, &num_words));
-  if (public_key->key_length != num_words * sizeof(uint32_t) ||
-      modulus->len != num_words || (modulus->data[num_words - 1] >> 31) != 1) {
+  if (launderw(public_key->key_length) !=
+          launderw(num_words * sizeof(uint32_t)) ||
+      launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad key lengths.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(public_key->key_length, num_words * sizeof(uint32_t));
   HARDENED_CHECK_EQ(modulus->len, num_words);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(hardened_memcpy(public_key->key, modulus->data, num_words));
 
   // Verify the input buffer
@@ -619,7 +620,7 @@ otcrypto_status_t otcrypto_rsa_prime_check(
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
   size_t prime_words = num_words / 2;
-  if (prime_candidate->len != prime_words) {
+  if (launderw(prime_candidate->len) != launderw(prime_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(prime_candidate->len, prime_words);
@@ -655,8 +656,9 @@ otcrypto_status_t otcrypto_rsa_create_n_from_primes(
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
   size_t prime_words = num_words / 2;
-  if (prime_p->len != prime_words || prime_q->len != prime_words ||
-      modulus->len != num_words) {
+  if (launderw(prime_p->len) != launderw(prime_words) ||
+      launderw(prime_q->len) != launderw(prime_words) ||
+      launderw(modulus->len) != launderw(num_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(prime_p->len, prime_words);
@@ -690,27 +692,28 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
 
   // Ensure that the length of the private exponent shares matches the length
   // of the modulus->
-  if (d_share0->len != modulus->len || d_share1->len != modulus->len) {
+  if (launderw(d_share0->len) != launderw(modulus->len) ||
+      launderw(d_share1->len) != launderw(modulus->len)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check the mode and lengths for the private key.
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
-  if (is_even(modulus->data[0])) {
-    // COVERAGE (MISSING) We do not cover even moduli.
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, NULL, &num_words));
-  if (modulus->len != num_words || (modulus->data[num_words - 1] >> 31) != 1) {
+  if (launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad key lengths.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(modulus->len, num_words);
   HARDENED_CHECK_EQ(d_share0->len, num_words);
   HARDENED_CHECK_EQ(d_share1->len, num_words);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    // COVERAGE (MISSING) We do not cover even moduli.
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(rsa_private_key_pack(d_share0->data, d_share1->data,
                                     modulus->data, num_words, private_key));
 
@@ -769,43 +772,8 @@ static otcrypto_status_t rsa_decrypt_finalize_with_mode(
 
 static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
                                        otcrypto_rsa_padding_t padding_mode) {
-  switch (launder32(padding_mode)) {
-    case kOtcryptoRsaPaddingPkcs:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
-        // COVERAGE (MISSING) We do not cover mismatching key_mode and
-        // padding_modes.
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
-      return OTCRYPTO_OK;
-    case kOtcryptoRsaPaddingPss:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
-      return OTCRYPTO_OK;
-    case kOtcryptoRsaPaddingNull:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingNull);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaRaw) {
-        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
-      return OTCRYPTO_OK;
-    default:
-      // Invalid padding mode.
-      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-  return OTCRYPTO_FATAL_ERR;
+  return rsa_signature_key_mode_padding_check(
+      key_mode, (rsa_signature_padding_t)padding_mode);
 }
 
 otcrypto_status_t otcrypto_rsa_verify(
@@ -850,7 +818,7 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify_final(
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, padding_mode,
                                    &signature_check, &verification_result));
-  if (verification_result != kHardenedBoolTrue) {
+  if (launder32(verification_result) != kHardenedBoolTrue) {
     // COVERAGE (FI CM) This check only fails if the signature generation was
     // faulted.
     crypto_state_t state;
@@ -1031,26 +999,26 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
 
   // Ensure that the length of the cofactor shares is half the length
   // of the modulus->
-  if (cofactor_share0->len != modulus->len / 2 ||
-      cofactor_share1->len != modulus->len / 2) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  if (is_even(modulus->data[0])) {
+  if (launderw(cofactor_share0->len) != launderw(modulus->len / 2) ||
+      launderw(cofactor_share1->len) != launderw(modulus->len / 2)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   rsa_size_t rsa_size = (rsa_size_t)0;
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
-  if (cofactor_share0->len != num_words / 2 || modulus->len != num_words ||
-      (modulus->data[num_words - 1] >> 31) != 1) {
+  if (launderw(cofactor_share0->len) != launderw(num_words / 2) ||
+      launderw(modulus->len) != launderw(num_words)) {
     // COVERAGE (MISSING) We do not cover bad size.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(modulus->len, num_words);
   HARDENED_CHECK_EQ(cofactor_share0->len, num_words / 2);
   HARDENED_CHECK_EQ(cofactor_share1->len, num_words / 2);
+
+  if (is_even(modulus->data[0]) || (modulus->data[num_words - 1] >> 31) != 1) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
       rsa_size, modulus->data, cofactor_share0->data, cofactor_share1->data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -1148,8 +1116,8 @@ static otcrypto_status_t rsa_sign_exp_async_start(
     HARDENED_CHECK_EQ(message_digest.len, num_words * sizeof(uint32_t));
   }
   HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
-      rsa_size, d0, d1, exponent, n, checksum, message_digest,
-      (rsa_signature_padding_t)padding_mode));
+      rsa_size, private_key->config.key_mode, d0, d1, exponent, n, checksum,
+      message_digest, (rsa_signature_padding_t)padding_mode));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -1224,7 +1192,7 @@ static otcrypto_status_t rsa_verify_exp_async_start(
   rsa_size_t rsa_size = (rsa_size_t)0;
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
-  if (signature->len != num_words) {
+  if (launderw(signature->len) != launderw(num_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(signature->len, num_words);
@@ -1233,8 +1201,9 @@ static otcrypto_status_t rsa_verify_exp_async_start(
       kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_TRY_WIPE_DMEM(rsa_signature_verify_start(
-      rsa_size, exponent, public_key->key, signature->data));
+  HARDENED_TRY_WIPE_DMEM(
+      rsa_signature_verify_start(rsa_size, public_key->key_mode, exponent,
+                                 public_key->key, signature->data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -1346,6 +1315,8 @@ otcrypto_status_t otcrypto_rsa_encrypt_async_finalize(
   }
 #endif
 
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
+
   rsa_size_t rsa_size = (rsa_size_t)0;
   HARDENED_TRY(rsa_size_from_num_words(ciphertext->len, &rsa_size));
   HARDENED_TRY_WIPE_DMEM(rsa_encrypt_finalize(rsa_size, ciphertext->data));
@@ -1364,6 +1335,8 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(ciphertext));
 
   // Infer the RSA size from the private key.
   otcrypto_rsa_size_t size;
@@ -1390,7 +1363,7 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
   size_t keyblob_words = keyblob_num_words(private_key->config);
   HARDENED_CHECK_EQ(private_key->keyblob_length,
                     keyblob_words * sizeof(uint32_t));
-  if (ciphertext->len != num_words) {
+  if (launderw(ciphertext->len) != launderw(num_words)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, num_words);

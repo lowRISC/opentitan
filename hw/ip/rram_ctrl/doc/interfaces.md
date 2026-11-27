@@ -1,5 +1,21 @@
 # Interfaces
 
+## Clocks and Resets
+
+The RRAM controller has two clock domains.
+
+- `clk_i`/`rst_ni` clock the whole controller apart from the `otp_ctrl` interfaces.
+  The `rram_macro_o`/`rram_macro_i` interface is synchronous to `clk_i`, so `rram_macro` must be clocked and reset by the same clock and reset as `rram_ctrl`.
+  Earl Grey uses the `main` clock and its life cycle reset (`lc`).
+- `clk_otp_i`/`rst_otp_ni` clock the `otp_macro_i`/`otp_macro_o` and `otp_key_o`/`otp_key_i` interfaces.
+  They must be the clock and reset of `otp_ctrl`.
+  Earl Grey uses the `io_div4` clock and its life cycle reset (`lc_io_div4`).
+
+All crossings between the two domains use synchronization primitives.
+`rram_ctrl_otp` crosses the OTP macro interface with a `prim_fifo_async` in each direction.
+`rram_ctrl_lcmgr` crosses the OTP key requests with a `prim_sync_reqack` for the address key and another one for the data key.
+The life cycle inputs are asynchronous to `clk_i` and are synchronized with `prim_lc_sync`.
+
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/rram_ctrl/data/rram_ctrl.hjson -->
 Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`rram_ctrl`** has the following hardware interfaces defined
 - Primary Clock: **`clk_i`**

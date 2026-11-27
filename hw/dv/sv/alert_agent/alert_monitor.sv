@@ -253,9 +253,8 @@ task alert_monitor::monitor_alerts();
       // If we're in a ping, wait until it is done
       wait (!cfg.active_ping);
     end else begin
-      // Look for an alert request. We might be in some other part of the ping handshake. If that is
-      // the case, don't act on the seeming alert request yet (but we'll be able to register it on
-      // the next cycle).
+      // During a ping handshake or the sample where ping_p changes, let monitor_ping_handshake
+      // decide whether alert_p is the ping response.
       if (is_valid_alert() && !(cfg.under_ping_handshake ||
                                 ping_p != cfg.vif.monitor_cb.alert_rx_final.ping_p)) begin
         active_alert = 1;
@@ -358,9 +357,8 @@ endtask : ping_thread
 task alert_monitor::monitor_ping_handshake();
   alert_seq_item req = alert_seq_item::type_id::create("req");
 
-  // If alert_p is currently asserted, that must be the tail of a different alert. Wait for it to
-  // clear.
-  if (cfg.vif.monitor_cb.alert_tx_final.alert_p) wait_alert_complete();
+  // monitor_alerts does not report an alert_p that rises in the same sample as the ping_p toggle.
+  // The alert protocol makes that handshake the ping response, which wait_ping_handshake records.
   wait (active_alert==0);
 
   // Register the fact that we're in a ping handshake, and increment the count of pings that we have
@@ -392,7 +390,9 @@ task alert_monitor::monitor_ping_handshake();
         req.m_ping_timeout = 1'b1;
       end
       begin : wait_ping_handshake
-        wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
+        // A signal integrity error (alert_p == alert_n) is not a ping response.
+        wait(cfg.vif.monitor_cb.alert_tx_final.alert_p &&
+             !cfg.vif.monitor_cb.alert_tx_final.alert_n);
         req.m_alert_handshake_sta = AlertReceived;
         wait_ack();
         req.m_alert_handshake_sta = AlertAckReceived;

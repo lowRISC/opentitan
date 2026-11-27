@@ -34,12 +34,14 @@ CHERIoT support requires two conditions to be met:
 
 2. **Runtime**: set ``cheriot_enable_i`` to ``ibex_pkg::IbexMuBiOn``.
    When de-asserted (``ibex_pkg::IbexMuBiOff``) the core runs as a standard RV32I processor.
+   With the :ref:`dual core lockstep<lockstep>`, ``cheriot_enable_shadow_i`` must follow ``cheriot_enable_i`` one cycle later, and ``cheriot_enable_cmp_i``, raised after the last switch, enables the comparison of the two.
 
 .. important::
    **Security Constraint:** The ``cheriot_enable_i`` signal acts as a one-way switch. To ensure security and prevent arbitrary switching between memory protection modes, the mode must either be configured at reset and kept constant, or switched exactly once from off to on during runtime.
    Once CHERIoT mode is enabled, it **must not** be switched off again until reset.
    This constraint is **not enforced by hardware** but is checked by the ``CheriotEnableOneWaySwitch`` assertion in ``ibex_core``.
    The integrator is responsible for ensuring the signal is driven by a one-way latch or equivalent logic outside the core.
+   Switching at runtime additionally needs a specific software sequence, see :ref:`cheriot-mode-switch`.
 
 **Parameter requirements and unsupported combinations:**
 
@@ -47,10 +49,103 @@ CHERIoT support requires two conditions to be met:
   The no-writeback path is not implemented for CHERIoT capability accesses.
 
 * Zcmp instructions (``RV32Zcmp``) are not supported in CHERIoT mode.
-  They may be included at elaboration time when Ibex runs in Rv32I mode ()``cheriot_enable_i``==0), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
+  They may be included at elaboration time when Ibex runs in Rv32I mode (``cheriot_enable_i == 0``), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
 
 When CHERIoT is enabled, ``misa`` reflects the CHERIoT base ISA (bits X=1, I=0, E=1), and ``marchid`` reads as 0xCE1 instead of the standard Ibex value of 0x16 (22).
 CHERIoT mode implies RV32E and uses only 16 registers (x0–x15).
+
+.. _cheriot-mode-switch:
+
+Switching to CHERIoT Mode at Runtime
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. important::
+   Switching from RV32I to CHERIoT mode at runtime needs the software sequence and system conditions described here.
+   They do not apply when ``cheriot_enable_i`` is ``ibex_pkg::IbexMuBiOn`` from reset.
+
+The hardware neither clears the register file nor flushes the pipeline when ``cheriot_enable_i`` changes.
+Instructions in flight are therefore partly handled in RV32I mode and partly in CHERIoT mode.
+
+**Triggering the switch:**
+The core must trigger the switch itself, as the last step of the sequence below, for example with a store to a register that sets ``cheriot_enable_i``.
+Nothing else (for example another bus host, or a debugger through system bus access) may change ``cheriot_enable_i``.
+
+**Software requirements:**
+
+* Run the sequence in M-mode with interrupts disabled (``mstatus.MIE`` = 0), and keep them disabled until ``mtcc`` is set up in CHERIoT mode.
+* Disable dummy instructions (``cpuctrlsts.dummy_instr_en``) before the switch, and restore the previous setting afterwards.
+* Write zero to ``x16``–``x31`` and do not write them again before the switch.
+  With ``RV32E`` = 1, skip this step: ``x16``–``x31`` do not exist, and the capability metadata storage still holds valid reset values.
+* From the instruction that triggers the switch until the core runs in CHERIoT mode, only use instructions that behave the same in both modes.
+  The sequence only needs ``csrr`` of ``marchid`` and a conditional branch.
+  In particular, this rules out:
+
+  * Compressed instructions, as several encodings decode differently in CHERIoT mode.
+  * Loads and stores, as they need a valid capability in the base register in CHERIoT mode.
+  * ``auipc``, ``jal`` and ``jalr``, as they become ``AUIPCC``, ``CJAL`` and ``CJALR``.
+  * ``x16``–``x31`` and the ``mtvec``, ``mepc``, ``mseccfg``, ``mseccfgh`` and PMP CSRs, as they are illegal in CHERIoT mode.
+  * ``ecall``, ``ebreak``, ``mret`` and any other instruction that can trap or return from a trap.
+
+* Wait for the switch by polling ``marchid`` until it reads the CHERIoT value (0xCE1).
+* Set up ``mtcc`` right after the switch, before any instruction that can trap and before interrupts are enabled again.
+
+**System requirements:**
+
+* Debugging is not supported during the switch.
+  The core must not halt or be in debug mode from the start of the sequence until ``mtcc`` is set up.
+* From the instruction that triggers the switch until ``mtcc`` is set up, either no non-maskable interrupt (NMI) may be taken, or the NMI handler must work in both modes, including a mode change while it runs.
+  Ibex cannot mask NMIs, so without such a handler the integration must make sure that ``irq_nm_i`` is not raised in this window.
+  An NMI taken earlier in the sequence must leave ``x16``–``x31`` zero.
+
+The reasons are:
+
+* The RV32I registers ``x16``–``x31`` and the capability metadata of ``x0``–``x15`` share the same storage (see :ref:`register-file-allocation`).
+  With ``SecureIbex``, the shadow core stores ECC check bits for the register file: a 39/32 code for integer values and a 64/57 code for capabilities.
+  A non-zero value left in ``x16``–``x31`` therefore becomes capability metadata with invalid ECC, and reading it in CHERIoT mode raises a major alert.
+  This includes ``x16``: with dummy instructions enabled, it holds the ``x0`` capability that dummy instructions read (see :ref:`dummy-instruction-insertion`).
+  Zero is safe because the zero values of both codes have the same check bits.
+* A dummy instruction created in RV32I mode can read ``x16``–``x31``.
+  If it is still in the pipeline when the mode changes, it decodes as an illegal instruction and raises an exception.
+  A write to ``cpuctrlsts`` flushes the pipeline, so no such dummy instruction is left once the write that disables them has executed.
+* Until ``mtcc`` is set up, a trap in CHERIoT mode jumps to the base address of the ``mtvec`` value set in RV32I mode, without vectoring, because CHERIoT mode only uses direct mode.
+  The RV32I handler code there then runs in CHERIoT mode.
+  An NMI taken in RV32I mode shortly before the switch runs its handler partly in CHERIoT mode instead.
+  In both cases, the handler fails and the interrupted context is lost.
+* ``depcc`` resets to null and is only written in CHERIoT mode.
+  If the core halts in RV32I mode and resumes after the switch, ``dret`` installs an untagged PCC and the next instruction fetch faults.
+* The polling loop works in both modes: ``csrr`` and ``bne`` behave the same, and PCC still holds the root executable capability, which has the **SR** permission needed for CSR accesses.
+
+**State after the switch:**
+The special capability registers only change in CHERIoT mode, so they still hold their reset values.
+PCC, ``mtcc`` and ``mepcc`` hold the root executable capability, ``mtdc`` the root memory capability and ``mscratchc`` the root sealing capability, while ``depcc``, ``dscratchc0`` and ``dscratchc1`` are null.
+``mtcc`` and ``mepcc`` keep the values of ``mtvec`` and ``mepc``, so ``mtcc`` still has the vectored mode bit (bit 0) set, which traps ignore.
+``x1``–``x15`` keep their RV32I integer values and their capabilities are null.
+Software should treat them as uninitialized, as after a reset.
+PMP checks are not performed in CHERIoT mode (see :ref:`pmp`), so PMP regions and locks configured in RV32I mode no longer restrict accesses after the switch.
+
+**Example:**
+The example assumes that ``cheriot_enable_i`` is set by a store of ``t0`` to the address in ``a0``, which depends on the integration.
+``.option arch, rv32i_zicsr`` is needed with a CHERIoT toolchain, which rejects ``x16``–``x31``.
+
+.. code-block:: text
+
+   # M-mode, interrupts are disabled. a0 and t0 are set up for the switch.
+   .option push
+   .option norvc
+   .option arch, rv32i_zicsr
+   csrrci a1, 0x7C0, 4               # cpuctrlsts.dummy_instr_en = 0, save the old value
+   andi   a1, a1, 4
+   .irp reg, 16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31
+   li     x\reg, 0
+   .endr
+   li     t1, 0xCE1                  # marchid in CHERIoT mode
+   sw     t0, 0(a0)                  # sets cheriot_enable_i
+   1:
+   csrr   t2, marchid
+   bne    t2, t1, 1b                 # wait until the core runs in CHERIoT mode
+   csrs   0x7C0, a1                  # restore cpuctrlsts.dummy_instr_en
+   .option pop
+   # Set up mtcc next, then derive capabilities before enabling interrupts.
 
 Register File
 -------------
@@ -70,20 +165,28 @@ Data Memory Tag Interface
 The data memory interface gains two tag signals:
 
 ``data_tag_o``
-  1-bit output. When high, the current write transaction carries a valid capability tag or the current load transaction is a capability load.
+  ``ibex_mubi_t`` output. ``IbexMuBiOn`` when the current write transaction carries a valid capability tag or the current load transaction is a capability load, else ``IbexMuBiOff``.
 
 ``data_tag_i``
-  1-bit input. The tag bit returned from memory for a load transaction.
-  Must be driven high if and only if the loaded word has a stored/valid capability tag and the request was a capability load.
+  ``ibex_mubi_t`` input. The tag returned from memory for a load transaction.
+  Must be ``IbexMuBiOn`` if and only if the loaded word has a stored/valid capability tag and the request was a capability load, else ``IbexMuBiOff``.
+  Any value other than ``IbexMuBiOn`` reads as untagged.
+
+Both tags are multi-bit encoded, so that a single fault on the tag signals between Ibex and memory cannot turn an untagged word into a tagged one.
+Ibex reads any value other than ``IbexMuBiOn`` as untagged, but does not flag invalid encodings.
+With the :ref:`dual core lockstep<lockstep>`, each core encodes and decodes its own tag.
 
 Since Ibex only has a 32-bit interface, it reads and writes capabilities in two consecutive transactions.
-The tag bits must be set for both transactions for the capability to be considered a valid one.
+The tag must be ``IbexMuBiOn`` on both transactions for the capability to be considered a valid one.
+
+.. _cheriot-trvk:
 
 TRVK Revocation Bitmap Interface (``trvk_revbm_*``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TRVK (Temporal Revocation) filter is positioned just outside the LSU.
 It intercepts capability loads and checks whether the loaded capability has been revoked by checking the revocation bitmap.
+With the SecureIbex parameter, the shadow core of the :ref:`dual core lockstep<lockstep>` has its own TRVK.
 
 The revocation bitmap interface is an OBI compliant memory-mapped port.
 Because this port is strictly used for bitmap lookups, it only implements the read channels of the OBI standard, sharing identical handshaking semantics with the instruction and data interfaces:
@@ -262,3 +365,9 @@ They are accessible only in CHERIoT mode.
   Stores to addresses below ``mshwmb`` do not update ``mshwm``.
 
 The CHERIoT SCRs (Special Capability Registers) are described in :ref:`cheriot-scrs`.
+
+Debug Mode
+----------
+
+Ibex does not enforce the CHERIoT protections in Debug Mode, so code running in Debug Mode can access all memory.
+See :ref:`debug-cheriot` for details.

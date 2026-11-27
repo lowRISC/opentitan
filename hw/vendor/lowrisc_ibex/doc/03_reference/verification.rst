@@ -250,7 +250,8 @@ project, the testbench derives from the `dv_lib UVM class library
 classes that provides basic UVM testbench functionality and components.
 
 This DV environment will be compiled and simulated using the `dvsim simulation tool
-<https://github.com/lowRISC/opentitan/tree/master/util/dvsim>`_.
+<https://github.com/lowRISC/dvsim>`_, which is installed with the Python requirements in
+``python-requirements.txt``.
 The master ``.hjson`` file that controls simulation with ``dvsim`` can be found
 at `dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson
 <https://github.com/lowRISC/ibex/blob/master/dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson>`_.
@@ -263,11 +264,9 @@ the Ibex repository:
 
 .. code-block:: bash
 
-   ./vendor/lowrisc_ip/util/dvsim/dvsim.py dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson --build-only
-   --skip-ral --purge --sr sim_out
+   dvsim dv/uvm/icache/dv/ibex_icache_sim_cfg.hjson --build-only
+   --purge --scratch-root sim_out
 
-Specify the intended output directory using either the ``--sr`` or ``-scratch-root`` option.
-The ``--skip-ral`` option is mandatory for building/simulating the Icache testbench, as it does not
-have any CSRs, excluding this option will lead to build errors.
+Specify the intended output directory using either the ``-sr`` or ``--scratch-root`` option.
 ``--purge`` directs the tool to ``rm -rf`` the output directory before running the tool, this can be
 removed if not desired.

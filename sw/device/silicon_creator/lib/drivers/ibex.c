@@ -149,8 +149,9 @@ bool ibex_addr_remap_verify(size_t slot, uint32_t matching_addr,
 }
 
 void ibex_enable_nmi(ibex_nmi_source_t nmi_src) {
-  abs_mmio_write32(rv_core_ibex_base() + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
-                   nmi_src);
+  const uint32_t kBase = rv_core_ibex_base();
+  uint32_t reg = abs_mmio_read32(kBase + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET);
+  sec_mmio_write32(kBase + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, reg | nmi_src);
 }
 
 void ibex_clear_nmi(ibex_nmi_source_t nmi_src) {

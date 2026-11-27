@@ -23,14 +23,6 @@
 // .../${module_instance_name}/data/${module_instance_name}_testplan.hjson
 {
   testpoints: [
-% if cheriot_available:
-    {
-      name: sec_cm_cheriot_switch_fsm_sparse
-      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.FSM.SPARSE."
-      stage: V2S
-      tests: []
-    }
-% endif
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
@@ -109,5 +101,101 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_icache_mem_addr_infection
+      desc: "Verify the countermeasure(s) ICACHE.MEM.ADDR_INFECTION."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cored_tlul_bus_lc_gated
+      desc: "Verify the countermeasure(s) CORED_TLUL.BUS.LC_GATED."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_tlul_adapter_logic_shadow
+      desc: "Verify the countermeasure(s) TLUL_ADAPTER.LOGIC.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mcounteren_writable_ctrl_mubi
+      desc: "Verify the countermeasure(s) MCOUNTEREN_WRITABLE.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+% if cheriot_available:
+    {
+      name: sec_cm_cheriot_switch_fsm_sparse
+      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cheriot_switch_config_redun
+      desc: '''
+            Verify the countermeasure(s) CHERIOT_SWITCH.CONFIG.REDUN.
+
+            The mode switch (`rv_core_ibex_cheriot_switch`) samples the mode selection, CHERIOT_ENA
+            and CHERIOT_ENA_BAR on its `ena_i` and `ena_ni` inputs, in the cycle CHERIOT_LOCK is
+            written (`lock_access_i`) and checks it again in each of the four staging cycles that
+            follow. From the lock on, CHERIOT_ENA_REGWEN blocks software writes to both registers,
+            so only a fault can change the selection in these cycles.
+
+            Select either mode with a valid pair and write CHERIOT_LOCK. In the lock cycle or in a
+            randomly chosen staging cycle, force `ena_i`, `ena_ni` or both for one cycle to other
+            values, valid or invalid, including the pair that selects the other mode. Check that
+            the switch enters its error state and drives all its enables invalid, that the
+            `fatal_hw_err` alert is raised, that Ibex sets ERR_STATUS.FATAL_CORE_ERR and stops
+            fetching, and that the CHERIoT memory subsystem raises its `fatal_fault` alert.
+
+            Force the same values once the switch has reached its final state, and check that the
+            enables stay unchanged and no alert is raised.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cheriot_enable_ctrl_redun
+      desc: '''
+            Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.REDUN.
+
+            The main core and the lockstep shadow core receive separate CHERIoT enables
+            (`cheriot_enable_i` and `cheriot_enable_shadow_i` of `ibex_top`), which Ibex compares
+            while the switch keeps the compare enable (`cheriot_enable_cmp_i`) on: at all times
+            except in the staging steps of a switch to CHERIoT mode.
+
+            Before the lock, or once the switch has reached its final state in either mode, force
+            the enable of one core, anywhere between the switch's enable flop and the receivers in
+            Ibex, for one cycle to the other valid value or to an invalid value. Check that Ibex
+            sets ERR_STATUS.FATAL_CORE_ERR, raises the `fatal_hw_err` alert and stops fetching. Also
+            check that a regular switch to either mode, in which the shadow core's enable trails the
+            main core's by one cycle, raises no alert.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cheriot_enable_ctrl_mubi
+      desc: "Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cored_tag_intersig_mubi
+      desc: '''
+            Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI.
+
+            Corrupt the tag of an untagged data request or response to an invalid encoding, in
+            turn at the input and the output of the data FIFO. Check that each corruption sets
+            ERR_STATUS.FATAL_INTG_ERR and raises the `fatal_hw_err` alert, and that a corrupted
+            response tag reads as untagged.
+            '''
+      stage: V2S
+      // To be covered by the chip-level testpoint chip_sw_cheriot_cored_tag_mubi.
+      tests: []
+    }
+% endif
   ]
 }

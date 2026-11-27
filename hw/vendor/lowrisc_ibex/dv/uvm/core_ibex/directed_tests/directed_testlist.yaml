@@ -77,6 +77,21 @@
   test_srcs: mcounteren_test/mcounteren_lock_test.S
   config: riscv-tests
 
+- test: debug_trigger_cause_test
+  desc: >
+    An ebreak, a single step or a halt request from WFI enters debug mode
+    while an execute trigger is set on the next instruction. The trigger
+    does not fire, so dcsr.cause must name the entry. Triggers on reached
+    instructions still fire.
+  iterations: 1
+  test_srcs: debug_trigger_cause_test/debug_trigger_cause_test.S
+  config: riscv-tests
+  rtl_test: core_ibex_debug_halt_wfi_test
+  rtl_params:
+    PMPEnable: 1
+    DbgTriggerEn: 1
+  sim_opts: +enable_debug_seq=1
+
 - test: zcmp_reserved_test
   desc: >
     Reserved Zcmp encodings trap as illegal instructions and are not
@@ -141,6 +156,23 @@
     SecureIbex: 1
     RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
   sim_opts: +disable_cosim=1 +enable_irq_single_seq=1
+
+- test: debug_zcmp_trap_test
+  desc: >
+    A single step over a cm.mva01s that U mode may not fetch, or over a
+    cm.push whose first store faults, must enter debug mode at the trap
+    vector, before the first instruction of the handler. So must an
+    execute trigger on the trap vector after the cm.push fault.
+  iterations: 1
+  test_srcs: debug_zcmp_trap_test/debug_zcmp_trap_test.S
+  config: riscv-tests
+  rtl_test: core_ibex_debug_halt_once_test
+  rtl_params:
+    PMPEnable: 1
+    RV32E: 0
+    DbgTriggerEn: 1
+    RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
+  sim_opts: +disable_cosim=1 +enable_debug_seq=1
 
 - test: pmp_mseccfg_test_rlb1_l0_0_u0
   desc: >

@@ -31,9 +31,9 @@ The unsupported drive-strength bits in the corresponding CSRs would then always 
 
 ## Pinmux Configuration
 
-Upon POR, the `pinmux` state is such that all MIO outputs are high-Z, and all MIO peripheral inputs are tied off to 0.
+Upon POR, the `pinmux` state is such that all MIO pads are high-Z, and all MIO peripheral inputs are tied off to 0, unless the top-level defines a different reset muxing for a pad / signal.
 Software should determine and program the `pinmux` mapping at startup, or reprogram it when the functionality requirements change at runtime.
-This can be achieved by writing the following values to the [`PERIPH_INSEL_0`](registers.md#periph_insel_0) and [`MIO_OUTSEL_0`](registers.md#mio_outsel) registers.
+This can be achieved by writing the following values to the [`MIO_PERIPH_INSEL_0`](registers.md#mio_periph_insel) and [`MIO_OUTSEL_0`](registers.md#mio_outsel) registers.
 
 `periph_insel` Value  | Selected Input Signal
 ----------------------|-----------------------
@@ -45,12 +45,15 @@ The global default at reset is `0`, but the default of individual signals can be
 
 `mio_outsel` Value    | Selected Output signal
 ----------------------|-----------------------
-0                     | Constant zero (default)
+0                     | Constant zero
 1                     | Constant one
-2                     | High-Z
+2                     | High-Z (default)
 3 + k                 | Corresponding peripheral output signal at index k
 
 The global default at reset is `2`, but the default of individual signals can be overridden at design time, if needed.
+
+If the top-level defines a sparse muxing matrix, select values that are not legal for a peripheral input or pad can still be written.
+An illegal `periph_insel` value ties the peripheral input to zero, and an illegal `mio_outsel` value puts the pad into high-Z state.
 
 Note that the `pinmux` configuration should be sequenced after any IO attribute-specific configuration in the [`MIO_PAD_ATTR_0`](registers.md#mio_pad_attr) and [`DIO_PAD_ATTR_0`](registers.md#dio_pad_attr) registers to avoid any unwanted electric behavior and/or contention.
 If needed, each select signal can be individually locked down via [`MIO_PERIPH_INSEL_REGWEN_0`](registers.md#mio_periph_insel_regwen) or [`MIO_OUTSEL_REGWEN_0`](registers.md#mio_outsel_regwen).

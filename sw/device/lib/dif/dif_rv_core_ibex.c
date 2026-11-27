@@ -246,8 +246,63 @@ dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
       reg, RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT,
       (nmi & kDifRvCoreIbexNmiSourceWdog) == kDifRvCoreIbexNmiSourceWdog);
 
+  // Keep the sources that are already enabled.
+  reg |= mmio_region_read32(rv_core_ibex->base_addr,
+                            RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET);
   mmio_region_write32(rv_core_ibex->base_addr,
                       RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, reg);
+
+  // Writes have no effect once NMI_ENABLE_REGWEN is cleared.
+  if (mmio_region_read32(rv_core_ibex->base_addr,
+                         RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET) != reg) {
+    return kDifLocked;
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_disable_nmi(
+    const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi) {
+  if (rv_core_ibex == NULL || nmi & ~(uint32_t)kDifRvCoreIbexNmiSourceAll) {
+    return kDifBadArg;
+  }
+
+  uint32_t reg = 0;
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceAlert) == kDifRvCoreIbexNmiSourceAlert);
+  reg = bitfield_bit32_write(
+      reg, RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT,
+      (nmi & kDifRvCoreIbexNmiSourceWdog) == kDifRvCoreIbexNmiSourceWdog);
+
+  // Keep the sources that are not disabled.
+  uint32_t enabled = mmio_region_read32(rv_core_ibex->base_addr,
+                                        RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET);
+  enabled &= ~reg;
+  mmio_region_write32(rv_core_ibex->base_addr,
+                      RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, enabled);
+
+  // Writes have no effect once NMI_ENABLE_REGWEN is cleared.
+  if (mmio_region_read32(rv_core_ibex->base_addr,
+                         RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET) != enabled) {
+    return kDifLocked;
+  }
+
+  return kDifOk;
+}
+
+dif_result_t dif_rv_core_ibex_lock_nmi_enable(
+    const dif_rv_core_ibex_t *rv_core_ibex) {
+  if (rv_core_ibex == NULL) {
+    return kDifBadArg;
+  }
+
+  // Only locks in case it is not locked already.
+  if (mmio_region_read32(rv_core_ibex->base_addr,
+                         RV_CORE_IBEX_NMI_ENABLE_REGWEN_REG_OFFSET) == 1) {
+    mmio_region_write32(rv_core_ibex->base_addr,
+                        RV_CORE_IBEX_NMI_ENABLE_REGWEN_REG_OFFSET, 0);
+  }
 
   return kDifOk;
 }

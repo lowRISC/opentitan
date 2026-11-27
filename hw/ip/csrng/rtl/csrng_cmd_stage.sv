@@ -214,8 +214,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 6
   //
-  localparam int StateWidth = 8;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int CmdStageStateWidth = 8;
+  typedef enum logic [CmdStageStateWidth-1:0] {
     Idle      = 8'b11110101, // idle
     Flush     = 8'b01011011, // flush command FIFO and start over
     ArbGnt    = 8'b00011100, // general arbiter request

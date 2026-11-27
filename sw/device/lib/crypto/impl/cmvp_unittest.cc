@@ -566,9 +566,16 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   // AES-GCM Encrypt is not approved (caller provides IV)
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT]);
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_INIT]);
-  // AES-GCM Decrypt is approved
+  EXPECT_FALSE(
+      kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_ENCRYPT_FINAL]);
+  // AES-GCM Decrypt is approved (streaming update functions default to approved
+  // for decryption and override dynamically for encryption contexts)
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_DECRYPT]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_INIT]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_UPDATE_AAD]);
+  EXPECT_TRUE(
+      kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_UPDATE_ENCRYPTED_DATA]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_FINAL]);
 
   // DRBG: generate, instantiate, reseed, uninstantiate are approved, manual is
   // not

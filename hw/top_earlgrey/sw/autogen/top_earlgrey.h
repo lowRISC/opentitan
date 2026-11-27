@@ -1412,8 +1412,9 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
   kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
   kTopEarlgreyAlertIdCheriotMemSysFatalFault = 67, /**< cheriot_mem_sys_fatal_fault */
-  kTopEarlgreyAlertIdSramCtrlMetaFatalError = 68, /**< sram_ctrl_meta_fatal_error */
-  kTopEarlgreyAlertIdLast = 68, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdCheriotMemSysRecovCtrlUpdateErr = 68, /**< cheriot_mem_sys_recov_ctrl_update_err */
+  kTopEarlgreyAlertIdSramCtrlMetaFatalError = 69, /**< sram_ctrl_meta_fatal_error */
+  kTopEarlgreyAlertIdLast = 69, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1423,7 +1424,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[69];
+    top_earlgrey_alert_for_peripheral[70];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 
@@ -1516,22 +1517,22 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1 = 75, /**< Peripheral Input 75 */
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2 = 76, /**< Peripheral Input 76 */
   kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3 = 77, /**< Peripheral Input 77 */
-  kTopEarlgreyPinmuxPeripheralInUart0Rx = 78, /**< Peripheral Input 78 */
-  kTopEarlgreyPinmuxPeripheralInUart1Rx = 79, /**< Peripheral Input 79 */
-  kTopEarlgreyPinmuxPeripheralInUart2Rx = 80, /**< Peripheral Input 80 */
-  kTopEarlgreyPinmuxPeripheralInUart3Rx = 81, /**< Peripheral Input 81 */
-  kTopEarlgreyPinmuxPeripheralInI3c0RstdetScl = 82, /**< Peripheral Input 82 */
-  kTopEarlgreyPinmuxPeripheralInI3c0RstdetSda = 83, /**< Peripheral Input 83 */
-  kTopEarlgreyPinmuxPeripheralInI3c1RstdetScl = 84, /**< Peripheral Input 84 */
-  kTopEarlgreyPinmuxPeripheralInI3c1RstdetSda = 85, /**< Peripheral Input 85 */
-  kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 86, /**< Peripheral Input 86 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 87, /**< Peripheral Input 87 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 88, /**< Peripheral Input 88 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 89, /**< Peripheral Input 89 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 90, /**< Peripheral Input 90 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 91, /**< Peripheral Input 91 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 92, /**< Peripheral Input 92 */
-  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 93, /**< Peripheral Input 93 */
+  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 78, /**< Peripheral Input 78 */
+  kTopEarlgreyPinmuxPeripheralInUart0Rx = 79, /**< Peripheral Input 79 */
+  kTopEarlgreyPinmuxPeripheralInUart1Rx = 80, /**< Peripheral Input 80 */
+  kTopEarlgreyPinmuxPeripheralInUart2Rx = 81, /**< Peripheral Input 81 */
+  kTopEarlgreyPinmuxPeripheralInUart3Rx = 82, /**< Peripheral Input 82 */
+  kTopEarlgreyPinmuxPeripheralInI3c0RstdetScl = 83, /**< Peripheral Input 83 */
+  kTopEarlgreyPinmuxPeripheralInI3c0RstdetSda = 84, /**< Peripheral Input 84 */
+  kTopEarlgreyPinmuxPeripheralInI3c1RstdetScl = 85, /**< Peripheral Input 85 */
+  kTopEarlgreyPinmuxPeripheralInI3c1RstdetSda = 86, /**< Peripheral Input 86 */
+  kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 87, /**< Peripheral Input 87 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 88, /**< Peripheral Input 88 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 89, /**< Peripheral Input 89 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 90, /**< Peripheral Input 90 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 91, /**< Peripheral Input 91 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 92, /**< Peripheral Input 92 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 93, /**< Peripheral Input 93 */
   kTopEarlgreyPinmuxPeripheralInLast = 93, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 

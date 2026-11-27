@@ -1,18 +1,30 @@
 # Programmer's Guide
 
-This section details how software drives the background revocation engine (TBRE) of the CHERIoT memory subsystem, and how capabilities are stored in the NVM.
-The tag store and the rest of the meta SRAM are not software-visible; software only writes the revocation bitmap through the `revbm` window and controls the engine through its [registers](registers.md).
+This section details how software initializes the CHERIoT memory subsystem, how it drives the background revocation engine (TBRE), and how capabilities are stored in the NVM.
+The tag store and the rest of the meta SRAM are not software-visible; software only writes the revocation bitmap through the `revbm` window in CHERIoT mode and controls the engine through its [registers](registers.md).
+
+## Initialization
+
+The CHERIoT ISA does not require capability tags and the revocation bitmap to read as zero at reset, so CHERIoT software must clear them unless the hardware does.
+In Earl Grey, the hardware clears all tags and the revocation bitmap by zero-initializing the meta SRAM before the switch to CHERIoT mode: software writes 1 to [`CTRL.INIT`](../../sram_ctrl/doc/registers.md#ctrl) of `sram_ctrl_meta` and waits until [`STATUS.INIT_DONE`](../../sram_ctrl/doc/registers.md#status) is set.
+This writes zeros because Earl Grey instantiates `sram_ctrl_meta` with `SecZeroInit` set.
+The known zero data can leak the scrambling key, so `sram_ctrl_meta` must use a unique key at this point.
+The [`rv_core_ibex` documentation](../../../top_earlgrey/ip_autogen/rv_core_ibex/doc/theory_of_operation.md#switching-to-cheriot-mode-at-runtime) describes the whole switch sequence.
 
 ## Revoking Capabilities
 
 1.  **Mark the freed memory as revoked:** Set the revocation bit of every 8-byte granule of the freed allocation in the `revbm` window, as described in the [Theory of Operation](theory_of_operation.md#meta-sram-address-map).
 2.  **Check the engine is idle:** `TBRE_STATUS.busy` in [`TBRE_STATUS`](registers.md#tbre_status) must read zero; while it is set, [`TBRE_REGWEN`](registers.md#tbre_regwen) is low and writes to the sweep registers are ignored.
-3.  **Describe the sweep:** Write the address of the first capability to [`TBRE_BASE_ADDR`](registers.md#tbre_base_addr) and the number of capabilities to [`TBRE_NUM_CAPS`](registers.md#tbre_num_caps).
+3.  **Describe the sweep:** Write the address of the first capability to [`TBRE_BASE_ADDR_SHADOWED`](registers.md#tbre_base_addr_shadowed) and the number of capabilities to [`TBRE_NUM_CAPS_SHADOWED`](registers.md#tbre_num_caps_shadowed).
+    Both are [shadow registers](../../../../util/reggen/README.md#shadow-registers): write each value twice in a row, and read it back to check it was taken.
+    Do not let another write to the same register, e.g. from an interrupt handler, come between the two writes.
+    A second write that does not match the first leaves the register unchanged, sets [`RECOV_ERR_CODE.shadow_update_err`](registers.md#recov_err_code), which software clears by writing 1 to it, and raises the recoverable `recov_ctrl_update_err` alert.
+    After a storage error ([`FATAL_ERR_CODE.shadow_storage_err`](registers.md#fatal_err_code)) the register takes no update until reset.
     The address is 8-byte aligned by construction and must lie in a tagged region, the main SRAM or the NVM; a sweep reaching past the top of its region ends there.
     A capability to the freed memory can be stored in either region.
     The topmost NVM pages (the emulated OTP, from `0x301F_F400` in Earl Grey) are not accessible to software and cannot be read, so sweeping them results in an error; end NVM sweeps below them.
 4.  **Start the sweep:** Write 1 to [`TBRE_START`](registers.md#tbre_start).
-    The start is ignored outside CHERIoT mode, with `TBRE_NUM_CAPS` zero, or with `TBRE_BASE_ADDR` outside the tagged regions.
+    The start is ignored outside CHERIoT mode, with `TBRE_NUM_CAPS_SHADOWED` zero, or with `TBRE_BASE_ADDR_SHADOWED` outside the tagged regions.
     An ignored start sets `TBRE_STATUS.start_err`, which software clears by writing 1 to it; check it after a start to tell an ignored start from a completed sweep.
 5.  **Wait for completion:** Enable the `tbre_done` interrupt in [`INTR_ENABLE`](registers.md#intr_enable) and wait for it, or poll `TBRE_STATUS.busy` until it reads zero.
     Both happen once every capability of the sweep has been resolved.

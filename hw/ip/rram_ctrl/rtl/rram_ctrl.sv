@@ -488,6 +488,8 @@ module rram_ctrl
     .compound_txn_in_progress_o(),
     .readback_en_i             (prim_mubi_pkg::MuBi4False),
     .readback_error_o          (),
+    .rmw_intg_chk_en_i         (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o          (),
     .wr_collision_i            (1'b0),
     .write_pending_i           (1'b0)
   );
@@ -516,36 +518,31 @@ module rram_ctrl
   // RRAM_CTRL_RD_FIFO //
   ///////////////////////
 
-  logic rd_fifo_adapter_rvalid;
   logic rd_fifo_adapter_req;
-  logic rd_fifo_adapter_req_d, rd_fifo_adapter_req_q;
-
-  // A read request is seen from software but a read operation is not enabled
-  // AND there are no pending entries to read from the fifo.
-  // This indicates software has issued a read when it should not have.
-  logic rd_no_op_d, rd_no_op_q;
+  logic rd_fifo_gnt, rd_fifo_err;
+  logic rd_fifo_rsp_q, rd_fifo_rsp_err_q;
   logic ctrl_rd_op;
   assign ctrl_rd_op = reg2hw.control.start.q & (reg2hw.control.op.q == RramOpRead);
 
-  // If software ever attempts to read when the FIFO is empty AND if it has never
-  // initiated a transaction, OR when RRAM is disabled, then it is a read that
-  // can never complete, error back immediately.
-  assign rd_no_op_d = rd_fifo_adapter_req & ((~ctrl_rd_op & ~rd_fifo_rvalid) |
-                      (prim_mubi_pkg::mubi4_test_true_loose(rram_disable[RdFifoIdx])));
+  // A software read of the RD FIFO is served from the FIFO once it holds data.
+  // While a read operation is running, a read of the empty FIFO waits for the data.
+  // A read that can never be served is granted immediately and answered with an error.
+  // This is the case if the FIFO is empty and no read operation is running, or if RRAM is disabled.
+  assign rd_fifo_err = (~ctrl_rd_op & ~rd_fifo_rvalid) |
+                       prim_mubi_pkg::mubi4_test_true_loose(rram_disable[RdFifoIdx]);
+  assign rd_fifo_gnt = rd_fifo_rvalid | rd_fifo_err;
 
-  assign rd_fifo_adapter_req_d = rd_fifo_adapter_req & rd_fifo_rvalid;
-
+  // The response follows one cycle after the grant.
+  // The adapter accepts only one outstanding request, so the FIFO head stays until the response.
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      rd_fifo_adapter_req_q <= 1'b0;
-      rd_no_op_q            <= 1'b0;
+      rd_fifo_rsp_q     <= 1'b0;
+      rd_fifo_rsp_err_q <= 1'b0;
     end else begin
-      rd_fifo_adapter_req_q <= rd_fifo_adapter_req_d;
-      rd_no_op_q            <= rd_no_op_d;
+      rd_fifo_rsp_q     <= rd_fifo_adapter_req & rd_fifo_gnt;
+      rd_fifo_rsp_err_q <= rd_fifo_adapter_req & rd_fifo_err;
     end
   end
-
-  assign rd_fifo_adapter_rvalid = rd_fifo_adapter_req_q | rd_no_op_q;
 
   // The tlul_adapter_sram handles the protocol and provides the software access to the read FIFO.
   tlul_adapter_sram #(
@@ -563,7 +560,7 @@ module rram_ctrl
     .en_ifetch_i               (prim_mubi_pkg::MuBi4False),
     .req_o                     (rd_fifo_adapter_req),
     .req_type_o                (),
-    .gnt_i                     (rd_fifo_rvalid),
+    .gnt_i                     (rd_fifo_gnt),
     .we_o                      (),
     .addr_o                    (),
     .wmask_o                   (),
@@ -571,16 +568,19 @@ module rram_ctrl
     .intg_error_o              (rd_fifo_adapter_intg_err),
     .user_rsvd_o               (),
     .rdata_i                   (rd_fifo_rdata),
-    .rvalid_i                  (rd_fifo_adapter_rvalid),
-    .rerror_i                  ({rd_no_op_q, 1'b0}),
+    .rvalid_i                  (rd_fifo_rsp_q),
+    .rerror_i                  ({rd_fifo_rsp_err_q, 1'b0}),
     .compound_txn_in_progress_o(),
     .readback_en_i             (prim_mubi_pkg::MuBi4False),
     .readback_error_o          (),
+    .rmw_intg_chk_en_i         (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o          (),
     .wr_collision_i            (1'b0),
     .write_pending_i           (1'b0)
   );
 
-  assign rd_fifo_rready = rd_fifo_adapter_req_q;
+  // An error response does not pop the FIFO.
+  assign rd_fifo_rready = rd_fifo_rsp_q & ~rd_fifo_rsp_err_q;
 
   // The read FIFO below is dedicated to the software read path.
   prim_fifo_sync #(
@@ -944,6 +944,8 @@ module rram_ctrl
     .compound_txn_in_progress_o(),
     .readback_en_i             (prim_mubi_pkg::MuBi4False),
     .readback_error_o          (),
+    .rmw_intg_chk_en_i         (prim_mubi_pkg::MuBi4False),
+    .rmw_intg_error_o          (),
     .wr_collision_i            (1'b0),
     .write_pending_i           (1'b0)
   );

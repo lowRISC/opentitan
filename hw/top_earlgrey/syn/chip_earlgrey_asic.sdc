@@ -21,6 +21,42 @@ set SETUP_CLOCK_UNCERTAINTY 0.5
 set CLK_PERIOD_FACTOR $CLK_PERIOD_FACTOR ;# clock period over constraining factor
 puts "Applying constraints for top level"
 
+# Generic constraint helpers, used here and by the IP-specific constraint files
+# sourced below. Looked for next to this file first, so a flow that copies the
+# SDC into a build directory stays reproducible, then in the repository.
+# `info script` is not usable here because `read_sdc` (called on this file)
+# does not set it.
+set SDC_UTIL ""
+foreach SDC_UTIL_CANDIDATE [list \
+    [file join [pwd] sdc util.tcl] \
+    [file join [pwd] .. .. syn util.tcl]] {
+  if {[file exists ${SDC_UTIL_CANDIDATE}]} {
+    set SDC_UTIL [file normalize ${SDC_UTIL_CANDIDATE}]
+    break
+  }
+}
+if {${SDC_UTIL} eq ""} {
+  # read_sdc swallows a bare `error`, so report it where it will be seen.
+  puts "ERROR: cannot find the generic constraint helpers (util.tcl)"
+  error "cannot find the generic constraint helpers"
+}
+
+# Netlist naming used by the helpers.
+# Bit of a prim_subreg: its output port, kept by every tool as the hierarchy is
+# preserved (see the pinmux case analysis below).
+set ::sdc_cfg(reg_q_pin) {q[%d]}
+# Pad attribute flops of the pinmux. PrimeTime sees the mapped netlist after
+# change_names (see the pad attribute exceptions at the end of this file), DC
+# the elaborated netlist.
+if {${synopsys_program_name} eq "pt_shell"} {
+  set ::sdc_cfg(pad_attr_pin) {mio_pad_attr_q_reg_%d__%s/Q}
+} elseif {${synopsys_program_name} eq "dc_shell"} {
+  set ::sdc_cfg(pad_attr_pin) {mio_pad_attr_q_reg[%d][%s]/Q}
+}
+
+puts "INFO: sourcing the generic constraint helpers from ${SDC_UTIL}"
+source ${SDC_UTIL}
+
 # Note: the netlist does include pads at this level, but not all IO interfaces
 # have been constrained. The clocks are generated inside AST and
 # for the purpose of test synthesis, these clock nets are just set to ideal networks.
@@ -1522,8 +1558,6 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR1
 }
 ## end: SPI Host 1 constraints for PrimeTime
 
-set_false_path  -through   [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/IE"] -through [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/Y"]
-
 #leonids 06Jul False path that prevent SPI report
 set_false_path -from [get_clocks SPI*] -through [get_cells -hierarchical -filter "full_name =~ *u_ast_dft*"]
 
@@ -1605,19 +1639,28 @@ set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_tech
 set_case_analysis 1 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 0 u_padring/gen_dio_pads_16__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #  SPI_DEV_CLK
-set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 0 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_17__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #  SPI_DEV_CS_L
-set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/SR
-set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
-set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
-set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+set_case_analysis 0 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #IOA7
-# Open drain pads have just one drive strength bit.
-set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/DS
-set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/IS
+set_case_analysis 0 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#IOB9, IOB10, IOB11, IOB12 - the I3C pads.
+foreach I3C_PAD {18 19 20 21} {
+  set I3C_PAD_MACRO u_padring/gen_mio_pads_${I3C_PAD}__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR
+  set_case_analysis 0 ${I3C_PAD_MACRO}/SR
+  set_case_analysis 1 ${I3C_PAD_MACRO}/DS0
+  set_case_analysis 1 ${I3C_PAD_MACRO}/DS1
+  set_case_analysis 1 ${I3C_PAD_MACRO}/IS
+}
 #IOB0
 set_case_analysis 0 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
@@ -1657,7 +1700,83 @@ set SPI_DEV_SLOW_PASS_CLKS "SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV
 set SPI_DEV_FAST_PASS_CLKS "SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK"
 set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 
-# this may need some refinement (and max delay / skew needs to be constrained)
+#####################
+# I3C               #
+#####################
+# Both I3C instances are constrained by the shared procedures in
+# hw/ip/i3c/syn/i3c_constraints.tcl. See there for the clock structure and the
+# I3C v1.2 numbers; only the integration choices are made here.
+#
+# The Target half of each instance is clocked by the bus itself, and the
+# Controller half generates SCL out of clk_i onto the same pad. Each pad
+# therefore carries two mutually exclusive SCL sources. The Target is timed
+# against the external one; the paths the generated SCL clocks in the Target
+# are cut, see the header of i3c_constraints.tcl.
+#
+# Pads, used in both directions, may need to be changed:
+#   I3C0: SCL = IOB10 (MIO pad 19), SDA = IOB9  (MIO pad 18)
+#   I3C1: SCL = IOB11 (MIO pad 20), SDA = IOB12 (MIO pad 21)
+
+# Set these to the real numbers for the package and board this is taped out on.
+# The defaults assume the pad cells are timed by the library.
+set ::i3c_cfg(board_dly_max) 2.0
+set ::i3c_cfg(board_dly_min) 0.1
+
+source [sdc_find_script i3c_constraints.tcl {.. .. ip i3c syn}]
+
+# Entries are {peripheral_input peripheral_output mio_pad}, using the MioIn* /
+# MioOut* / MioPad* indices of top_earlgrey_pkg.sv. The reset detectors observe
+# the same pads through their own peripheral inputs and have no peripheral
+# output of their own (hence the dashes in the middle column).
+# Keep the list below as
+# {MioInI3c0Scl       MioOutI3c0Scl MioPadIob10}
+# {MioInI3c0Sda       MioOutI3c0Sda MioPadIob9 }
+# {MioInI3c1Scl       MioOutI3c1Scl MioPadIob11}
+# {MioInI3c1Sda       MioOutI3c1Sda MioPadIob12}
+# {MioInI3c0RstdetScl       -       MioPadIob10}
+# {MioInI3c0RstdetSda       -       MioPadIob9 }
+# {MioInI3c1RstdetScl       -       MioPadIob11}
+# {MioInI3c1RstdetSda       -       MioPadIob12}
+set I3C_PINMUX {
+    {70 70 19}
+    {71 71 18}
+    {72 72 20}
+    {73 73 21}
+    {83  - 19}
+    {84  - 18}
+    {85  - 20}
+    {86  - 21}
+}
+sdc_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
+
+# These peripheral inputs take a clock from their pad. Add them to the list
+# below; used to keep clock propagation from them.
+foreach entry ${I3C_PINMUX} {
+  lappend MIO_PERIPH_CLOCK_INPUTS [lindex ${entry} 0]
+}
+
+# Call the constrain entry points for both instances.
+# The IP runs on clk_io_peri, a gated copy of IO_CLK, so IO_CLK is both the
+# source of the generated SCL and the clock that captures the Controller's
+# received data.
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB10 IOB9 \
+    I3C0 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB11 IOB12 \
+    I3C1 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
+
+# The reset detectors are the secondary partitions. i3c0 can wake the chip from
+# deep sleep, so its detector sits in the AON power domain while i3c1's stays
+# in the Main domain. Both run on the AON peripheral clock; their crossings are
+# bounded in chip_earlgrey_asic_check_only.sdc.
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary \
+    I3C0 IO_CLK
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary \
+    I3C1 IO_CLK
+
+i3c_summary
+
+
+# This may need some refinement (and max delay / skew needs to be constrained)
 # note that internal CDCs that are not timed as a result of this set_clock_groups
 # directive are being checked post-route to make sure they are within spec.
 # see chip_earlgrey_asic_check_only.sdc.
@@ -1665,7 +1784,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
-    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
+    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK I3C0_SCL_INT I3C1_SCL_INT}] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK RRAM_JTAG_TCK"] \
     -group [get_clocks AON_CLK                                      ]
@@ -1679,6 +1798,26 @@ set_false_path -through [get_pins *padring/*pad/*/out_i] -through [get_pins *pad
 
 # break path through jtag mux
 set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
+
+# Pads can be routed into sysrst_ctrl and from there combinationally out to any
+# other pad. The I3C bus I/O delays only describe the I3C pads talking to the
+# I3C IPs, so cut them through sysrst_ctrl in both directions.
+set I3C_BUS_CLKS [get_clocks {I3C0_SCL_INT I3C0_SCL_EXT I3C0_SDA I3C0_RSTDET_SDA
+                              I3C1_SCL_INT I3C1_SCL_EXT I3C1_SDA I3C1_RSTDET_SDA}]
+set_false_path -from ${I3C_BUS_CLKS} -through [get_pins top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
+set_false_path -to   ${I3C_BUS_CLKS} -through [get_pins top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
+
+# Even with the pinmux select signals for I3C pinned, the I3C periph_out signals
+# still leak through the pinmux to all pads which don't have a pinned function.
+# Since SPI_HOST1 and I3C*_SCL_INT are both derived from IO_CLK and are in the
+# same clock group, this leads to bogus timing checks between SPI_HOST1_CLKS and
+# the I3C clocks.
+# Note: This is not an issue for SPI_HOST0 as it is on DIO; the pinmux cannot
+# cross-contaminate the timing checks here.
+set SPI_HOST1_CLKS [get_clocks {SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}]
+set_false_path -from ${I3C_BUS_CLKS}   -to ${SPI_HOST1_CLKS}
+set_false_path -from ${SPI_HOST1_CLKS} -to ${I3C_BUS_CLKS}
+set_false_path -through [get_pins top_earlgrey/earlgrey_pd_main/u_i3c*_part_primary/*] -to ${SPI_HOST1_CLKS}
 
 #####################
 # I/O drive/load    #
@@ -1737,3 +1876,22 @@ if { $synopsys_program_name  == "pt_shell" } {
 }
 
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV4_CLK]
+
+# Prevent that clocks that are defined on a muxed pad (the I3C SCL and SDA clocks, SPI_HOST1's SCK)
+# leak through every peripheral input mux in pinmux whose select is not pinned. Through the various
+# combinational feedthrough paths (sysrst_ctrl, UART loopback, SPI passthrough, JTAG muxes) they
+# would then even propagate back to the pinmux output muxes, then to the pads.
+# The only exceptions are pinmux input muxes that really take a clock from a pad. The respective
+# indices must be added by the peripheral-specific constraint sections to MIO_PERIPH_CLOCK_INPUTS.
+if {![info exists MIO_PERIPH_CLOCK_INPUTS]} {
+  set MIO_PERIPH_CLOCK_INPUTS {}
+}
+set MIO_PERIPH_DATA_INPUTS {}
+foreach_in_collection pin [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/mio_to_periph_o*] {
+  if {[regexp {\[([0-9]+)\]$} [get_object_name ${pin}] -> idx] &&
+      [lsearch -exact ${MIO_PERIPH_CLOCK_INPUTS} ${idx}] < 0} {
+    lappend MIO_PERIPH_DATA_INPUTS [get_object_name ${pin}]
+  }
+}
+puts "INFO: stopping clock propagation at [llength ${MIO_PERIPH_DATA_INPUTS}] pinmux peripheral inputs"
+set_sense -stop_propagation [get_pins ${MIO_PERIPH_DATA_INPUTS}]

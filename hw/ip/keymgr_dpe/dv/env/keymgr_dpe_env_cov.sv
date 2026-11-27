@@ -194,10 +194,8 @@ class keymgr_dpe_env_cov extends cip_base_env_cov #(.CFG_T(keymgr_dpe_env_cfg));
     foreach (cfg.ral.salt[i]) begin
       create_sw_input_cg_obj(cfg.ral.salt[i].get_name());
     end
-    foreach (cfg.ral.key_version[i]) begin
-      create_sw_input_cg_obj(cfg.ral.key_version[i].get_name());
-    end
 
+    create_sw_input_cg_obj(cfg.ral.key_version.get_name());
     create_sw_input_cg_obj(cfg.ral.max_key_ver_shadowed.get_name());
     create_sw_input_cg_obj(cfg.ral.start.get_name());
   endfunction

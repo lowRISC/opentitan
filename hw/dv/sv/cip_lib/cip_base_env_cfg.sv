@@ -12,6 +12,11 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
   // integrity check is expected to be ignored (although it may cause an alert).
   bit en_scb_tl_err_chk = 1;
 
+  // True if the common sequences (TL errors, memory partial access) may abandon a request that has
+  // not been accepted (drop a_valid before a_ready). Turn this off when the host being modelled
+  // must hold its requests.
+  bit en_tl_req_abort = 1;
+
   // True if the scoreboard should check that pings on the alert interface get timely responses.
   bit en_scb_ping_chk = 1;
 

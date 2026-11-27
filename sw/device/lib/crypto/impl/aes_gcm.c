@@ -97,8 +97,7 @@ static inline status_t gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
  * @return Result of the operation.
  */
 status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
-  HARDENED_CHECK_LE(internal_ctx->key_len,
-                    ARRAYSIZE(internal_ctx->key_shares[0]));
+  HARDENED_CHECK_LE(internal_ctx->key_len, kAesGcmMaxKeyWords);
   aes_key_t key = aes_gcm_context_key(internal_ctx);
   HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
 
@@ -106,13 +105,13 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
     HARDENED_CHECK_EQ(internal_ctx->sideload, kHardenedBoolFalse);
 
     // Generate a fresh mask the size of one share.
-    uint32_t mask[ARRAYSIZE(internal_ctx->key_shares[0])];
+    uint32_t mask[kAesGcmMaxKeyWords];
     hardened_memshred(mask, internal_ctx->key_len);
 
     // XOR each share with the mask.
-    hardened_xor_in_place(internal_ctx->key_shares[0], mask,
+    hardened_xor_in_place(&internal_ctx->key_shares[0], mask,
                           internal_ctx->key_len);
-    hardened_xor_in_place(internal_ctx->key_shares[1], mask,
+    hardened_xor_in_place(&internal_ctx->key_shares[kAesGcmMaxKeyWords], mask,
                           internal_ctx->key_len);
     // Update the checksum.
     key = aes_gcm_context_key(internal_ctx);
@@ -244,10 +243,11 @@ status_t aes_gcm_check_tag_length(size_t word_len,
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(tag_len_set), tag_len);
+  bit_len = launderw(bit_len);
   HARDENED_CHECK_GT(bit_len, 0);
   HARDENED_CHECK_EQ(bit_len % 32, 0);
 
-  if (launder32(word_len) != bit_len / 32) {
+  if (launderw(word_len) != launderw(bit_len / 32)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(word_len, bit_len / 32);
@@ -294,7 +294,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   barrier32(hw_cleanup_guard);
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext->len) != plaintext->len) {
+  if (launderw(ciphertext->len) != launderw(plaintext->len)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
@@ -363,7 +363,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   }
 
   // Ensure the plaintext and ciphertext lengths match.
-  if (launder32(ciphertext->len) != plaintext->len) {
+  if (launderw(ciphertext->len) != launderw(plaintext->len)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, plaintext->len);
@@ -478,6 +478,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   if (internal_ctx.input_len > 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+  // External-IV AES-GCM encryption is not CMVP-approved; only streaming
+  // decryption contexts are approved.
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
@@ -523,6 +528,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  // External-IV AES-GCM encryption is not CMVP-approved; only streaming
+  // decryption contexts are approved.
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;

@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:prim:mubi
+      - lowrisc:prim:sec_anchor
       - lowrisc:prim:sparse_fsm
 
     files:

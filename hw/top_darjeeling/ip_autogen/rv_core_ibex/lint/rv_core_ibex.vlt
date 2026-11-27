@@ -77,3 +77,27 @@ lint_off -file "*/lowrisc_prim_*/rtl/*.sv"
 
 lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrSeed*"
 lint_off -rule UNUSED -file "*/rtl/ibex_top_tracing.sv" -match "*RndCnstLfsrPerm*"
+
+// These three UNOPTFLAT warnings have been manually inspected and judged
+// to be fine as of 2026/10/13 (af456e2).
+// All three seem to be false alarms due to combinatorial paths leaving and
+// coming back into the large always_comb block in the ID stage controller.
+// Additional details on how this was found are given each waiver.
+//
+// Can be shown to be a non-issue by simply moving the assignment of
+// controller_i.controller_run_o (an instr_executing_spec fan-in signal)
+// outside of the controller always_comb block.
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_id_stage.sv"
+         -match "*instr_executing_spec;"
+//
+// Can be shown to be a non-issue by moving the assignment of
+// controller_i.flush_id (an instr_done fan-in signal via the stall signals)
+// outside of the controller always_comb block.
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_id_stage.sv"
+         -match "*instr_done;"
+//
+// Can be shown to be a non-issue by replacing the only use of
+// id_in_ready_o in the controller always_comb block with
+// the expression assigned to it outside of the always_comb block.
+lint_off -rule UNOPTFLAT -file "*/rtl/ibex_controller.sv"
+         -match "*assign id_in_ready_o = ~stall & ~halt_if & ~retain_id;"

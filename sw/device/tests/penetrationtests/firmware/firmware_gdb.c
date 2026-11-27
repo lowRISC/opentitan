@@ -128,6 +128,68 @@ status_t handle_gdb_try_test(ujson_t *uj) {
   return OK_STATUS();
 }
 
+// Helper returning a legitimate error status for testing the HARDENED_TRY
+// error path. Hardened internally so faults specifically probe HARDENED_TRY in
+// the caller rather than the helper itself.
+OT_NOINLINE status_t return_bad_status_helper(void) {
+  uint32_t err = launder32((uint32_t)OTCRYPTO_BAD_ARGS.value);
+  HARDENED_CHECK_EQ(err, (uint32_t)OTCRYPTO_BAD_ARGS.value);
+  return (status_t){.value = (int32_t)err};
+}
+
+// Multi-call wrapper so the compiler exercises tail-merging across multiple
+// HARDENED_TRY sites (matching real cryptolib functions).
+OT_NOINLINE status_t try_err_inner(bool *result) {
+  HARDENED_TRY(return_bad_status_helper());
+  HARDENED_TRY(set_to_true_helper(result));
+  return OTCRYPTO_OK;
+}
+
+// Adversarial bad-status test for HARDENED_TRY: the first HARDENED_TRY callee
+// returns OTCRYPTO_BAD_ARGS and the attacker attempts to bypass HARDENED_TRY so
+// execution falls through to `set_to_true_helper`.
+status_t handle_gdb_try_err_test(ujson_t *uj) {
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+
+  gdb_out_t uj_output;
+  // Initialize to an error status and false result. The attacker's goal is to
+  // bypass the failing HARDENED_TRY so result becomes true or status becomes
+  // OTCRYPTO_OK (kHardenedBoolTrue).
+  uj_output.status = (uint32_t)OTCRYPTO_RECOV_ERR.value;
+  uj_output.result = false;
+
+  // Trigger window.
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_GDB_TRY_ERR_START);
+  pentest_set_trigger_high();
+
+  status_t res = try_err_inner(&uj_output.result);
+  uj_output.status = (uint32_t)res.value;
+
+  pentest_set_trigger_low();
+  PENTEST_MARKER_LABEL(PENTEST_MARKER_GDB_TRY_ERR_END);
+
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+  RESP_OK(ujson_serialize_gdb_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 // The secure guideline of implementing a switch case.
 status_t handle_gdb_switch_test(ujson_t *uj) {
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
@@ -257,6 +319,9 @@ status_t handle_gdb(ujson_t *uj) {
         break;
       case kGdbSubcommandTry:
         RESP_ERR(uj, handle_gdb_try_test(uj));
+        break;
+      case kGdbSubcommandTryErr:
+        RESP_ERR(uj, handle_gdb_try_err_test(uj));
         break;
       case kGdbSubcommandSwitch:
         RESP_ERR(uj, handle_gdb_switch_test(uj));

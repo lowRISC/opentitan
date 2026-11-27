@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%!
-  from ipgen.pinmux_gen import check_params, gen_index_label, pad_attr_sv
+  from ipgen.pinmux_gen import (INSEL_NUM_CONST, OUTSEL_NUM_CONST, check_params, gen_index_label,
+                                mio_insel_legal, mio_outsel_legal, pad_attr_sv, sv_hex)
 %>\
 package pinmux_pkg;
 
@@ -65,8 +66,29 @@ package pinmux_pkg;
   };
 
 <%
-  check_params(n_mio_pads, n_dio_pads, mio_pad_attr_resvals, dio_pad_attr_resvals)
+  check_params(n_mio_pads, n_dio_pads, n_mio_periph_in, n_mio_periph_out, mio_periph_ins,
+               mio_periph_outs, mio_pad_attr_resvals, dio_pad_attr_resvals)
+  # The pad attrs list has one entry per MIO pad, take the pad names from there.
+  mio_pad_names = [name for name, _ in mio_pad_attr_resvals]
+  insel_w = n_mio_pads + INSEL_NUM_CONST
+  outsel_w = n_mio_periph_out + OUTSEL_NUM_CONST
 %>\
+  // Legal MIO_PERIPH_INSEL values for each MIO peripheral input. LSB corresponds to lowest index.
+  // Includes static options.
+  parameter logic [NMioPeriphIn-1:0][NMioPads+1:0] MioPeriphInselLegal = {
+% for label, mask in gen_index_label(mio_insel_legal(n_mio_pads, mio_periph_ins))[::-1]:
+    ${sv_hex(mask, insel_w)}${f"  // {label}" if loop.last else f", // {label}"}
+% endfor
+  };
+
+  // Legal MIO_OUTSEL values for each MIO pad. LSB corresponds to lowest index. Includes static
+  // options.
+  parameter logic [NMioPads-1:0][NMioPeriphOut+2:0] MioOutselLegal = {
+% for label, mask in gen_index_label(mio_outsel_legal(mio_pad_names, mio_periph_outs))[::-1]:
+    ${sv_hex(mask, outsel_w)}${f"  // {label}" if loop.last else f", // {label}"}
+% endfor
+  };
+
   // Reset values of the MIO_PAD_ATTR CSRs defined by the top. LSB corresponds to lowest index.
   parameter pad_attr_t [NMioPads-1:0] MioPadAttrResval = {
 % for label, attrs in gen_index_label(mio_pad_attr_resvals)[::-1]:

@@ -112,7 +112,7 @@ def create_pinmux_table(top, c_helper):
         port = sig['name']
         if sig['width'] > 1:
             port += '[' + str(sig['idx']) + ']'
-        pad = sig['pad'] if sig['pad'] else '-'
+        pad = sig['pads'][0] if sig['connection'] == 'direct' else '-'
         # get the corresponding insel constant
         if sig['connection'] == 'muxed' and sig['type'] in ['inout', 'output']:
             name, _, _ = c_helper.pinmux_outsel.constants[i]

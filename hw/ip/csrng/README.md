@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/csrng/data/csrng.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`csrng`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/code.svg) |
+ [`csrng`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 3.0.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/csrng/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/csrng/index.html).
 
@@ -35,12 +35,14 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
     - Operates at 256 bit security strength.
 - Support for multiple separate CSRNG instances per IP block.
     - Each instance has its own internal state, control, reseed counters and IO pins.
-    - The number of CSRNG instances is set via a module parameter.
+    - The number of CSRNG instances is currently fixed at 3.
 - Software access to a dedicated CSRNG instance.
     - One instance, Instance N-1, is always accessible from the bus through device registers,
     - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines, etc.) and in normal operation these other instances are inaccessible from software.
-    - The IP may be configured to support "debug mode" wherein all instances can be accessed by software.
-      For security reasons this mode may be permanently disabled using one-time programmable (OTP) memory.
+- Software can halt individual instances, without affecting other instances.
+- Software can save and restore the internal state of individual instances, including a Generate command in progress.
+    - Reading, writing and halting can be enabled per instance and locked until the next reset.
+- Software can abort Generate commands in progress, e.g., to quickly reconfigure an EDN without affecting other instances.
 - The IP interfaces with external entropy sources to obtain any required non-deterministic seed material (entropy) and nonces.
     - Requires an external entropy source which is compliant with NIST SP 800-90B, and which also satisfies the requirements for a PTG.2 class physical non-deterministic random number generator as defined in AIS31.
     - Dedicated hardware interface with external entropy source satisfies requirements for `get_entropy_input()` interface as defined in SP 800-90A.
@@ -52,6 +54,19 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
 - In addition to the approved DRNG mode, any instance can also operate in "Fully Deterministic mode", meaning the seed depends entirely on application inputs or personalization strings.
     - This provides an approved means of seed construction in FIPS 140-2 as described in the [FIPS 140-2 Implementation Guidance](https://csrc.nist.gov/csrc/media/projects/cryptographic-module-validation-program/documents/fips140-2/fips1402ig.pdf), section 7.14, resolution point 2(a).
 
+## Supported Parameter Sets
+
+CSRNG has the following configurable parameters:
+- `SBoxImpl` selects the S-Box implementation of the unmasked AES cipher core.
+  Both supported variants are logically equivalent.
+  `SBoxImplCanright` has the smallest area and is recommended for ASICs; it is also the variant used in verification.
+  `SBoxImplLut` is preferable for FPGAs in terms of logic utilization and timing.
+- `RndCnstCsKeymgrDivNonProduction` and `RndCnstCsKeymgrDivProduction` are the seed diversification values, which are randomized per top.
+- `AlertAsyncOn` and `AlertSkewCycles` configure the alert senders, as for any comportable IP.
+
+The number of application interfaces (`NumApps`) is currently fixed at 3 in `csrng.hjson`: two hardware instances and one software instance.
+Other values haven't been verified to work yet.
+
 ## Description
 
 Though the recommendations in AIS31 are based around broad functional requirements, the recommendations in SP 800-90 are very prescriptive in nature, outlining the exact constructs needed for approval.
@@ -59,7 +74,7 @@ Thus the interface and implementation are largely driven by these explicit const
 
 The CSRNG IP consists of four main components:
 1. An AES primitive
-2. The CTR_DRBG state-machine (`ctr_drbg_fsm`) which drives the AES primitive, performing the various encryption sequences prescribed for approved DRBGs in SP 800-90A.
+2. The CTR_DRBG block (`csrng_ctr_drbg`), whose state machine drives the AES primitive, performing the various encryption sequences prescribed for approved DRBGs in SP 800-90A.
 These include:
 
     1. **The Instantiation Routine:**

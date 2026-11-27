@@ -73,6 +73,8 @@
           - A double fault is seen (Ibex raises `double_fault_seen_o`)
           - A bus integrity error is seen
 % if cheriot_available:
+          - A data request or response carries an invalid encoding of the capability tag at the
+            input or the output of the data FIFO
           - The ePMP/CHERIoT execution mode switch enters its error state
 % endif
       '''
@@ -97,7 +99,31 @@
       act:     "req",
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4False",
-      desc:    "CHERIoT mode enable."
+      desc:    "CHERIoT mode enable of the core, for the debug module."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_memsys",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable of the memory subsystem."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_memsys_shadow",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable of the memory subsystem's second lockstep copy."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_cmp",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "Compare enable for the memory subsystem's CHERIoT enable comparison."
     },
 
     { struct:  "tl",
@@ -108,23 +134,21 @@
       desc:    "Core data host port to the CHERIoT memory subsystem."
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_h2d",
       act:     "req",
-      width:   "1",
-      package: "",
-      default: "1'b0",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
       desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_d2h",
       act:     "rcv",
-      width:   "1",
-      package: "",
-      default: "1'b0",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
       desc:    "Capability tag returned on the D-channel of cored_tl_h."
     },
 
@@ -629,10 +653,31 @@
     {
       name: "RV_CORE_IBEX.CPU.ISA",
       desc: '''
-        Implements a RISC-V core capable of executing RV32ICMB instructions (a subset of bitmanip is
-        implemented, see the Ibex core documentation for details).
+        Implements a RISC-V core capable of executing RV32IMC instructions, including the Zca, Zcb
+        and Zcmp compressed extensions. With `RV32B` set to `RV32BFull`, the core also implements
+        the ratified bitmanip extensions Zba, Zbb, Zbc and Zbs, plus Zbkb and Zbkx. The core
+        supports machine and user mode.
       '''
     },
+% if cheriot_available:
+    {
+      name: "RV_CORE_IBEX.CPU.CHERIOT",
+      desc: '''
+        The RISC-V core implements the CHERIoT capability extension. A write-once execution mode
+        switch in the core wrapper selects between ePMP mode and CHERIoT mode at runtime. In
+        CHERIoT mode, the core has 16 general-purpose registers that each hold a capability,
+        capability tags are carried with the data bus transactions, and Zcmp is not supported.
+      '''
+    },
+    {
+      name: "RV_CORE_IBEX.CPU.TRVK",
+      desc: '''
+        In CHERIoT mode, the RISC-V core checks capability loads against a revocation bitmap
+        (TRVK). The core wrapper exposes the revocation bitmap interface as a TL-UL host port. The
+        heap base address for these checks is set by the `CheriotTrvkHeapBaseAddr` parameter.
+      '''
+    },
+% endif
     {
       name: "RV_CORE_IBEX.CPU.EPMP",
       desc: '''
@@ -665,6 +710,16 @@
       '''
     }
     {
+      name: "RV_CORE_IBEX.CPU.PERF_COUNTERS"
+      desc: '''
+        The RISC-V core implements the `mcycle` and `minstret` counters and `MHPMCounterNum`
+        hardware performance counters with hardwired events. User mode can read them through the
+        Zicntr and Zihpm aliases if `mcounteren` allows it. The core wrapper controls through
+        `MCOUNTEREN_WRITABLE` whether software can change `mcounteren`, and this setting can be
+        locked until reset.
+      '''
+    }
+    {
       name: "RV_CORE_IBEX.RND"
       desc: '''
         The core wrapper has a connection to the EDN that provides 32-bit random numbers via a
@@ -687,14 +742,18 @@
         well as the crash dump at reset.
       '''
     }
+    {
+      name: "RV_CORE_IBEX.ALERTS"
+      desc: '''
+        The core wrapper raises fatal and recoverable alerts for errors of the RISC-V core, bus
+        integrity errors and configuration register errors, and records them in `ERR_STATUS`.
+        Software can trigger a fatal or a recoverable alert through `SW_FATAL_ERR` and
+        `SW_RECOV_ERR`.
+      '''
+    }
   ],
 
   countermeasures: [
-% if cheriot_available:
-    { name: "CHERIOT_SWITCH.FSM.SPARSE",
-      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
-    }
-% endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -729,6 +788,11 @@
       desc: '''
         Shadow core run in lockstep to crosscheck CPU behaviour. This provides
         broad protection for all assets with the Ibex core.
+% if cheriot_available:
+        The core and its TRVK filter form one unit, so the shadow core has its own TRVK filter.
+        Each core encodes its own request tag of the data interface, which is compared encoded,
+        and decodes its own copy of the response tag.
+% endif
       '''
     }
     { name: "FETCH.CTRL.LC_GATED"
@@ -766,8 +830,14 @@
     }
     { name: "TLUL_ADAPTER.LOGIC.SHADOW"
       desc: '''
+% if cheriot_available:
+        Address translation and TL-UL adapters (data and instruction interface) and the TL-UL
+        adapter of the revocation bitmap interface run in lockstep with shadow logic protecting
+        these interfaces against faults.
+% else:
         Address translation and TL-UL adapters (data and instruction interface) run in lockstep with
         shadow logic protecting both interfaces against faults.
+% endif
       '''
     }
     { name: "MCOUNTEREN_WRITABLE.CTRL.MUBI"
@@ -776,9 +846,41 @@
       '''
     }
 % if cheriot_available:
+    { name: "CHERIOT_SWITCH.FSM.SPARSE",
+      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
+    }
+    { name: "CHERIOT_SWITCH.CONFIG.REDUN",
+      desc: '''
+        The mode selection is held twice, in CHERIOT_ENA and its complement CHERIOT_ENA_BAR. The
+        switch checks both when CHERIOT_LOCK is written and again in every staging cycle, and
+        enters its terminal error state otherwise.
+      '''
+    }
+    { name: "CHERIOT_ENABLE.CTRL.REDUN",
+      desc: '''
+        The main core and the lockstep shadow core have separate CHERIoT enables, raised one cycle
+        apart by the mode switch. While the compare enable is on, Ibex requires both to be valid and
+        equal, and raises an internal major alert otherwise. This covers the enables from the
+        switch's enable flops to Ibex's receivers at all times except during the staging steps of a
+        switch to CHERIoT mode, in which the switch turns the compare enable off; the switch's state
+        and checks are covered by CHERIOT_SWITCH.FSM.SPARSE and CHERIOT_SWITCH.CONFIG.REDUN.
+      '''
+    }
     { name: "CHERIOT_ENABLE.CTRL.MUBI"
       desc: '''
-        The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.
+        The CHERIoT enables of Ibex are MuBi, and each core checks its own enable for a valid
+        MuBi encoding.
+      '''
+    }
+    { name: "CORED_TAG.INTERSIG.MUBI"
+      desc: '''
+        The capability tags of the data interface stay multi-bit encoded between Ibex, which
+        encodes and decodes them in each lockstep copy, and the CHERIoT memory subsystem, including
+        inside the data FIFO. Only MuBi4True reads as tagged, and a data request or response with
+        an invalid encoding at the input or the output of the data FIFO raises the fatal_hw_err
+        alert. Against a single fault, the response check at the output of the data FIFO and the
+        request check of the CHERIoT memory subsystem suffice; the other three checks are defence
+        in depth.
       '''
     }
 % endif
@@ -1066,10 +1168,10 @@
       { name: "NMI_ENABLE",
         desc: '''
           Enable mask for NMI.
-          Once an enable mask is set, it cannot be disabled.
         ''',
-        swaccess: "rw1s",
+        swaccess: "rw",
         hwaccess: "hro",
+        regwen: "NMI_ENABLE_REGWEN",
         fields: [
           { bits: "0",
             name: "ALERT_EN",
@@ -1122,7 +1224,12 @@
             name: "FATAL_INTG_ERR",
             resval: "0x0"
             desc: '''
+% if cheriot_available:
+              rv_core_ibex detected a response integrity error, or a data request or response with
+              an invalid encoding of the capability tag on either side of the data FIFO
+% else:
               rv_core_ibex detected a response integrity error
+% endif
             '''
           },
           { bits: "9",
@@ -1195,14 +1302,34 @@
       },
 % if cheriot_available:
 
+      { name: "CHERIOT_ENA_REGWEN",
+        desc: "Register write enable for !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: '''
+              Whether !!CHERIOT_ENA and !!CHERIOT_ENA_BAR can be written (1) or not (0).
+              Reads as 0 once !!CHERIOT_LOCK has been written, until reset.
+            '''
+          },
+        ]
+      },
+
       { name: "CHERIOT_ENA",
         desc: '''
           Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
-          This field is only sampled when !!CHERIOT_LOCK is written; changing it afterwards has
-          no effect.
+          This field is sampled when !!CHERIOT_LOCK is written and checked again in each cycle of
+          the staged transition that follows; a change in these cycles moves the switch into its
+          terminal error state.
+          Writes are ignored once !!CHERIOT_LOCK has been written (see !!CHERIOT_ENA_REGWEN).
         ''',
         swaccess: "rw",
         hwaccess: "hro",
+        regwen: "CHERIOT_ENA_REGWEN",
         fields: [
           { bits: "3:0",
             name: "VAL",
@@ -1215,10 +1342,41 @@
         ]
       },
 
+      { name: "CHERIOT_ENA_BAR",
+        desc: '''
+          Complement of !!CHERIOT_ENA, a redundant copy of the mode selection.
+          Write MuBi4False to enable CHERIoT mode or MuBi4True to remain in ePMP mode.
+          This field is sampled when !!CHERIOT_LOCK is written and checked again in each cycle of
+          the staged transition that follows; a change in these cycles moves the switch into its
+          terminal error state.
+          Writes are ignored once !!CHERIOT_LOCK has been written (see !!CHERIOT_ENA_REGWEN).
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "CHERIOT_ENA_REGWEN",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            mubi: true,
+            resval: false,
+            desc: '''
+              Complement of !!CHERIOT_ENA.VAL, MuBi4 encoded.
+              If it is not the bitwise inverse of !!CHERIOT_ENA.VAL when !!CHERIOT_LOCK is written
+              or in a staging cycle after it, the switch moves into a terminal error state, in
+              which CHERIoT mode stays unavailable until reset and the fatal alert is raised.
+            '''
+          },
+        ]
+      },
+
       { name: "CHERIOT_LOCK",
         desc: '''
-          Locks the CHERIoT/ePMP mode.
-          If !!CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+          Locks the CHERIoT/ePMP mode selected by !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.
+          If !!CHERIOT_ENA is MuBi4True and !!CHERIOT_ENA_BAR MuBi4False, CHERIoT mode is enabled on
+          write to this register.
+          Software must write this register from Ibex with interrupts disabled, and poll until the
+          core runs in the selected mode, before any instruction that depends on it and before
+          enabling interrupts again.
         ''',
         swaccess: "wo",
         hwaccess: "hro",
@@ -1228,7 +1386,7 @@
           { bits: "3:0",
             name: "VAL",
             desc: '''
-              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA.
+              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.
               Any other value moves the switch into a terminal error state, in which CHERIoT mode
               stays unavailable until reset and the fatal alert is raised.
             '''
@@ -1277,6 +1435,29 @@
               When set to kMultiBitBool4True, the mcounteren CSR is writable by software.
               Drives the mcounteren_writable_i input on ibex_top.
             '''
+          },
+        ],
+      },
+
+      { name: "NMI_ENABLE_REGWEN",
+        desc: "Register write-enable for !!NMI_ENABLE.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Write enable for !!NMI_ENABLE. Once set to 0, it can no longer be configured to 1.",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: "NMI_ENABLE can no longer be configured until next reset."
+              },
+              { value: "1",
+                name: "enabled",
+                desc: "NMI_ENABLE can still be configured."
+              },
+            ]
           },
         ],
       },

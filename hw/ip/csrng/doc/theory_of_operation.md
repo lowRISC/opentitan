@@ -116,16 +116,15 @@ Each CSRNG instance corresponds to a unique application interface port, which im
 Any hardware peripherals which require complete control of an instance may connect directly to a dedicated interface port.
 Meanwhile peripherals without any special requirements (i.e. personalization strings or non-FIPS-approved, fully-deterministic number sequences) may share access to an instance via the entropy distribution network (EDN) IP.
 The EDNs manage the instantiation and reseeding of CSRNG instances for general use-cases, providing either on-demand or timed-delivery entropy streams to hardware peripherals.
-Firmware applications can obtain access to random bit sequences directly through application interface port 0, which is directly mapped to a set of TL-UL registers.
+Firmware applications can obtain access to random bit sequences directly through the last application interface port, which is directly mapped to a set of TL-UL registers.
 
-The total number of application interface ports (for TL-UL, directly attached peripherals or EDN instances) is determined by the `NHwApp` parameter.
+The total number of application interface ports (for TL-UL, directly attached peripherals or EDN instances) is determined by the `NumApps` parameter.
 
 The command bus operates like a FIFO, in which a command is pushed into the interface.
 An optional stream of additional data may follow, such as seed material for an `instantiate` application command.
 For the `generate` application command, the obfuscated entropy will be returned on the `genbits` bus.
 This bus also operates like a FIFO, and the receiving module can provide back pressure to the `genbits` bus.
 There is one instance of a firmware application interface, and it uses the TL-UL registers.
-For more details on how the application interface works, see the Theory of Operations section above.
 
 In general, users of the application interface are either firmware or some hardware module entity.
 For hardware, a module can either directly control the application interface, or it can connect to an EDN module.
@@ -252,6 +251,9 @@ The actions performed by each command, as well as which flags are supported, are
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
          It is the responsibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
          Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.
+         If <tt>clen</tt> is non-zero, the additional data is first used to update the internal state before any output is generated, even if all data words are zero.
+         If <tt>clen</tt> is zero, this initial update is skipped.
+         In both cases, the internal state is updated with the additional data (or zero) after the requested bits have been generated.
     </td>
   </tr>
   <tr>
@@ -294,6 +296,26 @@ A number of exception cases to be considered are enumerated in NIST SP 800-90A, 
 * Attempts to use an instance which has not been properly instantiated, or
 * Attempts to generate data when an instance has exceeded its maximum seed life.
 In such cases, a 32-bit exception message will be propagated to firmware via the `hw_exc_sts` register, and a `cs_hw_inst_exc` interrupt will be raised.
+
+#### Halting Instances
+
+Software can halt the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num) via [`INT_STATE_HALT`](registers.md#int_state_halt) if enabled in [`INT_STATE_HALT_ENABLE`](registers.md#int_state_halt_enable).
+A Generate command halts after processing the current block and continues once resumed.
+Any other command completes before halting.
+Once halted, [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) is set, the `cs_cmd_req_done` interrupt is raised, and the instance accepts no new commands until resumed.
+
+#### Saving and Restoring the Internal State
+
+Software can read and write the [internal state](programmers_guide.md#internal-state-save-and-restore) of the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num) via [`INT_STATE_VAL`](registers.md#int_state_val).
+Reading requires both [`CTRL.READ_INT_STATE`](registers.md#ctrl), which enables reading for all instances, and the instance's bit in [`INT_STATE_READ_ENABLE`](registers.md#int_state_read_enable), which enables it per instance.
+Writing likewise requires both [`CTRL.WRITE_INT_STATE`](registers.md#ctrl) for all instances and the instance's bit in [`INT_STATE_WRITE_ENABLE`](registers.md#int_state_write_enable).
+The internal state comprises the CTR_DRBG state and the state of a Generate command in progress.
+Each access advances a word pointer, which wraps around after the last word.
+The pointer is reset by any valid write to [`INT_STATE_NUM`](registers.md#int_state_num), even if the value doesn't change, and by disabling CSRNG.
+Writes are only accepted while the instance is halted and take effect word by word.
+Restoring the state discards generated blocks that have not been read yet.
+If the instance updates its state during a read sequence, the words read may be inconsistent.
+In this case, [`RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT`](registers.md#recov_alert_sts) is set and a [`recov_alert`](interfaces.md#security-alerts) is raised.
 
 #### Aborting Generate Commands
 
@@ -416,6 +438,8 @@ For details on how to accelerate this process, refer to [Uninstantiating CSRNG t
 
 
 ##### Entropy Source Hardware Interface
+For `instantiate` and `reseed` commands with `flag0` not set, CSRNG asserts `es_req` and keeps it asserted until ENTROPY_SRC returns a 384-bit seed on `es_bits` with a single cycle pulse on `es_ack`.
+The `es_fips` signal indicates whether the seed is FIPS/CC compliant.
 The following waveform shows an example of how the entropy source hardware interface works.
 
 
@@ -424,7 +448,7 @@ The following waveform shows an example of how the entropy source hardware inter
    {name: 'clk'           , wave: 'p...|.........|.......'},
    {name: 'es_req'        , wave: '0..1|..01.0..1|.....0.'},
    {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
-   {name: 'es_bus[383:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
+   {name: 'es_bits[383:0]', wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
    {name: 'es_fips'       , wave: '0...|....10...|....10.'},
  {},
 ]}
@@ -432,7 +456,7 @@ The following waveform shows an example of how the entropy source hardware inter
 
 ### Interrupts
 
-The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed.
+The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed, or when an instance halted via [`INT_STATE_HALT`](registers.md#int_state_halt) has quiesced.
 
 The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTROPY_SRC.
 

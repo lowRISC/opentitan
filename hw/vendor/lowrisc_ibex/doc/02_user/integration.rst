@@ -139,6 +139,8 @@ Instantiation Template
 
       // CHERIoT configuration
       .cheriot_enable_i             ( ),
+      .cheriot_enable_shadow_i      ( ),
+      .cheriot_enable_cmp_i         ( ),
       .hart_id_i                    ( ),
       .boot_addr_i                  ( ),
       .trvk_heap_base_addr_i        ( ),
@@ -218,7 +220,11 @@ Instantiation Template
 
       // Shadow core instruction interface outputs
       .instr_req_shadow_o           ( ),
-      .instr_addr_shadow_o          ( )
+      .instr_addr_shadow_o          ( ),
+
+      // Shadow TRVK revocation bitmap interface outputs
+      .trvk_revbm_req_shadow_o      ( ),
+      .trvk_revbm_addr_shadow_o     ( )
 
   `ifdef RVFI
       // RISC-V Formal Interface
@@ -430,9 +436,34 @@ Interfaces
 |                              |                         |     | ``IbexMuBiOn`` enables CHERIoT         |
 |                              |                         |     | instructions and capability registers. |
 |                              |                         |     | Only active when                       |
+|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``;  |
+|                              |                         |     | otherwise ignored, the core runs with  |
+|                              |                         |     | ``IbexMuBiOff``. Tie to                |
+|                              |                         |     | ``IbexMuBiOff`` to always run in RV32I |
+|                              |                         |     | mode.                                  |
+|                              |                         |     | Switching at runtime requires a        |
+|                              |                         |     | specific software sequence and system  |
+|                              |                         |     | conditions, see                        |
+|                              |                         |     | :ref:`details <cheriot-mode-switch>`.  |
++------------------------------+-------------------------+-----+----------------------------------------+
+| ``cheriot_enable_shadow_i``  | ibex_mubi_t             | in  | CHERIoT enable of the lockstep shadow  |
+|                              |                         |     | core. Must follow ``cheriot_enable_i`` |
+|                              |                         |     | one ``clk_i`` cycle later, while the   |
+|                              |                         |     | core clock runs (see :ref:`lockstep`). |
+|                              |                         |     | Only relevant when                     |
+|                              |                         |     | ``SecureIbex == 1`` and                |
 |                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
-|                              |                         |     | Tie to ``IbexMuBiOff`` to always run   |
-|                              |                         |     | in RV32I mode.                         |
++------------------------------+-------------------------+-----+----------------------------------------+
+| ``cheriot_enable_cmp_i``     | ibex_mubi_t             | in  | Any value except ``IbexMuBiOff``       |
+|                              |                         |     | checks that ``cheriot_enable_i`` and   |
+|                              |                         |     | ``cheriot_enable_shadow_i`` are valid  |
+|                              |                         |     | and equal. A mismatch or an invalid    |
+|                              |                         |     | value raises an internal major alert.  |
+|                              |                         |     | Turn it on only after the last change  |
+|                              |                         |     | of either enable, once both hold the   |
+|                              |                         |     | same valid value. Only relevant when   |
+|                              |                         |     | ``SecureIbex == 1`` and                |
+|                              |                         |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
 +------------------------------+-------------------------+-----+----------------------------------------+
 | ``hart_id_i``                | 32                      | in  | Hart ID, usually static, can be read   |
 |                              |                         |     | from :ref:`csr-mhartid` CSR            |
@@ -514,21 +545,25 @@ Interfaces
 |                              |                         |     | core comparison is active. Only        |
 |                              |                         |     | relevant when ``SecureIbex == 1``.     |
 +------------------------------+-------------------------+-----+----------------------------------------+
-| ``data_req_shadow_o``        | 1                       | out | Shadow core data outputs. These        |
+| ``data_req_shadow_o``        | 1                       | out | Shadow core bus outputs. These         |
 +------------------------------+-------------------------+     | replicate the corresponding            |
-| ``data_we_shadow_o``         | 1                       |     | ``data_*`` signals from the lockstep   |
-+------------------------------+-------------------------+     | shadow core and can be used by an      |
-| ``data_be_shadow_o``         | 4                       |     | external comparator to detect          |
-+------------------------------+-------------------------+     | divergence. Only relevant when         |
-| ``data_addr_shadow_o``       | 32                      |     | ``SecureIbex == 1``.                   |
+| ``data_we_shadow_o``         | 1                       |     | ``data_*``, ``instr_*`` and            |
++------------------------------+-------------------------+     | ``trvk_revbm_*`` outputs of the        |
+| ``data_be_shadow_o``         | 4                       |     | lockstep shadow core (including its    |
++------------------------------+-------------------------+     | TRVK), ``LockstepOffset`` cycles after |
+| ``data_addr_shadow_o``       | 32                      |     | the ones of the main core, and can be  |
++------------------------------+-------------------------+     | used by an external comparator to      |
+| ``data_wdata_shadow_o``      | 32                      |     | detect divergence. There is no shadow  |
++------------------------------+-------------------------+     | ``data_tag_o``: Ibex compares the      |
+| ``data_wdata_intg_shadow_o`` | 7                       |     | encoded tag itself.                    |
++------------------------------+-------------------------+     | ``trvk_revbm_*_shadow_o`` are 0 unless |
+| ``instr_req_shadow_o``       | 1                       |     | ``BaseIsa == BaseIsaRV32IorCHERIoT``.  |
++------------------------------+-------------------------+     | Only relevant when                     |
+| ``instr_addr_shadow_o``      | 32                      |     | ``SecureIbex == 1``.                   |
 +------------------------------+-------------------------+     |                                        |
-| ``data_wdata_shadow_o``      | 32                      |     |                                        |
+| ``trvk_revbm_req_shadow_o``  | 1                       |     |                                        |
 +------------------------------+-------------------------+     |                                        |
-| ``data_wdata_intg_shadow_o`` | 7                       |     |                                        |
-+------------------------------+-------------------------+     |                                        |
-| ``instr_req_shadow_o``       | 1                       |     |                                        |
-+------------------------------+-------------------------+     |                                        |
-| ``instr_addr_shadow_o``      | 32                      |     |                                        |
+| ``trvk_revbm_addr_shadow_o`` | 32                      |     |                                        |
 +------------------------------+-------------------------+-----+----------------------------------------+
 | ``rvfi_*``                   | conditional             | out | RISC-V Formal Interface signals        |
 |                              |                         |     | present only when ``RVFI`` is defined. |

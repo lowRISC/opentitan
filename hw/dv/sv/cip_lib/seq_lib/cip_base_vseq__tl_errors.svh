@@ -16,7 +16,7 @@
       tl_seq.min_req_delay = 0;                                                            \
       tl_seq.max_req_delay = 0;                                                            \
     end                                                                                    \
-    tl_seq.req_abort_pct = $urandom_range(0, 100);                                         \
+    tl_seq.req_abort_pct = cfg.en_tl_req_abort ? $urandom_range(0, 100) : 0;               \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_)                                        \
     csr_utils_pkg::increment_outstanding_access();                                         \
     `DV_SPINWAIT(`uvm_send_pri(tl_seq, 1),                                                 \

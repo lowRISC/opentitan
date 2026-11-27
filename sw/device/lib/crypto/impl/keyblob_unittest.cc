@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 
 #include <array>
+#include <cstring>
 #include <vector>
 
 #include "gmock/gmock.h"
@@ -203,7 +204,7 @@ TEST(Keyblob, FromToSharesNoop) {
 }
 
 TEST(Keyblob, ToSharesFailsForHwBackedKey) {
-  uint32_t keyblob[8] = {0};
+  uint32_t keyblob[kKeyblobHwBackedWords] = {0};
   otcrypto_blinded_key_t key = {
       .config = kConfigCtrSideloaded,
       .keyblob_length = sizeof(keyblob),
@@ -257,17 +258,16 @@ TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
 
 TEST(Keyblob, ToKeymgrDpeDiversificationSimple) {
   // Salt and version for the hardware-backed key.
-  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                       0xffffffff};
+                                       0xffffffff, 0x10111213};
   uint32_t test_version = 0xdeadbeef;
 
   // Pack (version, salt) into a keyblob array.
-  uint32_t keyblob[test_salt.size() + 1];
+  uint32_t keyblob[kKeyblobHwBackedWords];
   keyblob[0] = test_version;
-  for (size_t i = 0; i < test_salt.size(); i++) {
-    keyblob[i + 1] = test_salt[i];
-  }
+  std::memcpy(&keyblob[1], test_salt.data(),
+              test_salt.size() * sizeof(uint32_t));
 
   // Construct blinded key.
   otcrypto_blinded_key_t key = {
@@ -281,19 +281,22 @@ TEST(Keyblob, ToKeymgrDpeDiversificationSimple) {
   keymgr_dpe_diversification_t diversification;
   EXPECT_OK(keyblob_to_keymgr_dpe_diversification(&key, &diversification));
 
-  // Check that the version and salt match expectations.
+  // Check that the version and 8-word salt (with `key_mode` XORed into the
+  // last salt word) match expectations.
   EXPECT_EQ(diversification.version, test_version);
-  for (size_t i = 0; i < test_salt.size(); i++) {
+  for (size_t i = 0; i < test_salt.size() - 1; i++) {
     EXPECT_EQ(diversification.salt[i], test_salt[i]);
   }
-  EXPECT_EQ(diversification.salt[test_salt.size()], key.config.key_mode);
+  EXPECT_EQ(diversification.salt[test_salt.size() - 1],
+            test_salt[test_salt.size() - 1] ^ key.config.key_mode);
   EXPECT_EQ(diversification.slot_src_sel, kKeymgrDpeSrcSlot);
 }
 
 TEST(Keyblob, ToKeymgrDpeDiversificationBadlength) {
-  // Salt and version for the hardware-backed keys.
-  std::array<uint32_t, 6> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
-                                       0x04050607, 0x08090a0b, 0x0c0d0e0f};
+  // Salt and version for the hardware-backed key (7 words, one word too short).
+  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                       0xffffffff};
   uint32_t test_version = 0xdeadbeef;
 
   // Pack (version, salt) into a keyblob array.
@@ -317,18 +320,17 @@ TEST(Keyblob, ToKeymgrDpeDiversificationBadlength) {
 }
 
 TEST(Keyblob, ToKeymgrDpeDiversificationDifferentModes) {
-  // Salt for the hardware-backed key (one word too short).
-  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+  // Salt and version for the hardware-backed key.
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                       0xffffffff};
+                                       0xffffffff, 0x10111213};
   uint32_t test_version = 0xdeadbeef;
 
   // Pack (version, salt) into a keyblob array.
-  uint32_t keyblob[test_salt.size() + 1];
+  uint32_t keyblob[kKeyblobHwBackedWords];
   keyblob[0] = test_version;
-  for (size_t i = 0; i < test_salt.size(); i++) {
-    keyblob[i + 1] = test_salt[i];
-  }
+  std::memcpy(&keyblob[1], test_salt.data(),
+              test_salt.size() * sizeof(uint32_t));
 
   // Construct blinded key for CTR mode.
   otcrypto_blinded_key_t key1 = {
@@ -352,7 +354,7 @@ TEST(Keyblob, ToKeymgrDpeDiversificationDifferentModes) {
   keymgr_dpe_diversification_t diversification2;
   EXPECT_OK(keyblob_to_keymgr_dpe_diversification(&key2, &diversification2));
 
-  // Expect different salts.
+  // Expect different salts due to XORing distinct key modes into the last word.
   bool salts_equal = true;
   for (size_t i = 0; i < ARRAYSIZE(diversification1.salt); i++) {
     if (diversification1.salt[i] != diversification2.salt[i]) {
@@ -497,30 +499,26 @@ TEST(Keyblob, ToSharesRsa) {
 
 TEST(Keyblob, ToKeymgrDpeDiversificationNegative) {
   keymgr_dpe_diversification_t div;
-  uint32_t keyblob[8] = {0};
+  uint32_t keyblob[kKeyblobHwBackedWords] = {0};
 
   // hw_backed is false
   otcrypto_blinded_key_t key_not_hw_backed = {
       .config = kConfigCtr128,
-      .keyblob_length = 32,  // Assumes kKeyblobHwBackedBytes == 32
+      .keyblob_length = kKeyblobHwBackedBytes,
       .keyblob = keyblob,
       .checksum = 0,
   };
   EXPECT_NOT_OK(
       keyblob_to_keymgr_dpe_diversification(&key_not_hw_backed, &div));
-  EXPECT_NOT_OK(keyblob_to_keymgr_dpe_attestation_diversification(
-      &key_not_hw_backed, &div));
 
   // keyblob is NULL
   otcrypto_blinded_key_t key_null_blob = {
       .config = kConfigCtrSideloaded,
-      .keyblob_length = 32,
+      .keyblob_length = kKeyblobHwBackedBytes,
       .keyblob = nullptr,
       .checksum = 0,
   };
   EXPECT_NOT_OK(keyblob_to_keymgr_dpe_diversification(&key_null_blob, &div));
-  EXPECT_NOT_OK(
-      keyblob_to_keymgr_dpe_attestation_diversification(&key_null_blob, &div));
 
   // Bad keyblob_length
   otcrypto_blinded_key_t key_bad_length = {
@@ -530,8 +528,6 @@ TEST(Keyblob, ToKeymgrDpeDiversificationNegative) {
       .checksum = 0,
   };
   EXPECT_NOT_OK(keyblob_to_keymgr_dpe_diversification(&key_bad_length, &div));
-  EXPECT_NOT_OK(
-      keyblob_to_keymgr_dpe_attestation_diversification(&key_bad_length, &div));
 }
 
 TEST(Keyblob, EnsureXorMaskedNegative) {

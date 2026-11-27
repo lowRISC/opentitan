@@ -7322,6 +7322,26 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "rv_core_ibex_nmi_enable_lock_test",
+    srcs = ["rv_core_ibex_nmi_enable_lock_test.c"],
+    exec_env = EARLGREY_TEST_ENVS,
+    deps = [
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/runtime:irq",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aon_timer_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "rv_core_ibex_epmp_test_functest",
     srcs = ["//sw/device/silicon_creator/manuf/tests:idle_functest.c"],
     exec_env = dicts.add(

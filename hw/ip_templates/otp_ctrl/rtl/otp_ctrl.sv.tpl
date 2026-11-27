@@ -12,6 +12,7 @@
   item_part = {item["name"]: Name.to_camel_case(part["name"])
                for part in otp_mmap["partitions"] for item in part["items"]}
   has_field_entropy = "FIELD_ENTROPY" in item_part
+  has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_part
 %>
 `include "prim_assert.sv"
 
@@ -88,6 +89,9 @@ module otp_ctrl
   output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o,
 % if has_field_entropy:
   output keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o,
+% endif
+% if has_secondary_root_key:
+  output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_secondary_root_key_o,
 % endif
   // Scrambling key requests
 % if enable_nvm_key:
@@ -296,15 +300,22 @@ module otp_ctrl
     .compound_txn_in_progress_o (                    ),
     .readback_en_i              ( MuBi4False         ),
     .readback_error_o           (                    ),
+    .rmw_intg_chk_en_i          ( MuBi4False         ),
+    .rmw_intg_error_o           (                    ),
     .wr_collision_i             ( 1'b0               ),
     .write_pending_i            ( 1'b0               )
   );
 
+  // Only the unbuffered partitions are reachable through the window.
+  // An address in any other partition selects no partition, and the read gets an error response
+  // like an address past the last partition.
   logic [NumPart-1:0] tlul_part_sel_oh;
   for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
     localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(PartInfo[k].offset) +
                                                     (OtpByteAddrWidth+1)'(PartInfo[k].size);
-    if (PartInfo[k].offset == 0) begin : gen_zero_offset
+    if (PartInfo[k].variant != Unbuffered) begin : gen_not_mapped
+      assign tlul_part_sel_oh[k] = 1'b0;
+    end else if (PartInfo[k].offset == 0) begin : gen_zero_offset
       assign tlul_part_sel_oh[k] = ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
     end else begin : gen_nonzero_offset
       assign tlul_part_sel_oh[k] = ({tlul_addr, 2'b00} >= PartInfo[k].offset) &
@@ -348,15 +359,19 @@ module otp_ctrl
       if (tlul_part_sel_oh != '0) begin
         part_tlul_req[tlul_part_idx] = 1'b1;
       end else begin
-        // Error out in the next cycle if address was out of bounds.
+        // Grant a request that maps to no partition right away and return a bus error in the next
+        // cycle, as an unbuffered partition does for a request it rejects.
         tlul_oob_err_d = 1'b1;
       end
     end
 
     // aggregate TL-UL responses
-    tlul_gnt         = |part_tlul_gnt    | tlul_oob_err_q;
+    // Grant an out-of-bounds request immediately and respond one cycle later.
+    // tlul_adapter_sram only accepts rvalid for an already granted request.
+    tlul_gnt         = |part_tlul_gnt    | tlul_oob_err_d;
     tlul_rvalid      = |part_tlul_rvalid | tlul_oob_err_q;
-    tlul_rerror      = '0;
+    // This causes the TL-UL adapter to return a bus error.
+    tlul_rerror      = tlul_oob_err_q ? 2'b11 : '0;
     tlul_rdata       = '0;
     for (int k = 0; k < NumPart; k++) begin
       tlul_rerror |= part_tlul_rerror[k];
@@ -1544,6 +1559,60 @@ end
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
 % endif
+% if has_secondary_root_key:
+
+  // A SECONDARY_ROOT_KEY share is valid once its partition has been successfully initialized and
+  // locked with a digest, the share is not all-zero, and the life cycle controller allows HW to
+  // consume the seeds.
+  logic secondary_root_key_share0_valid_d, secondary_root_key_share0_valid_q;
+  logic secondary_root_key_share1_valid_d, secondary_root_key_share1_valid_q;
+  assign secondary_root_key_share0_valid_d =
+      part_init_done[${item_part["SECONDARY_ROOT_KEY_SHARE0"]}Idx] &&
+      (part_digest[${item_part["SECONDARY_ROOT_KEY_SHARE0"]}Idx] != '0) &&
+      (part_buf_data[SecondaryRootKeyShare0Offset +: SecondaryRootKeyShare0Size] != '0) &&
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en);
+  assign secondary_root_key_share1_valid_d =
+      part_init_done[${item_part["SECONDARY_ROOT_KEY_SHARE1"]}Idx] &&
+      (part_digest[${item_part["SECONDARY_ROOT_KEY_SHARE1"]}Idx] != '0) &&
+      (part_buf_data[SecondaryRootKeyShare1Offset +: SecondaryRootKeyShare1Size] != '0) &&
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en);
+
+  prim_flop #(
+    .Width(2)
+  ) u_secondary_root_key_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i ({secondary_root_key_share0_valid_d,
+           secondary_root_key_share1_valid_d}),
+    .q_o ({secondary_root_key_share0_valid_q,
+           secondary_root_key_share1_valid_q})
+  );
+
+  // The SECONDARY_ROOT_KEY shares are only output if the life cycle controller allows HW to
+  // consume the seeds. Otherwise, they are replaced by the random netlist constants.
+  assign keymgr_secondary_root_key_o = '{
+    share0:       lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+                  part_buf_data[SecondaryRootKeyShare0Offset +: SecondaryRootKeyShare0Size] :
+                  RndCnstPartInvDefault[SecondaryRootKeyShare0Offset*8 +:
+                                        SecondaryRootKeyShare0Size*8],
+    share0_valid: secondary_root_key_share0_valid_q,
+    share1:       lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+                  part_buf_data[SecondaryRootKeyShare1Offset +: SecondaryRootKeyShare1Size] :
+                  RndCnstPartInvDefault[SecondaryRootKeyShare1Offset*8 +:
+                                        SecondaryRootKeyShare1Size*8],
+    share1_valid: secondary_root_key_share1_valid_q
+  };
+
+  // Check that the lc_seed_hw_rd_en remains stable, once the key material is valid.
+  `ASSERT(LcSeedHwRdEnStable5_A,
+    $rose(secondary_root_key_share0_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+  `ASSERT(LcSeedHwRdEnStable6_A,
+    $rose(secondary_root_key_share1_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+% endif
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
@@ -1638,6 +1707,12 @@ end
   `ASSERT_INIT(FieldEntropySize_A,
                keymgr_dpe_pkg::SeedWidth == FieldEntropySize * 8)
 % endif
+% if has_secondary_root_key:
+  `ASSERT_INIT(SecondaryRootKeyShare0Size_A,
+               keymgr_dpe_pkg::InternalKeyWidth == SecondaryRootKeyShare0Size * 8)
+  `ASSERT_INIT(SecondaryRootKeyShare1Size_A,
+               keymgr_dpe_pkg::InternalKeyWidth == SecondaryRootKeyShare1Size * 8)
+% endif
 % if enable_nvm_key:
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
@@ -1662,6 +1737,9 @@ end
   `ASSERT_KNOWN(KeymgrOwnerSeed_A,           keymgr_owner_seed_o)
 % if has_field_entropy:
   `ASSERT_KNOWN(KeymgrFieldEntropy_A,        keymgr_field_entropy_o)
+% endif
+% if has_secondary_root_key:
+  `ASSERT_KNOWN(KeymgrSecondaryRootKey_A,    keymgr_secondary_root_key_o)
 % endif
 % if enable_nvm_key:
   `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)

@@ -47,9 +47,9 @@ static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
       .security_level = kOtcryptoKeySecurityLevelLow, \
   })
 
-static const uint32_t kPrivateKeySalt[7] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
+static const uint32_t kPrivateKeySalt[8] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
                                             0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
-                                            0xdeadbeef};
+                                            0xdeadbeef, 0xdeadbeef};
 
 static const uint32_t kPrivateKeyVersion = 0x0;
 

@@ -79,6 +79,7 @@ module tlul_adapter_sram
   parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
   parameter bit SecFifo           = 0,  // 1: Duplicated fifos
   parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
+  parameter bit EnableRmwIntgChk  = 0,  // 1: Check integrity of read data during RMW.
   parameter bit DataXorAddr       = 0,  // 1: XOR data and address for address protection
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
@@ -111,6 +112,8 @@ module tlul_adapter_sram
   output logic                 compound_txn_in_progress_o,
   input  mubi4_t               readback_en_i,
   output logic                 readback_error_o,
+  input  mubi4_t               rmw_intg_chk_en_i,
+  output logic                 rmw_intg_error_o,
   input  logic                 wr_collision_i,
   input  logic                 write_pending_i
 );
@@ -157,6 +160,30 @@ module tlul_adapter_sram
   // readback error output is permanent and should be used for alert generation
   // or other downstream effects
   assign readback_error_o = readback_error | readback_error_q;
+
+  // RMW integrity check
+  logic sram_byte_rmw_intg_error;
+  logic rmw_intg_error, rmw_intg_error_q;
+  if (EnableRmwIntgChk) begin : gen_rmw_intg_check
+    assign rmw_intg_error = sram_byte_rmw_intg_error;
+    // permanently latch RMW integrity error until reset
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        rmw_intg_error_q <= 1'b0;
+      end else if (rmw_intg_error) begin
+        rmw_intg_error_q <= 1'b1;
+      end
+    end
+  end else begin : gen_no_rmw_intg_check
+    logic unused_sram_byte_rmw_intg_error;
+    assign unused_sram_byte_rmw_intg_error = sram_byte_rmw_intg_error;
+    assign rmw_intg_error = 1'b0;
+    assign rmw_intg_error_q = 1'b0;
+  end
+
+  // RMW integrity error output is permanent and should be used for alert generation
+  // or other downstream effects
+  assign rmw_intg_error_o = rmw_intg_error | rmw_intg_error_q;
 
   // integrity check
   if (CmdIntgCheck) begin : gen_cmd_intg_check
@@ -253,7 +280,8 @@ module tlul_adapter_sram
   tlul_sram_byte #(
     .EnableIntg(ByteAccess & EnableDataIntgPt & !ErrOnWrite),
     .Outstanding(Outstanding),
-    .EnableReadback(EnableReadback)
+    .EnableReadback(EnableReadback),
+    .EnableRmwIntgChk(EnableRmwIntgChk)
   ) u_sram_byte (
     .clk_i,
     .rst_ni,
@@ -266,6 +294,8 @@ module tlul_adapter_sram
     .alert_o(sram_byte_readback_error),
     .compound_txn_in_progress_o,
     .readback_en_i,
+    .rmw_intg_chk_en_i,
+    .rmw_intg_error_o(sram_byte_rmw_intg_error),
     .wr_collision_i,
     .write_pending_i
   );
@@ -402,12 +432,10 @@ module tlul_adapter_sram
   assign d_data = (vld_rd_rsp & ~d_error) ? rspfifo_rdata.data   // valid read
                                           : error_blanking_data; // write or TL-UL error
 
-  // If this a write response with data fields set to 0, we have to set all ECC bits correctly
-  // since we are using an inverted Hsiao code.
+  // The integrity has to match d_data, so it is selected the same way.
   logic [DataIntgWidth-1:0] data_intg;
-  assign data_intg = (reqfifo_rdata.error) ? error_blanking_integ    : // TL-UL error
-                     (vld_rd_rsp)          ? rspfifo_rdata.data_intg : // valid read
-                     prim_secded_pkg::SecdedInv3932ZeroEcc;            // valid write
+  assign data_intg = (vld_rd_rsp & ~d_error) ? rspfifo_rdata.data_intg // valid read
+                                             : error_blanking_integ;   // write or error
 
   // When an error is seen on an incoming transaction it gets an immediate response without
   // performing an SRAM request. It may be the transaction receives a ready the first cycle it is

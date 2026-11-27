@@ -286,7 +286,9 @@ impl<T: ConsoleDevice> ConsoleDevice for CoverageMiddleware<T> {
                 Ok(1) => {
                     state.match_buf.push_back(one_byte[0]);
                 }
-                _ => unreachable!(),
+                Ok(n) => unreachable!("read {n} > 1 bytes into a 1-byte buffer"),
+                // inner device failed.
+                Err(e) => return Poll::Ready(Err(e)),
             }
         }
     }

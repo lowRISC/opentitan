@@ -7,36 +7,38 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 ### D1
 
-Type          | Item                  | Resolution  | Note/Collaterals
---------------|-----------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]     | Done        | [SRAM_CTRL Design Spec](../README.md)
-Documentation | [CSR_DEFINED][]       | Done        |
-RTL           | [CLKRST_CONNECTED][]  | Done        |
-RTL           | [IP_TOP][]            | Done        |
-RTL           | [IP_INSTANTIABLE][]   | Done        |
-RTL           | [MEM_INSTANCED_80][]  | Done        |
-RTL           | [FUNC_IMPLEMENTED][]  | Done        |
-RTL           | [ASSERT_KNOWN_ADDED][]| Done        |
-Code Quality  | [LINT_SETUP][]        | Done        |
+Type          | Item                           | Resolution  | Note/Collaterals
+--------------|--------------------------------|-------------|------------------
+Documentation | [SPEC_COMPLETE][]              | Done        | [SRAM_CTRL Design Spec](../README.md)
+Documentation | [CSR_DEFINED][]                | Done        |
+RTL           | [CLKRST_CONNECTED][]           | Done        |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | Done        |
+RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        | [Security countermeasures](interfaces.md#security-countermeasures)
 
-[SPEC_COMPLETE]:      ../../../../doc/project_governance/checklist/README.md#spec_complete
-[CSR_DEFINED]:        ../../../../doc/project_governance/checklist/README.md#csr_defined
-[CLKRST_CONNECTED]:   ../../../../doc/project_governance/checklist/README.md#clkrst_connected
-[IP_TOP]:             ../../../../doc/project_governance/checklist/README.md#ip_top
-[IP_INSTANTIABLE]:    ../../../../doc/project_governance/checklist/README.md#ip_instantiable
-[MEM_INSTANCED_80]:   ../../../../doc/project_governance/checklist/README.md#mem_instanced_80
-[FUNC_IMPLEMENTED]:   ../../../../doc/project_governance/checklist/README.md#func_implemented
-[ASSERT_KNOWN_ADDED]: ../../../../doc/project_governance/checklist/README.md#assert_known_added
-[LINT_SETUP]:         ../../../../doc/project_governance/checklist/README.md#lint_setup
+[SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
+[CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
+[CLKRST_CONNECTED]:           ../../../../doc/project_governance/checklist/README.md#clkrst_connected
+[IP_TOP]:                     ../../../../doc/project_governance/checklist/README.md#ip_top
+[IP_INSTANTIABLE]:            ../../../../doc/project_governance/checklist/README.md#ip_instantiable
+[PHYSICAL_MACROS_DEFINED_80]: ../../../../doc/project_governance/checklist/README.md#physical_macros_defined_80
+[FUNC_IMPLEMENTED]:           ../../../../doc/project_governance/checklist/README.md#func_implemented
+[ASSERT_KNOWN_ADDED]:         ../../../../doc/project_governance/checklist/README.md#assert_known_added
+[LINT_SETUP]:                 ../../../../doc/project_governance/checklist/README.md#lint_setup
+[SEC_CM_SCOPED]:              ../../../../doc/project_governance/checklist/README.md#sec_cm_scoped
 
 ### D2
 
 Type          | Item                      | Resolution  | Note/Collaterals
 --------------|---------------------------|-------------|------------------
-Documentation | [NEW_FEATURES][]          | Done        |
+Documentation | [NEW_FEATURES][]          | Done        | New features used in Earl Grey are non-power-of-2 memory sizes ([#30960](https://github.com/lowRISC/opentitan/pull/30960), [#30273](https://github.com/lowRISC/opentitan/pull/30273)), 64-bit initialization LFSR ([#27456](https://github.com/lowRISC/opentitan/pull/27456)), configurable number of PRINCE half rounds ([#24447](https://github.com/lowRISC/opentitan/pull/24447)), configurable number of address scrambling rounds ([#30541](https://github.com/lowRISC/opentitan/pull/30541)), zero initialization ([#31514](https://github.com/lowRISC/opentitan/pull/31514)), ALERT_TEST REGWEN ([#30515](https://github.com/lowRISC/opentitan/pull/30515)) and DFT response channel ([#25654](https://github.com/lowRISC/opentitan/pull/25654)). Features not used in Earl Grey and not signed off are RACL ([#26047](https://github.com/lowRISC/opentitan/pull/26047)), ECC correction ([#26365](https://github.com/lowRISC/opentitan/pull/26365)) and RAM tiling ([#25625](https://github.com/lowRISC/opentitan/pull/25625)).
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
-Documentation | [DOC_INTEGRATION_GUIDE][] | Waived      | This checklist item has been added retrospectively.
+Documentation | [DOC_INTEGRATION_D2][]    | Done        | [Supported Parameter Sets](../README.md#supported-parameter-sets)
 Documentation | [MISSING_FUNC][]          | Done        |
 Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Done        |
@@ -55,7 +57,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
 [DOC_INTERFACE]:         ../../../../doc/project_governance/checklist/README.md#doc_interface
-[DOC_INTEGRATION_GUIDE]: ../../../../doc/project_governance/checklist/README.md#doc_integration_guide
+[DOC_INTEGRATION_D2]:    ../../../../doc/project_governance/checklist/README.md#doc_integration_d2
 [MISSING_FUNC]:          ../../../../doc/project_governance/checklist/README.md#missing_func
 [FEATURE_FROZEN]:        ../../../../doc/project_governance/checklist/README.md#feature_frozen
 [FEATURE_COMPLETE]:      ../../../../doc/project_governance/checklist/README.md#feature_complete
@@ -75,13 +77,13 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
-Security      | [SEC_CM_RND_CNST][]          | Done        |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
-Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Done        |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
+Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
+Security      | [SEC_CM_RND_CNST][]          | Not Started |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
+Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
+Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
@@ -95,19 +97,21 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Done        |
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Done        |
-RTL           | [TODO_COMPLETE][]       | Done        |
-Code Quality  | [LINT_COMPLETE][]       | Done        |
-Code Quality  | [CDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [RDC_COMPLETE][]        | Waived      | No block-level flow available - waived to top-level signoff.
-Review        | [REVIEW_RTL][]          | Done        |
-Review        | [REVIEW_DELETED_FF][]   | Waived      | No block-level flow available - waived to top-level signoff.
-Review        | [REVIEW_SW_CHANGE][]    | Done        |
-Review        | [REVIEW_SW_ERRATA][]    | Done        |
-Review        | Reviewer(s)             | Done        | msf@ weicai@ tjaychen@ gac@
-Review        | Signoff date            | Done        | 2022-07-15
+Documentation | [NEW_FEATURES_D3][]     | Not Started |
+Documentation | [DOC_INTEGRATION_D3][]  | Not Started |
+RTL           | [TODO_COMPLETE][]       | Not Started |
+Code Quality  | [LINT_COMPLETE][]       | Not Started |
+Code Quality  | [CDC_COMPLETE][]        | Not Started |
+Code Quality  | [RDC_COMPLETE][]        | Not Started |
+Review        | [REVIEW_RTL][]          | Not Started |
+Review        | [REVIEW_DELETED_FF][]   | Not Started |
+Review        | [REVIEW_SW_CHANGE][]    | Not Started |
+Review        | [REVIEW_SW_ERRATA][]    | Not Started |
+Review        | Reviewer(s)             | Not Started |
+Review        | Signoff date            | Not Started |
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
+[DOC_INTEGRATION_D3]:   ../../../../doc/project_governance/checklist/README.md#doc_integration_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
 [LINT_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#lint_complete
 [CDC_COMPLETE]:         ../../../../doc/project_governance/checklist/README.md#cdc_complete
@@ -173,26 +177,26 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
-Documentation | [DV_DOC_COMPLETED][]                    | Done        |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
-Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
-Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
-Tests         | [SIM_FW_SIMULATED][]                    | Done        |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
-Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
-Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Done        | prim_prince and prim_lfsr are verified in separated TBs
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
+Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
+Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | Not Started |
+Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | Not Started |
+Tests         | [SIM_FW_SIMULATED][]                    | Not Started |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
+Coverage      | [FPV_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [FPV_COI_COVERAGE_V2][]                 | Not Started |
+Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | Not Started |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/project_governance/checklist/README.md#dv_doc_completed
@@ -219,11 +223,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        | Sub-module prim_count is proven in FPV
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        |
-Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
+Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified

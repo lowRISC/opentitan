@@ -134,10 +134,6 @@ module gpio
     assign hw2reg.per_pin_io[i].data_in.d  = data_in_d[i];
   end
 
-  if (NumIOs != 32) begin : gen_per_pin_view_num_ios_check
-    $error("The per-pin register view requires NumIOs == 32.");
-  end
-
   // The interleaved PER_PIN_OE and PER_PIN_INTR_CTRL registers are not multiregs. All fields of a
   // register are written together, so the qe of its first field is used for the whole register.
   logic [NumIOs-1:0] unused_per_pin_intr_ctrl_qe;
@@ -899,6 +895,14 @@ module gpio
     end
   end
 
+  // The mask and data fields of the MASKED_OUT_* and MASKED_OE_* registers are written together,
+  // so the qe of the data field is used for the whole register.
+  logic unused_masked_mask_qe;
+  assign unused_masked_mask_qe = ^{reg2hw.masked_out_upper.mask.qe,
+                                   reg2hw.masked_out_lower.mask.qe,
+                                   reg2hw.masked_oe_upper.mask.qe,
+                                   reg2hw.masked_oe_lower.mask.qe};
+
   // Interrupt control and input filter
   assign hw2reg.intr_ctrl_en_rising.d  = intr_ctrl_en_rising_q;
   assign hw2reg.intr_ctrl_en_falling.d = intr_ctrl_en_falling_q;
@@ -1017,7 +1021,27 @@ module gpio
     .intg_err_o (alerts[0])
   );
 
+  // The per-pin register view requires NumIOs == 32
+  `ASSERT_INIT(NumIOsPerPinView_A, NumIOs == 32)
+
+  // Valid strap values should be output no earlier and no later than the
+  // cycle after the strap enable is set, assuming they are ever output.
+  // Early or late strap sampling could capture unintended values.
+  // A delay of two clock cycles is specified here so that $past($rose())
+  // only samples 'real' values (from time >= 0), and not the
+  // SystemVerilog "default sampled value" (time < 0).
+  `ASSERT(NoStrapValidWithoutEnable_A, ##2
+          $rose(sampled_straps_o.valid) |-> $past($rose(strap_en_i)))
+  // Valid strap values must not change or become invalid (except via reset).
+  // Unlike the above, an added delay is NOT needed for $stable() to only
+  // sample 'real' values as the '|=>' operator already adds a cycle of delay.
+  `ASSERT(StrapStableAfterValid_A,
+          sampled_straps_o.valid |=> $stable(sampled_straps_o.data) && sampled_straps_o.valid)
+
   // Assert Known: Outputs
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(SampledStrapsOKnown_A,  sampled_straps_o)
   `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
   `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
   `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)

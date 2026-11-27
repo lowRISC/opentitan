@@ -47,6 +47,18 @@ static bool sram_ctrl_readback_locked(const dif_sram_ctrl_t *sram_ctrl) {
 }
 
 /**
+ * Obtains the lock state of the "RMW integrity check enable" register.
+ *
+ * When locked, enabling or disabling the RMW integrity check is not possible.
+ */
+static bool sram_ctrl_rmw_intg_check_locked(const dif_sram_ctrl_t *sram_ctrl) {
+  return mmio_region_read32(sram_ctrl->base_addr,
+                            SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET)
+             ? false
+             : true;
+}
+
+/**
  * Locks SRAM Controller "Control" functionality.
  *
  * SRAM Scrambling and RAM wiping is no longer available.
@@ -75,6 +87,16 @@ static void sram_ctrl_lock_exec(const dif_sram_ctrl_t *sram_ctrl) {
 static void sram_ctrl_lock_readback(const dif_sram_ctrl_t *sram_ctrl) {
   mmio_region_write32(sram_ctrl->base_addr,
                       SRAM_CTRL_READBACK_REGWEN_REG_OFFSET, 0);
+}
+
+/**
+ * Locks SRAM Controller "RMW integrity check" functionality.
+ *
+ * Enabling / disabling the RMW integrity check is no longer available.
+ */
+static void sram_ctrl_lock_rmw_intg_check(const dif_sram_ctrl_t *sram_ctrl) {
+  mmio_region_write32(sram_ctrl->base_addr,
+                      SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0);
 }
 
 /**
@@ -214,6 +236,24 @@ dif_result_t dif_sram_ctrl_readback_set(const dif_sram_ctrl_t *sram_ctrl,
   return kDifOk;
 }
 
+dif_result_t dif_sram_ctrl_rmw_intg_check_set(const dif_sram_ctrl_t *sram_ctrl,
+                                              dif_toggle_t state) {
+  if (sram_ctrl == NULL) {
+    return kDifBadArg;
+  }
+
+  if (sram_ctrl_rmw_intg_check_locked(sram_ctrl)) {
+    return kDifLocked;
+  }
+
+  uint32_t value =
+      (state == kDifToggleEnabled) ? kMultiBitBool4True : kMultiBitBool4False;
+  mmio_region_write32(sram_ctrl->base_addr, SRAM_CTRL_RMW_INTG_CHECK_REG_OFFSET,
+                      value);
+
+  return kDifOk;
+}
+
 dif_result_t dif_sram_ctrl_lock(const dif_sram_ctrl_t *sram_ctrl,
                                 dif_sram_ctrl_lock_t lock) {
   if (sram_ctrl == NULL) {
@@ -229,6 +269,9 @@ dif_result_t dif_sram_ctrl_lock(const dif_sram_ctrl_t *sram_ctrl,
       break;
     case kDifSramCtrlLockReadback:
       sram_ctrl_lock_readback(sram_ctrl);
+      break;
+    case kDifSramCtrlLockRmwIntgCheck:
+      sram_ctrl_lock_rmw_intg_check(sram_ctrl);
       break;
     default:
       return kDifError;
@@ -253,6 +296,9 @@ dif_result_t dif_sram_ctrl_is_locked(const dif_sram_ctrl_t *sram_ctrl,
       break;
     case kDifSramCtrlLockReadback:
       *is_locked = sram_ctrl_readback_locked(sram_ctrl);
+      break;
+    case kDifSramCtrlLockRmwIntgCheck:
+      *is_locked = sram_ctrl_rmw_intg_check_locked(sram_ctrl);
       break;
     default:
       return kDifError;

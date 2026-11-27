@@ -95,6 +95,12 @@ parameters:
     paramtype: vlogparam
     description: "Enable support for debug triggers. "
 
+  DbgHwBreakNum:
+    datatype: int
+    default: 1
+    paramtype: vlogparam
+    description: "Number of debug triggers (hardware breakpoints)"
+
   SecureIbex:
     datatype: int
     default: 0
@@ -156,6 +162,7 @@ targets:
       - WritebackStage
       - BranchPredictor
       - DbgTriggerEn
+      - DbgHwBreakNum
       - SecureIbex
       - ICacheScramble
       - PMPEnable

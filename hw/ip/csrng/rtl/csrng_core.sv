@@ -5,6 +5,7 @@
 // Description: csrng core module
 //
 
+`include "prim_assert.sv"
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
@@ -222,6 +223,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                       gen_last_q, gen_last_d;
   logic                       gen_first_q, gen_first_d;
   logic [GenBitsCtrWidth-1:0] gen_len_q, gen_len_d;
+  logic [3:0]                 clen_q, clen_d;
   mubi4_t                     flag0_q, flag0_d;
   logic [NumAppsLg-1:0]       cmd_arb_idx_q, cmd_arb_idx_d;
   logic                       genbits_stage_fips_sw_q, genbits_stage_fips_sw_d;
@@ -242,6 +244,7 @@ module csrng_core import csrng_pkg::*; #(
       gen_last_q              <= '0;
       gen_first_q             <= '0;
       gen_len_q               <= '0;
+      clen_q                  <= '0;
       flag0_q                 <= prim_mubi_pkg::MuBi4False;
       cmd_arb_idx_q           <= '0;
       genbits_stage_fips_sw_q <= '0;
@@ -259,6 +262,7 @@ module csrng_core import csrng_pkg::*; #(
       gen_last_q              <= gen_last_d;
       gen_first_q             <= gen_first_d;
       gen_len_q               <= gen_len_d;
+      clen_q                  <= clen_d;
       flag0_q                 <= flag0_d;
       cmd_arb_idx_q           <= cmd_arb_idx_d;
       genbits_stage_fips_sw_q <= genbits_stage_fips_sw_d;
@@ -595,9 +599,9 @@ module csrng_core import csrng_pkg::*; #(
 
   // Only writes selecting a valid instance are accepted, others are ignored and raise an alert.
   // The selected instance cannot be changed while INT_STATE_HALT is set.
-  assign int_state_num_wr = reg2hw.int_state_num.qe && (reg2hw.int_state_num.q < NumApps);
+  assign int_state_num_wr = reg2hw.int_state_num.qe && (32'(reg2hw.int_state_num.q) < NumApps);
   assign int_state_num_invalid_alert = (reg2hw.int_state_num.qe && !int_state_num_wr) ||
-                                       (int_state_num_q >= NumApps);
+                                       (32'(int_state_num_q) >= NumApps);
   assign int_state_num_d = int_state_num_wr ? reg2hw.int_state_num.q[NumAppsLg-1:0] :
                                               int_state_num_q;
   assign hw2reg.int_state_num.d = 4'(int_state_num_q);
@@ -606,10 +610,10 @@ module csrng_core import csrng_pkg::*; #(
   // Permission gates for reading and writing the internal state of the selected instance.
   // Writing is only allowed while the selected instance is halted.
   assign int_state_rd_allowed = cs_enable_fo[46] && read_int_state &&
-                                (int_state_num_q < NumApps) &&
+                                (32'(int_state_num_q) < NumApps) &&
                                 reg2hw.int_state_read_enable.q[int_state_num_q];
   assign int_state_wr_allowed = cs_enable_fo[47] && write_int_state &&
-                                (int_state_num_q < NumApps) &&
+                                (32'(int_state_num_q) < NumApps) &&
                                 reg2hw.int_state_write_enable.q[int_state_num_q] &&
                                 cmd_stage_halted[int_state_num_q];
 
@@ -926,6 +930,7 @@ module csrng_core import csrng_pkg::*; #(
     gen_first_d = gen_first_q;
     gen_len_d   = gen_len_q;
     gen_last_d  = gen_last_q;
+    clen_d      = clen_q;
     flag0_d     = flag0_q;
 
     if (acmd_sop) begin
@@ -934,6 +939,7 @@ module csrng_core import csrng_pkg::*; #(
       gen_first_d = acmd_bus[29];
       gen_len_d   = acmd_bus[17 +: GenBitsCtrWidth];
       gen_last_d  = acmd_bus[16];
+      clen_d      = acmd_bus[7:4];
       if ((acmd_bus[2:0] == INS) || (acmd_bus[2:0] == RES)) begin
         flag0_d = mubi4_t'(acmd_bus[11:8]);
       end
@@ -945,6 +951,7 @@ module csrng_core import csrng_pkg::*; #(
       gen_first_d = '0;
       gen_len_d   = '0;
       gen_last_d  = '0;
+      clen_d      = '0;
       flag0_d     = prim_mubi_pkg::MuBi4False;
     end
   end
@@ -1127,6 +1134,7 @@ module csrng_core import csrng_pkg::*; #(
     .cmd_req_glast_i       (gen_last_q),
     .cmd_req_gen_first_i   (gen_first_q),
     .cmd_req_glen_i        (gen_len_q),
+    .cmd_req_clen_i        (clen_q),
 
     .cmd_ack_o     (ctr_drbg_cmd_ack),
     .cmd_ack_data_o(ctr_drbg_cmd_ack_data),

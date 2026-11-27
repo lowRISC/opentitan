@@ -17,6 +17,8 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
+    files:
+      - lint/prim_leading_one_ppc.vlt
     file_type: vlt
 
   files_ascentlint_waiver:

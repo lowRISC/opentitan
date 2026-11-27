@@ -358,12 +358,12 @@ class csrng_base_vseq extends cip_base_vseq #(
     end
   endtask // force_cnt_err
 
-  // Find the first or last index in the original string that the target character appears
-  function automatic int find_index (string target, string original_str, string which_index);
-    int        index;
+  // Find the first or last index in the original string where the target character appears
+  function automatic int find_index (byte target, string original_str, string which_index);
+    int        index = -1;
     case (which_index)
       "first": begin
-        for (int i = original_str.len(); i > 0; i--) begin
+        for (int i = original_str.len() - 1; i >= 0; i--) begin
           if (original_str[i] == target) index = i;
         end
       end
@@ -376,6 +376,7 @@ class csrng_base_vseq extends cip_base_vseq #(
         `uvm_fatal(`gfn, "Invalid index!")
       end
     endcase // case (which_index)
+    if (index < 0) `uvm_fatal(`gfn, $sformatf("'%c' not found in %0s", target, original_str))
     return index;
   endfunction // find_index
 endclass : csrng_base_vseq

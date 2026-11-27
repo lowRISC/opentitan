@@ -437,6 +437,14 @@ class cip_base_vseq #(
   // Set the tlul_assert_en configuration flag in uvm_config_db. This is consumed by the code in
   // tlul_assert.sv and can enable/disable the assertions in that file
   extern virtual protected function void set_tl_assert_en(bit enable, string path = "*");
+
+  // Configure a virtual sequence that is a child of this one.
+  //
+  // The base implementation sets the sequencer for the child sequence to be p_sequencer. This is
+  // all that is needed if the child sequence will access everything through a virtual sequencer.
+  // This hook allows classes that extend cip_base_vseq to pass sequencers outside of the virtual
+  // sequencer to their child sequences.
+  extern virtual protected function void configure_child_vseq(uvm_sequence child_vseq);
 endclass
 
 constraint cip_base_vseq::rand_reset_delay_c {
@@ -1090,20 +1098,29 @@ task cip_base_vseq::wait_alert_trigger(string alert_name,
 
       // The timer thread (wait for max_wait_cycle cycles, then generate an error). To avoid a race
       // if the alert is asserted on the positive edge of the clock after exactly that number of
-      // cycles, the timer waits for the following negative edge.
+      // cycles, report on the next negative edge. Restart the count while a ping is in progress
+      // because a colliding alert is delayed until the ping handshake completes.
       begin
-        repeat (max_wait_cycle) @(posedge alert_vif.clk);
+        int unsigned cycles = 0;
+        while (cycles < max_wait_cycle) begin
+          @(posedge alert_vif.clk);
+          if (alert_vif.in_ping_st() || agent_cfg.active_ping) begin
+            cycles = 0;
+          end else begin
+            cycles++;
+          end
+        end
         @(negedge alert_vif.clk);
         `uvm_error(get_name(),
                    $sformatf("Expected alert (%0s) did not fire in %0d cycles.",
                              alert_name, max_wait_cycle))
       end
 
-      // Wait to see an alert come out. This happens if is_alert_handshaking becomes true
-      // when there is no active_ping.
+      // Check active_ping too: a ping response reaches alert_tx_final after in_ping_st() drops and
+      // must not count as a native alert
       forever begin
         wait(alert_vif.is_alert_handshaking);
-        if (!alert_vif.in_ping_st()) break;
+        if (!alert_vif.in_ping_st() && !agent_cfg.active_ping) break;
         // If we get here, we were in the middle of a ping. Wait for it to complete and then wait
         // for another handshake.
         wait_until_ping_is_finished(agent_cfg);
@@ -1219,7 +1236,7 @@ task cip_base_vseq::run_seq_with_rand_reset_vseq(uvm_sequence seq,
                 `downcast(dv_vseq, seq.clone())
 
                 dv_vseq.do_apply_reset = 0;
-                dv_vseq.set_sequencer(p_sequencer);
+                configure_child_vseq(dv_vseq);
                 `DV_CHECK_RANDOMIZE_FATAL(dv_vseq)
                 `uvm_info(`gfn, $sformatf("Starting sequence %s", dv_vseq.get_full_name()),
                           UVM_MEDIUM)
@@ -1417,8 +1434,13 @@ task cip_base_vseq::check_fatal_alert_nonblocking(string alert_name);
           // 1 extra cycle to make sure no race condition
           // Plus 2 extra cycles due to alert sampling delay of 2 cycles at the VIF
           for (int i = 0; i <  (alert_agent_pkg::ALERT_B2B_DELAY + 1 + 2); i++) begin
-            if (cfg.m_alert_agent_cfgs[alert_name].active_ping) begin
-              wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+            // A ping response delays the alert and does not count as one. The monitor sets
+            // active_ping 2 cycles after the ping starts, so check the interface's ping state too.
+            if (cfg.m_alert_agent_cfgs[alert_name].active_ping ||
+                cfg.m_alert_agent_cfgs[alert_name].vif.in_ping_st() ||
+                cfg.m_alert_agent_cfgs[alert_name].vif.ping_pending) begin
+              wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
+              wait (!cfg.m_alert_agent_cfgs[alert_name].vif.ping_pending);
               i = 0; // restart the delay, since alert may take longer now ping is happening
             end
             cfg.clk_rst_vif.wait_n_clks(1);
@@ -1494,7 +1516,7 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
               tl_access_w_abort(.addr(addr), .write(1), .data(data),
                                 .completed(write_completed), .saw_err(write_error),
                                 .check_err_rsp(0), .mask(mask), .blocking(1),
-                                .req_abort_pct($urandom_range(0, 100)),
+                                .req_abort_pct(cfg.en_tl_req_abort ? $urandom_range(0, 100) : 0),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
 
               if (!cfg.under_reset && write_completed && !write_error) begin
@@ -1517,7 +1539,7 @@ task cip_base_vseq::run_mem_partial_access_vseq_sub(int num_times, string ral_na
               tl_access_w_abort(.addr(addr), .write(0), .data(data),
                                 .completed(completed), .saw_err(saw_err),
                                 .mask(mask), .blocking(1), .check_err_rsp(0),
-                                .req_abort_pct($urandom_range(0, 100)),
+                                .req_abort_pct(cfg.en_tl_req_abort ? $urandom_range(0, 100) : 0),
                                 .tl_sequencer_h(p_sequencer.tl_sequencer_hs[ral_name]));
             end
           end
@@ -1565,6 +1587,10 @@ endfunction
 
 function void cip_base_vseq::set_tl_assert_en(bit enable, string path = "*");
   uvm_config_db#(bit)::set(null, path, "tlul_assert_en", enable);
+endfunction
+
+function void cip_base_vseq::configure_child_vseq(uvm_sequence child_vseq);
+  child_vseq.set_sequencer(p_sequencer);
 endfunction
 
 `undef loop_ral_models_to_create_threads

@@ -24,9 +24,9 @@ static const uint32_t kKeyVersion = 0x0;
 static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 // Key salt for testing.
-static const uint32_t kKeySalt[7] = {
+static const uint32_t kKeySalt[8] = {
     0x00112233, 0x44556677, 0x8899aabb, 0xccddeeff,
-    0x00010203, 0x04050607, 0x08090a0b,
+    0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f,
 };
 
 // Key configuration for wrapping key (AES-256).
@@ -108,7 +108,7 @@ static status_t wrap_unwrap_random_test(void) {
   TRY(otcrypto_symmetric_keygen(&personalization, &kmac_key));
 
   // Construct the sideloaded wrapping key.
-  uint32_t keyblob_kek[8];
+  uint32_t keyblob_kek[9];
   otcrypto_blinded_key_t kek = {
       .config = kWrappingKeyConfig,
       .keyblob_length = sizeof(keyblob_kek),

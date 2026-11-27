@@ -1912,6 +1912,17 @@ def get_index_and_incr(ctrs: Dict, connection: str, io_dir: str) -> Dict:
     return result
 
 
+def get_pinmux_sig_pads(sig: Dict) -> Tuple[str, ...]:
+    '''Get the pads of a pinmux signal.
+
+    Only the types are checked, if a pad is a valid choice is deferred to the validate step.
+    '''
+    pads = sig.get('pads')
+    if isinstance(pads, list) and all(isinstance(pad, str) for pad in pads):
+        return tuple(pads)
+    return ()
+
+
 def amend_pinmux_io(top: ConfigT,
                     name_to_block: IpBlocksT,
                     allow_missing_blocks=False):
@@ -2041,7 +2052,15 @@ def amend_pinmux_io(top: ConfigT,
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
             continue
-        sig_attr = sig.get('attr', 'BidirStd')
+        # Fields of the pinmux signal entry added to each of its IOs.
+        sig_fields = {
+            'pads': get_pinmux_sig_pads(sig),
+            'attr': sig.get('attr', 'BidirStd'),
+            'connection': sig['connection'],
+            'desc': sig['desc']
+        }
+        if 'default' in sig:
+            sig_fields['default'] = sig['default']
         # If the signal is explicitly named.
         if sig['port'] != '':
 
@@ -2068,13 +2087,7 @@ def amend_pinmux_io(top: ConfigT,
 
             # If we got this far we know that the signal is valid and exists.
             # Augment this signal instance with additional information.
-            sig_inst.update({
-                'idx': idx,
-                'pad': sig['pad'],
-                'attr': sig_attr,
-                'connection': sig['connection'],
-                'desc': sig['desc']
-            })
+            sig_inst.update({'idx': idx, **sig_fields})
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
             sig_inst['domain'] = lib.get_domain_of_partition(
                 m, sig_inst.get('partition', PART_PRIMARY), pd_default)
@@ -2094,25 +2107,13 @@ def amend_pinmux_io(top: ConfigT,
                 if sig_inst['width'] > 1:
                     for idx in range(sig_inst['width']):
                         sig_inst_copy = deepcopy(sig_inst)
-                        sig_inst_copy.update({
-                            'idx': idx,
-                            'pad': sig['pad'],
-                            'attr': sig_attr,
-                            'connection': sig['connection'],
-                            'desc': sig['desc']
-                        })
+                        sig_inst_copy.update({'idx': idx, **sig_fields})
                         sig_inst_copy['name'] = sig[
                             'instance'] + '_' + sig_inst_copy['name']
                         sig_inst_copy['domain'] = pd_sig
                         append_io_signal(temp, sig_inst_copy)
                 else:
-                    sig_inst.update({
-                        'idx': -1,
-                        'pad': sig['pad'],
-                        'attr': sig_attr,
-                        'connection': sig['connection'],
-                        'desc': sig['desc']
-                    })
+                    sig_inst.update({'idx': -1, **sig_fields})
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
                     sig_inst['domain'] = pd_sig
                     append_io_signal(temp, sig_inst)
@@ -2172,13 +2173,15 @@ def amend_pinmux_io(top: ConfigT,
 
     known_mapped_dio_pads = {}
     for sig in pinmux['ios']:
-        if sig['connection'] in ['muxed', 'manual']:
+        # An invalid pads list of a direct signal is reported by validate.
+        if sig['connection'] != 'direct' or len(sig['pads']) != 1:
             continue
-        if sig['pad'] in known_mapped_dio_pads:
+        padname = sig['pads'][0]
+        if padname in known_mapped_dio_pads:
             raise SystemExit(
                 'Cannot have multiple IOs mapped to the same DIO pad {}'.
-                format(sig['pad']))
-        known_mapped_dio_pads[sig['pad']] = sig
+                format(padname))
+        known_mapped_dio_pads[padname] = sig
 
     for target in targets:
         for entry in target['pinmux']['special_signals']:

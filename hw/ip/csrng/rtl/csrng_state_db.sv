@@ -82,7 +82,7 @@ module csrng_state_db
   end
 
   // State readout for core data path
-  assign rd_state_o = (rd_inst_id_i < NumApps) ? state_q[rd_inst_id_i] : '0;
+  assign rd_state_o = (32'(rd_inst_id_i) < NumApps) ? state_q[rd_inst_id_i] : '0;
 
   //--------------------------------------------
   // Regfile readout and restore logic
@@ -119,7 +119,7 @@ module csrng_state_db
 
   // Pad the logic representation of the selected state with zeros to the next multiple of 32.
   // An invalid instance id reads as all zeros.
-  assign state_reg_readout = (reg_inst_id_i < NumApps) ?
+  assign state_reg_readout = (32'(reg_inst_id_i) < NumApps) ?
                              {{NumRegPadBits{1'b0}}, state_q[reg_inst_id_i]} : '0;
 
   assign reg_rd_data_o = state_reg_readout[reg_ptr_q * RegWidth +: RegWidth];
@@ -172,7 +172,7 @@ module csrng_state_db
       if (reg_wr_en_i) begin
         state_d[reg_inst_id_i] = csrng_state_t'(state_reg_restore[StateWidth-1:0]);
       end
-      if (write_en && (wr_data_i.inst_id < NumApps)) begin
+      if (write_en && (32'(wr_data_i.inst_id) < NumApps)) begin
         state_d[wr_data_i.inst_id] = '{
           gen_adata_vld: wr_data_i.gen_adata_vld,
           gen_flag:      gen_flag_i[wr_data_i.inst_id],

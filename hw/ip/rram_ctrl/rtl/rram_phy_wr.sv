@@ -21,6 +21,8 @@
 //
 // The minimum transfer length of a write operation is one RRAM word (128b).
 
+`include "prim_assert.sv"
+
 module rram_phy_wr import rram_ctrl_pkg::*; (
   input  logic                    clk_i,
   input  logic                    rst_ni,

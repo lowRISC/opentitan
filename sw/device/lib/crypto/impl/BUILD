@@ -726,7 +726,9 @@ cc_library(
         "//conditions:default": [],
     }),
     deps = [
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/base:stdasm",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

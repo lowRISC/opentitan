@@ -264,7 +264,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] key_version_val;
     bit [TL_DW-1:0] max_key_ver_val;
 
-    key_version_val = `gmv(ral.key_version[0]);
+    key_version_val = `gmv(ral.key_version);
     max_key_ver_val = `gmv(ral.max_key_ver_shadowed);
 
     // if current key_version already match to what we need, return without updating it
@@ -280,14 +280,14 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
                                          key_version_val <= max_key_ver_val;
                                          key_version_val == max_key_ver_val dist {0 :/ 3, 1 :/ 1};
                                        })
-    ral.key_version[0].set(key_version_val);
-    csr_update(ral.key_version[0]);
+    ral.key_version.set(key_version_val);
+    csr_update(ral.key_version);
   endtask
 
   virtual task wait_op_done();
     keymgr_dpe_pkg::keymgr_dpe_op_status_e exp_status;
     bit is_good_op = 1;
-    int key_version = `gmv(ral.key_version[0]);
+    int key_version = `gmv(ral.key_version);
     bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
     logic [2:0] operation = `gmv(ral.control_shadowed.operation);
     keymgr_dpe_pkg::keymgr_dpe_ops_e cast_operation = keymgr_dpe_pkg::keymgr_dpe_ops_e'(operation);
@@ -473,7 +473,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_wr(.ptr(ral.salt[0]), .value(salt));
-    csr_wr(.ptr(ral.key_version[0]), .value(key_version));
+    csr_wr(.ptr(ral.key_version), .value(key_version));
     csr_update(.csr(ral.control_shadowed));
     csr_wr(.ptr(ral.start), .value(1));
     sema_update_control_csr.put();

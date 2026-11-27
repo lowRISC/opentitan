@@ -85,7 +85,8 @@ typedef enum dif_rv_core_ibex_error_status {
   kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity = 1 << 0,
 
   /**
-   * Response integrity error.
+   * Response integrity error. With CHERIoT, this includes a data response with
+   * an invalid encoding of the capability tag.
    */
   kDifRvCoreIbexErrorStatusFatalResponseIntegrity = 1 << 8,
 
@@ -329,13 +330,42 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
 /**
  * Enables NMI support for security alert events and watchdog bark.
  *
+ * Sources that are already enabled stay enabled.
+ *
  * @param rv_core_ibex Handle.
  * @param nmi A bitmask with nmi sources to be enabled.
- * @return The result of the operation.
+ * @return The result of the operation, `kDifLocked` if the write had no effect
+ * because `NMI_ENABLE_REGWEN` is cleared.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
                                          dif_rv_core_ibex_nmi_source_t nmi);
+
+/**
+ * Disables NMI support for security alert events and watchdog bark.
+ *
+ * Sources that are not in `nmi` keep their state.
+ *
+ * @param rv_core_ibex Handle.
+ * @param nmi A bitmask with nmi sources to be disabled.
+ * @return The result of the operation, `kDifLocked` if the write had no effect
+ * because `NMI_ENABLE_REGWEN` is cleared.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_disable_nmi(
+    const dif_rv_core_ibex_t *rv_core_ibex, dif_rv_core_ibex_nmi_source_t nmi);
+
+/**
+ * Lock the NMI enable settings.
+ * Once locked it can no longer be unlocked until the next system reset. This
+ * function will quietly do nothing if the settings are already locked.
+ *
+ * @param rv_core_ibex Handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_lock_nmi_enable(
+    const dif_rv_core_ibex_t *rv_core_ibex);
 
 /**
  * Read the NMI enable status and current event state.

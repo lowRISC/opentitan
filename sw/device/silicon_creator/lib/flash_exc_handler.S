@@ -153,11 +153,24 @@ nvm_exception_handler:
   // |      imm[11:0]       |    rs1   |funct3|    rd    |   0000011    |
   // +----------------------+----------+------+----------+--------------+
   //
-  // C.LW
+  // C.LW:
   //  15  13 12  10 9    7 6  5 4    2 1  0
   // +------+------+------+----+------+----+
-  // |funct3| imm  | rs1' | imm|  rd' | 00 |
+  // | 010  | imm  | rs1' | imm|  rd' | 00 |
   // +------+------+------+----+------+----+
+  //
+  // C.LBU (Zcb):
+  //  15  13 12  10 9    7 6  5 4    2 1  0
+  // +------+------+------+----+------+----+
+  // | 100  | 000  | rs1' |uimm|  rd' | 00 |
+  // +------+------+------+----+------+----+
+  //
+  // C.LHU / C.LH (Zcb):
+  //  15  13 12  10 9    7 6  5 4    2 1  0
+  // +------+------+------+----+------+----+
+  // | 100  | 001  | rs1' |s|im|  rd' | 00 |
+  // +------+------+------+----+------+----+
+  // Where s=0 for C.LHU (zero-extended) and s=1 for C.LH (sign-extended).
   // Where rd' and rs1' are (register_num - 8, ie: rd' of 0 means reg x8).
   //
 
@@ -206,6 +219,25 @@ nvm_exception_handler:
 .L_compressed_trap_instr:
   // Check if its a compressed load instruction.
   bnez a3, .L_not_a_flash_error
+  // Mask t0 (0xFFFFFFFF) for Zcb zero-extended compressed loads:
+  //   instr[15:10] == 0b100000 (0x20): C.LBU -> 0x000000FF
+  //   instr[15:10] == 0b100001 (0x21) && instr[6] == 0: C.LHU -> 0x0000FFFF
+  //   instr[15:10] == 0b100001 (0x21) && instr[6] == 1: C.LH  -> 0xFFFFFFFF
+  //   C.LW (instr[15:13] == 0b010): 0xFFFFFFFF
+  srli t1, a2, 10
+  andi t1, t1, 0x3f
+  li   t2, 0x20
+  beq  t1, t2, .L_compressed_lbu
+  li   t2, 0x21
+  bne  t1, t2, .L_compressed_rd
+  // C.LHU (instr[6] == 0) vs C.LH (instr[6] == 1).
+  andi t2, a2, (1 << 6)
+  bnez t2, .L_compressed_rd
+  srli t0, t0, 16
+  j    .L_compressed_rd
+.L_compressed_lbu:
+  srli t0, t0, 24
+.L_compressed_rd:
   // Get the register number into a3 by masking off the rd' field and adding 8.
   srli a3, a2, 2
   andi a3, a3, 7
@@ -225,8 +257,10 @@ nvm_exception_handler:
   // is nothing to do.
   beqz a3, .L_flash_fault_done
 
-  // All other registers load the faulting value (0xFFFFFFFF for LB/LH/LW/C.LW,
-  // 0x000000FF for LBU, or 0x0000FFFF for LHU).
+  // All other registers load the faulting value (0xFFFFFFFF for
+  // LB/LH/LW/C.LW/C.LH, 0x000000FF for LBU/C.LBU, or 0x0000FFFF for LHU/C.LHU).
+  // Note: RISC-V Zcb omits C.LB because of limited 16-bit encoding space and
+  // lower frequency (char is unsigned in the RISC-V ABI).
   slli a3, a3, 2
   add  a3, a3, sp
   sw   t0, 0(a3)

@@ -128,10 +128,11 @@ pinmux_sig_required = {
         's', 'Specification of connection type, can be direct, manual or '
         'muxed'
     ],
+    'pads': ['l', 'List of pad names, depends on the connection type'],
 }
 pinmux_sig_optional = {
     'port': ['s', 'Port name of module'],
-    'pad': ['s', 'Pad name for direct connections'],
+    'default': ['s', 'Default signal or/and pad connection'],
     'desc': ['s', 'Signal description'],
     'attr': ['s', 'Pad type for generating the correct attribute CSR']
 }
@@ -515,6 +516,7 @@ inter_sig_added = {}
 class PadType(Enum):
     INPUT_STD = 'InputStd'
     BIDIR_STD = 'BidirStd'
+    BIDIR_STR = 'BidirStr'
     BIDIR_TOL = 'BidirTol'
     BIDIR_OD = 'BidirOd'
     ANALOG_IN0 = 'AnalogIn0'
@@ -769,10 +771,13 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
     # where we tick off already connected direct pads.
     known_direct_pads = {}
     direct_pad_attr = {}
+    known_muxed_pads = set()
     for pad in top['pinout']['pads']:
         if pad['connection'] == 'direct':
             known_direct_pads[pad['name']] = 1
             direct_pad_attr[pad['name']] = pad['type']
+        elif pad['connection'] == 'muxed':
+            known_muxed_pads.add(pad['name'])
 
     # Note: the actual signal crosscheck is deferred until the merge stage,
     # since we have no idea at this point which IOs comportable IPs expose.
@@ -784,23 +789,17 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
             log.warning(f'Invalid connection type {sig["connection"]}')
             error += 1
 
-        # The pad needs to refer to a valid pad name in the pinout that is of
-        # connection type "direct". We tick off all direct pads that have been
-        # referenced in order to make sure there are no double connections
-        # and unconnected direct pads.
-        padname = sig.setdefault('pad', '')
-        if padname != '':
-            if padname in known_direct_pads:
-                if known_direct_pads[padname] == 1:
-                    known_direct_pads[padname] = 0
-                    padattr = direct_pad_attr[padname]
-                else:
-                    log.warning(
-                        f'Warning, direct pad {padname} is already connected')
-                    error += 1
-            else:
-                log.warning('Unknown direct pad {}'.format(padname))
-                error += 1
+        # A missing pads key is already reported by check_keys.
+        if 'pads' not in sig:
+            sig['pads'] = []
+            continue
+        pads = sig['pads']
+        if not isinstance(pads, list) or not all(isinstance(pad, str) for pad in pads):
+            log.warning("Pinmux signal of instance {} port '{}' must define pads as a list of "
+                        "pad names".format(sig.get('instance'), sig.get('port', '')))
+            error += 1
+            sig['pads'] = []
+            continue
 
         # Check port naming scheme.
         port = sig.setdefault('port', '')
@@ -810,8 +809,43 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
             log.warning(f'Port name {port} has wrong format')
             error += 1
 
-        # Check that only direct connections have pad keys
+        # Only muxed signals have a reset muxing.
+        if 'default' in sig and sig['connection'] != 'muxed':
+            log.warning(f"{sig['connection'].capitalize()} connection of instance "
+                        f"{sig['instance']} port '{port}' must not have a default")
+            error += 1
+
+        # Connection type specific checks of the pads list
         if sig['connection'] == 'direct':
+            if port == '':
+                log.warning(
+                    'Instance {} port {} connection is of direct type and '
+                    'therefore must have an associated port name.'.format(
+                        sig['instance'], sig['port']))
+                error += 1
+
+            # The pad of a direct signal needs to refer to a valid pad name in the
+            # pinout that is of connection type "direct". We tick off all direct
+            # pads that have been referenced in order to make sure there are no
+            # double connections and unconnected direct pads.
+            if len(pads) != 1:
+                log.warning(
+                    'Instance {} port {} connection is of direct type and '
+                    'therefore must have exactly one associated pad.'.format(
+                        sig['instance'], sig['port']))
+                error += 1
+                continue
+            padname = pads[0]
+            if padname not in known_direct_pads:
+                log.warning('Unknown direct pad {}'.format(padname))
+                error += 1
+                continue
+            if known_direct_pads[padname] == 0:
+                log.warning(f'Warning, direct pad {padname} is already connected')
+                error += 1
+            known_direct_pads[padname] = 0
+
+            padattr = direct_pad_attr[padname]
             if 'attr' in sig and sig['attr'] != padattr:
                 log.warning(
                     'Direct connection of instance {} port {} pad attribute '
@@ -822,19 +856,6 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
             # infer the pad type needed to instantiate the correct attribute
             # CSR WARL module inside the pinmux.
             sig['attr'] = padattr
-
-            if padname == '':
-                log.warning(
-                    'Instance {} port {} connection is of direct type and '
-                    'therefore must have an associated pad name.'.format(
-                        sig['instance'], sig['port']))
-                error += 1
-            if port == '':
-                log.warning(
-                    'Instance {} port {} connection is of direct type and '
-                    'therefore must have an associated port name.'.format(
-                        sig['instance'], sig['port']))
-                error += 1
         elif sig['connection'] == 'muxed':
             # Muxed signals do not have a corresponding pad and attribute CSR,
             # since they first go through the pinmux matrix.
@@ -844,18 +865,28 @@ def check_pinmux(top: ConfigT, prefix: str) -> int:
                     'an associated pad attribute field'.format(
                         sig['instance'], sig['port']))
                 error += 1
-            if padname != '':
-                log.warning('Muxed connection of instance {} port {} '
-                            'must not have an associated pad'.format(
-                                sig['instance'], sig['port']))
+            # An empty pads list means that the signal can be muxed to all
+            # pads. Otherwise, the list restricts the muxing to muxed pads.
+            for padname in pads:
+                if padname not in known_muxed_pads:
+                    log.warning("Muxed connection of instance {} port '{}' "
+                                "refers to pad '{}' which is not a muxed pad".format(
+                                    sig['instance'], sig['port'], padname))
+                    error += 1
+            # A default pad must be a known muxed pad. The pinmux template checks the pads and
+            # default values themselves.
+            default = sig.get('default')
+            if isinstance(default, str) and default not in known_muxed_pads:
+                log.warning(f"Muxed connection of instance {sig['instance']} port "
+                            f"'{sig['port']}' has default '{default}' which is not a muxed pad")
                 error += 1
         elif sig['connection'] == 'manual':
             # This pad attr key is only allowed in the manual case,
             # as there is no way to infer the pad type automatically.
             sig.setdefault('attr', 'BidirStd')
-            if padname != '':
+            if pads:
                 log.warning('Manual connection of instance {} port {} '
-                            'must not have an associated pad'.format(
+                            'must not have associated pads'.format(
                                 sig['instance'], sig['port']))
                 error += 1
 
@@ -937,7 +968,7 @@ def check_implementation_targets(top: ConfigT, prefix: str) -> int:
                 # If this is not a muxed pad, we need to make sure this refers
                 # to DIO that is NOT a manual pad.
                 for sig in top['pinmux']['signals']:
-                    if entry['pad'] == sig['pad']:
+                    if entry['pad'] in sig['pads']:
                         break
                 else:
                     log.warning(

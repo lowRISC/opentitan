@@ -2,7 +2,7 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/rram_ctrl/data/rram_ctrl.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`rram_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.0 | D1, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/code.svg) |
+ [`rram_ctrl`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.0.0 | D2, V0 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/rram_ctrl/code.svg) |
 
 <!-- END CMDGEN -->
 
@@ -126,6 +126,27 @@ The RRAM controller sits between the software interface, other hardware IPs, and
 - Up to 2 outstanding host read requests tracked through the read pipeline.
 - XEX scrambling engine, shared between reads and writes and based on PRINCE.
 - Address-XOR applied per bus word at the physical layer during write, and inverted during read.
+
+### Supported Parameter Sets
+
+The following table lists the instantiation parameters of the RRAM controller.
+
+Parameter         | Default             | Top Earlgrey        | Description
+------------------|---------------------|---------------------|---------------
+`AlertAsyncOn`    | `{NumAlerts{1'b1}}` | Set by topgen       | Adds synchronizers to the alert senders for an alert handler on another clock.
+`AlertSkewCycles` | `1`                 | `1`                 | Cycles of skew tolerated on the differential alert signals, set by topgen.
+`RndCnstAddrKey`  | Random              | Random              | Default address scrambling key, used until the key from `otp_ctrl` is loaded.
+`RndCnstDataKey`  | Random              | Random              | Default data scrambling key, used until the key from `otp_ctrl` is loaded.
+`RndCnstAllSeeds` | Random              | Random              | Default creator and owner seeds, used until the seeds are read from the info pages.
+`RndCnstLfsrSeed` | Random              | Random              | Default LFSR seed, used until the RMA seed from `lc_ctrl` is loaded at the start of an RMA wipe.
+`RndCnstLfsrPerm` | Random              | Random              | Permutation applied to the LFSR output.
+`SecScrambleEn`   | `1'b1`              | `1'b1`              | Enables the RRAM scrambling logic.
+`WrFifoDepth`     | `16`                | `4`                 | Depth of the controller write FIFO. Must not exceed `MaxFifoDepth` (16).
+`RdFifoDepth`     | `16`                | `16`                | Depth of the controller read FIFO. Must not exceed `MaxFifoDepth` (16).
+
+Only the parameter set that Earl Grey instantiates, listed in the Top Earlgrey column above, is verified and signed off.
+The block-level testbench instantiates the design with `WrFifoDepth = 4` and `RdFifoDepth = 16` and leaves `SecScrambleEn` at its default, so it verifies the same set.
+The random netlist constants do not change the architecture, so any value of them is supported.
 
 ### RRAM Controller - Macro Interface
 

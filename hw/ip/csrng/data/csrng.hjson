@@ -22,7 +22,7 @@
   sw_checklist:       "/sw/device/lib/dif/dif_csrng",
   version:            "3.0.0",
   life_stage:         "L1",
-  design_stage:       "D1",
+  design_stage:       "D2",
   verification_stage: "V1",
   dif_stage:          "S2",
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
@@ -130,6 +130,20 @@
     {
       name: "CSRNG.MODE.NONDETERMINISTIC",
       desc: "CSRNG can be set up to generate non-deterministic random values by using a random seed from the entropy source."
+    }
+    {
+      name: "CSRNG.HALT",
+      desc: '''
+            CSRNG allows software to halt a selected instance via !!INT_STATE_HALT without affecting other instances.
+            Halting can be enabled per instance via !!INT_STATE_HALT_ENABLE.
+            '''
+    }
+    {
+      name: "CSRNG.GENERATE_ABORT",
+      desc: '''
+            CSRNG allows software to abort a Generate command in progress via !!GEN_ABORT.
+            The aborted instance is uninstantiated.
+            '''
     }
     {
       name: "CSRNG.SAVE_AND_RESTORE",

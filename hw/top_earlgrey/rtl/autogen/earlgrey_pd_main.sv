@@ -177,12 +177,14 @@ module earlgrey_pd_main #(
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
   parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
+  parameter bit SecCheriotMemSysLockstep = 1'b1,
+  parameter int unsigned CheriotMemSysLockstepOffset = 1,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
   parameter bit SramCtrlMetaInstrExec = 0,
   parameter int SramCtrlMetaNumPrinceRoundsHalf = 2,
-  parameter int SramCtrlMetaNumAddrScrRounds = 0,
+  parameter int SramCtrlMetaNumAddrScrRounds = 2,
   parameter bit SramCtrlMetaEccCorrection = 0,
   parameter bit SecSramCtrlMetaZeroInit = 1
 ) (
@@ -640,6 +642,7 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
   keymgr_dpe_pkg::keymgr_dpe_field_entropy_t       otp_ctrl_keymgr_field_entropy;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_secondary_root_key;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
@@ -680,15 +683,18 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       rv_core_ibex_cored_tl_h_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_corerevbm_tl_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_corerevbm_tl_rsp;
-  logic       rv_core_ibex_cored_tag_h2d;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cored_tag_h2d;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
   rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
   tlul_pkg::tl_h2d_t       cheriot_mem_sys_meta_sram_tl_req;
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
-  logic       cheriot_mem_sys_cored_tag_d2h;
+  prim_mubi_pkg::mubi4_t       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_memsys;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_memsys_shadow;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_cmp;
   logic       i3c1_rstdet_enable;
   i3c_pkg::i3c_rstdet_req_t       i3c1_rstdet_req;
   i3c_pkg::i3c_rstdet_rsp_t       i3c1_rstdet_rsp;
@@ -1734,6 +1740,7 @@ module earlgrey_pd_main #(
     .keymgr_creator_seed_o(),
     .keymgr_owner_seed_o(),
     .keymgr_field_entropy_o(otp_ctrl_keymgr_field_entropy),
+    .keymgr_secondary_root_key_o(otp_ctrl_keymgr_secondary_root_key),
     .nvm_otp_key_i(rram_ctrl_otp_key_req),
     .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -2441,7 +2448,7 @@ module earlgrey_pd_main #(
     .otbn_app_i(otbn_keymgr_app_rsp),
     .sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
-    .secondary_root_key_i(keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT),
+    .secondary_root_key_i(otp_ctrl_keymgr_secondary_root_key),
     .creator_seed_i(rram_ctrl_keymgr_creator_seed),
     .owner_seed_i(rram_ctrl_keymgr_owner_seed),
     .device_id_i(keymgr_dpe_device_id),
@@ -2776,6 +2783,9 @@ module earlgrey_pd_main #(
     // Inter-module signals
     .rst_cpu_n_o(),
     .cheriot_ena_o(rv_core_ibex_cheriot_ena),
+    .cheriot_ena_memsys_o(rv_core_ibex_cheriot_ena_memsys),
+    .cheriot_ena_memsys_shadow_o(rv_core_ibex_cheriot_ena_memsys_shadow),
+    .cheriot_ena_cmp_o(rv_core_ibex_cheriot_ena_cmp),
     .cored_tl_h_o(rv_core_ibex_cored_tl_h_req),
     .cored_tl_h_i(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_o(rv_core_ibex_cored_tag_h2d),
@@ -2810,28 +2820,38 @@ module earlgrey_pd_main #(
   );
 
   cheriot_mem_sys #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[67]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:67]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .MainSramBaseAddr(CheriotMemSysMainSramBaseAddr),
     .MainSramTopAddr(CheriotMemSysMainSramTopAddr),
     .NvmBaseAddr(CheriotMemSysNvmBaseAddr),
     .NvmTopAddr(CheriotMemSysNvmTopAddr),
     .MetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
-    .MemSizeRevbm(3072)
+    .MemSizeRevbm(3072),
+    .SecLockstep(SecCheriotMemSysLockstep),
+    .LockstepOffset(CheriotMemSysLockstepOffset)
   ) u_cheriot_mem_sys (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
+    .rst_shadowed_ni(rstmgr_resets_i.rst_lc_shadowed_n[rstmgr_pkg::DomainMainSel]),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+
+    // DFT/scan connections
+    .scanmode_i,
+    .scan_rst_ni,
 
     // Interrupts
     .intr_tbre_done_o(intr_cheriot_mem_sys_tbre_done),
 
     // alert_handler[67]: fatal_fault
-    .alert_tx_o(alert_tx[67]),
-    .alert_rx_i(alert_rx[67]),
+    // alert_handler[68]: recov_ctrl_update_err
+    .alert_tx_o(alert_tx[68:67]),
+    .alert_rx_i(alert_rx[68:67]),
 
     // Inter-module signals
-    .cheriot_ena_i(rv_core_ibex_cheriot_ena),
+    .cheriot_ena_i(rv_core_ibex_cheriot_ena_memsys),
+    .cheriot_ena_shadow_i(rv_core_ibex_cheriot_ena_memsys_shadow),
+    .cheriot_ena_cmp_i(rv_core_ibex_cheriot_ena_cmp),
     .cored_tl_d_i(rv_core_ibex_cored_tl_h_req),
     .cored_tl_d_o(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_i(rv_core_ibex_cored_tag_h2d),
@@ -2851,7 +2871,7 @@ module earlgrey_pd_main #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[69]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstSramKey(RndCnstSramCtrlMetaSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMetaSramNonce),
@@ -2873,9 +2893,9 @@ module earlgrey_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[68]: fatal_error
-    .alert_tx_o(alert_tx[68]),
-    .alert_rx_i(alert_rx[68]),
+    // alert_handler[69]: fatal_error
+    .alert_tx_o(alert_tx[69]),
+    .alert_rx_i(alert_rx[69]),
 
     // RACL policies
     .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),

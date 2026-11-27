@@ -2,8 +2,8 @@
 <!-- BEGIN CMDGEN util/mdbook_regression_links.py --hjson hw/ip/sram_ctrl/data/sram_ctrl.hjson --top earlgrey -->
 | Regression | Version | [Stages](https://opentitan.org/book/doc/project_governance/development_stages.html) | Results |
 |-|-|-|-|
- [`sram_ctrl_main`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/code.svg) |
- [`sram_ctrl_ret`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/code.svg) |
+ [`sram_ctrl_main`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_main/code.svg) |
+ [`sram_ctrl_ret`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.2.0 | D2, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/sram_ctrl_ret/code.svg) |
 
 This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/sram_ctrl/index.html).
 
@@ -26,3 +26,16 @@ The SRAM controller contains the SRAM data and address scrambling device and pro
 - Access controls to allow / disallow code execution from SRAM.
 - Security hardening when integrity error has been detected.
 - Optional memory readback mode for detecting memory integrity errors.
+
+## Supported Parameter Sets
+
+Only the following parameter sets, as used by the SRAM controller instances in Earl Grey, are planned to be verified and signed off.
+All of them use `NumRamInst` = 1, `Outstanding` = 2, `EccCorrection` = 0 and `EnableRacl` = 0.
+See [Parameters](doc/interfaces.md#parameters) for a description of each parameter.
+
+Instance         | `MemSizeRam` | `InstrExec` | `NumPrinceRoundsHalf` | `NumAddrScrRounds` | `SecZeroInit`
+-----------------|--------------|-------------|-----------------------|--------------------|--------------
+`sram_ctrl_ret`  | 8192         | 0           | 3                     | 2                  | 0
+`sram_ctrl_main` | 131072       | 1           | 2                     | 2                  | 0
+`sram_ctrl_sec`  | 65536        | 1           | 2                     | 2                  | 0
+`sram_ctrl_meta` | 38912        | 0           | 2                     | 0                  | 1

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Simple wrappers around dvsim.py to avoid needing long command lines. This
+# Simple wrappers around dvsim to avoid needing long command lines. This
 # doesn't do any dependency tracking (as you might expect in a Makefile).
 
 # Set WAVES to 1 to get wave dumps
@@ -20,7 +20,7 @@ RESEED=1
 
 SIM=xcelium
 
-# Specify the seed for the test to run. If this is empty, dvsim.py
+# Specify the seed for the test to run. If this is empty, dvsim
 # will pick random seeds. By default, we make runs reproducible, so
 # force the seed if RESEED is 1.
 default-seed := 123
@@ -32,7 +32,7 @@ TESTS=
 
 ibex-top       := ../../../..
 scratch-root   := $(ibex-top)/build
-dvsim-py       := $(ibex-top)/vendor/lowrisc_ip/util/dvsim/dvsim.py
+dvsim-py       := dvsim
 dvsim-std-args := --scratch-root $(scratch-root)
 
 waves-arg      := $(if $(filter-out 0,$(WAVES)),--waves shm,)

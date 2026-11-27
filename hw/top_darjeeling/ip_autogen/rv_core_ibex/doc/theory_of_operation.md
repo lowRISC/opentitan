@@ -90,6 +90,18 @@ Upon reset release, software can check the last PC and data access address to ge
 
 If the software has some kind of error and encounters two exceptions in a row, the previous exception PC and address show the location of the first exception, while the current exception address and PC show the location of the most recent exception.
 
+## Non-Maskable Interrupts
+
+The wrapper raises the non-maskable interrupt (NMI) of Ibex for two sources:
+* The escalation signal from the alert handler on ``esc_tx_i``.
+* The watchdog bark from the AON timer on ``nmi_wdog_i``.
+
+An NMI is raised while a source is set in both [`NMI_STATE`](registers.md#nmi_state) and [`NMI_ENABLE`](registers.md#nmi_enable).
+
+Software can both set and clear the bits of [`NMI_ENABLE`](registers.md#nmi_enable).
+An enabled source is therefore only truly non-maskable once software also clears [`NMI_ENABLE_REGWEN`](registers.md#nmi_enable_regwen), which locks [`NMI_ENABLE`](registers.md#nmi_enable) until the next reset.
+A boot stage that enables NMIs can leave the lock to a later stage, so that the owner of that stage decides which sources stay enabled.
+
 
 ## Fetch Enable
 
@@ -98,8 +110,18 @@ When Ibex fetch is disabled it will cease to execute, but will complete instruct
 Ibex fetch is enabled when all of the following conditions are met:
   - The lifecycle controller has enabled it
   - The power manager has enabled it
-  - A ``fatal_hw_err`` alert hasn't been raised
+  - No fatal internal error has been seen ([`FATAL_CORE_ERR`](registers.md#err_status))
 
 ### Local Escalation Path
 
-When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+When a fatal internal error sets [`FATAL_CORE_ERR`](registers.md#err_status), which also raises the ``fatal_hw_err`` alert, Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+The other causes of the ``fatal_hw_err`` alert, such as integrity errors, do not disable fetch locally; their escalation is left to the alert handler.
+
+## Lockstep
+
+When `SecureIbex` is set, Ibex runs a shadow core in lockstep with the main core, `LockstepOffset` cycles behind, and compares their outputs (see the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/security.html#dual-core-lockstep)).
+The wrapper extends this comparison to its bus logic.
+The requests of the shadow core go through a second copy of the address translation and of the TL-UL adapters, which see the responses of the main core delayed by `LockstepOffset` cycles.
+Their TL-UL requests are compared with the ones of the main core, delayed alike.
+A mismatch is a fatal core error and raises the ``fatal_hw_err`` alert.
+The comparison of the data and instruction interfaces pauses for `LockstepOffset` + 1 cycles from a write to the address translation registers.

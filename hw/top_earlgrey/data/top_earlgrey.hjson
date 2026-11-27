@@ -1222,9 +1222,6 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       param_decl: {
         InstrExec: "0",
-        // Set back to the default of 2 once address scrambling supports the
-        // 38 KiB meta SRAM depth.
-        NumAddrScrRounds: "0",
         NumPrinceRoundsHalf: "2",
         InstSize: "38912",
         // The CHERIoT revocation bitmap and validity tags must read back as zero initially, to
@@ -1356,6 +1353,7 @@
       // KeyMgr DPE Sideload & KDF function
       'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
       'otp_ctrl.keymgr_field_entropy'     : ['keymgr_dpe.field_entropy'],
+      'otp_ctrl.keymgr_secondary_root_key': ['keymgr_dpe.secondary_root_key'],
       // The creator / owner seed is provided by the rram_ctrl.
       'rram_ctrl.keymgr_creator_seed'     : ['keymgr_dpe.creator_seed'],
       'rram_ctrl.keymgr_owner_seed'       : ['keymgr_dpe.owner_seed'],
@@ -1480,9 +1478,12 @@
       'rram_ctrl.rram_macro' : ['rram_macro.rram_macro'],
 
       // CHERIoT connections
-      'cheriot_mem_sys.meta_sram_tl'  : ['sram_ctrl_meta.ram_tl'],
-      'cheriot_mem_sys.cored_tag_d2h' : ['rv_core_ibex.cored_tag_d2h'],
-      'rv_core_ibex.cheriot_ena'      : ['cheriot_mem_sys.cheriot_ena', 'rv_dm.cheriot_ena'],
+      'cheriot_mem_sys.meta_sram_tl'           : ['sram_ctrl_meta.ram_tl'],
+      'cheriot_mem_sys.cored_tag_d2h'          : ['rv_core_ibex.cored_tag_d2h'],
+      'rv_core_ibex.cheriot_ena'               : ['rv_dm.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena_memsys'        : ['cheriot_mem_sys.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena_memsys_shadow' : ['cheriot_mem_sys.cheriot_ena_shadow'],
+      'rv_core_ibex.cheriot_ena_cmp'           : ['cheriot_mem_sys.cheriot_ena_cmp'],
     },
 
     // top is to connect to top net/struct.
@@ -1660,18 +1661,18 @@
       { name: 'CC2'             , type: 'BidirTol',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 2', port_type: '`INOUT_AI'},
       { name: 'RRAM_ANALOG'     , type: 'AnalogIn0',    bank: 'VCC' , connection: 'manual', desc: 'RRAM analog test signal'},
       // Dedicated IOs
-      { name: 'SPI_HOST_D0'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D1'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D2'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_D3'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
-      { name: 'SPI_HOST_CLK'    , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host clock'},
-      { name: 'SPI_HOST_CS_L'   , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI host chip select'},
-      { name: 'SPI_DEV_D0'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D1'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D2'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_D3'      , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
-      { name: 'SPI_DEV_CLK'     , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
-      { name: 'SPI_DEV_CS_L'    , type: 'InputStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
+      { name: 'SPI_HOST_D0'     , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D1'     , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D2'     , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_D3'     , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host data'},
+      { name: 'SPI_HOST_CLK'    , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host clock'},
+      { name: 'SPI_HOST_CS_L'   , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI host chip select'},
+      { name: 'SPI_DEV_D0'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D1'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D2'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_D3'      , type: 'BidirStr', bank: 'VIOA', connection: 'direct', desc: 'SPI device data'},
+      { name: 'SPI_DEV_CLK'     , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device clock'},
+      { name: 'SPI_DEV_CS_L'    , type: 'BidirStd', bank: 'VIOA', connection: 'direct', desc: 'SPI device chip select'},
       // IOA
       { name: 'IOA0'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA1'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1679,23 +1680,23 @@
       { name: 'IOA3'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad', port_type: '`INOUT_AO'},
       { name: 'IOA4'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOA5'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA6'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA7'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOA8'            , type: 'BidirOd',  bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA6'            , type: 'BidirStd', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA7'            , type: 'BidirStr', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOA8'            , type: 'BidirStr', bank: 'VIOA', connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOB
-      { name: 'IOB0'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB1'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB2'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB3'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB4'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB5'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB6'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB0'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB1'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB2'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB3'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB4'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB5'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB6'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOB7'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOB8'            , type: 'BidirStd', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB9'            , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB10'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB11'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOB12'           , type: 'BidirOd' , bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB9'            , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB10'           , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB11'           , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOB12'           , type: 'BidirStr', bank: 'VIOB', connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOC
       { name: 'IOC0'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC1'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1709,9 +1710,9 @@
       // (and specifically that it gets sampled as 0 when left floating / not connected).
       { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad', attrs: {pull_en: 1, pull_select: 0}},
       { name: 'IOC9'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC10'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC11'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOC12'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       // IOR
       { name: 'IOR0'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR1'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1721,18 +1722,18 @@
       { name: 'IOR5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOR7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR8'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (ec_rst_l)'},
-      { name: 'IOR9'            , type: 'BidirOd' , bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (flash_wp_l))'},
-      { name: 'IOR10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR12'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOR13'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR8'            , type: 'BidirStd', bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (ec_rst_l)', attrs: {virtual_od_en: 1}},
+      { name: 'IOR9'            , type: 'BidirStd', bank: 'VCC' , connection: 'direct', desc: 'Dedicated sysrst_ctrl output (flash_wp_l))', attrs: {virtual_od_en: 1}},
+      { name: 'IOR10'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR11'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR12'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      { name: 'IOR13'           , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
     ]
   },
 
   pinmux: {
     // Signal to pinmux/pad mapping.
-    // Each entry in the list below must have the following two mandatory keys:
+    // Each entry in the list below must have the following three mandatory keys:
     //
     // - instance: This is the comportable IO instance name where the IO signal comes from.
     //
@@ -1740,15 +1741,28 @@
     //               can have either of the following values:
     //
     //               1) 'direct': This is a dedicated IO signal that is directly connected to a pad.
-    //                            Such an IO signal must also specify the 'port' and 'pad' keys
-    //                            (see further below).
+    //                            Such an IO signal must also specify the 'port' key and exactly
+    //                            one pad in 'pads' (see further below).
     //
     //               2) 'manual': This is a dedicated IO signal that is not directly connected to a pad.
     //                            It needs to be manually wired up in the template.
-    //                            Such an IO signal may have a 'port' key, but no 'pad' key.
+    //                            Such an IO signal may have a 'port' key and must have an empty
+    //                            'pads'.
     //
     //               3) 'muxed': This is a muxed IO signal that will be connected to the pinmux.
-    //                           Such an IO signal may have a 'port' key, but no 'pad' key.
+    //                           Such an IO signal may have a 'port' key.
+    //
+    // - pads: Required list of pad names. The content depends on the connection type:
+    //         direct: Exactly one entry, the direct pad this signal is connected to.
+    //         manual: No meaning. Must be an empty list.
+    //         muxed:  Restricts the muxing to the listed muxed pads. An empty list means that the
+    //                 signal can be muxed to all muxed pads and all pads can be muxed to this
+    //                 signal. The muxing constraint also depends on the direction of the signal:
+    //                 - Input:  defines the pads this signal can select (INSEL).
+    //                 - Output: defines the pads that can select this signal (OUTSEL).
+    //                 - Inout:  defines both directions at once.
+    //
+    //                 If 'port' is empty, the list applies to all ports of the instance.
     //
     // Depending on the connection type specified, each entry may have the following optional keys:
     //
@@ -1758,8 +1772,33 @@
     //         Not specifying this key or setting it to an empty string acts as a wild card
     //         and includes all available IOs of this instance.
     //
-    // - pad: Name of the pad the 'direct' connection should connect to.
-    //        This is not required for 'muxed' and 'manual' connections.
+    // - default: Defines the muxing at reset of a muxed signal, i.e., the reset values of the INSEL
+    //            and OUTSEL registers. Only muxed connections may have this key. The possible
+    //            values depend on the signal direction:
+    //
+    //            If input:  Defines the INSEL reset value for this signal. Possible defaults are:
+    //                       - a pad name (string): Signal is connected to this pad at reset.
+    //                       - 0 or 1 (int):        Signal is driven to '0 or '1 at reset.
+    //
+    //                       If default is not specified, the signal is driven to '0.
+    //
+    //            If output: The value must be a pad name. If given, this pad is then driven by
+    //                       this signal after reset (defines the OUTSEL reset value for this pad).
+    //                       Each pad may only be referenced once in the complete 'signals' list as
+    //                       a default pad.
+    //
+    //                       If a pad is never specified as a default, the pad is set to high-Z at
+    //                       reset.
+    //
+    //            If inout:  Defines the INSEL and OUTSEL reset values for this signal and pad.
+    //                       Possible defaults are:
+    //                       - a pad name (string): Signal is connected to this pad at reset and the
+    //                                              pad's default output is this signal.
+    //                       - 0 or 1 (int):        Signal is driven to '0 or '1 at reset. Imposes
+    //                                              no default source for any pad.
+    //
+    //                       If this default is not specified, the signal is driven to '0 and no pad
+    //                       default is derived.
     //
     // - desc: Optional description field.
     //
@@ -1770,55 +1809,146 @@
     //
     signals: [
       // USB
-      { instance: 'usbdev',      port: 'usb_dp',         connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',      port: 'usb_dn',         connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',      port: 'usb_dp',           connection: 'manual', pads: [],                desc: ''},
+      { instance: 'usbdev',      port: 'usb_dn',           connection: 'manual', pads: [],                desc: ''},
+      { instance: 'usbdev',      port: 'sense',            connection: 'muxed',  pads: [],                desc: ''},
       // SPI Host0
-      { instance: 'spi_host0',   port: 'sck',            connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
-      { instance: 'spi_host0',   port: 'csb[0]',         connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
-      { instance: 'spi_host0',   port: 'sd[0]',          connection: 'direct', pad: 'SPI_HOST_D0'  , desc: ''},
-      { instance: 'spi_host0',   port: 'sd[1]',          connection: 'direct', pad: 'SPI_HOST_D1'  , desc: ''},
-      { instance: 'spi_host0',   port: 'sd[2]',          connection: 'direct', pad: 'SPI_HOST_D2'  , desc: ''},
-      { instance: 'spi_host0',   port: 'sd[3]',          connection: 'direct', pad: 'SPI_HOST_D3'  , desc: ''},
+      { instance: 'spi_host0',   port: 'sck',            connection: 'direct', pads: ['SPI_HOST_CLK'],  desc: ''},
+      { instance: 'spi_host0',   port: 'csb[0]',         connection: 'direct', pads: ['SPI_HOST_CS_L'], desc: ''},
+      { instance: 'spi_host0',   port: 'sd[0]',          connection: 'direct', pads: ['SPI_HOST_D0'],   desc: ''},
+      { instance: 'spi_host0',   port: 'sd[1]',          connection: 'direct', pads: ['SPI_HOST_D1'],   desc: ''},
+      { instance: 'spi_host0',   port: 'sd[2]',          connection: 'direct', pads: ['SPI_HOST_D2'],   desc: ''},
+      { instance: 'spi_host0',   port: 'sd[3]',          connection: 'direct', pads: ['SPI_HOST_D3'],   desc: ''},
       // SPI Device
-      { instance: 'spi_device',  port: 'sck',            connection: 'direct', pad: 'SPI_DEV_CLK'  , desc: ''},
-      { instance: 'spi_device',  port: 'csb',            connection: 'direct', pad: 'SPI_DEV_CS_L' , desc: ''},
-      { instance: 'spi_device',  port: 'sd[0]',          connection: 'direct', pad: 'SPI_DEV_D0'   , desc: ''},
-      { instance: 'spi_device',  port: 'sd[1]',          connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
-      { instance: 'spi_device',  port: 'sd[2]',          connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
-      { instance: 'spi_device',  port: 'sd[3]',          connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
+      { instance: 'spi_device',  port: 'sck',              connection: 'direct', pads: ['SPI_DEV_CLK'],   desc: ''},
+      { instance: 'spi_device',  port: 'csb',              connection: 'direct', pads: ['SPI_DEV_CS_L'],  desc: ''},
+      { instance: 'spi_device',  port: 'sd[0]',            connection: 'direct', pads: ['SPI_DEV_D0'],    desc: ''},
+      { instance: 'spi_device',  port: 'sd[1]',            connection: 'direct', pads: ['SPI_DEV_D1'],    desc: ''},
+      { instance: 'spi_device',  port: 'sd[2]',            connection: 'direct', pads: ['SPI_DEV_D2'],    desc: ''},
+      { instance: 'spi_device',  port: 'sd[3]',            connection: 'direct', pads: ['SPI_DEV_D3'],    desc: ''},
       // MIOs
-      { instance: "gpio0",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "gpio1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart0",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart1",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart2",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart3",       port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i2c0",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i2c1",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i2c2",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i3c0",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "i3c1",        port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "spi_device",  port: 'tpm_csb',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "spi_host0",   port: 'csb[1]',         connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "spi_host0",   port: 'csb[2]',         connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "spi_host1",   port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sensor_ctrl", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "gpio0",       port: 'gpio[0]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[1]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[2]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[3]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[4]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[5]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[6]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[7]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[8]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[9]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[10]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[11]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[12]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[13]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[14]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[15]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[16]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[17]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[18]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[19]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[20]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[21]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[22]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[23]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[24]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[25]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[26]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[27]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[28]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[29]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[30]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio0",       port: 'gpio[31]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[0]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[1]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[2]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[3]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[4]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[5]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[6]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[7]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[8]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[9]',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[10]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[11]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[12]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[13]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[14]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[15]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[16]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[17]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[18]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[19]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[20]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[21]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[22]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[23]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[24]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[25]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[26]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[27]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[28]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[29]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[30]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "gpio1",       port: 'gpio[31]',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart0",       port: 'rx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart0",       port: 'tx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart1",       port: 'rx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart1",       port: 'tx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart2",       port: 'rx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart2",       port: 'tx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart3",       port: 'rx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "uart3",       port: 'tx',               connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c0",        port: 'sda',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c0",        port: 'scl',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c1",        port: 'sda',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c1",        port: 'scl',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c2",        port: 'sda',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i2c2",        port: 'scl',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c0",        port: 'scl',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c0",        port: 'sda',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c0",        port: 'ctrl_sda_pu',      connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c0",        port: 'rstdet_scl',       connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c0",        port: 'rstdet_sda',       connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c1",        port: 'scl',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c1",        port: 'sda',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c1",        port: 'ctrl_sda_pu',      connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c1",        port: 'rstdet_scl',       connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "i3c1",        port: 'rstdet_sda',       connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_device",  port: 'tpm_csb',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host0",   port: 'csb[1]',           connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host0",   port: 'csb[2]',           connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'sck',              connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'csb[0]',           connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'csb[1]',           connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'csb[2]',           connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'sd[0]',            connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'sd[1]',            connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'sd[2]',            connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "spi_host1",   port: 'sd[3]',            connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[0]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[1]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[2]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[3]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[4]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[5]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[6]', connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sensor_ctrl", port: 'ast_debug_out[7]', connection: 'muxed',  pads: [],                desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
-      { instance: "sysrst_ctrl", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key0_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key1_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key2_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'pwrb_in',        connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'bat_disable',    connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'ec_rst_l',       connection: 'direct', pad: 'IOR8'         , desc: ''},
-      { instance: "sysrst_ctrl", port: 'flash_wp_l',     connection: 'direct', pad: 'IOR9'         , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key0_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key1_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'key2_out',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'pwrb_out',       connection: 'muxed',  pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'lid_open',       connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "sysrst_ctrl", port: 'z3_wakeup',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: 'usbdev',      port: 'sense',          connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "sysrst_ctrl", port: 'ac_present',       connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'key0_in',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'key1_in',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'key2_in',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'pwrb_in',          connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'bat_disable',      connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'ec_rst_l',         connection: 'direct', pads: ['IOR8'],          desc: ''},
+      { instance: "sysrst_ctrl", port: 'flash_wp_l',       connection: 'direct', pads: ['IOR9'],          desc: ''},
+      { instance: "sysrst_ctrl", port: 'key0_out',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'key1_out',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'key2_out',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'pwrb_out',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'lid_open',         connection: 'muxed',  pads: [],                desc: ''},
+      { instance: "sysrst_ctrl", port: 'z3_wakeup',        connection: 'muxed',  pads: [],                desc: ''},
     ],
 
     num_wkup_detect: 8,

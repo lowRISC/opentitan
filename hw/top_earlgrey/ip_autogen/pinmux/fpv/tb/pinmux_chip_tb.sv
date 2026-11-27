@@ -101,28 +101,28 @@ module pinmux_chip_tb
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirStd, // DIO spi_host0_csb
-      BidirStd, // DIO spi_host0_sck
-      InputStd, // DIO spi_device_csb
-      InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_ec_rst_l
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_csb
+      BidirStr, // DIO spi_host0_sck
+      BidirStd, // DIO spi_device_csb
+      BidirStd, // DIO spi_device_sck
+      BidirStd, // DIO sysrst_ctrl_flash_wp_l
+      BidirStd, // DIO sysrst_ctrl_ec_rst_l
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
       BidirStd, // DIO usbdev_usb_dn
       BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
-      BidirOd, // MIO Pad 46
-      BidirOd, // MIO Pad 45
-      BidirOd, // MIO Pad 44
-      BidirOd, // MIO Pad 43
+      BidirStd, // MIO Pad 46
+      BidirStd, // MIO Pad 45
+      BidirStd, // MIO Pad 44
+      BidirStd, // MIO Pad 43
       BidirStd, // MIO Pad 42
       BidirStd, // MIO Pad 41
       BidirStd, // MIO Pad 40
@@ -131,9 +131,9 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 37
       BidirStd, // MIO Pad 36
       BidirStd, // MIO Pad 35
-      BidirOd, // MIO Pad 34
-      BidirOd, // MIO Pad 33
-      BidirOd, // MIO Pad 32
+      BidirStd, // MIO Pad 34
+      BidirStd, // MIO Pad 33
+      BidirStd, // MIO Pad 32
       BidirStd, // MIO Pad 31
       BidirStd, // MIO Pad 30
       BidirStd, // MIO Pad 29
@@ -144,22 +144,22 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 24
       BidirStd, // MIO Pad 23
       BidirStd, // MIO Pad 22
-      BidirOd, // MIO Pad 21
-      BidirOd, // MIO Pad 20
-      BidirOd, // MIO Pad 19
-      BidirOd, // MIO Pad 18
+      BidirStr, // MIO Pad 21
+      BidirStr, // MIO Pad 20
+      BidirStr, // MIO Pad 19
+      BidirStr, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
-      BidirStd, // MIO Pad 15
-      BidirStd, // MIO Pad 14
-      BidirStd, // MIO Pad 13
-      BidirStd, // MIO Pad 12
-      BidirStd, // MIO Pad 11
-      BidirStd, // MIO Pad 10
-      BidirStd, // MIO Pad 9
-      BidirOd, // MIO Pad 8
-      BidirOd, // MIO Pad 7
-      BidirOd, // MIO Pad 6
+      BidirStr, // MIO Pad 15
+      BidirStr, // MIO Pad 14
+      BidirStr, // MIO Pad 13
+      BidirStr, // MIO Pad 12
+      BidirStr, // MIO Pad 11
+      BidirStr, // MIO Pad 10
+      BidirStr, // MIO Pad 9
+      BidirStr, // MIO Pad 8
+      BidirStr, // MIO Pad 7
+      BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
       BidirStd, // MIO Pad 3

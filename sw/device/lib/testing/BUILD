@@ -602,7 +602,6 @@ cc_library(
         "//hw/top:top_lib",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:check",
     ],
 )

@@ -20,8 +20,8 @@ package cheriot_mem_sys_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint   NUM_ALERTS = 1;
-  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
+  parameter uint   NUM_ALERTS = 2;
+  parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault", "recov_ctrl_update_err"};
 
   // types
 

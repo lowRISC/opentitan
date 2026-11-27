@@ -159,6 +159,7 @@ module sram_ctrl
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: EXEC.CONFIG.REGWEN
   // SEC_CM: READBACK.CONFIG.REGWEN
+  // SEC_CM: RMW_INTG_CHECK.CONFIG.REGWEN
   sram_ctrl_regs_reg_top #(
     .EnableRacl       ( EnableRacl           ),
     .RaclErrorRsp     ( RaclErrorRsp         ),
@@ -209,8 +210,13 @@ module sram_ctrl
   assign hw2reg.status.sram_alert.d  = 1'b1;
   assign hw2reg.status.sram_alert.de = sram_alert;
 
+  logic rmw_intg_error;
+  assign hw2reg.status.rmw_intg_error.d  = 1'b1;
+  assign hw2reg.status.rmw_intg_error.de = rmw_intg_error;
+
   logic alert_req;
-  assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert;
+  assign alert_req = (|bus_integ_error) | init_error | readback_error | sram_alert |
+                     rmw_intg_error;
 
   prim_alert_sender #(
     .AsyncOn(AlertAsyncOn[0]),
@@ -257,7 +263,8 @@ module sram_ctrl
                          reg2hw.status.init_error.q |
                          reg2hw.status.bus_integ_error.q |
                          reg2hw.status.sram_alert.q |
-                         reg2hw.status.readback_error.q;
+                         reg2hw.status.readback_error.q |
+                         reg2hw.status.rmw_intg_error.q;
   // This signal aggregates all escalation trigger signals, including the ones that are generated
   // in the same cycle such as init_error, sram alert, and bus_integ_error. It is used for
   // countermeasures that are not on the critical path (such as clearing the scrambling keys).
@@ -266,6 +273,7 @@ module sram_ctrl
                      (|bus_integ_error) |
                      sram_alert         |
                      readback_error     |
+                     rmw_intg_error     |
                      local_esc_reg;
 
   // Convert registered, local escalation sources to a multibit signal and combine this with
@@ -547,6 +555,9 @@ module sram_ctrl
   mubi4_t reg_readback_en;
   assign reg_readback_en = mubi4_t'(reg2hw.readback.q);
 
+  mubi4_t reg_rmw_intg_chk_en;
+  assign reg_rmw_intg_chk_en = mubi4_t'(reg2hw.rmw_intg_check.q);
+
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
@@ -559,6 +570,7 @@ module sram_ctrl
     .EnableDataIntgPt(1), // SEC_CM: MEM.INTEGRITY
     .SecFifoPtr      (1), // SEC_CM: TLUL_FIFO.CTR.REDUN
     .EnableReadback  (1), // SEC_CM: MEM.READBACK
+    .EnableRmwIntgChk(1), // SEC_CM: MEM.INTEGRITY
     .EnableRacl(EnableRacl),
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelNumRanges(RaclPolicySelNumRangesRam)
@@ -584,6 +596,8 @@ module sram_ctrl
     .compound_txn_in_progress_o (sram_compound_txn_in_progress),
     .readback_en_i              (reg_readback_en),
     .readback_error_o           (readback_error),
+    .rmw_intg_chk_en_i          (reg_rmw_intg_chk_en),
+    .rmw_intg_error_o           (rmw_intg_error),
     .wr_collision_i             (sram_wr_collision),
     .write_pending_i            (sram_wpending),
     // RACL interface
@@ -783,6 +797,11 @@ module sram_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
       u_tlul_adapter_sram_racl.tlul_adapter_sram.gen_no_sec_u_reqfifo.u_reqfifo
         .gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      alert_tx_o[0])
+
+  // Alert assertions for sparse FSM.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(TlSramByteFsmCheck_A,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sram_byte.gen_integ_handling.u_state_regs,
       alert_tx_o[0])
 
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that

@@ -57,10 +57,4 @@ class rv_dm_stress_all_vseq extends rv_dm_base_vseq;
      end
    endtask
 
-  // Set sequencers in the child vseq to match the ones used in this virtual sequence
-  function void configure_child_vseq(rv_dm_base_vseq child_vseq);
-    child_vseq.set_sequencer(p_sequencer);
-    child_vseq.m_mode_sequencer = m_mode_sequencer;
-  endfunction
-
 endclass : rv_dm_stress_all_vseq

@@ -73,6 +73,9 @@ Note that apart from selecting a specific input pad, the `periph_insel[*]` signa
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
 The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
 
+The muxing matrix can be sparse, i.e., the top-level configuration can restrict which pads a peripheral input can select and which peripheral outputs a pad can select.
+Selecting a pad that is not legal for a peripheral input ties that input to 0, and selecting a peripheral output that is not legal for a pad puts that pad into high-Z state.
+
 ## Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).
@@ -199,7 +202,7 @@ Parameter      | Default    | Description
 `ScanRole`     | `NoScan`   | Scan role, can be `NoScan`, `ScanIn` or `ScanOut`
 
 Note that `PadType` is a technology-specific parameter.
-The generic pad wrapper only implements variant `BidirStd`, but for other target technologies, this parameter can be used to select among a variety of different pad flavors.
+The generic pad wrapper only distinguishes input-only, bidirectional (e.g. `BidirStd` and `BidirStr`) and analog variants, but for other target technologies, this parameter can be used to select among a variety of different pad flavors.
 
 The `ScanRole` parameter determines the behavior when scanmode is enabled.
 Depending on whether a given pad acts as a scan input or output, certain pad attributes and functionalities need to be bypassed.

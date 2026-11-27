@@ -95,6 +95,21 @@ def reset_gdb(gdb):
     )
 
 
+def reset_after_response(gdb, response_json):
+    """Reset the target if a hardware alert or fatal error latched."""
+    ast_alerts = response_json.get("ast_alerts", [])
+    if any((
+        any(response_json.get("alerts", [])),
+        response_json.get("loc_alerts", 0) != 0,
+        bool(ast_alerts) and ast_alerts[0] != 0,
+        response_json.get("err_status", 0) != 0,
+        response_json.get("status") == 0x8000EA4E,
+    )):
+        print("Hardware alert or fatal error detected, resetting target", flush=True)
+        return reset_target_and_gdb(gdb)
+    return reset_gdb(gdb)
+
+
 def reset_target_and_gdb(gdb):
     if gdb:
         try:
@@ -315,7 +330,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -560,7 +575,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -805,7 +820,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -1057,7 +1072,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -1361,7 +1376,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -1609,7 +1624,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:
@@ -1914,7 +1929,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
                                         # Reset GDB by closing and opening again
-                                        gdb = reset_gdb(gdb)
+                                        gdb = reset_after_response(gdb, testos_response_json)
                                 else:
                                     # Breakpoint not reached (e.g. untaken branch)
                                     if not testos_response:

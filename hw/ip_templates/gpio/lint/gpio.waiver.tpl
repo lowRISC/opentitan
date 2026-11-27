@@ -3,10 +3,3 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for GPIO lint
-
-waive -rules HIER_NET_NOT_READ -location {${module_instance_name}.sv} -regexp {[nN]et.*a_(address|param|user).*not read from} \
-      -comment "several TLUL signals are not used by register file"
-waive -rules HIER_NET_NOT_READ -location {${module_instance_name}.sv} -regexp {Net .reg2hw.*.qe. is not read from} \
-      -comment "registers with multiple fields often have unused qe's since they are duplicative"
-waive -rules NOT_READ -location {${module_instance_name}.sv} -regexp {Signal 'reg2hw.*.qe' is not read from} \
-      -comment "registers with multiple fields often have unused qe's since they are duplicative"

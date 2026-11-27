@@ -181,7 +181,9 @@ otcrypto_status_t otcrypto_sha2_update(
 #endif
 
   // Return early if the update size is 0.
-  if (message->len == 0) {
+  if (launderw(message->len) == 0) {
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(message));
+    HARDENED_CHECK_EQ(message->len, 0);
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
@@ -209,7 +211,7 @@ otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
   HARDENED_TRY(check_lengths(hmac_ctx));
 
-  if (launder32(digest->len) != hmac_ctx->digest_wordlen) {
+  if (launderw(digest->len) != launderw(hmac_ctx->digest_wordlen)) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(digest->len, hmac_ctx->digest_wordlen);

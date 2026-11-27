@@ -213,6 +213,37 @@ TEST_F(ExecSetEnabledTest, Enabled) {
       dif_sram_ctrl_exec_set_enabled(&sram_ctrl_, kDifToggleDisabled));
 }
 
+class RmwIntgCheckSetTest : public SramCtrlTest {};
+
+TEST_F(RmwIntgCheckSetTest, NullArgs) {
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_rmw_intg_check_set(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_BADARG(
+      dif_sram_ctrl_rmw_intg_check_set(nullptr, kDifToggleDisabled));
+}
+
+TEST_F(RmwIntgCheckSetTest, Locked) {
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x0);
+  EXPECT_EQ(dif_sram_ctrl_rmw_intg_check_set(&sram_ctrl_, kDifToggleEnabled),
+            kDifLocked);
+
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x0);
+  EXPECT_EQ(dif_sram_ctrl_rmw_intg_check_set(&sram_ctrl_, kDifToggleDisabled),
+            kDifLocked);
+}
+
+TEST_F(RmwIntgCheckSetTest, EnabledDisabled) {
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x1);
+  EXPECT_WRITE32(SRAM_CTRL_RMW_INTG_CHECK_REG_OFFSET, kMultiBitBool4True);
+  EXPECT_DIF_OK(
+      dif_sram_ctrl_rmw_intg_check_set(&sram_ctrl_, kDifToggleEnabled));
+
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x1);
+  EXPECT_WRITE32(SRAM_CTRL_RMW_INTG_CHECK_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_DIF_OK(
+      dif_sram_ctrl_rmw_intg_check_set(&sram_ctrl_, kDifToggleDisabled));
+}
+
 class LockTest : public SramCtrlTest {};
 
 TEST_F(LockTest, NullArgs) {
@@ -238,6 +269,11 @@ TEST_F(LockTest, LockExec) {
   EXPECT_DIF_OK(dif_sram_ctrl_lock(&sram_ctrl_, kDifSramCtrlLockExec));
   EXPECT_WRITE32(SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0x0);
   EXPECT_DIF_OK(dif_sram_ctrl_lock(&sram_ctrl_, kDifSramCtrlLockExec));
+}
+
+TEST_F(LockTest, LockRmwIntgCheck) {
+  EXPECT_WRITE32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x0);
+  EXPECT_DIF_OK(dif_sram_ctrl_lock(&sram_ctrl_, kDifSramCtrlLockRmwIntgCheck));
 }
 
 class IsLockedTest : public SramCtrlTest {};
@@ -293,6 +329,20 @@ TEST_F(IsLockedTest, Exec) {
   EXPECT_READ32(SRAM_CTRL_EXEC_REGWEN_REG_OFFSET, 0x0);
   EXPECT_DIF_OK(
       dif_sram_ctrl_is_locked(&sram_ctrl_, kDifSramCtrlLockExec, &is_locked));
+  EXPECT_EQ(is_locked, true);
+}
+
+TEST_F(IsLockedTest, RmwIntgCheck) {
+  bool is_locked = true;
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x1);
+  EXPECT_DIF_OK(dif_sram_ctrl_is_locked(
+      &sram_ctrl_, kDifSramCtrlLockRmwIntgCheck, &is_locked));
+  EXPECT_EQ(is_locked, false);
+
+  is_locked = false;
+  EXPECT_READ32(SRAM_CTRL_RMW_INTG_CHECK_REGWEN_REG_OFFSET, 0x0);
+  EXPECT_DIF_OK(dif_sram_ctrl_is_locked(
+      &sram_ctrl_, kDifSramCtrlLockRmwIntgCheck, &is_locked));
   EXPECT_EQ(is_locked, true);
 }
 

@@ -31,6 +31,11 @@ All configuration parameters of Ibex are passed through, except `BaseIsa`, which
 The CHERIoT ports of Ibex are tied off and not exposed.
 The pipelining of the bus adapters is configurable.
 
+## Supported Parameter Sets
+
+This instance is generated with the template parameters `num_regions=32`, `cheriot_available=false` and `racl_support=false`.
+Ibex uses the `opentitan` [supported parameter set](https://ibex-core.readthedocs.io/en/latest/02_user/configuration.html#supported-parameter-sets) with `MHPMCounterNum=10` and without CHERIoT.
+
 ## Compatibility
 
 Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).

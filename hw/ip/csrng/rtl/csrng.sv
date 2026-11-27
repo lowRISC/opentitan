@@ -192,7 +192,7 @@ module csrng
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 
-  // The total number of application interfaces defined in the hjson must be at least two:
+  // The total number of application interfaces defined in the hjson must be between 2 and 15:
   // One SW interface and at least one HW interface. Zero HW interfaces is currently not supported.
-  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps >= 2)
+  `ASSERT_INIT(CsrngNumAppsMatch_A, NumApps inside {[2:15]})
 endmodule

@@ -45,6 +45,17 @@ module tb;
     .sideload_key (sideload_key)
   );
 
+  // Keymgr app interface. The testbench plays the role of the keymgr (the host of the app
+  // interface), so kmac_app_if drives keymgr_app_req and consumes keymgr_app_rsp.
+  wire kmac_pkg::app_req_t keymgr_app_req;
+  wire kmac_pkg::app_rsp_t keymgr_app_rsp;
+  kmac_app_if keymgr_app_if (
+    .clk_i  (clk),
+    .rst_ni (rst_n),
+    .req    (keymgr_app_req),
+    .rsp    (keymgr_app_rsp)
+  );
+
   otbn_model_if #(
     .ImemSizeByte (ImemSizeByte)
   ) model_if (
@@ -137,8 +148,8 @@ module tb;
 
     .kmac_data_o(kmac_data_out),
     .kmac_data_i(kmac_data_in)
-    .keymgr_app_i(kmac_pkg::APP_REQ_DEFAULT),
-    .keymgr_app_o(),
+    .keymgr_app_i(keymgr_app_req),
+    .keymgr_app_o(keymgr_app_rsp),
     .keymgr_sensitive_key_i(prim_mubi_pkg::MuBi4False)
   );
 
@@ -333,6 +344,9 @@ module tb;
       null, "*.env.model_agent", "vif", model_if);
     uvm_config_db#(virtual key_sideload_if#(keymgr_dpe_pkg::wide_hw_key_req_t))::set(
       null, "*.env.keymgr_sideload_agent", "vif", keymgr_if);
+
+    uvm_config_db#(virtual kmac_app_if)::set(
+      null, "*.env.keymgr_app_agent", "vif", keymgr_app_if);
 
     uvm_config_db#(otp_key_vif)::set(
       null, "*.env.key_agent*", "vif", otp_key_if);

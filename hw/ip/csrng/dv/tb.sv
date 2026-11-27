@@ -56,9 +56,9 @@ module tb;
   csrng_agents_if csrng_agents_if();
   push_pull_if#(.HostDataWidth(entropy_src_pkg::FIPS_CSRNG_BUS_WIDTH))
       entropy_src_if(.clk(clk), .rst_n(entropy_src_disable === 1'b1 ? 1'b0 : rst_n));
-  csrng_path_if csrng_path_if (.csrng_cmd_i(csrng_cmd_i));
+  csrng_path_if csrng_path_if ();
 
-  bind dut csrng_assert_if csrng_assert_if (.csrng_cmd_i(csrng_cmd_i));
+  bind dut csrng_assert_if csrng_assert_if ();
 
   // All CSRNG-EDN interfaces (and therefore EDN agents) can currently only be disabled together.
   assign edn_disable = csrng_agents_if.edn_disable;

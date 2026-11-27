@@ -10,5 +10,6 @@ class otbn_virtual_sequencer extends cip_base_virtual_sequencer #(
   `uvm_component_new
 
   key_sideload_sequencer#(keymgr_dpe_pkg::wide_hw_key_req_t) key_sideload_sequencer_h;
+  kmac_app_host_sequencer keymgr_app_sequencer_h;
 
 endclass

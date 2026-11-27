@@ -25,10 +25,7 @@
 `define PATH4 \
     u_csrng_core.u_csrng_main_sm
 
-interface csrng_assert_if
-(
-  input csrng_cmd_i
-);
+interface csrng_assert_if;
 
   task automatic assert_off ();
     $assertoff(0, `DUT_PATH.`PATH1.u_state_regs_A);

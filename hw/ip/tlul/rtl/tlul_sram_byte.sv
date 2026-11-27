@@ -18,8 +18,10 @@
 module tlul_sram_byte import tlul_pkg::*; #(
   parameter bit EnableIntg     = 0, // Enable integrity handling at byte level,
   parameter int Outstanding    = 1,
-  parameter bit EnableReadback = 0  // Enable readback checks on all transactions must have
+  parameter bit EnableReadback = 0, // Enable readback checks on all transactions must have
                                     // EnableIntg == 1 to enable
+  parameter bit EnableRmwIntgChk = 0 // Enable the integrity check of the read data during a
+                                     // read-modify-write, must have EnableIntg == 1 to enable
 ) (
   input clk_i,
   input rst_ni,
@@ -41,6 +43,9 @@ module tlul_sram_byte import tlul_pkg::*; #(
   output logic compound_txn_in_progress_o,
 
   input prim_mubi_pkg::mubi4_t readback_en_i,
+
+  input prim_mubi_pkg::mubi4_t rmw_intg_chk_en_i,
+  output logic rmw_intg_error_o,
 
   input logic wr_collision_i,
   input logic write_pending_i
@@ -105,13 +110,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic tl_i_fifo_intg_err, tl_intg_err;
     state_e state_d, state_q;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        state_q <= StPassThru;
-      end else begin
-        state_q <= state_d;
-      end
-    end
+    `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StPassThru,
+                          clk_i, rst_ni, EnableReadback)
 
     // transaction qualifying signals
     logic a_ack;  // upstream a channel acknowledgement
@@ -246,6 +246,37 @@ module tlul_sram_byte import tlul_pkg::*; #(
       assign unused_rdback = ^{rdback_check_d, rdback_data_exp_d, rdback_en_d};
     end
 
+    // Read-modify-write integrity check. Although the checker monitors all responses from
+    // the SRAM, an error is only flagged for the internal read of an RMW operation, and only
+    // if the check is enabled.
+    mubi4_t rmw_intg_chk_en_q, rmw_intg_chk_en_d;
+    logic   rmw_rdata_intg_err;
+    logic   rmw_intg_err;
+
+    if (EnableRmwIntgChk) begin : gen_rmw_intg_chk
+      prim_flop #(
+        .Width(MuBi4Width),
+        .ResetValue(MuBi4Width'(MuBi4False))
+      ) u_rmw_intg_chk_en_flop (
+        .clk_i,
+        .rst_ni,
+        .d_i(MuBi4Width'(rmw_intg_chk_en_d)),
+        .q_o({rmw_intg_chk_en_q})
+      );
+
+      tlul_data_integ_dec u_rmw_rdata_intg_dec (
+        .data_intg_i({tl_sram_i.d_user.data_intg, tl_sram_i.d_data}),
+        .data_err_o (rmw_rdata_intg_err)
+      );
+    end else begin : gen_no_rmw_intg_chk
+      // The check is not implemented, hence it can never be enabled.
+      assign rmw_intg_chk_en_q  = MuBi4False;
+      assign rmw_rdata_intg_err = 1'b0;
+
+      logic unused_rmw_intg_chk;
+      assign unused_rmw_intg_chk = ^{rmw_intg_chk_en_d, rmw_intg_chk_en_i};
+    end
+
     // state machine handling
     always_comb begin
       rd_wait = 1'b0;
@@ -262,6 +293,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
       rdback_check_d = rdback_check_q;
       rdback_en_d = rdback_en_q;
       rdback_data_exp_d  = rdback_data_exp_q;
+      rmw_intg_chk_en_d = rmw_intg_chk_en_q;
+      rmw_intg_err      = 1'b0;
 
       unique case (state_q)
         StPassThru: begin
@@ -296,6 +329,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
               mubi4_test_false_strict(rdback_check_q)) begin
             // Store readback enable into register when bus is idle and no readback is processed.
             rdback_en_d = readback_en_i;
+            // Same for the RMW integrity check enable.
+            rmw_intg_chk_en_d = rmw_intg_chk_en_i;
           end
         end
 
@@ -309,6 +344,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
             rd_wait = 1'b1;
             if (sram_d_ack) begin
               state_d = StWriteCmd;
+              // Check the integrity of the read data, if enabled.
+              rmw_intg_err = mubi4_test_true_loose(rmw_intg_chk_en_q) & rmw_rdata_intg_err;
             end
           end
         end
@@ -871,6 +908,15 @@ module tlul_sram_byte import tlul_pkg::*; #(
       PendingTxnCntW'(1))
 
     assign compound_txn_in_progress_o = wr_phase | rdback_phase | rdback_phase_wrreadback;
+
+    assign rmw_intg_error_o = rmw_intg_err;
+
+    // With the check disabled, the error output must never fire.
+    `ASSERT(RmwIntgErrOnlyWhenEnabled_A,
+        mubi4_test_false_strict(rmw_intg_chk_en_q) |-> !rmw_intg_error_o)
+    // The error can only fire on the RMW read response.
+    `ASSERT(RmwIntgErrOnlyInWaitRd_A,
+        rmw_intg_error_o |-> (state_q == StWaitRd) && rd_wait && sram_d_ack)
   end else begin : gen_no_integ_handling
     // In this case we pass everything just through.
     assign tl_sram_o = tl_i;
@@ -883,6 +929,11 @@ module tlul_sram_byte import tlul_pkg::*; #(
     mubi4_t unused_readback_en;
     assign unused_readback_en = readback_en_i;
 
+    // No integrity available, tie-off RMW integrity checks.
+    assign rmw_intg_error_o = 1'b0;
+    mubi4_t unused_rmw_intg_chk_en;
+    assign unused_rmw_intg_chk_en = rmw_intg_chk_en_i;
+
   end
 
   // Signals only used for SVA.
@@ -894,4 +945,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
   // EnableIntg can be used without EnableReadback.
   `ASSERT_INIT(SramReadbackAndIntg,
       (EnableReadback && EnableIntg) || (!EnableReadback && (EnableIntg || !EnableIntg)))
+  // EnableRmwIntgChk requires that EnableIntg is on.
+  `ASSERT_INIT(SramRmwIntgChkAndIntg, !EnableRmwIntgChk || EnableIntg)
 endmodule // tlul_adapter_sram

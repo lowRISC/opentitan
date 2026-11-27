@@ -89,7 +89,7 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
+  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
   keymgr_dpe_diversification_t diversification;
   HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
       key.key_shares[0], key.keymgr_dpe_slot_idx, kOtcryptoKeyModeAesGcm,
@@ -388,12 +388,11 @@ static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx,
 
   // Append (len64(A) || len64(C)) and XOR the result with S1 to get the final
   // tag.
-  if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
+  if (launder32(ctx->security_level) != kOtcryptoKeySecurityLevelLow) {
     // To mitigate FI, perform the GHASH update twice and compare the result.
     HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, &last_block_buf));
   } else {
-    HARDENED_CHECK_EQ(ctx->security_level,
-                      launder32(kOtcryptoKeySecurityLevelLow));
+    HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
     ghash_update(&ctx->ghash_ctx, &last_block_buf);
   }
 
@@ -500,25 +499,24 @@ static status_t aes_gcm_init(const aes_key_t key,
   HARDENED_TRY(ghash_init(&ctx->ghash_ctx));
 
   // Initialize the key and lengths.
-  HARDENED_CHECK_LE(key.key_len, ARRAYSIZE(ctx->key_shares[0]));
+  HARDENED_CHECK_LE(key.key_len, kAesGcmMaxKeyWords);
   ctx->key_mode = key.mode;
   ctx->sideload = key.sideload;
   ctx->keymgr_dpe_slot_idx = key.keymgr_dpe_slot_idx;
   ctx->key_len = (uint32_t)key.key_len;
   ctx->key_checksum = key.checksum;
-  hardened_memshred(ctx->key_shares[0], ARRAYSIZE(ctx->key_shares[0]));
-  hardened_memshred(ctx->key_shares[1], ARRAYSIZE(ctx->key_shares[1]));
+  hardened_memshred(ctx->key_shares, ARRAYSIZE(ctx->key_shares));
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
     HARDENED_TRY(
-        hardened_memcpy(ctx->key_shares[0], key.key_shares[0], key.key_len));
-    HARDENED_TRY(
-        hardened_memcpy(ctx->key_shares[1], key.key_shares[1], key.key_len));
+        hardened_memcpy(&ctx->key_shares[0], key.key_shares[0], key.key_len));
+    HARDENED_TRY(hardened_memcpy(&ctx->key_shares[kAesGcmMaxKeyWords],
+                                 key.key_shares[1], key.key_len));
   } else {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
-    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares[0]),
-                  "key_shares[0] must fit a hardware-backed keyblob");
-    HARDENED_TRY(hardened_memcpy(ctx->key_shares[0], key.key_shares[0],
+    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares),
+                  "key_shares must fit a hardware-backed keyblob");
+    HARDENED_TRY(hardened_memcpy(ctx->key_shares, key.key_shares[0],
                                  kKeyblobHwBackedWords));
   }
   ctx->aad_len = 0;
@@ -596,13 +594,12 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
       otcrypto_const_byte_buf_t, (unsigned char *)ctx->partial_ghash_block.data,
       partial_aad_block_len);
   if (ctx->input_len == 0 && partial_aad_block_len != 0) {
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
+    if (launder32(ctx->security_level) != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(
           ghash_update_redundant(&ctx->ghash_ctx, &partial_aad_block_buf));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level,
-                        launder32(kOtcryptoKeySecurityLevelLow));
+      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
       ghash_update(&ctx->ghash_ctx, &partial_aad_block_buf);
     }
   }
@@ -669,13 +666,12 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
       otcrypto_const_byte_buf_t, (unsigned char *)ctx->partial_ghash_block.data,
       partial_aad_block_len);
   if (ctx->input_len == 0 && partial_aad_block_len != 0) {
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
+    if (launder32(ctx->security_level) != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(
           ghash_update_redundant(&ctx->ghash_ctx, &partial_aad_block_buf));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level,
-                        launder32(kOtcryptoKeySecurityLevelLow));
+      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
       ghash_update(&ctx->ghash_ctx, &partial_aad_block_buf);
     }
   }
@@ -708,13 +704,12 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
       otcrypto_const_byte_buf_t out_buf = OTCRYPTO_MAKE_BUF(
           otcrypto_const_byte_buf_t, output->data, *output_len);
 
-      if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
+      if (launder32(ctx->security_level) != kOtcryptoKeySecurityLevelLow) {
         // To mitigate FI, perform the GHASH update twice and compare the
         // result.
         HARDENED_TRY(ghash_update_redundant(&ctx->ghash_ctx, &out_buf));
       } else {
-        HARDENED_CHECK_EQ(ctx->security_level,
-                          launder32(kOtcryptoKeySecurityLevelLow));
+        HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
         ghash_update(&ctx->ghash_ctx, &out_buf);
       }
     }
@@ -726,13 +721,12 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
                           (unsigned char *)ctx->partial_ghash_block.data,
                           partial_ghash_block_len);
-    if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
+    if (launder32(ctx->security_level) != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(
           ghash_update_redundant(&ctx->ghash_ctx, &partial_ghash_block_buf));
     } else {
-      HARDENED_CHECK_EQ(ctx->security_level,
-                        launder32(kOtcryptoKeySecurityLevelLow));
+      HARDENED_CHECK_EQ(ctx->security_level, kOtcryptoKeySecurityLevelLow);
       ghash_update(&ctx->ghash_ctx, &partial_ghash_block_buf);
     }
 

@@ -10,6 +10,7 @@ package ibex_icache_env_pkg;
   import ibex_icache_core_agent_pkg::*;
   import ibex_icache_mem_agent_pkg::*;
   import push_pull_agent_pkg::*;
+  import dv_base_agent_pkg::*;
   import dv_lib_pkg::*;
   import ibex_pkg::*;
 

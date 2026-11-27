@@ -37,6 +37,9 @@ LR_DEP_SOURCES=(
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_dec.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_inv_39_32_enc.sv"
     "../vendor/lowrisc_ip/ip/prim/rtl/prim_lfsr.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_mubi4_sender.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_mubi4_sync.sv"
+    "../vendor/lowrisc_ip/ip/prim/rtl/prim_sec_anchor_buf.sv"
     "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_and2.sv"
     "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_buf.sv"
     "../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_clock_mux2.sv"
@@ -55,6 +58,7 @@ for file in "${LR_DEP_SOURCES[@]}"; do
         --define=SYNTHESIS --define=YOSYS \
         ../vendor/lowrisc_ip/ip/prim/rtl/prim_count_pkg.sv \
         ../vendor/lowrisc_ip/ip/prim/rtl/prim_cipher_pkg.sv \
+        ../vendor/lowrisc_ip/ip/prim/rtl/prim_mubi_pkg.sv \
         -I../vendor/lowrisc_ip/ip/prim/rtl \
         "$file" \
         > "$LR_SYNTH_OUT_DIR"/generated/"${module}".v
@@ -79,6 +83,7 @@ for file in ../rtl/*.sv; do
     --define=SYNTHESIS --define=YOSYS \
     ../rtl/*_pkg.sv \
     ../vendor/lowrisc_ip/ip/prim_generic/rtl/prim_ram_1p_pkg.sv \
+    ../vendor/lowrisc_ip/ip/prim/rtl/prim_mubi_pkg.sv \
     ../vendor/lowrisc_ip/ip/prim/rtl/prim_secded_pkg.sv \
     ../vendor/lowrisc_ip/ip/prim/rtl/prim_util_pkg.sv \
     -I../vendor/lowrisc_ip/ip/prim/rtl \

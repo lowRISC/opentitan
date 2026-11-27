@@ -884,7 +884,7 @@ static rom_error_t rom_verify_immutable_section(
     // Validate the hash matches that in OTP, and if so execute the code.
     // Otherwise, trigger shutdown via hardened check fail.
     hmac_digest_t immutable_rom_ext_hash;
-    otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
+    otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA384_HASH_OFFSET,
              immutable_rom_ext_hash.digest, kHmacDigestNumWords);
     size_t i = 0;
     for (; launder32(i) < kHmacDigestNumWords; ++i) {

@@ -932,6 +932,7 @@ module earlgrey_pd_aon #(
   assign cio_spi_host1_sd_p2d_o[1] = mio_p2d[MioInSpiHost1Sd1];
   assign cio_spi_host1_sd_p2d_o[2] = mio_p2d[MioInSpiHost1Sd2];
   assign cio_spi_host1_sd_p2d_o[3] = mio_p2d[MioInSpiHost1Sd3];
+  assign cio_usbdev_sense_p2d_o = mio_p2d[MioInUsbdevSense];
   assign cio_uart0_rx_p2d_o = mio_p2d[MioInUart0Rx];
   assign cio_uart1_rx_p2d_o = mio_p2d[MioInUart1Rx];
   assign cio_uart2_rx_p2d_o = mio_p2d[MioInUart2Rx];
@@ -947,7 +948,6 @@ module earlgrey_pd_aon #(
   assign cio_sysrst_ctrl_key2_in_p2d = mio_p2d[MioInSysrstCtrlKey2In];
   assign cio_sysrst_ctrl_pwrb_in_p2d = mio_p2d[MioInSysrstCtrlPwrbIn];
   assign cio_sysrst_ctrl_lid_open_p2d = mio_p2d[MioInSysrstCtrlLidOpen];
-  assign cio_usbdev_sense_p2d_o = mio_p2d[MioInUsbdevSense];
 
   // All muxed outputs
   assign mio_d2p[MioOutGpio0Gpio0] = cio_gpio0_gpio_d2p_i[0];

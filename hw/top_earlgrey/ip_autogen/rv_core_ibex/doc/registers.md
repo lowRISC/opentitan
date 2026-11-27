@@ -5,37 +5,40 @@ A number of memory-mapped registers are available to control Ibex-related functi
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_earlgrey/ip_autogen/rv_core_ibex/data/rv_core_ibex.hjson -->
 ## Summary
 
-| Name                                                                     | Offset   |   Length | Description                                                                     |
-|:-------------------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------------------|
-| rv_core_ibex.[`ALERT_TEST`](#alert_test)                                 | 0x0      |        4 | Alert Test Register                                                             |
-| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                             | 0x4      |        4 | Software recoverable error                                                      |
-| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                             | 0x8      |        4 | Software fatal error                                                            |
-| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                             | 0xc      |        4 | Ibus address control regwen.                                                    |
-| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                             | 0x10     |        4 | Ibus address control regwen.                                                    |
-| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)                           | 0x14     |        4 | Enable Ibus address matching                                                    |
-| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)                           | 0x18     |        4 | Enable Ibus address matching                                                    |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)               | 0x1c     |        4 | Matching region programming for ibus.                                           |
-| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)               | 0x20     |        4 | Matching region programming for ibus.                                           |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)                     | 0x24     |        4 | The remap address after a match has been made.                                  |
-| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)                     | 0x28     |        4 | The remap address after a match has been made.                                  |
-| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                             | 0x2c     |        4 | Dbus address control regwen.                                                    |
-| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                             | 0x30     |        4 | Dbus address control regwen.                                                    |
-| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)                           | 0x34     |        4 | Enable dbus address matching                                                    |
-| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)                           | 0x38     |        4 | Enable dbus address matching                                                    |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)               | 0x3c     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.   |
-| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)               | 0x40     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.   |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)                     | 0x44     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.       |
-| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)                     | 0x48     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.       |
-| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                                 | 0x4c     |        4 | Enable mask for NMI.                                                            |
-| rv_core_ibex.[`NMI_STATE`](#nmi_state)                                   | 0x50     |        4 | Current NMI state                                                               |
-| rv_core_ibex.[`ERR_STATUS`](#err_status)                                 | 0x54     |        4 | error status                                                                    |
-| rv_core_ibex.[`RND_DATA`](#rnd_data)                                     | 0x58     |        4 | Random data from EDN                                                            |
-| rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                                |
-| rv_core_ibex.[`CHERIOT_ENA`](#cheriot_ena)                               | 0x60     |        4 | Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False). |
-| rv_core_ibex.[`CHERIOT_LOCK`](#cheriot_lock)                             | 0x64     |        4 | Locks the CHERIoT/ePMP mode.                                                    |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x68     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)        |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x6c     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                   |
-| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                       |
+| Name                                                                     | Offset   |   Length | Description                                                                                                      |
+|:-------------------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------------------------------------------------------------------|
+| rv_core_ibex.[`ALERT_TEST`](#alert_test)                                 | 0x0      |        4 | Alert Test Register                                                                                              |
+| rv_core_ibex.[`SW_RECOV_ERR`](#sw_recov_err)                             | 0x4      |        4 | Software recoverable error                                                                                       |
+| rv_core_ibex.[`SW_FATAL_ERR`](#sw_fatal_err)                             | 0x8      |        4 | Software fatal error                                                                                             |
+| rv_core_ibex.[`IBUS_REGWEN_0`](#ibus_regwen)                             | 0xc      |        4 | Ibus address control regwen.                                                                                     |
+| rv_core_ibex.[`IBUS_REGWEN_1`](#ibus_regwen)                             | 0x10     |        4 | Ibus address control regwen.                                                                                     |
+| rv_core_ibex.[`IBUS_ADDR_EN_0`](#ibus_addr_en)                           | 0x14     |        4 | Enable Ibus address matching                                                                                     |
+| rv_core_ibex.[`IBUS_ADDR_EN_1`](#ibus_addr_en)                           | 0x18     |        4 | Enable Ibus address matching                                                                                     |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching)               | 0x1c     |        4 | Matching region programming for ibus.                                                                            |
+| rv_core_ibex.[`IBUS_ADDR_MATCHING_1`](#ibus_addr_matching)               | 0x20     |        4 | Matching region programming for ibus.                                                                            |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_0`](#ibus_remap_addr)                     | 0x24     |        4 | The remap address after a match has been made.                                                                   |
+| rv_core_ibex.[`IBUS_REMAP_ADDR_1`](#ibus_remap_addr)                     | 0x28     |        4 | The remap address after a match has been made.                                                                   |
+| rv_core_ibex.[`DBUS_REGWEN_0`](#dbus_regwen)                             | 0x2c     |        4 | Dbus address control regwen.                                                                                     |
+| rv_core_ibex.[`DBUS_REGWEN_1`](#dbus_regwen)                             | 0x30     |        4 | Dbus address control regwen.                                                                                     |
+| rv_core_ibex.[`DBUS_ADDR_EN_0`](#dbus_addr_en)                           | 0x34     |        4 | Enable dbus address matching                                                                                     |
+| rv_core_ibex.[`DBUS_ADDR_EN_1`](#dbus_addr_en)                           | 0x38     |        4 | Enable dbus address matching                                                                                     |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_0`](#dbus_addr_matching)               | 0x3c     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.                                    |
+| rv_core_ibex.[`DBUS_ADDR_MATCHING_1`](#dbus_addr_matching)               | 0x40     |        4 | See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.                                    |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_0`](#dbus_remap_addr)                     | 0x44     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.                                        |
+| rv_core_ibex.[`DBUS_REMAP_ADDR_1`](#dbus_remap_addr)                     | 0x48     |        4 | See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.                                        |
+| rv_core_ibex.[`NMI_ENABLE`](#nmi_enable)                                 | 0x4c     |        4 | Enable mask for NMI.                                                                                             |
+| rv_core_ibex.[`NMI_STATE`](#nmi_state)                                   | 0x50     |        4 | Current NMI state                                                                                                |
+| rv_core_ibex.[`ERR_STATUS`](#err_status)                                 | 0x54     |        4 | error status                                                                                                     |
+| rv_core_ibex.[`RND_DATA`](#rnd_data)                                     | 0x58     |        4 | Random data from EDN                                                                                             |
+| rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                                                                 |
+| rv_core_ibex.[`CHERIOT_ENA_REGWEN`](#cheriot_ena_regwen)                 | 0x60     |        4 | Register write enable for [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar)               |
+| rv_core_ibex.[`CHERIOT_ENA`](#cheriot_ena)                               | 0x64     |        4 | Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).                                  |
+| rv_core_ibex.[`CHERIOT_ENA_BAR`](#cheriot_ena_bar)                       | 0x68     |        4 | Complement of [`CHERIOT_ENA`](#cheriot_ena), a redundant copy of the mode selection.                             |
+| rv_core_ibex.[`CHERIOT_LOCK`](#cheriot_lock)                             | 0x6c     |        4 | Locks the CHERIoT/ePMP mode selected by [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar) |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x70     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)                                         |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x74     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                                                    |
+| rv_core_ibex.[`NMI_ENABLE_REGWEN`](#nmi_enable_regwen)                   | 0x78     |        4 | Register write-enable for [`NMI_ENABLE.`](#nmi_enable)                                                           |
+| rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                                                        |
 
 ## ALERT_TEST
 Alert Test Register
@@ -324,22 +327,22 @@ See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.
 
 ## NMI_ENABLE
 Enable mask for NMI.
-Once an enable mask is set, it cannot be disabled.
 - Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
+- Register enable: [`NMI_ENABLE_REGWEN`](#nmi_enable_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ALERT_EN", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "WDOG_EN", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "ALERT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WDOG_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name     | Description                  |
 |:------:|:------:|:-------:|:---------|:-----------------------------|
 |  31:2  |        |         |          | Reserved                     |
-|   1    |  rw1s  |   0x0   | WDOG_EN  | Enable mask for watchdog NMI |
-|   0    |  rw1s  |   0x0   | ALERT_EN | Enable mask for alert NMI    |
+|   1    |   rw   |   0x0   | WDOG_EN  | Enable mask for watchdog NMI |
+|   0    |   rw   |   0x0   | ALERT_EN | Enable mask for alert NMI    |
 
 ## NMI_STATE
 Current NMI state
@@ -371,14 +374,14 @@ error status
 {"reg": [{"name": "REG_INTG_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 7}, {"name": "FATAL_INTG_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "FATAL_CORE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "RECOV_CORE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                              |
-|:------:|:------:|:-------:|:---------------|:-----------------------------------------------------------------------------------------|
-| 31:11  |        |         |                | Reserved                                                                                 |
-|   10   |  rw1c  |   0x0   | RECOV_CORE_ERR | rv_core_ibex detected a recoverable internal error (``alert_minor`` from Ibex seen)      |
-|   9    |  rw1c  |   0x0   | FATAL_CORE_ERR | rv_core_ibex detected a fatal internal error (``alert_major_internal_o`` from Ibex seen) |
-|   8    |  rw1c  |   0x0   | FATAL_INTG_ERR | rv_core_ibex detected a response integrity error                                         |
-|  7:1   |        |         |                | Reserved                                                                                 |
-|   0    |  rw1c  |   0x0   | REG_INTG_ERR   | rv_core_ibex_peri detected a register transmission integrity error                       |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                    |
+|:------:|:------:|:-------:|:---------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:11  |        |         |                | Reserved                                                                                                                                                       |
+|   10   |  rw1c  |   0x0   | RECOV_CORE_ERR | rv_core_ibex detected a recoverable internal error (``alert_minor`` from Ibex seen)                                                                            |
+|   9    |  rw1c  |   0x0   | FATAL_CORE_ERR | rv_core_ibex detected a fatal internal error (``alert_major_internal_o`` from Ibex seen)                                                                       |
+|   8    |  rw1c  |   0x0   | FATAL_INTG_ERR | rv_core_ibex detected a response integrity error, or a data request or response with an invalid encoding of the capability tag on either side of the data FIFO |
+|  7:1   |        |         |                | Reserved                                                                                                                                                       |
+|   0    |  rw1c  |   0x0   | REG_INTG_ERR   | rv_core_ibex_peri detected a register transmission integrity error                                                                                             |
 
 ## RND_DATA
 Random data from EDN
@@ -423,13 +426,33 @@ Status of random data in [`RND_DATA`](#rnd_data)
 |   1    |   ro   |   0x0   | RND_DATA_FIPS  | When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 1, this bit indicates whether [`RND_DATA`](#rnd_data) is fips quality. When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 0, this bit has no meaning. |
 |   0    |   ro   |   0x0   | RND_DATA_VALID | When set, the data in [`RND_DATA`](#rnd_data) is valid. When clear an EDN request for new data for [`RND_DATA`](#rnd_data) is pending.                                                                   |
 
+## CHERIOT_ENA_REGWEN
+Register write enable for [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar)
+- Offset: `0x60`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                   |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                      |
+|   0    |   ro   |   0x1   | EN     | Whether [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR`](#cheriot_ena_bar) can be written (1) or not (0). Reads as 0 once [`CHERIOT_LOCK`](#cheriot_lock) has been written, until reset. |
+
 ## CHERIOT_ENA
 Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
-This field is only sampled when [`CHERIOT_LOCK`](#cheriot_lock) is written; changing it afterwards has
-no effect.
-- Offset: `0x60`
+This field is sampled when [`CHERIOT_LOCK`](#cheriot_lock) is written and checked again in each cycle of
+the staged transition that follows; a change in these cycles moves the switch into its
+terminal error state.
+Writes are ignored once [`CHERIOT_LOCK`](#cheriot_lock) has been written (see [`CHERIOT_ENA_REGWEN`](#cheriot_ena_regwen)).
+- Offset: `0x64`
 - Reset default: `0x9`
 - Reset mask: `0xf`
+- Register enable: [`CHERIOT_ENA_REGWEN`](#cheriot_ena_regwen)
 
 ### Fields
 
@@ -442,10 +465,43 @@ no effect.
 |  31:4  |        |         |        | Reserved                            |
 |  3:0   |   rw   |   0x9   | VAL    | Mode selector value, MuBi4 encoded. |
 
+## CHERIOT_ENA_BAR
+Complement of [`CHERIOT_ENA`](#cheriot_ena), a redundant copy of the mode selection.
+Write MuBi4False to enable CHERIoT mode or MuBi4True to remain in ePMP mode.
+This field is sampled when [`CHERIOT_LOCK`](#cheriot_lock) is written and checked again in each cycle of
+the staged transition that follows; a change in these cycles moves the switch into its
+terminal error state.
+Writes are ignored once [`CHERIOT_LOCK`](#cheriot_lock) has been written (see [`CHERIOT_ENA_REGWEN`](#cheriot_ena_regwen)).
+- Offset: `0x68`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`CHERIOT_ENA_REGWEN`](#cheriot_ena_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:4  |        |         | Reserved                     |
+|  3:0   |   rw   |   0x9   | [VAL](#cheriot_ena_bar--val) |
+
+### CHERIOT_ENA_BAR . VAL
+Complement of [`CHERIOT_ENA.VAL`](#cheriot_ena), MuBi4 encoded.
+If it is not the bitwise inverse of [`CHERIOT_ENA.VAL`](#cheriot_ena) when [`CHERIOT_LOCK`](#cheriot_lock) is written
+or in a staging cycle after it, the switch moves into a terminal error state, in
+which CHERIoT mode stays unavailable until reset and the fatal alert is raised.
+
 ## CHERIOT_LOCK
-Locks the CHERIoT/ePMP mode.
-If [`CHERIOT_ENA`](#cheriot_ena) is set to MuBi4True, CHERIoT mode is enabled on write to this register.
-- Offset: `0x64`
+Locks the CHERIoT/ePMP mode selected by [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar)
+If [`CHERIOT_ENA`](#cheriot_ena) is MuBi4True and [`CHERIOT_ENA_BAR`](#cheriot_ena_bar) MuBi4False, CHERIoT mode is enabled on
+write to this register.
+Software must write this register from Ibex with interrupts disabled, and poll until the
+core runs in the selected mode, before any instruction that depends on it and before
+enabling interrupts again.
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xf`
 
@@ -455,14 +511,14 @@ If [`CHERIOT_ENA`](#cheriot_ena) is set to MuBi4True, CHERIoT mode is enabled on
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["wo"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                  |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                                                                                                                                                     |
-|  3:0   |   wo   |    x    | VAL    | Write MuBi4True to lock the mode selected by [`CHERIOT_ENA.`](#cheriot_ena) Any other value moves the switch into a terminal error state, in which CHERIoT mode stays unavailable until reset and the fatal alert is raised. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                            |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                                                                                                               |
+|  3:0   |   wo   |    x    | VAL    | Write MuBi4True to lock the mode selected by [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar) Any other value moves the switch into a terminal error state, in which CHERIoT mode stays unavailable until reset and the fatal alert is raised. |
 
 ## MCOUNTEREN_WRITABLE_REGWEN
 Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)
-- Offset: `0x68`
+- Offset: `0x70`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -488,7 +544,7 @@ Write enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable) Once set to 0, i
 
 ## MCOUNTEREN_WRITABLE
 Controls whether Ibex mcounteren CSR is writable by software.
-- Offset: `0x6c`
+- Offset: `0x74`
 - Reset default: `0x6`
 - Reset mask: `0xf`
 - Register enable: [`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen)
@@ -503,6 +559,32 @@ Controls whether Ibex mcounteren CSR is writable by software.
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
 |  31:4  |        |         |        | Reserved                                                                                                                        |
 |  3:0   |   rw   |   0x6   | EN     | When set to kMultiBitBool4True, the mcounteren CSR is writable by software. Drives the mcounteren_writable_i input on ibex_top. |
+
+## NMI_ENABLE_REGWEN
+Register write-enable for [`NMI_ENABLE.`](#nmi_enable)
+- Offset: `0x78`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:1  |        |         | Reserved                     |
+|   0    |  rw0c  |   0x1   | [EN](#nmi_enable_regwen--en) |
+
+### NMI_ENABLE_REGWEN . EN
+Write enable for [`NMI_ENABLE.`](#nmi_enable) Once set to 0, it can no longer be configured to 1.
+
+| Value   | Name    | Description                                              |
+|:--------|:--------|:---------------------------------------------------------|
+| 0x0     | locked  | NMI_ENABLE can no longer be configured until next reset. |
+| 0x1     | enabled | NMI_ENABLE can still be configured.                      |
+
 
 ## DV_SIM_WINDOW
 Exposed tlul window for DV only purposes.

@@ -7,12 +7,19 @@ The following table lists the instantiation parameters of the SRAM controller.
 Parameter                   | Default               | Top Earlgrey      | Description
 ----------------------------|-----------------------|-------------------|---------------
 `AlertAsyncOn`              | 1'b1                  | 1'b1              |
-`InstrExec`                 | 1                     | 1                 | Enables the execute from SRAM feature.
+`InstrExec`                 | 1                     | (multiple values) | Enables the execute from SRAM feature.
 `MemSizeRam`                | 4096                  | (multiple values) | Number of bytes in the SRAM (can be overridden by `topgen`).
 `InstSize`                  | `MemSizeRam`          | (multiple values) | Size of a single RAM tile in bytes.
 `NumRamInst`                | 1                     | 1                 | Number of RAM tiles the memory is split into.
+`NumPrinceRoundsHalf`       | 3                     | (multiple values) | Number of PRINCE half rounds used for data scrambling, can be [1..5].
+`NumAddrScrRounds`          | 2                     | (multiple values) | Number of address scrambling rounds. Setting this to 0 disables address scrambling. If not 0, `MemSizeRam` must be a power of 2 or the memory depth must be divisible by 4096 words, see [`prim_ram_1p_scr`](../../prim/doc/prim_ram_1p_scr.md).
+`Outstanding`               | 2                     | 2                 | Number of outstanding TL-UL transactions on the `ram_tl` interface.
 `EccCorrection`             | 0                     | 0                 | Enables the correction of single-bit ECC errors and the logging of ECC errors via `sram_rerror_o`. This is an experimental feature that is not verified.
 `SecZeroInit`               | 0                     | (multiple values) | Initializes the memory with zeros instead of pseudo-random data. Must not be used for SRAMs holding confidential data, see [Zero Initialization](theory_of_operation.md#zero-initialization). This is an experimental feature that is not verified.
+`EnableRacl`                | 0                     | 0                 | Enables RACL checks on the `regs_tl` and `ram_tl` interfaces. Not used in Earl Grey.
+`RaclErrorRsp`              | `EnableRacl`          | 0                 | Returns a TL-UL error response on RACL errors. Not used in Earl Grey.
+`RaclPolicySelVecRegs`      | all 0                 | all 0             | RACL policy selection for each register of the `regs_tl` interface. Not used in Earl Grey.
+`RaclPolicySelNumRangesRam` | 1                     | 1                 | Number of address ranges with a RACL policy on the `ram_tl` interface. Not used in Earl Grey.
 `RndCnstSramKey`            | (see RTL)             | (see RTL)         | Compile-time random default constant for scrambling key.
 `RndCnstSramNonce`          | (see RTL)             | (see RTL)         | Compile-time random default constant for scrambling nonce.
 `RndCnstLfsrSeed`           | (see RTL)             | (see RTL)         | Compile-time random default constant for LFSR seed.
@@ -46,9 +53,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                        |
-|:-------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_error  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, or if the initialization mechanism has reached an invalid state. |
+| Alert Name   | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+|:-------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_error  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected, if the initialization mechanism has reached an invalid state, if a readback check fails (see [`READBACK`](registers.md#readback)), if a multi-bit encoding error is detected inside the RAM modules (see [`STATUS.SRAM_ALERT`](registers.md#status)), or if the read-modify-write integrity check is enabled and fails (see [`RMW_INTG_CHECK`](registers.md#rmw_intg_check)). |
 
 ## Security Countermeasures
 
@@ -58,6 +65,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | SRAM_CTRL.CTRL.CONFIG.REGWEN           | The SRAM control register is protected by a REGWEN.                                                                                                                         |
 | SRAM_CTRL.EXEC.CONFIG.REGWEN           | The SRAM execution enable register is protected by a REGWEN.                                                                                                                |
 | SRAM_CTRL.READBACK.CONFIG.REGWEN       | The SRAM readback enable register is protected by a REGWEN.                                                                                                                 |
+| SRAM_CTRL.RMW_INTG_CHECK.CONFIG.REGWEN | The SRAM read-modify-write integrity check enable register is protected by a REGWEN.                                                                                        |
 | SRAM_CTRL.EXEC.CONFIG.MUBI             | The SRAM execution enable register is multibit encoded.                                                                                                                     |
 | SRAM_CTRL.EXEC.INTERSIG.MUBI           | The SRAM execution enable signal coming from OTP is multibit encoded.                                                                                                       |
 | SRAM_CTRL.LC_ESCALATE_EN.INTERSIG.MUBI | The life cycle escalation enable signal is multibit encoded.                                                                                                                |
@@ -86,15 +94,16 @@ Signal                     | Direction        | Type                            
 `lc_escalate_en_i`         | `input`          | `lc_ctrl_pkg::lc_tx_t`                               | Multibit life cycle escalation enable signal coming from life cycle controller, asserted if an escalation has occurred.
 `sram_otp_key_o`           | `output`         | `otp_ctrl_pkg::sram_otp_key_req_t`                   | Key derivation request going to the key derivation interface of the OTP controller.
 `sram_otp_key_i`           | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t`                   | Ephemeral scrambling key coming back from the key derivation interface of the OTP controller.
-`otp_en_sram_ifetch_i`     | `input`          | `otp_ctrl_pkg::mubi8_t`                              | Multibit value coming from the OTP HW_CFG partition EN_SRAM_IFETCH, set to kMuBi8True in order to enable the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR. For example, see earlgrey's [OTP Field Descriptions](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/programmers_guide.md#otp-field-descriptions))
+`otp_en_sram_ifetch_i`     | `input`          | `prim_mubi_pkg::mubi8_t`                             | Multibit value coming from the OTP HW_CFG partition EN_SRAM_IFETCH, set to kMuBi8True in order to enable the [`EXEC`](../data/sram_ctrl.hjson#exec) CSR. For example, see earlgrey's [OTP Field Descriptions](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/programmers_guide.md#otp-field-descriptions))
 `ram_cfg_i`                | `input`          | `prim_ram_1p_pkg::ram_1p_cfg_req_t [NumRamInst-1:0]` | Attributes for physical memory macro.
 `ram_cfg_o`                | `output`         | `prim_ram_1p_pkg::ram_1p_cfg_rsp_t [NumRamInst-1:0]` | Response from physical memory macro.
+`racl_policy_sel_ranges_ram_i` | `input`      | `top_racl_pkg::racl_range_t [RaclPolicySelNumRangesRam-1:0]` | Address ranges and their RACL policy selection for the `ram_tl` interface. Only used if `EnableRacl` is set; tied to `top_racl_pkg::RACL_RANGE_T_DEFAULT` in Earl Grey.
 
 ### Interfaces to OTP and the SRAM Scrambling Primitive
 
-The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_i.req`.
+The interface to the key derivation interface inside the OTP controller follows a simple req / ack protocol, where the SRAM controller first requests an updated ephemeral key by asserting the `sram_otp_key_o.req`.
 The OTP controller then fetches entropy from CSRNG and derives an ephemeral key using the SRAM_DATA_KEY_SEED and the PRESENT scrambling data path as described in the earlgrey's [OTP controller spec](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#scrambling-datapath) for example.
-Finally, the OTP controller returns a fresh ephemeral key via the response channels (`sram_otp_key_o[*]`, `otbn_otp_key_o`), which complete the req / ack handshake.
+Finally, the OTP controller returns a fresh ephemeral key via the response channel (`sram_otp_key_i`), which completes the req / ack handshake.
 The key and nonce are made available to the scrambling primitive in the subsequent cycle.
 The wave diagram below illustrates this process.
 

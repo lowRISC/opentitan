@@ -103,7 +103,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
   HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
 
   // Output key cannot be hardware-backed.
-  if (output_key_material->config.hw_backed != kHardenedBoolFalse) {
+  if (launder32(output_key_material->config.hw_backed) != kHardenedBoolFalse) {
     // COVERAGE (MISSING) Hardware-backed output key in KMAC KDF is not covered.
     return OTCRYPTO_BAD_ARGS;
   }

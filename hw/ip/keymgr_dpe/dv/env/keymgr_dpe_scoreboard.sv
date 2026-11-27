@@ -473,9 +473,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (cfg.en_cov && cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) begin
       compare_op_e key_version_cmp;
 
-      if (`gmv(ral.key_version[0]) > get_current_max_version) begin
+      if (`gmv(ral.key_version) > get_current_max_version) begin
         key_version_cmp = CompareOpGt;
-      end else if (`gmv(ral.key_version[0]) == get_current_max_version) begin
+      end else if (`gmv(ral.key_version) == get_current_max_version) begin
         key_version_cmp = CompareOpEq;
       end else begin
         key_version_cmp = CompareOpLt;
@@ -1291,7 +1291,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                         UVM_MEDIUM)
               return 1;
             end
-            if (`gmv(ral.key_version[0]) >
+            if (`gmv(ral.key_version) >
                 current_internal_key[current_key_slot.src_slot].max_key_version) begin
               `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s key_version err",
                 op.name, current_state.name), UVM_MEDIUM)
@@ -1330,7 +1330,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     if (op inside {keymgr_dpe_pkg::OpDpeGenSwOut, keymgr_dpe_pkg::OpDpeGenHwOut}) begin
       if (current_state == keymgr_dpe_pkg::StWorkDpeAvailable &&
           current_internal_key[current_key_slot.src_slot].valid &&
-          `gmv(ral.key_version[0])<= get_current_max_version()
+          `gmv(ral.key_version)<= get_current_max_version()
       ) begin
         return 0;
       end else begin
@@ -1693,7 +1693,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
     act = {<<8{byte_data_q}};
 
-    exp.KeyVersion = `gmv(ral.key_version[0]);
+    exp.KeyVersion = `gmv(ral.key_version);
     for (int i = 0; i < keymgr_dpe_reg_pkg::NumSaltReg; i++) begin
       uvm_reg rg = ral.get_reg_by_name($sformatf("salt_%0d", i));
       exp.Salt[i] = `gmv(rg);

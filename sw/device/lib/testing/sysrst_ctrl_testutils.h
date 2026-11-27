@@ -14,8 +14,7 @@
  * Setup the sysrst_ctrl direct IO (DIO) pins, that is flash write protect (WP)
  * and EC reset.
  *
- * This function will try to setup the DIO pins as open drain. If this fails,
- * it will then try virtual open drain.
+ * This function sets up the DIO pins as virtual open drain.
  *
  * This function will panic on error.
  *

@@ -72,7 +72,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 ## Signals
 
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
-`BaseIsa` is fixed to RV32I, and the CHERIoT ports of Ibex (`cheriot_enable_i`, the capability tag and the signals starting with `trvk_`) are tied off and not exposed.
+`BaseIsa` is fixed to RV32I, and the CHERIoT ports of Ibex (`cheriot_enable_i`, `cheriot_enable_shadow_i`, `cheriot_enable_cmp_i`, the capability tag and the signals starting with `trvk_`) are tied off and not exposed.
 The CHERIoT parameters of Ibex are not available.
 Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.
 

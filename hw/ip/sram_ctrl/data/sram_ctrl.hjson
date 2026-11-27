@@ -29,7 +29,7 @@
       {
           version:            "1.2.0",
           life_stage:         "L1",
-          design_stage:       "D1",
+          design_stage:       "D2",
           verification_stage: "V1",
           dif_stage:          "S1",
       }
@@ -52,7 +52,10 @@
     { name: "fatal_error",
       desc: '''
             This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected,
-            or if the initialization mechanism has reached an invalid state.
+            if the initialization mechanism has reached an invalid state, if a readback check
+            fails (see !!READBACK), if a multi-bit encoding error is detected inside the RAM
+            modules (see !!STATUS.SRAM_ALERT), or if the read-modify-write integrity check is
+            enabled and fails (see !!RMW_INTG_CHECK).
             '''
     }
   ],
@@ -89,7 +92,9 @@
     { name:      "MemSizeRam",
       desc:      '''
                  Memory size of the RAM (in bytes).
-                 If address scrambling is enabled, this must be a power of 2 or a multiple of 16 KiB.
+                 If address scrambling is enabled, this must be a power of 2 or a multiple of
+                 2 KiB, and non-power-of-2 sizes that are not a multiple of 16 KiB trigger a lint
+                 error.
                  For details, check the SRAM scrambling primitive (prim_ram_1p_scr).
                  ''',
       type:      "int",
@@ -289,6 +294,9 @@
     { name: "READBACK.CONFIG.REGWEN",
       desc: "The SRAM readback enable register is protected by a REGWEN."
     }
+    { name: "RMW_INTG_CHECK.CONFIG.REGWEN",
+      desc: "The SRAM read-modify-write integrity check enable register is protected by a REGWEN."
+    }
     { name: "EXEC.CONFIG.MUBI",
       desc: "The SRAM execution enable register is multibit encoded."
     }
@@ -421,6 +429,16 @@
             name: "SRAM_ALERT"
             desc: '''
                   This bit is set to 1 if a multi bit encoding error has been detected inside the RAM modules.
+                  This error triggers a fatal_error alert.
+                  This condition is terminal.
+                  ''',
+            resval: 0,
+          }
+          { bits: "8"
+            name: "RMW_INTG_ERROR"
+            desc: '''
+                  This bit is set to 1 if the integrity check of the read data in a
+                  read-modify-write transaction failed (see !!RMW_INTG_CHECK).
                   This error triggers a fatal_error alert.
                   This condition is terminal.
                   ''',
@@ -561,6 +579,49 @@
             desc: '''
                   Write kMultiBitBool4True to this field to enable the readback security feature for the SRAM.
                   A readback of each memory write or read request will be performed and a comparison happens.
+                  Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
+                  ''',
+            resval: false
+          },
+        ]
+      },
+      { name: "RMW_INTG_CHECK_REGWEN",
+        desc: "Lock register for the read-modify-write integrity check enable register.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+        fields: [
+          { bits: "0"
+            desc: '''
+                  When cleared to zero, !!RMW_INTG_CHECK can not be written anymore.
+                  ''',
+            resval: 1
+          }
+        ]
+      }
+      { name: "RMW_INTG_CHECK",
+        desc: "Read-modify-write integrity check enable.",
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen:   "RMW_INTG_CHECK_REGWEN"
+        tags: [// Exclude from writes to these field because they cause side affects.
+             "excl:CsrAllTests:CsrExclAll"]
+        fields: [
+          { bits: "3:0",
+            name: "EN",
+            mubi: true,
+            desc: '''
+                  Write kMultiBitBool4True to this field to enable the integrity check of the data
+                  read from the SRAM during a read-modify-write transaction (i.e., a sub-word write).
+                  If the check fails, the write is not performed, !!STATUS.RMW_INTG_ERROR is set and
+                  a fatal_error alert is triggered.
+
+                  This check is disabled by default, as a sub-word write to a memory location that
+                  has not been initialized would otherwise trigger an integrity error.
+                  Software should only enable this check once the SRAM has been fully initialized
+                  (e.g., via !!CTRL.INIT) and should then lock it using !!RMW_INTG_CHECK_REGWEN.
+
                   Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
                   ''',
             resval: false

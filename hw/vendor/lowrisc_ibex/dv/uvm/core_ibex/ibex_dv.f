@@ -23,6 +23,9 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi_pkg.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi4_sender.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_sec_anchor_buf.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi4_sync.sv
 ${LOWRISC_IP_DIR}/ip/prim_generic/rtl/prim_ram_1p_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_adv.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_scr.sv
@@ -102,6 +105,7 @@ ${PRJ_DIR}/vendor/google_riscv-dv/src/riscv_signature_pkg.sv
 +incdir+${LOWRISC_IP_DIR}/dv/sv/dv_utils
 +incdir+${LOWRISC_IP_DIR}/dv/sv/dv_base_reg
 +incdir+${LOWRISC_IP_DIR}/dv/sv/csr_utils
++incdir+${LOWRISC_IP_DIR}/dv/sv/dv_base_agent
 +incdir+${LOWRISC_IP_DIR}/dv/sv/dv_lib
 +incdir+${LOWRISC_IP_DIR}/dv/sv/mem_model
 +incdir+${LOWRISC_IP_DIR}/dv/sv/push_pull_agent
@@ -123,6 +127,7 @@ ${LOWRISC_IP_DIR}/dv/sv/dv_utils/dv_test_status_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/dv_utils/dv_utils_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/dv_base_reg/dv_base_reg_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/csr_utils/csr_utils_pkg.sv
+${LOWRISC_IP_DIR}/dv/sv/dv_base_agent/dv_base_agent_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/dv_lib/dv_lib_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/mem_model/mem_model_pkg.sv
 ${LOWRISC_IP_DIR}/dv/sv/push_pull_agent/push_pull_if.sv

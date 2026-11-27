@@ -200,7 +200,7 @@ module rram_ctrl_otp
   // -----------------------------------------------------------------------
   // Request path: OTP domain (clk_otp_i) --> RRAM domain (clk_i)
   //
-  // A prim_fifo_async_simple captures the OTP request on the write clock
+  // A prim_fifo_async captures the OTP request on the write clock
   // (clk_otp_i) and presents it to the RRAM FSM on the read clock (clk_i).
   // wready_o (= otp_macro_rsp_o.ready) is asserted whenever the FIFO is
   // empty, acknowledging OTP in the same cycle it writes.  The FIFO holds
