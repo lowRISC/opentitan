@@ -6,8 +6,13 @@
 // Reset manager coverage bindings for multi bus input
 module rstmgr_cov_bind;
   // sec cm coverage bind
-  bind rstmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_scanmode_mubi_cov_if (
-    .rst_ni (rst_ni),
+  // The scan mode enters the secondary partition only (scan_partition).
+
+  bind rstmgr_part_secondary cip_mubi_cov_if #(
+    .Width(prim_mubi_pkg::MuBi4Width)
+  ) u_scanmode_mubi_cov_if (
+    // The partition's own lc leaf, the reset of its registers.
+    .rst_ni (reg_rst_n),
     .mubi   (scanmode_i)
   );
 endmodule

@@ -7,44 +7,45 @@
 <%
   clkmgr = lib.find_module(top['module'], 'clkmgr')
   rstmgr = lib.find_module(top['module'], 'rstmgr')
-  domain_clkmgr = clkmgr.get('domain')
-  ## The reset tree is driven by the rstmgr's primary partition.
-  domain_rstmgr = rstmgr.get('domain')
   ## Clocks sourced from another IP module's own generated clock (e.g. AST
   ## feeding clkmgr) are wired as internal nets/inter-module ports instead -
   ## see intermodule.resolve_module_clocks().
   clk_srcs = top['clocks'].srcs
-  has_ext_clks = ((clk_srcs['main'].module is None)                            or
-                  (clk_srcs['io'].module is None)                              or
-                  (feature_info["has_usb"] and clk_srcs['usb'].module is None) or 
-                  (clk_srcs['aon'].module is None))
+  clkmgr_parts = lib.get_clkmgr_partitions(top)
+  rstmgr_parts = lib.get_rstmgr_partitions(top)
+  ## The struct ports of the partitions of the clkmgr and rstmgr in this domain.
+  struct_ports = lib.get_manager_struct_ports(top, domain, feature_info["ast_is_internal"])
+  ## Each raw clock from outside the top connects to the clkmgr partition that receives it.
+  ext_conns = {part: [] for part, _, _, _ in clkmgr_parts}
+  for src_name, conn in (('main', '.clk_main_i(ast_base_clks_i.clk_sys),'),
+                         ('io', '.clk_io_i  (ast_base_clks_i.clk_io ),'),
+                         ('usb', '.clk_usb_i (ast_base_clks_i.clk_usb),'),
+                         ('aon', '.clk_aon_i (ast_base_clks_i.clk_aon),')):
+    if src_name == 'usb' and not feature_info["has_usb"]:
+      continue
+    if clk_srcs[src_name].module is None:
+      part = lib.get_clkmgr_clock_partition(top, clk_srcs[src_name])
+      ext_conns[part].append(conn)
 %>\
-% if domain_clkmgr == domain:
-  % if has_ext_clks:
-    // All externally supplied clocks
-    % if clk_srcs['main'].module is None:
-    .clk_main_i(ast_base_clks_i.clk_sys),
-    % endif
-    % if clk_srcs['io'].module is None:
-    .clk_io_i  (ast_base_clks_i.clk_io ),
-    % endif
-    % if feature_info["has_usb"] and clk_srcs['usb'].module is None:
-    .clk_usb_i (ast_base_clks_i.clk_usb),
-    % endif
-    % if clk_srcs['aon'].module is None:
-    .clk_aon_i (ast_base_clks_i.clk_aon),
-    % endif
+## Connect the ports of each clkmgr partition, as port_special_signals.tpl declares them.
+% for part, dom, sfx, tinfix in clkmgr_parts:
+<%
+  who = f"the {part} partition of the {clkmgr['name']}"
+  structs = [p for p in struct_ports if p.ip_type == 'clkmgr' and p.partition == part]
+%>\
+  % if dom == domain and ext_conns[part]:
+    // All externally supplied clocks of the ${part} partition of the clkmgr
+    % for conn in ext_conns[part]:
+    ${conn}
+    % endfor
   % endif
-  % if feature_info["ast_is_internal"]:
-    // Clocks and clock gating control from ${clkmgr['name']}
-    .${clkmgr['name']}_clocks_o(${clkmgr['name']}_clocks),
-    .${clkmgr['name']}_cg_en_o (${clkmgr['name']}_cg_en),
+  % if structs:
+    // Clocks and clock gating control from ${who}
+    % for p in structs:
+    .${p.port}(${p.net}),
+    % endfor
   % endif
-% else:
-    // Clocks and clock gating control from ${clkmgr['name']}
-    .${clkmgr['name']}_clocks_i(${clkmgr['name']}_clocks${"_o" if not feature_info["ast_is_internal"] else ""}),
-    .${clkmgr['name']}_cg_en_i (${clkmgr['name']}_cg_en${"_o" if not feature_info["ast_is_internal"] else ""}),
-% endif
+% endfor
 
 % if len(top['unmanaged_clocks']._asdict().values()) > 0:
     // Unmanaged external clocks
@@ -55,19 +56,19 @@
 
 % endif\
 
-% if domain_rstmgr == domain:
-  % if feature_info["ast_is_internal"]:
-    // Resets and reset assert info from ${rstmgr['name']}
-    .${rstmgr['name']}_resets_o(${rstmgr['name']}_resets${"_o" if not feature_info["ast_is_internal"] else ""}),
-    .${rstmgr['name']}_rst_en_o(${rstmgr['name']}_rst_en${"_o" if not feature_info["ast_is_internal"] else ""}),
+## Connect the struct ports of each rstmgr partition, as port_special_signals.tpl declares them.
+% for part, dom, sfx, _ in rstmgr_parts:
+<%
+  who = f"the {part} partition of the {rstmgr['name']}"
+  structs = [p for p in struct_ports if p.ip_type == 'rstmgr' and p.partition == part]
+%>\
+  % if structs:
+    // Resets and reset asserted information from ${who}
+    % for p in structs:
+    .${p.port}(${p.net}),
+    % endfor
   % endif
-% else:
-    // Resets and reset assert info from ${rstmgr['name']}
-    .${rstmgr['name']}_resets_i(${rstmgr['name']}_resets${"_o" if not feature_info["ast_is_internal"] else ""}),
-    .${rstmgr['name']}_rst_en_i(${rstmgr['name']}_rst_en${"_o" if not feature_info["ast_is_internal"] else ""}),
-
-% endif\
-
+% endfor
 % if not feature_info["ast_is_internal"]:
     // Manual DFT signals
     .scan_rst_ni,

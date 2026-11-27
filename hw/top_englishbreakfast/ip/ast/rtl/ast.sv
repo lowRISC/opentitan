@@ -35,8 +35,10 @@ module ast (
   input por_ni,                               // Power ON Reset
 
   // sensed clocks / resets
-  input clkmgr_pkg::clkmgr_out_t sns_clks_i,  // Sensed Clocks
-  input rstmgr_pkg::rstmgr_out_t sns_rsts_i,  // Sensed Resets
+  // The sensed clocks and resets are unused here. They are the outputs of the primary partitions of
+  // the clkmgr and the rstmgr, which the top connects.
+  input clkmgr_pkg::clkmgr_out_primary_t sns_clks_i,  // Sensed Clocks
+  input rstmgr_pkg::rstmgr_out_primary_t sns_rsts_i,  // Sensed Resets
   input sns_spi_ext_clk_i,                    // Sensed SPI External Clock
 `ifdef AST_BYPASS_CLK
   // Clocks' Oschillator bypass for OS FPGA

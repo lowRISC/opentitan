@@ -20,12 +20,17 @@ class rstmgr_env_cfg extends cip_base_env_cfg #(
   virtual clk_rst_if ${clk}_clk_rst_vif;
 % endfor
   virtual pwrmgr_rstmgr_sva_if #(.PowerDomains(rstmgr_pkg::PowerDomains)) pwrmgr_rstmgr_sva_vif;
-  virtual rstmgr_cascading_sva_if rstmgr_cascading_sva_vif;
+  virtual rstmgr_cascading_primary_sva_if rstmgr_cascading_primary_sva_vif;
+  virtual rstmgr_cascading_secondary_sva_if rstmgr_cascading_secondary_sva_vif;
   virtual rstmgr_if rstmgr_vif;
 
   virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = rstmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(inherit_ral_models);
+
+    // The register block is in the primary partition of the rstmgr.
+    ral.set_hdl_path_root("tb.dut_primary", "BkdrRegPathRtl");
+    ral.set_hdl_path_root("tb.dut_primary", "BkdrRegPathRtlShadow");
 
     tl_intg_alert_fields[ral.err_code.reg_intg_err] = 1;
     m_tl_agent_cfg.max_outstanding_req = 1;

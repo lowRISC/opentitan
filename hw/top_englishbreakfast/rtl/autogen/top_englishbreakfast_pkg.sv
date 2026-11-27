@@ -246,7 +246,7 @@ package top_englishbreakfast_pkg;
   parameter int unsigned NOutgoingAlertsEnglishbreakfastPdMain = 22;
 
   // Number of LPGs for outgoing alert group englishbreakfast
-  parameter int unsigned NOutgoingLpgsEnglishbreakfast = 13;
+  parameter int unsigned NOutgoingLpgsEnglishbreakfast = 15;
 
   // Enumeration of englishbreakfast outgoing alert modules
   typedef enum int unsigned {

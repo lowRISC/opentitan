@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, NamedTuple, Tuple
+from typing import Dict, List, NamedTuple, Set, Tuple
 
 from basegen.lib import Name
 
@@ -122,9 +122,18 @@ class ClockSignal:
         self.name = name
         self.src = src
         self.endpoints: List[Tuple[str, str]] = []
+        # The places that the clock must be delivered to: for each endpoint, its power domain and
+        # whether the primary partition serves it whatever its power domain (see
+        # lib.get_clkmgr_out_partition). A split clkmgr outputs the clock from the partition that
+        # serves each. They are recorded here, during merge, because an endpoint (module, port)
+        # does not identify its partition afterwards: some split IPs use the same port name in both.
+        self.destinations: Set[Tuple[str, bool]] = set()
 
-    def add_endpoint(self, ep_name: str, ep_port: str) -> None:
+    def add_endpoint(self, ep_name: str, ep_port: str, ep_domain: str,
+                     served_by_primary: bool = False) -> None:
+        '''Record an endpoint of the clock, and the power domain that the endpoint is in.'''
         self.endpoints.append((ep_name, ep_port))
+        self.destinations.add((ep_domain, served_by_primary))
 
 
 class Group:

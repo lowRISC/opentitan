@@ -248,9 +248,10 @@ module pwrmgr_slow_fsm import pwrmgr_pkg::*; (
       // must be rebooted.
       // SEC_CM: FSM.TERMINAL
       default: begin
-        fsm_invalid_d = 1'b1;
-        pd_nd         = 1'b0;
-        pwr_clamp_d   = 1'b1;
+        fsm_invalid_d   = 1'b1;
+        pd_nd           = 1'b0;
+        pwr_clamp_env_d = 1'b1;
+        pwr_clamp_d     = 1'b1;
       end
     endcase // unique case (state_q)
   end // always_comb

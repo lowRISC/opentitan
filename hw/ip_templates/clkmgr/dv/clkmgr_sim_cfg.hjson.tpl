@@ -52,7 +52,41 @@
   overrides: [
     {
       name: default_vcs_cov_cfg_file
-      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/clkmgr_tgl_excl.cfg"
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/clkmgr_cover.cfg+{self_dir}/cov/clkmgr_tgl_excl.cfg"
+    }
+    {
+      // The register file is in the primary partition (see cov/cover_reg_top.cfg).
+      name: cover_reg_top_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover_reg_top.cfg+{dv_root}/tools/vcs/common_cov_excl.cfg+{self_dir}/cov/cover_reg_top.cfg"
+    }
+    {
+      // X-propagation for both partitions (see xprop.cfg).
+      name: vcs_xprop_cfg_file
+      value: "{self_dir}/xprop.cfg"
+    }
+    {
+      // The DUT is the two partitions, and the module that contains both is the testbench.
+      // Xcelium's -covdut needs one module that contains the whole DUT. cov/cover.ccf selects the
+      // partitions for coverage.
+      name: xcelium_covdut
+      value: "{tb}"
+    }
+    {
+      // The DUT instance, for Xcelium's coverage report. The partitions are tb.dut_primary and
+      // tb.dut_secondary, so the report starts at the testbench. common_sim_cfg.hjson sets
+      // {tb}.dut, so this is an override.
+      name: dut_instance
+      value: "{tb}"
+    }
+    {
+      // Select both partitions for Xcelium (see cov/cover.ccf).
+      name: default_xcelium_cov_cfg_file
+      value: "{self_dir}/cov/cover.ccf"
+    }
+    {
+      // The shared Xcelium exclusions, then the same for the primary partition (see the script).
+      name: xcelium_cov_excl_script
+      value: "{dv_root}/tools/xcelium/common_cov_excl.tcl {self_dir}/cov/clkmgr_cov_excl.tcl"
     }
   ]
   // Default UVM test and seq class name.

@@ -24,7 +24,7 @@ CLKMGR testbench has been constructed based on the [CIP testbench architecture](
 
 ### Top level testbench
 Top level testbench is located at `hw/top_englishbreakfast/ip_autogen/clkmgr/dv/tb.sv`.
-It instantiates the CLKMGR DUT module `hw/top_englishbreakfast/ip_autogen/clkmgr/rtl/clkmgr.sv`.
+It instantiates the two partitions of the CLKMGR, `clkmgr_part_primary` and `clkmgr_part_secondary` (in `hw/top_englishbreakfast/ip_autogen/clkmgr/rtl/`), connected as in one power domain, under the named block `dut`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)

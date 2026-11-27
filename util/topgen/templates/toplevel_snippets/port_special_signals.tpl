@@ -108,14 +108,11 @@
 % endif\
 
 <%
-  clkmgr = lib.find_module(top['module'], 'clkmgr')
-  rstmgr = lib.find_module(top['module'], 'rstmgr')
-  domain_clkmgr = clkmgr.get('domain')
-  ## The reset tree is driven by the rstmgr's primary partition.
-  domain_rstmgr = rstmgr.get('domain')
-
-  has_clkmgr = domain_clkmgr == domain
-  has_rstmgr_section = domain_rstmgr != domain
+  clkmgr_parts = lib.get_clkmgr_partitions(top)
+  ## The struct ports of the partitions of the clkmgr and rstmgr in this domain.
+  struct_ports = lib.get_manager_struct_ports(top, domain, feature_info["ast_is_internal"])
+  type_w = max((len(p.type) for p in struct_ports), default=0)
+  rstmgr_parts = lib.get_rstmgr_partitions(top)
   has_ext_clks = len(top['unmanaged_clocks']._asdict().values()) > 0
   has_ext_rsts = len(top['unmanaged_resets']._asdict().values()) > 0
   has_dft_section = not feature_info["dft_source_in_domain"][domain]
@@ -126,39 +123,58 @@
                    if sig.src.module is None]
 
   ## Find out which section is the last one to properly terminate the port list with no comma.
-  ## The rstmgr has always a section, so the clkmgr does not care.
+  ## The rstmgr's section comes after the clkmgr's, so the clkmgr's never ends the list. The
+  ## rstmgr's section is empty in a power domain that none of its structs cross into; it must not
+  ## end the list then (checked below).
   rstmgr_last = not (has_ext_clks or has_ext_rsts or has_dft_section)
   ext_clks_last = has_ext_clks and not (has_ext_rsts or has_dft_section)
   ext_rsts_last = has_ext_rsts and not has_dft_section
 %>\
-% if has_clkmgr:
-  % if ext_clk_ports:
+## Declare the ports of each clkmgr partition. In its own domain, these are its external clocks
+## and the structs that leave the domain. In the other domain, these are the structs that enter.
+% for part, dom, sfx, tinfix in clkmgr_parts:
+<%
+  who = f"the {part} partition of the clkmgr"
+  part_ext_clks = [clk for clk in ext_clk_ports
+                   if lib.get_clkmgr_clock_partition(top, top['clocks'].typed_clocks().ast_clks[clk].src) == part]
+  structs = [p for p in struct_ports if p.ip_type == 'clkmgr' and p.partition == part]
+%>\
+  % if dom == domain and part_ext_clks:
   // Externally supplied clocks
-  % for clk in ext_clk_ports:
+    % for clk in part_ext_clks:
   input ${clk},
-  % endfor
-  % endif\
-
-  % if feature_info["ast_is_internal"]:
-  // Clocks from clkmgr to other domains
-  output clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_o,
+    % endfor
   % endif
-% else:
-  // Clocks from clkmgr in power domain ${domain_clkmgr}
-  input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
-  input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
-% endif
+  % if structs:
+  // Clocks from ${who} ${"to other domains" if dom == domain else f"in power domain {dom}"}
+    % for p in structs:
+  ${p.direction} ${p.type.ljust(type_w)} ${p.port},
+    % endfor
+  % endif
+% endfor
 
-% if has_rstmgr_section:
-  // Resets from rstmgr in power domain ${domain_rstmgr}
-  input rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_i,
-  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i${"" if rstmgr_last else ","}
-% elif feature_info["ast_is_internal"]:
-  // Resets from rstmgr to other domains
-  output rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_o${"" if rstmgr_last else ","}
-% endif
+<%
+  ## The rstmgr's struct ports. The last one ends the port list when the rstmgr section is the last
+  ## section.
+  rst_ports = [p for p in struct_ports if p.ip_type == 'rstmgr']
+  assert rst_ports or not rstmgr_last, \
+      f"no rstmgr struct crosses into the power domain {domain}, so nothing ends its port list"
+  last_rst_port = rst_ports[-1] if rstmgr_last else None
+%>\
+## Declare the struct ports of each rstmgr partition. They are outputs in the partition's domain,
+## and inputs in the other domain.
+% for part, dom, sfx, tinfix in rstmgr_parts:
+<%
+  who = f"the {part} partition of the rstmgr"
+  structs = [p for p in rst_ports if p.partition == part]
+%>\
+  % if structs:
+  // Resets from ${who} ${"to other domains" if dom == domain else f"in power domain {dom}"}
+    % for p in structs:
+  ${p.direction} ${p.type.ljust(type_w)} ${p.port}${"" if p == last_rst_port else ","}
+    % endfor
+  % endif
+% endfor
 
 % if has_ext_clks:
   // Unmanaged external clocks

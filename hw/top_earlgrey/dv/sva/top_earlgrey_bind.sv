@@ -4,21 +4,23 @@
 
 module top_earlgrey_bind;
 `ifndef GATE_LEVEL
-  bind earlgrey_pd_aon clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
-    .clk_slow_i(u_pwrmgr.clk_slow_i),
-    .rst_slow_ni(u_pwrmgr.rst_slow_ni),
-    .por_d0_ni(rstmgr_por_n[1]),
-    .core_clk_en(u_pwrmgr.pwr_ast_o.core_clk_en),
-    .core_clk_val(u_pwrmgr.pwr_ast_i.core_clk_val),
-    .clk_core_i(u_clkmgr.clk_main_i),
-    .io_clk_en(u_pwrmgr.pwr_ast_o.io_clk_en),
-    .io_clk_val(u_pwrmgr.pwr_ast_i.io_clk_val),
-    .clk_io_i(u_clkmgr.clk_io_i),
-    .usb_clk_en(u_pwrmgr.pwr_ast_o.usb_clk_en),
-    .usb_clk_val(u_pwrmgr.pwr_ast_i.usb_clk_val),
-    .clk_usb_i(u_clkmgr.clk_usb_i),
-    .main_pd_n(u_pwrmgr.pwr_ast_o.main_pd_n),
-    .main_pok(u_pwrmgr.pwr_ast_i.main_pok)
+  // This binds to top_earlgrey, as it reads the pwrmgr in the Aon power domain and the clkmgr's
+  // primary partition in the Main power domain.
+  bind top_earlgrey clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
+    .clk_slow_i(earlgrey_pd_aon.u_pwrmgr.clk_slow_i),
+    .rst_slow_ni(earlgrey_pd_aon.u_pwrmgr.rst_slow_ni),
+    .por_d0_ni(earlgrey_pd_aon.rstmgr_por_n[1]),
+    .core_clk_en(earlgrey_pd_aon.u_pwrmgr.pwr_ast_o.core_clk_en),
+    .core_clk_val(earlgrey_pd_aon.u_pwrmgr.pwr_ast_i.core_clk_val),
+    .clk_core_i(earlgrey_pd_main.u_clkmgr_part_primary.clk_main_i),
+    .io_clk_en(earlgrey_pd_aon.u_pwrmgr.pwr_ast_o.io_clk_en),
+    .io_clk_val(earlgrey_pd_aon.u_pwrmgr.pwr_ast_i.io_clk_val),
+    .clk_io_i(earlgrey_pd_main.u_clkmgr_part_primary.clk_io_i),
+    .usb_clk_en(earlgrey_pd_aon.u_pwrmgr.pwr_ast_o.usb_clk_en),
+    .usb_clk_val(earlgrey_pd_aon.u_pwrmgr.pwr_ast_i.usb_clk_val),
+    .clk_usb_i(earlgrey_pd_main.u_clkmgr_part_primary.clk_usb_i),
+    .main_pd_n(earlgrey_pd_aon.u_pwrmgr.pwr_ast_o.main_pd_n),
+    .main_pok(earlgrey_pd_aon.u_pwrmgr.pwr_ast_i.main_pok)
   );
 
   bind earlgrey_pd_aon pwrmgr_rstreqs_sva_if pwrmgr_rstreqs_sva_if (

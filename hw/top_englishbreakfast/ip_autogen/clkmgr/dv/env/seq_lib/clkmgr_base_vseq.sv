@@ -302,20 +302,20 @@ class clkmgr_base_vseq extends cip_base_vseq #(
               UVM_MEDIUM)
     case (clk)
       ClkMesrIo: begin
-        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
+        if (enable) $asserton(0, "tb.dut_primary.u_io_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut_primary.u_io_meas.u_meas.MaxWidth_A");
       end
       ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
+        if (enable) $asserton(0, "tb.dut_primary.u_io_div4_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut_primary.u_io_div4_meas.u_meas.MaxWidth_A");
       end
       ClkMesrMain: begin
-        if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_main_meas.u_meas.MaxWidth_A");
+        if (enable) $asserton(0, "tb.dut_primary.u_main_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut_primary.u_main_meas.u_meas.MaxWidth_A");
       end
       ClkMesrUsb: begin
-        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_meas.MaxWidth_A");
-        else $assertoff(0, "tb.dut.u_usb_meas.u_meas.MaxWidth_A");
+        if (enable) $asserton(0, "tb.dut_primary.u_usb_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut_primary.u_usb_meas.u_meas.MaxWidth_A");
       end
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
     endcase
@@ -324,20 +324,32 @@ class clkmgr_base_vseq extends cip_base_vseq #(
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
       ClkMesrIo: begin
-        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) begin
+          $asserton(0, "tb.dut_primary.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end else begin
+          $assertoff(0, "tb.dut_primary.u_io_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end
       end
       ClkMesrIoDiv4: begin
-        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) begin
+          $asserton(0, "tb.dut_primary.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end else begin
+          $assertoff(0, "tb.dut_primary.u_io_div4_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end
       end
       ClkMesrMain: begin
-        if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) begin
+          $asserton(0, "tb.dut_primary.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end else begin
+          $assertoff(0, "tb.dut_primary.u_main_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end
       end
       ClkMesrUsb: begin
-        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
-        else $assertoff(0, "tb.dut.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        if (enable) begin
+          $asserton(0, "tb.dut_primary.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end else begin
+          $assertoff(0, "tb.dut_primary.u_usb_meas.u_meas.u_sync_ref.SrcPulseCheck_M");
+        end
       end
       default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
     endcase

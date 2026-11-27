@@ -12,19 +12,19 @@
 // ExclMode: default
 //==================================================
 CHECKSUM: "2301929872 1660332954"
-INSTANCE: tb.dut.u_clk_main_aes_trans.u_idle_cnt
+INSTANCE: tb.dut_primary.u_clk_main_aes_trans.u_idle_cnt
 ANNOTATION: "[UNR] Input tied to a constant, and unr doesn't detect it."
 Toggle step_i "net step_i[3:0]"
 CHECKSUM: "2301929872 1660332954"
-INSTANCE: tb.dut.u_clk_main_hmac_trans.u_idle_cnt
+INSTANCE: tb.dut_primary.u_clk_main_hmac_trans.u_idle_cnt
 ANNOTATION: "[UNR] Input tied to a constant, and unr doesn't detect it."
 Toggle step_i "net step_i[3:0]"
 CHECKSUM: "2301929872 1660332954"
-INSTANCE: tb.dut.u_clk_main_kmac_trans.u_idle_cnt
+INSTANCE: tb.dut_primary.u_clk_main_kmac_trans.u_idle_cnt
 ANNOTATION: "[UNR] Input tied to a constant, and unr doesn't detect it."
 Toggle step_i "net step_i[3:0]"
 CHECKSUM: "2301929872 1660332954"
-INSTANCE: tb.dut.u_clk_main_otbn_trans.u_idle_cnt
+INSTANCE: tb.dut_primary.u_clk_main_otbn_trans.u_idle_cnt
 ANNOTATION: "[UNR] Input tied to a constant, and unr doesn't detect it."
 Toggle step_i "net step_i[3:0]"
 CHECKSUM: "953655365 3155586170"

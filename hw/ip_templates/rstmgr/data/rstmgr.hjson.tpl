@@ -12,6 +12,12 @@
   total_hw_resets = len(peri_reqs) + len(int_reqs) + len(debug_reqs)
   # por / low power exit / sw reset / hw resets
   total_resets = total_hw_resets + 3
+  from ipgen.manager_split import rstmgr_clocks
+  split_clks = rstmgr_clocks(clk_freqs, leaf_rsts, rst_ni, aon_clock)
+  # Each clock enters one partition, as a port. A partition gets a clock that it uses but does not
+  # receive from the other one (internal).
+  primary_clk_names = split_clks.ports['primary']
+  secondary_fwd_clk_names = split_clks.forwarded['secondary']
 %>
 
 # RSTMGR register template
@@ -50,13 +56,35 @@
       dif_stage:          "S1",
     }
   ]
-  clocking: [
-    {clock: "clk_i", reset: "rst_ni", primary: true},
-% for clk in clk_freqs.keys():
-    {clock: "clk_${clk}_i"},
+  // The secondary partition hosts the reset roots, and the leaf resets of the always-on power
+  // domain. The primary partition hosts all the other leaf resets. Every clock except the always-on
+  // clock enters the primary partition, which forwards the clocks that the secondary partition
+  // uses. Each partition receives the always-on clock of its own power domain from the clkmgr.
+  is_split_ip: "true",
+  clocking: {
+    primary: [
+      {clock: "clk_i", reset: "rst_ni", primary: true},
+% for clk in primary_clk_names:
+      {clock: "clk_${clk}_i"},
 % endfor
-    {clock: "clk_por_i", reset: "rst_por_ni"},
-  ]
+      // These are the POR clock and the POR reset. The crash dump storage uses them, and this
+      // partition forwards the clock to the secondary partition, whose crash dump controls use it,
+      // so that the capture and its enable use the same clock.
+      {clock: "clk_por_i", reset: "rst_por_ni"},
+    ],
+    secondary: [
+      // The secondary partition has no bus interface and no alerts, and its logic uses its own
+      // leaves rather than resets from the top. reggen and topgen require a primary clock that the
+      // top connects, with a reset, so rst_aon_ni completes that pair with the always-on POR, and
+      // is not used. This is temporary, until a partition can declare no primary pair.
+      {clock: "clk_aon_i", reset: "rst_aon_ni", primary: true},
+      {clock: "clk_i", internal: true},
+% for clk in secondary_fwd_clk_names:
+      {clock: "clk_${clk}_i", internal: true},
+% endfor
+      {clock: "clk_por_i", internal: true},
+    ],
+  },
   bus_interfaces: [
     { protocol: "tlul", direction: "device" }
   ],
@@ -98,8 +126,13 @@
     }
   ]
   regwidth: "32",
+  // The scan signals enter one partition only (scan_partition), the one in the power domain where
+  // the top generates them, and reach the other partition through intraip_s2p or intraip_p2s. In
+  // the current tops that is the secondary partition, in the always-on power domain. A top that
+  // generates them in the power domain that powers down would need the primary partition.
   scan: "true",
   scan_reset: "true",
+  scan_partition: "secondary",
   param_list: [
     { name: "RdWidth",
       desc: "Read width for crash info",
@@ -145,6 +178,8 @@
       '''
       local:   "false",
       expose:  "true"
+      // The secondary partition instantiates leaves too.
+      partition: "both",
     },
 
     { name:    "SecMaxSyncDelay",
@@ -155,6 +190,8 @@
       '''
       local:   "false",
       expose:  "true"
+      // The secondary partition instantiates leaves too.
+      partition: "both",
     },
   ],
   features: [
@@ -197,6 +234,7 @@
       type:    "uni",
       name:    "por_n",
       act:     "rcv",
+      partition: "secondary",
       width:   "${len(power_domains)}"
       desc:    '''
         Root power on reset signals from ast.
@@ -208,26 +246,40 @@
       type:    "req_rsp",
       name:    "pwr",        // resets_o (req), resets_i (rsp)
       act:     "rsp",
+      partition: "secondary",
       desc:    '''
          Reset request signals from power manager.
          Power manager can request for specific domains of the lc/sys reset tree to assert.
       '''
     },
 
-    { struct:  "rstmgr_out",
+    { struct:  "rstmgr_out_primary",
       type:    "uni",
       name:    "resets",
       act:     "req",
+      partition: "primary",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
       desc:    '''
         Leaf resets fed to the system.
       '''
     },
 
-    { struct:  "rstmgr_rst_en",
+    { struct:  "rstmgr_out_secondary",
+      type:    "uni",
+      name:    "resets_secondary",
+      act:     "req",
+      partition: "secondary",
+      package: "rstmgr_pkg", // Origin package (only needs for the req)
+      desc:    '''
+        Leaf resets fed to the system.
+      '''
+    },
+
+    { struct:  "rstmgr_rst_en_primary",
       type:    "uni",
       name:    "rst_en",
       act:     "req",
+      partition: "primary",
       package: "rstmgr_pkg", // Origin package (only needs for the req)
       desc:    '''
         Low-power-group outputs used by alert handler.
@@ -259,9 +311,45 @@
       name:    "sw_rst_req",
       act:     "req",
       package: "prim_mubi_pkg",
+      partition: "secondary",
       desc:    '''
         Software requested system reset to pwrmgr.
       '''
+    },
+
+    // Intra-IP signalling between the partitions. Each direction has a req end in the partition
+    // that drives it and a rcv end in the partition that receives it. topgen connects the two ends.
+    { struct:    "intraip_s2p",
+      type:      "uni",
+      name:      "intraip_s2p",
+      act:       "req",
+      package:   "rstmgr_pkg",
+      partition: "secondary",
+      desc:      "Secondary-to-primary partition communication",
+    },
+    { struct:    "intraip_s2p",
+      type:      "uni",
+      name:      "intraip_s2p",
+      act:       "rcv",
+      package:   "rstmgr_pkg",
+      partition: "primary",
+      desc:      "Secondary-to-primary partition communication",
+    },
+    { struct:    "intraip_p2s",
+      type:      "uni",
+      name:      "intraip_p2s",
+      act:       "req",
+      package:   "rstmgr_pkg",
+      partition: "primary",
+      desc:      "Primary-to-secondary partition communication",
+    },
+    { struct:    "intraip_p2s",
+      type:      "uni",
+      name:      "intraip_p2s",
+      act:       "rcv",
+      package:   "rstmgr_pkg",
+      partition: "secondary",
+      desc:      "Primary-to-secondary partition communication",
     },
 
     // Exported resets
@@ -283,6 +371,11 @@
       ''',
       swaccess: "rw",
       hwaccess: "hrw",
+      // The secondary partition keeps the request in the always-on power domain, on the bus clock
+      // and the lc reset of that domain, beside the power manager that it requests. The register is
+      // external, so the register file keeps no state for it.
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "3:0",
           mubi: true
@@ -303,11 +396,15 @@
             Device reset reason.
             ''',
       swaccess: "rw1c",
-      hwaccess: "hwo",
-      sync: "clk_por_i",
+      hwaccess: "hrw",
+      // The secondary partition keeps the reset reasons in the always-on power domain, on the POR
+      // clock and the POR reset. The register is external, so the register file keeps no state for
+      // it. The writes come from the register file on the bus clock without synchronization. Thus
+      // the bus clock and the POR clock must be the same clock.
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
-          hwaccess: "none",
           name: "POR",
           desc: '''
             Indicates when a device has reset due to power up.
@@ -353,7 +450,12 @@
     { name: "${dump_src.upper()}_REGWEN",
       desc: "${dump_src.capitalize()} write enable",
       swaccess: "rw0c",
-      hwaccess: "none",
+      hwaccess: "hrw",
+      // The secondary partition keeps the lock in the always-on power domain, on the bus clock and
+      // the lc reset of that domain, so that a deep sleep keeps it. The register is external, so
+      // the register file keeps no state for it.
+      hwext: "true",
+      hwqe: "true",
       fields: [
         { bits: "0",
           name: "EN",
@@ -370,8 +472,12 @@
             ${dump_src.capitalize()} info dump controls.
             ''',
       swaccess: "rw",
-      hwaccess: "hro",
-      sync: "clk_por_i",
+      hwaccess: "hrw",
+      // The secondary partition keeps the register (EN and INDEX) in the always-on power domain, on
+      // the POR clock and the POR reset, so that a deep sleep keeps the dump armed. The register is
+      // external, so the register file keeps no state for it.
+      hwext: "true",
+      hwqe: "true",
       regwen: "${dump_src.upper()}_REGWEN",
       fields: [
         { bits: "0",
@@ -400,7 +506,6 @@
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
-      sync: "clk_por_i",
       hwext: "true",
       fields: [
         { bits: "IdxWidth-1:0",
@@ -426,7 +531,6 @@
             ''',
       swaccess: "ro",
       hwaccess: "hwo",
-      sync: "clk_por_i",
       hwext: "true",
       fields: [
         { bits: "31:0",
@@ -501,7 +605,8 @@
         A bit vector of all the errors that have occurred in reset manager
       ''',
       swaccess: "ro",
-      hwaccess: "hrw",
+      hwaccess: "hwo",
+      hwext: "true",
       fields: [
         { bits: "0",
           name: "REG_INTG_ERR",

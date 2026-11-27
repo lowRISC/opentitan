@@ -16,7 +16,8 @@ from reggen.feature import Feature
 from reggen.inter_signal import InterSignal
 from reggen.interrupt import Interrupt
 from reggen.lib import (PART_BOTH, PARTITIONS, PART_PRIMARY, PART_SECONDARY, check_bool,
-                        check_int, check_keys, check_list, check_name, filter_by_partition)
+                        check_int, check_keys, check_list, check_name, check_str,
+                        filter_by_partition)
 from reggen.memory import Memory
 from reggen.params import LocalParam, ReggenParams
 from reggen.reg_block import RegBlock
@@ -146,6 +147,10 @@ OPTIONAL_FIELDS = {
     'scan': ['pb', 'Indicates the module have `scanmode_i`'],
     'scan_reset': ['pb', 'Indicates the module have `scan_rst_ni`'],
     'scan_en': ['pb', 'Indicates the module has `scan_en_i`'],
+    'scan_partition': [
+        's', "the partition of a split IP that has the scan ports (`scan`, `scan_reset`, "
+        "`scan_en`): primary or secondary, never both. Defaults to primary."
+    ],
     'SPDX-License-Identifier': [
         's', "License identifier (if using pure json) "
         "Only use this if unable to put this "
@@ -270,6 +275,7 @@ class IpBlock:
     partitions: list[str]
     node: str = ''
     is_split_ip: bool = False
+    scan_partition: str = PART_PRIMARY
     alias_impl: str | None = None
 
     def __post_init__(self) -> None:
@@ -421,6 +427,19 @@ class IpBlock:
         is_split_ip = check_bool(rd.get('is_split_ip', False),
                                  'is_split_ip field of ' + what)
 
+        # The scan ports go to one partition only, the one in the power domain where the scan
+        # signals are generated. That partition passes them to the other partition, as for any input
+        # of a split IP. The scan ports are not inter-signals, so this field gives their partition.
+        # The default is the primary partition.
+        scan_partition = check_str(rd.get('scan_partition', PART_PRIMARY),
+                                   'scan_partition field of ' + what)
+        if scan_partition not in (PART_PRIMARY, PART_SECONDARY):
+            raise ValueError(f'scan_partition field of {what} is {scan_partition!r}, but must be '
+                             f'{PART_PRIMARY!r} or {PART_SECONDARY!r}.')
+        if scan_partition == PART_SECONDARY and not is_split_ip:
+            raise ValueError(f'{what} puts its scan ports in the secondary partition, but it '
+                             f'is not a split IP.')
+
         reinits = Signal.from_raw_list('reinit signals for block ' + name,
                                        rd.get('reinit_list', []))
         for sig in reinits:
@@ -559,7 +578,8 @@ class IpBlock:
                        memories, interrupts, no_auto_intr, alerts, no_auto_alert,
                        scan, inter_signals, bus_interfaces, clocking, reinit_list,
                        xputs, wakeups, rst_reqs, expose_reg_if, scan_reset, scan_en,
-                       countermeasures, features, partitions, node, is_split_ip)
+                       countermeasures, features, partitions, node, is_split_ip,
+                       scan_partition)
 
     @staticmethod
     def from_text(txt: str,
@@ -744,6 +764,8 @@ class IpBlock:
 
         ret['scan_reset'] = self.scan_reset
         ret['scan_en'] = self.scan_en
+        if self.scan_partition != PART_PRIMARY:
+            ret['scan_partition'] = self.scan_partition
 
         return ret
 

@@ -14,7 +14,7 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin clkgen/pll/CLKOUT4]]
 ## This is not really recommended per Vivado's guidelines, but hopefully these clocks are slow enough and their
 ## destination flops few enough.
 
-set u_div4 top_*/u_clkmgr/u_no_scan_io_div4_div
+set u_div4 top_*/*_pd_aon/u_clkmgr_part_primary/u_no_scan_io_div4_div
 create_generated_clock -name clk_io_div4 -divide_by 4 -source [get_pins ${u_div4}/gen_div.clk_int_reg/C] [get_pins ${u_div4}/gen_div.clk_int_reg/Q]
 
 
