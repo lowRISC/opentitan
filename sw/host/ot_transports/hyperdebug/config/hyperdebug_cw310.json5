@@ -15,6 +15,7 @@
     {
       "name": "SPI_DEV_D1",
       "mode": "Alternate",
+      "pull_mode": "PullUp",
       "alias_of": "CN10_10"
     },
     {
