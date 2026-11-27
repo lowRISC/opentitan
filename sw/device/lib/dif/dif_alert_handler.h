@@ -212,8 +212,9 @@ typedef struct dif_alert_handler_class_config {
    */
   dif_toggle_t auto_lock_accumulation_counter;
   /**
-   * The threshold for the class accmulator which indicates the number of alerts
-   * that must fire because the class's escalation protocol will trigger.
+   * The threshold for the class accumulator. Once the accumulator reaches this
+   * value, the next alert of this class triggers the escalation protocol, so 0
+   * escalates on the first alert.
    */
   uint16_t accumulator_threshold;
   /**

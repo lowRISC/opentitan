@@ -116,7 +116,7 @@
       desc: '''Verify the LC escalation path to the SRAMs.
 
             - Configure the LC_CTRL to trigger an escalation request to the SRAMs.
-            - Verify that the SRAMs stop accepting and responding to new memory requests.
+            - Verify that new memory requests to the SRAMs fail.
             - Reset the system to exit the terminal escalation state.
             - Re-initialize the SRAMs and verify that they can now respond correctly to
               any further memory requests.

@@ -41,22 +41,22 @@ To initialize the block, software running at a high privilege levels (early in t
       Set [`CLASSA_CTRL_SHADOWED.LOCK`](../data/alert_handler.hjson#classa_ctrl_shadowed) to true if clearing should be disabled.
       If true, once escalation protocol begins, it can not be stopped, the assumption being that it ends in a chip reset else it will be rendered useless thenceforth.
 
-    - Determine the number of alerts required to be accumulated before escalation protocol kicks in. Set [`CLASSA_ACCUM_THRESH`](../data/alert_handler.hjson#classa_accum_thresh) accordingly.
+    - Determine on which trigger of this class the escalation protocol shall kick in. Set [`CLASSA_ACCUM_THRESH_SHADOWED`](../data/alert_handler.hjson#classa_accum_thresh_shadowed) to one less than this number (0 escalates on the first trigger).
 
     - Determine whether the interrupt associated with that class needs a timeout.
       If yes, set [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed) to an appropriate value greater than zero (zero corresponds to an infinite timeout and disables the mechanism).
 
     - For each escalation phase (0..3):
-        - Determine length of each escalation phase by setting [`CLASSA_PHASE0_CYC`](../data/alert_handler.hjson#classa_phase0_cyc) accordingly
+        - Determine length of each escalation phase by setting [`CLASSA_PHASE0_CYC_SHADOWED`](../data/alert_handler.hjson#classa_phase0_cyc_shadowed) accordingly
 
     - For each escalation signal (0..3):
-        - Determine whether to enable the escalation signal, and set the [`CLASSA_CTRL_SHADOWED.E0_EN`](../data/alert_handler.hjson#classa_ctrl_shadowed) bit accordingly (default is enabled).
-          Note that setting all of the `E*_EN` bits to 0 within a class has the same effect of disabling the entire class by setting [`CLASSA_CTRL_SHADOWED.EN`](../data/alert_handler.hjson#classa_ctrl_shadowed) to zero.
-        - Determine the phase -> escalation mapping of this class and program it via the [`CLASSA_CTRL_SHADOWED.E0_MAP`](../data/alert_handler.hjson#classa_ctrl_shadowed) values if it needs to be changed from the default mapping (0->0, 1->1, 2->2, 3->3).
+        - Determine whether to enable the escalation signal, and set the [`CLASSA_CTRL_SHADOWED.EN_E0`](../data/alert_handler.hjson#classa_ctrl_shadowed) bit accordingly (default is enabled).
+          Note that setting all of the `EN_E*` bits to 0 within a class has the same effect of disabling the entire class by setting [`CLASSA_CTRL_SHADOWED.EN`](../data/alert_handler.hjson#classa_ctrl_shadowed) to zero.
+        - Determine the phase -> escalation mapping of this class and program it via the [`CLASSA_CTRL_SHADOWED.MAP_E0`](../data/alert_handler.hjson#classa_ctrl_shadowed) values if it needs to be changed from the default mapping (0->0, 1->1, 2->2, 3->3).
 
-    - Optionally lock the class configuration by writing 0 to [`CLASSA_CTRL_SHADOWED.REGWEN`](../data/alert_handler.hjson#classa_ctrl_shadowed).
+    - Optionally lock the class configuration by writing 0 to [`CLASSA_REGWEN`](../data/alert_handler.hjson#classa_regwen).
 
-4. After initial configuration at startup, enable the ping timer mechanism by writing 1 to [`PING_TIMER_EN`](../data/alert_handler.hjson#ping_timer_en).
+4. After initial configuration at startup, enable the ping timer mechanism by writing 1 to [`PING_TIMER_EN_SHADOWED`](../data/alert_handler.hjson#ping_timer_en_shadowed).
 It is also recommended to lock the ping timer configuration by clearing [`PING_TIMER_REGWEN`](../data/alert_handler.hjson#ping_timer_regwen).
 Note that only **locked and enabled** alerts are going to be pinged using the ping mechanism.
 This ensures that spurious ping failures cannot occur when previously enabled alerts are being disabled again (before locking).
@@ -72,8 +72,7 @@ To handle an interrupt of a particular class, software should execute the follow
    The current interrupt or escalation cycle counter can be read via [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt).
 
 2. Since the interrupt does not indicate which alert triggered, SW must read the cause registers [`LOC_ALERT_CAUSE`](../data/alert_handler.hjson#loc_alert_cause) and [`ALERT_CAUSE`](../data/alert_handler.hjson#alert_cause) etc.
-   The cause bits of all alerts are concatenated and chunked into 32bit words.
-   Hence the register file contains as many cause words as needed to cover all alerts present in the system.
+   There is one cause register for each alert and each local alert.
    Each cause register contains a sticky bit that is set by the incoming alert, and is clearable with a write by software.
    This should only be cleared after software has cleared the event trigger, if applicable.
    It is possible that the event requires no clearing (e.g. a parity error), or can't be cleared (a breach in the metal mesh protecting the chip).
@@ -82,7 +81,7 @@ To handle an interrupt of a particular class, software should execute the follow
 
 3. After the event is cleared (if needed or possible), software should handle the interrupt as follows:
 
-    - Resetting the accumulation register for the class by writing [`CLASSA_CLR`](../data/alert_handler.hjson#classa_clr).
+    - Resetting the accumulation register for the class by writing [`CLASSA_CLR_SHADOWED`](../data/alert_handler.hjson#classa_clr_shadowed).
       This also aborts the escalation protocol if it has been triggered.
       If for some reason it is desired to never allow the accumulator or escalation to be cleared, software can initialize the [`CLASSA_CLR_REGWEN`](../data/alert_handler.hjson#classa_clr_regwen) register to zero.
       If [`CLASSA_CLR_REGWEN`](../data/alert_handler.hjson#classa_clr_regwen) is already false when an alert interrupt is detected (either due to software control or hardware trigger via [`CLASSA_CTRL_SHADOWED.LOCK`](../data/alert_handler.hjson#classa_ctrl_shadowed)), then the accumulation counter can not be cleared and this step has no effect.
@@ -112,7 +111,7 @@ The maximum propagation delay of differential pair should also be constrained (a
 
 ## Fast-track Alerts
 
-Note that it is possible to program a certain class to provide a fast-track response for critical alerts by setting its accumulation trigger value to 1, and configuring the escalation protocol such that the appropriate escalation measure is triggered within escalation phase 0.
+Note that it is possible to program a certain class to provide a fast-track response for critical alerts by setting its accumulation threshold to 0, and configuring the escalation protocol such that the appropriate escalation measure is triggered within escalation phase 0.
 This results in a minimal escalation latency of 4 clock cycles from alert sender input to escalation receiver output in the case where all involved signaling modules are completely synchronous with the alert handler.
 In case the alert sender is asynchronous w.r.t. to the alert handler, the actual latency depends on the clock periods involved.
 Assuming both clocks have the same frequency alert propagation takes at least 6-8 clock alert handler clock cycles.

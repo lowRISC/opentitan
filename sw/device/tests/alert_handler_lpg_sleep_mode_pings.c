@@ -91,7 +91,7 @@ void wait_enough_for_alert_ping(void) {
     case kDeviceFpgaCw310:
     case kDeviceFpgaCw340:
       // 2*margin_of_safety*(2**DW)*(1/kClockFreqPeripheralHz)
-      // 2*4*(2**16)*(400ns) = 0.2s
+      // 2*4*(2**16)*(167ns) = 88ms, so 0.2s is enough
       busy_spin_micros(1000 * 200);
       break;
     case kDeviceSilicon:
@@ -376,8 +376,8 @@ static void execute_test_phases(uint8_t test_phase, uint32_t ping_timeout_cyc) {
     // `ping_timeout_cnt = 256`. End the test if any alerts or loc_alerts is
     // fired.
     //
-    // Phase #2: N/A (As the `ping_timeout_cnt = 2` in this phase, the ping-fail
-    // alerts will come continuosly)
+    // Phase #2: N/A (As the `ping_timeout_cnt = 1` in this phase, the ping-fail
+    // alerts will come repeatedly)
     num_fired_alerts = alert_handler_num_fired_alerts();
     num_fired_loc_alerts = alert_handler_num_fired_loc_alerts();
     if (test_phase == 1) {

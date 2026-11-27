@@ -56,7 +56,7 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   extern function void write_kmac_req(kmac_app_req_packet_item packet);
 
   // Follow responses sent from KMAC. There will be one after each reset and it will be a response
-  // to a request that was seen in process_kmac_req_fifo.
+  // to a request that was seen in write_kmac_req.
   //
   // This function updates the model of the digest that came from KMAC (used for the contents of the
   // DIGEST registers and also for a check on the digest sent to keymgr later). It also updates the
@@ -70,9 +70,10 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // Monitor values sent to pwrmgr and keymgr.
   //
-  // The pwrmgr_data done and the keymgr_data valid flags should each pulse for a single cycle. This
-  // task checks that they don't go high more than once and checks that the pwrmgr_data.good and
-  // keymgr_data.data signals match what we expect (based on the response from KMAC).
+  // The pwrmgr_data done and the keymgr_data valid flags should each rise once and stay high while
+  // the checker FSM stays in its Done state. This task checks that they don't go high more than
+  // once and checks that the pwrmgr_data.good and keymgr_data.data signals match what we expect
+  // (based on the response from KMAC).
   extern task monitor_rom_ctrl_if();
 
   // Check a TL item thac corresponds to a ROM access, making sure that invalid requests return

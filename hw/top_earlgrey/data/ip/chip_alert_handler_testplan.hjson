@@ -111,6 +111,10 @@
               number of interrupts and NMI had been asserted and that the alert handler no longer
               reports an alert cause (which should have been cleared by the reset).
 
+            - Some faults block the CPU or a memory it needs, so neither handler runs. For
+              those faults the SW expects the interrupt and NMI handler counts to be zero after the
+              reset.
+
             The main check aim of this testpoint is to check that:
 
             - A fatal alert will be reported correctly to Ibex.
@@ -220,16 +224,19 @@
             There are two scenarios to check:
             - Configure alert_handler's ping timeout register to a reasonable value that won't
               cause ping timeout in normal cases.
-              Then randomly enter and exit normal or deep sleep modes.
-              Check that no local alerts triggered in alert_handler.
+              Then repeatedly enter and exit normal sleep mode.
+              Check that no alerts or local alerts are triggered in alert_handler.
               This scenario ensures that ping mechanism won't send out spurious failure.
-            - Configure alert_handler's ping timeout register to a small value that will always
-              causes ping timeout.
-              Then randomly enter and exit normal or deep sleep modes.
-              Clear local alert cause register and check that alert ping timeout continue to fire
+            - Configure alert_handler's ping timeout register to one cycle, so that pings time
+              out.
+              Then repeatedly enter and exit normal sleep mode.
+              Clear the cause registers and check that the alert and escalation ping failures fire
               after wake up.
               This scenario ensures the ping mechanism will continue to send out pings after waking
               up from sleep modes.
+
+            The test enters deep sleep only once, between the two scenarios, so only the second
+            scenario is checked after a deep sleep.
             '''
       features: ["ALERT_HANDLER.PING_TIMER"]
       stage: V2

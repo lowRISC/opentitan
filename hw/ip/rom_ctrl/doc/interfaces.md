@@ -110,7 +110,7 @@ The table below lists other ROM controller inter-module signals.
     <td>
       <p>
         A 256-bit digest in the <code>data</code>, together with a <code>valid</code> signal.
-        Once the ROM check is complete, <code>valid</code> will become high and will then remain high until reset.
+        Once the ROM check is complete, <code>valid</code> will become high and will then remain high until reset, unless the checker FSM leaves its <code>Done</code> state because of a fatal error.
         This change happens at the same time as <code>pwrmgr_data_o.done</code> becomes <code>MuBi4True</code>.
       </p><p>
         The digest in <code>data</code> is the digest that was computed by kmac.
@@ -130,14 +130,14 @@ The table below lists other ROM controller inter-module signals.
         It will request exactly one KMAC checksum calculation after each reset.
         As such, there will be no more requests after the one containing the top word of the ROM image.
       </p><p>
-        The <code>valid</code> field is true if there is a request on this cycle.
-        This forms a rdy/vld interface with the <code>ready</code> field of <code>kmac_data_i</code>.
-        The <code>data</code> field is the word that has been read from the ROM.
+        The <code>req_valid</code> field is true if there is a request on this cycle.
+        This forms a rdy/vld interface with the <code>req_ready</code> field of <code>kmac_data_i</code>.
+        The <code>data_s0</code> field is the word that has been read from the ROM.
       </p><p>
         The <code>app_req_t</code> format supports up to 64 bits in a cycle but the ROM will only send one word.
-        This word gets sent as the low bytes of <code>data</code> and the <code>strb</code> field is set to a constant value showing them.
+        This word gets sent as the low bytes of <code>data_s0</code> and the <code>strb</code> field is set to a constant value showing them.
         That strobe value will enable just the bytes used: 5 bytes per word if scrambling is enabled; 4 bytes per word if not.
-        When sending the top word of the ROM image, the ROM controller will set the <code>last</code> field to true.
+        When sending the top word of the ROM image, the ROM controller will set the <code>req_last</code> field to true.
       </p>
     </td>
   </tr>
@@ -148,12 +148,12 @@ The table below lists other ROM controller inter-module signals.
     <td>
       <p>
         The response side of a request/response interface with kmac.
-        The <code>ready</code> field is part of a rdy/vld handshake for the request using the <code>valid</code> field of <code>kmac_data_o</code>.
-        The <code>done</code> field is true when there is a digest available on this cycle.
-        The following fields only have a defined meaning when <code>done</code> is true.
+        The <code>req_ready</code> field is part of a rdy/vld handshake for the request using the <code>req_valid</code> field of <code>kmac_data_o</code>.
+        The <code>rsp_valid</code> field is true when there is a digest available on this cycle.
+        The following fields only have a defined meaning when <code>rsp_valid</code> is true.
         For the interface with ROM controller, we expect this to happen exactly once after a reset.
       </p><p>
-        The <code>digest_share0</code> and <code>digest_share1</code> fields contain the computed digest in two shares.
+        The <code>digest_s0</code> and <code>digest_s1</code> fields contain the computed digest in two shares.
         The <code>error</code> field is true if there was some error in the KMAC checksum calculation.
         If this happens, the ROM controller will move to an invalid state and generate an alert.
       </p>

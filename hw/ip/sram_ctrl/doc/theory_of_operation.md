@@ -35,10 +35,9 @@ In order to break the linear address space, the CTR mode is augmented with an S&
 
 ### Integrity Error Handling
 
-When an integrity error is encountered, the `sram_ctrl` will latch the integrity error and send out a `fatal_bus_integ_error` until the next reset (the generation of the integrity error is determined by system integration).
-In addition, the latched error condition is fed into the `prim_ram_1p_scr` primitive via a dedicated input, causing the scrambling primitive to do the following:
-*  Reverse the nonce used during the address and CTR scrambling.
-*  Disallow any transaction (read or write) on the actual memory macro.
+When an integrity error is encountered, the `sram_ctrl` will latch the integrity error in `STATUS.BUS_INTEG_ERROR` and send out a `fatal_error` alert until the next reset (the generation of the integrity error is determined by system integration).
+The latched error closes the TL-UL gate, which then answers new memory requests with an error response.
+In addition, an integrity error detected on the memory bus path is fed into the `prim_ram_1p_scr` primitive via a dedicated input, so that requests do not reach the actual memory macro (this input is masked during initialization).
 
 This behavior, combined with other top level defenses, forms a multi-layered defense when integrity errors are seen in the system.
 
@@ -89,7 +88,7 @@ The different configuration options are listed in the table below:
 Note that the execute from SRAM feature may only be enabled on certain SRAM controller instances in the top-level design.
 If the feature is turned off via the `InstrExec` parameter, the execute from SRAM feature is permanently disabled, and the status of the OTP switch, the life cycle state and the value of the EXEC register are irrelevant.
 
-As an example, the `top_earlgrey` design only enables this feature on the main SRAM, and permanently disables it on the retention SRAM.
+As an example, the `top_earlgrey` design enables this feature on the main and secondary SRAMs, and permanently disables it on the retention and CHERIoT meta SRAMs.
 
 ### Read and Write Sequencing
 
