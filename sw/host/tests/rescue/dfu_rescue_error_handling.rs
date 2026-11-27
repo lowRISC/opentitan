@@ -261,6 +261,7 @@ fn invalid_spi_flash_transaction(
     params: &RescueParams,
     transport: &TransportWrapper,
 ) -> Result<()> {
+    let uart = transport.uart("console")?;
     let spi_params = SpiParams::default();
     let spi = spi_params.create(transport, "BOOTSTRAP")?;
     let rescue = SpiDfu::new(spi.clone(), params.clone());
@@ -297,12 +298,14 @@ fn invalid_spi_flash_transaction(
             MODE_111.cmd_addr(SpiFlash::PAGE_PROGRAM, 0, address_mode),
             &payload_overflow,
         ),
-        Transaction::WaitForBusyClear,
     ])?;
 
-    rescue.reboot()?;
+    // The rescue protocol aborts due to the payload overflow, which is reported
+    // as a boot fault.
+    UartConsole::wait_for(&*uart, r"BFV:0153500d", Duration::from_secs(5))?;
 
-    let uart = transport.uart("console")?;
+    // After the reset the rescue trigger is no longer asserted, so we just wait
+    // for the test firmware.
     UartConsole::wait_for(&*uart, r"Finished", Duration::from_secs(5))?;
 
     Ok(())
