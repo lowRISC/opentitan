@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:dv:keymgr_dpe_agent"
+description: "Agent that drives input signals to keymgr_dpe"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_base_agent
+      - lowrisc:prim:mubi_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:dv:keymgr_dpe_if
+    files:
+      - keymgr_dpe_agent_pkg.sv
+      - keymgr_dpe_agent_cfg.sv: {is_include_file: true}
+      - keymgr_dpe_driver.sv: {is_include_file: true}
+      - keymgr_dpe_monitor.sv: {is_include_file: true}
+      - keymgr_dpe_agent.sv: {is_include_file: true}
+      - keymgr_dpe_seq_item.sv: {is_include_file: true}
+      - seq/keymgr_dpe_base_seq.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
