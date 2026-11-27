@@ -229,6 +229,10 @@ status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
  * ensure that at least `encoded_message_len * sizeof(uint32_t) - 11` bytes are
  * allocated at `message`.
  *
+ * Runs in constant time independent of padding validity and decoded message
+ * length. Callers must treat the returned status and `*message_bytelen` as
+ * secret and avoid exposing them to untrusted peers.
+ *
  * @param encoded_message Encoded message (modified in-place and shredded).
  * @param encoded_message_len Encoded message length in 32-bit words.
  * @param[out] message Decoded message.

@@ -115,14 +115,20 @@ status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
  * @param plaintext_max_bytelen Space allocated for the plaintext in bytes.
  * @param[out] plaintext Decrypted message.
  * @param[out] plaintext_bytelen Length of plaintext in bytes.
- * @return Result of the operation (OK or error).
+ * @param[out] decode_status Result of padding decode (`OTCRYPTO_OK` or error),
+ *                           returned separately from OTBN/argument errors so
+ *                           callers do not branch or re-wipe DMEM on invalid
+ *                           padding.
+ * @return Result of OTBN finalization and upfront argument checks (OK or
+ *         error).
  */
 OT_WARN_UNUSED_RESULT
 status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                               const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
-                              size_t *plaintext_bytelen);
+                              size_t *plaintext_bytelen,
+                              status_t *decode_status);
 
 #ifdef __cplusplus
 }  // extern "C"

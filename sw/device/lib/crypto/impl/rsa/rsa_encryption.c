@@ -101,8 +101,9 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                               const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
-                              size_t *plaintext_len) {
+                              size_t *plaintext_len, status_t *decode_status) {
   *plaintext_len = 0;
+  *decode_status = OTCRYPTO_BAD_ARGS;
 
   // Wait for OTBN to complete and get the size and key_mode.
   size_t num_words;
@@ -140,6 +141,7 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                     num_aligned_full_words);
 
   // Finalize the modexp operation to get the recovered encoded message.
+  // `rsa_modexp_finalize` wipes OTBN DMEM before returning `OTCRYPTO_OK`.
   HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
   uint32_t recovered_message[kRsa4096NumWords];
   HARDENED_TRY(
@@ -154,9 +156,10 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_oaep_decode(hash_mode, hash_mode, label, label_bytelen,
-                                     recovered_message, num_words, plaintext,
-                                     plaintext_len);
+      *decode_status = rsa_padding_oaep_decode(
+          hash_mode, hash_mode, label, label_bytelen, recovered_message,
+          num_words, plaintext, plaintext_len);
+      return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
       HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
@@ -164,9 +167,10 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha1, label,
-                                     label_bytelen, recovered_message,
-                                     num_words, plaintext, plaintext_len);
+      *decode_status = rsa_padding_oaep_decode(
+          hash_mode, kOtcryptoHashModeSha1, label, label_bytelen,
+          recovered_message, num_words, plaintext, plaintext_len);
+      return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
       HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
@@ -174,9 +178,10 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha256, label,
-                                     label_bytelen, recovered_message,
-                                     num_words, plaintext, plaintext_len);
+      *decode_status = rsa_padding_oaep_decode(
+          hash_mode, kOtcryptoHashModeSha256, label, label_bytelen,
+          recovered_message, num_words, plaintext, plaintext_len);
+      return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
       HARDENED_CHECK_GE(max_plaintext_bytelen, 11);
@@ -184,8 +189,9 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
         hardened_memshred(recovered_message, num_words);
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
-                                                 plaintext, plaintext_len);
+      *decode_status = rsa_padding_pkcs1v15_decrypt_decode(
+          recovered_message, num_words, plaintext, plaintext_len);
+      return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
@@ -198,6 +204,7 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
           consttime_memeq_byte(recovered_message, plaintext, *plaintext_len),
           kHardenedBoolTrue);
       hardened_memshred(recovered_message, num_words);
+      *decode_status = OTCRYPTO_OK;
       return OTCRYPTO_OK;
     default:
       return OTCRYPTO_BAD_ARGS;
