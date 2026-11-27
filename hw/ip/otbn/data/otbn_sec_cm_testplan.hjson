@@ -362,5 +362,14 @@
       stage: V2S
       tests: ["{name}_sec_cm"]
     }
+    {
+      name: sec_cm_exp_imem_digest_config_regwen
+      desc: '''Verify the countermeasure(s) EXP_IMEM_DIGEST.CONFIG.REGWEN.
+            The automated CSR tests check that EXP_IMEM_DIGEST, EXP_IMEM_DIGEST_LEN and
+            EXP_IMEM_DIGEST_SKIP cannot be written once EXP_IMEM_DIGEST_REGWEN is cleared.
+            '''
+      stage: V2S
+      tests: ["otbn_csr_rw"]
+    }
   ]
 }

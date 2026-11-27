@@ -836,6 +836,13 @@ module otbn
   assign crc_in = reg2hw.load_checksum.q;
   assign hw2reg.load_checksum.d = crc_out;
 
+  // The golden IMEM digest is not used yet.
+  // SEC_CM: EXP_IMEM_DIGEST.CONFIG.REGWEN
+  logic unused_reg2hw_exp_imem_digest;
+  assign unused_reg2hw_exp_imem_digest = ^{reg2hw.exp_imem_digest,
+                                           reg2hw.exp_imem_digest_len,
+                                           reg2hw.exp_imem_digest_skip};
+
   // Registers =================================================================
 
   logic reg_bus_intg_violation;
