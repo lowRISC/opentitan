@@ -245,6 +245,7 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
     iv_words[i] = 0;
   }
   HARDENED_CHECK_EQ(i, kAesBlockNumWords);
+  hardened_memshred(ctx->partial_block, ARRAYSIZE(ctx->partial_block));
   ctx->partial_block_len = 0;
 
   return OTCRYPTO_OK;
