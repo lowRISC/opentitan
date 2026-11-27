@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="930" height="916" viewBox="-10 -10 930 916" font-family="sans-serif" font-size="14" fill="#1f1f1f">
+<rect x="-10" y="-10" width="930" height="916" fill="#ffffff"/>
+<rect x="300" y="0" width="340" height="750" rx="6" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="0" y="780" width="360.13" height="116" rx="6" fill="#ffffff" stroke="#c8c8c8" stroke-width="1"/>
+<rect x="350" y="40" width="240" height="90" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="83.03" font-size="14" font-weight="bold" text-anchor="middle">Core's tag filter</text>
+<text x="470" y="97.6" font-size="11" fill="#5c5c5c" text-anchor="middle">with the WTRC</text>
+<rect x="350" y="160" width="240" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="183.03" font-size="14" font-weight="bold" text-anchor="middle">2:1 tag arbiter</text>
+<text x="470" y="197.6" font-size="11" fill="#5c5c5c" text-anchor="middle">core's tag filter, engine's tag filter</text>
+<rect x="350" y="240" width="240" height="40" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="264.9" font-size="14" text-anchor="middle">RMW filter</text>
+<rect x="350" y="310" width="240" height="80" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="348.02" font-size="14" font-weight="bold" text-anchor="middle">Four access checkers</text>
+<text x="470" y="362.6" font-size="11" fill="#5c5c5c" text-anchor="middle">and the 4:1 arbiter</text>
+<rect x="350" y="420" width="240" height="100" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="461.15" font-size="14" font-weight="bold" text-anchor="middle">Revocation engine</text>
+<text x="470" y="475.73" font-size="11" fill="#5c5c5c" text-anchor="middle">TRVK filter, tag filter,</text>
+<text x="470" y="489.48" font-size="11" fill="#5c5c5c" text-anchor="middle">sweep control</text>
+<rect x="350" y="550" width="240" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="579.9" font-size="14" text-anchor="middle">Register file</text>
+<rect x="350" y="630" width="240" height="50" rx="4" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1.2"/>
+<text x="470" y="653.02" font-size="14" font-weight="bold" text-anchor="middle">Alert logic</text>
+<text x="470" y="667.6" font-size="11" fill="#5c5c5c" text-anchor="middle">alert sender</text>
+<polygon points="470,160 466.5,151 473.5,151" fill="#2b2b2b"/>
+<polyline points="470,130 470,152" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="470,240 466.5,231 473.5,231" fill="#2b2b2b"/>
+<polyline points="470,210 470,232" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="470,310 466.5,301 473.5,301" fill="#2b2b2b"/>
+<polyline points="470,280 470,302" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="470,390 473.5,399 466.5,399" fill="#2b2b2b"/>
+<polyline points="470,420 470,398" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="590,185 599,181.5 599,188.5" fill="#2b2b2b"/>
+<polyline points="590,430 615,430 615,185 598,185" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<rect x="0" y="30" width="130" height="310" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="65" y="189.9" font-size="14" text-anchor="middle">Ibex core</text>
+<rect x="0" y="350" width="130" height="50" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="65" y="371.15" font-size="14" text-anchor="middle">Meta SRAM</text>
+<text x="65" y="388.65" font-size="14" text-anchor="middle">controller</text>
+<rect x="0" y="445" width="130" height="50" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="65" y="466.15" font-size="14" text-anchor="middle">Interrupt</text>
+<text x="65" y="483.65" font-size="14" text-anchor="middle">controller</text>
+<rect x="0" y="630" width="130" height="50" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="65" y="651.15" font-size="14" text-anchor="middle">Alert</text>
+<text x="65" y="668.65" font-size="14" text-anchor="middle">handler</text>
+<rect x="0" y="690" width="130" height="50" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="65" y="711.15" font-size="14" text-anchor="middle">Mode switch in</text>
+<text x="65" y="728.65" font-size="14" text-anchor="middle">rv_core_ibex</text>
+<rect x="780" y="30" width="130" height="570" rx="4" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="845" y="319.9" font-size="14" font-family="monospace" text-anchor="middle">xbar_main</text>
+<polygon points="130,55 144,66 144,60 336,60 336,66 350,55 336,44 336,50 144,50 144,44" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="350,95 341,98.5 341,91.5" fill="#2b2b2b"/>
+<polyline points="130,95 342,95" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="130,120 139,116.5 139,123.5" fill="#2b2b2b"/>
+<polyline points="350,120 138,120" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="130,320 144,331 144,325 336,325 336,331 350,320 336,309 336,315 144,315 144,309" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="350,375 336,364 336,370 144,370 144,364 130,375 144,386 144,380 336,380 336,386" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="130,470 139,466.5 139,473.5" fill="#2b2b2b"/>
+<polyline points="350,470 138,470" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="130,645 139,641.5 139,648.5" fill="#2b2b2b"/>
+<polyline points="350,645 138,645" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="350,668 341,671.5 341,664.5" fill="#2b2b2b"/>
+<polyline points="130,668 342,668" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="350,715 341,718.5 341,711.5" fill="#2b2b2b"/>
+<polyline points="130,715 342,715" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+<polygon points="590,70 604,81 604,75 766,75 766,81 780,70 766,59 766,65 604,65 604,59" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="780,340 766,329 766,335 604,335 604,329 590,340 604,351 604,345 766,345 766,351" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="590,450 604,461 604,455 766,455 766,461 780,450 766,439 766,445 604,445 604,439" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<polygon points="780,575 766,564 766,570 604,570 604,564 590,575 604,586 604,580 766,580 766,586" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+<rect x="10" y="794" width="28" height="16" rx="2" fill="#eaf1fb" stroke="#6c8ebf" stroke-width="1"/>
+<rect x="10" y="818" width="28" height="16" rx="2" fill="#ffffff" stroke="#2b2b2b" stroke-width="1"/>
+<polygon points="24,844 30,850 24,856 18,850" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<line x1="10" y1="874" x2="38" y2="874" fill="none" stroke="#2b2b2b" stroke-width="1.4"/>
+<text x="308" y="20.68" font-size="13" font-family="monospace" font-weight="bold" fill="#3d5f8f">cheriot_mem_sys</text>
+<text x="240" y="36.15" font-size="14" fill="#2b2b2b" text-anchor="middle">cored_tl_d</text>
+<text x="240" y="87.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">cored_tag_h2d</text>
+<text x="240" y="112.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">cored_tag_d2h</text>
+<text x="240" y="301.15" font-size="14" fill="#2b2b2b" text-anchor="middle">corerevbm_tl</text>
+<text x="240" y="356.15" font-size="14" fill="#2b2b2b" text-anchor="middle">meta_sram_tl</text>
+<text x="240" y="462.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">intr_tbre_done_o</text>
+<text x="240" y="637.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">alert_tx_o</text>
+<text x="240" y="660.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">alert_rx_i</text>
+<text x="240" y="707.7" font-size="12" font-family="monospace" fill="#2b2b2b" text-anchor="middle">cheriot_ena_i</text>
+<text x="360" y="719.2" font-size="12" font-style="italic" fill="grey">read by every block</text>
+<text x="685" y="51.15" font-size="14" fill="#2b2b2b" text-anchor="middle">cored_tl_h</text>
+<text x="685" y="321.15" font-size="14" fill="#2b2b2b" text-anchor="middle">revbm_tl_d</text>
+<text x="685" y="431.15" font-size="14" fill="#2b2b2b" text-anchor="middle">tbre_tl_h</text>
+<text x="685" y="556.15" font-size="14" fill="#2b2b2b" text-anchor="middle">regs_tl_d</text>
+<polygon points="300,49 306,55 300,61 294,55" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,89 306,95 300,101 294,95" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,114 306,120 300,126 294,120" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,314 306,320 300,326 294,320" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,369 306,375 300,381 294,375" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,464 306,470 300,476 294,470" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,639 306,645 300,651 294,645" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,662 306,668 300,674 294,668" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="300,709 306,715 300,721 294,715" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="640,64 646,70 640,76 634,70" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="640,334 646,340 640,346 634,340" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="640,444 646,450 640,456 634,450" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<polygon points="640,569 646,575 640,581 634,575" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.2"/>
+<text x="48" y="806.55" font-size="13">The subsystem, the design under verification</text>
+<text x="48" y="830.55" font-size="13">A neighbour in Earl Grey, outside the proof</text>
+<text x="48" y="854.55" font-size="13">A subsystem port: the FPV boundary</text>
+<text x="48" y="878.55" font-size="13">A signal; a hollow double arrow is a TL-UL port</text>
+</svg>
