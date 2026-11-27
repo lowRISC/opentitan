@@ -272,14 +272,12 @@ p384_verify:
   bn.lid    x2++, 0(x6)
   bn.lid    x2++, 32(x6)
 
-  /* Compare calculated r ([w17, w16]) with original r ([w11, w10]) */
+  /* Compare calculated r ([w17, w16]) with original r ([w11, w10]) and abort
+     if either limb does not match. */
   bn.cmp    w16, w10
-  bn.cmpb   w17, w11
-
-  /* Abort if they do not match */
-  csrrs     x2, FG0, x0
-  andi      x2, x2, 8
-  beq       x2, x0, p384_invalid_input
+  jal       x1, trigger_fault_if_fg0_z
+  bn.cmp    w17, w11
+  jal       x1, trigger_fault_if_fg0_z
 
   /* load domain parameter p (modulus)
      [w13, w12] <= p = dmem[p384_p] */
