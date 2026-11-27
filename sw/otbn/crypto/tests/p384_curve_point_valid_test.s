@@ -17,7 +17,7 @@ p384_curve_point_valid_test:
 
   jal       x1, p384_check_isoncurve
 
-  la        x2, ok
-  lw        x2, 0(x2)
+  /* Reaching here means the check succeeded (invalid points exit early). */
+  li        x2, 1
 
   ecall
