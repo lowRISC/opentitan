@@ -558,6 +558,7 @@ module sram_ctrl
   mubi4_t reg_rmw_intg_chk_en;
   assign reg_rmw_intg_chk_en = mubi4_t'(reg2hw.rmw_intg_check.q);
 
+  // SEC_CM: RAM_TL_SRAM_BYTE.FSM.SPARSE
   tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
