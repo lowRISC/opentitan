@@ -592,7 +592,16 @@
       hwaccess: "hwo",
       hwext: "true",
       fields: [
-        { bits: "5", name: "csb",        desc: "Direct input of CSb signal.", resval: "1" },
+        { bits: "5"
+          name: "csb"
+          desc: "Direct input of CSb signal."
+          resval: "1"
+          tags: [
+            // the value of csb is determined by the
+            // value on the pins, hence it cannot be predicted.
+            "excl:CsrAllTests:CsrExclCheck"
+          ]
+        }
         { bits: "6"
           name: "tpm_csb"
           desc: "Direct input of the TPM CSb signal."
