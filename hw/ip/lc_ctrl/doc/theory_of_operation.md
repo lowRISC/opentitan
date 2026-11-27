@@ -95,7 +95,7 @@ The core function of life cycle is how various functions of the design are modul
 [This section](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states) in the life cycle architecture documentation summarizes the overall behavior.
 
 The signals have been split into two summary tables in the sections below.
-The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the flash and OTP memories.
+The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the non-volatile memories (NVM) and OTP.
 
 All life cycle control signals are 4-bit multibit values of type `lc_tx_t`, where `4'b0101` means ON and `4'b1010` means OFF; any other value is invalid.
 A `"Y"` mark means the function is directly enabled by hardware during that
@@ -116,26 +116,26 @@ Signals marked with an asterisk (Y\*) are only asserted under certain conditions
 #### DFT_EN
 
 As its name implies, this signal enables DFT functions.
-This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash and OTP).
+This is accomplished primarily by providing functional isolation on the SOC inserted DFT TAP module and any other memory macros that are built natively with a DFT function (for example flash, RRAM and OTP).
 
 The isolation ensures three things:
 - The TAP controller is unable to issue instructions that would put the design into scan mode.
 This ensures that secrets cannot be scanned out, and specific values cannot be scanned into the design to emulate a particular functional mode
 - The TAP controller is unable to issue any kind of self test that would disrupt and scramble live logic which could lead to unpredictable behavior
-- The TAP controller or test function is unable to alter the non-volatile contents of flash or OTP
+- The TAP controller or test function is unable to alter the non-volatile contents of the NVM or OTP
 
 See [TAP isolation](#tap-and-isolation) for more implementation details.
 
 #### NVM_DEBUG_EN
 
-NVM modules like flash implement debug access that bypasses memory protection or lock-down.
+NVM modules like flash or RRAM implement debug access that bypasses memory protection or lock-down.
 This feature may be there for a variety of reasons, but primarily it can be used to debug the normal behavior of the controller.
 
 This type of functionality, if it exists, must be disabled during specific life cycle states.
 Since these back-door functions may bypass memory protection, they could be used to read out provisioned secrets that are not meant to be visible to software or a debug host.
 
-Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated flash partition can be securely populated, without exposing its contents via the NVM backdoor interface.
-See also accessibility description of the [isolated flash partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
+Note that NVM_DEBUG_EN is disabled in the last test unlocked state (TEST_UNLOCKED7) such that the isolated NVM partition can be securely populated, without exposing its contents via the NVM backdoor interface.
+See also accessibility description of the [isolated NVM partition](#iso_part_sw_rd_en-and-iso_part_sw_wr_en).
 
 #### HW_DEBUG_EN
 
@@ -236,7 +236,7 @@ However, as these signals only gate functional access and not DFT access, it is 
 
 While the OWNER_SEED_SW_RW_EN is statically enabled in the states shown above, the CREATOR_SEED_SW_RW_EN is only enabled if the device has not yet been personalized (i.e., the OTP partition holding the root key has not been locked down yet).
 
-For more a list of the collateral in Flash and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral](#otp-collateral) and [flash collateral](#flash-collateral) sections.
+For a list of the collateral in the NVM and OTP and an explanation of how that collateral is affected by these signals, see the [OTP collateral](#otp-collateral) and [NVM collateral](#nvm-collateral) sections.
 
 #### SEED_HW_RD_EN
 
@@ -250,7 +250,7 @@ The signal is set to `On` when in the RMA state and otherwise to `Off`.
 
 #### ISO_PART_SW_RD_EN and ISO_PART_SW_WR_EN
 
-These signals control whether the isolated flash partition holding additional manufacturing details can be accessed.
+These signals control whether the isolated NVM partition holding additional manufacturing details can be accessed.
 The isolated partition is both read and writable during the PROD / PROD_END / RMA states.
 In all other states it is inaccessible, except during the TEST_UNLOCKED* and DEV states where the partition is write-only.
 This construction allows to write a value to that partition and keep it secret before advancing into any of the production states.
@@ -273,7 +273,7 @@ For example, see earlgey's [OTP controller specification](../../../top_earlgrey/
 
 ### ID State of the Device
 
-If the SECRET2_DIGEST is zero, the device is considered to have "blank" ID state, in which case the CREATOR_ROOT_KEY_* (in OTP) and CREATOR_DIV_KEY (in FLASH) can be written by software.
+If the SECRET2_DIGEST is zero, the device is considered to have "blank" ID state, in which case the CREATOR_ROOT_KEY_* (in OTP) and CREATOR_DIV_KEY (in the NVM) can be written by software.
 All consumers of these keys are supplied with an invalid value.
 
 If the SECRET2_DIGEST has a nonzero value, the device is considered "creator personalized", and the CREATOR_ROOT_KEY and CREATOR_DIV_KEY are no longer accessible to software.
@@ -313,31 +313,37 @@ The table below summarizes the software accessibility of all life cycle collater
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
 
-## Flash Collateral
+## NVM Collateral
 
-The flash contains both memory mapped and non-memory mapped partitions.
-As it pertains to life cycle, the flash contains two sets of important collateral.
+The non-volatile memory (NVM) is the embedded flash in Earl Grey 1.0 (`flash_ctrl`) and the RRAM in Earl Grey 2.0 (`rram_ctrl`).
+Darjeeling does not have an NVM, so this section does not apply to it.
+There, the creator and owner seeds are stored in OTP, and there is no isolated partition.
+The NVM contains both memory mapped and non-memory mapped partitions.
+As it pertains to life cycle, the NVM contains two sets of important collateral.
 They are enumerated in the table below.
 Just as with OTP, the consumer and usage of each is also described.
 
-{{#include lc_ctrl_flash_collateral.md}}
+{{#include lc_ctrl_nvm_collateral.md}}
 
-Each collateral belongs to a separate flash partition, the table below enumerates the partition and whether the partition is memory mapped.
+Each collateral belongs to a separate non-memory mapped NVM partition.
+The table below enumerates the partition in each integration and whether the partition is memory mapped.
 
-{{#include lc_ctrl_flash_partitions.md}}
+{{#include lc_ctrl_nvm_partitions.md}}
 
-The general flash partition refers to any software managed storage in flash, and is not a specific carve out in the non-memory mapped area.
+The general NVM partition refers to any software managed storage in the NVM, and is not a specific carve out in the non-memory mapped area.
+In Earl Grey 2.0, the isolated partition is the `IsolatedInfoPage` of the RRAM.
+The mapping of these info pages to physical RRAM info pages is defined in `rram_ctrl`.
 
-### Flash Accessibility Summary and Impact of Life Cycle Signals
+### NVM Accessibility Summary and Impact of Life Cycle Signals
 
 The creator software is trusted to manage the owner partition (OWNER_DATA).
 As such, OWNER_DATA remains accessible during DEV / PROD / PROD_END / RMA states, irrespective of the device personalization state.
 It is expected that ROM_ext during secure boot programs the protection correctly such that downstream software has appropriate permissions.
 
 The CREATOR_DATA partitions however, are further qualified based on the personalization state of the device.
-Just as with OTP, the table below enumerates accessibility of flash collateral.
+Just as with OTP, the table below enumerates accessibility of NVM collateral.
 
-{{#include lc_ctrl_flash_accessibility.md}}
+{{#include lc_ctrl_nvm_accessibility.md}}
 
 Note that CREATOR_SEED_SW_RW_EN is set to OFF if SECRET2_DIGEST has a nonzero value in PROD, PROD_END and DEV states.
 SEED_HW_RD_EN only becomes active if SECRET2_DIGEST has a nonzero value in DEV, PROD, PROD_END and RMA states.
@@ -360,25 +366,97 @@ I.e., it never returns to the initialization and broadcast states as described i
 The main FSM state is redundantly encoded, and augmented with the life cycle state.
 That augmented state vector is consumed by three combinational submodules:
 - `lc_ctrl_state_decode`: This submodule decodes the redundantly encoded life cycle state, checks that there are no encoding errors and enforces state dependencies as required by the definition. The decoded state is forwarded to the CSRs for SW consumption.
-- `lc_ctrl_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
-- `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) from the augmented state vector.
+- `lc_ctrl_state_transition`: This submodule checks whether the transition target state specified via the CSRs is valid, and computes the redundantly encoded state vector of the transition target state.
+- `lc_ctrl_signal_decode`: This submodule is an output function only and derives the life cycle control signals (colored in blue) and the key manager diversification value from the augmented state vector.
+  Its outputs are registered with `prim_lc_sender` instances before they are broadcast.
 
-Note that the two additional life cycle control signals `lc_nvm_rma_req_o` and `lc_clk_byp_req_o` are output by the main FSM, since they cannot be derived from the life cycle state alone and are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+Note that the three additional life cycle control signals `lc_nvm_rma_req_o`, `lc_clk_byp_req_o` and `lc_check_byp_en_o` are output by the main FSM, since they cannot be derived from the life cycle state alone.
+The first two are reactive in nature in the sense that there is a corresponding acknowledgement signal.
+The main FSM also drives `strap_en_override_o` after a volatile RAW unlock.
 
-The life cycle controller contains a JTAG TAP that can be used to access the same CSR space that is accessible via TL-UL.
-In order to write to the CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed.
+The life cycle controller contains two instances of the same register file.
+The first one is accessible via the `regs_tl` TL-UL port.
+The second one is accessible either via the life cycle JTAG TAP, which consists of a RISC-V DTM and a TL-UL host adapter, or via the `dmi_tl` TL-UL port if `UseDmiInterface = 1'b1`.
+In order to write to the transition interface CSRs, a [hardware mutex](#life-cycle-request-interface) has to be claimed by one of the two sides.
+The transition token register also provides the `lc_nvm_rma_seed_o` output.
+The OTP vendor test interface is only forwarded while `lc_raw_test_rma` is ON.
 
-The life cycle controller also contains two escalation receivers that are connected to escalation severity 1 and 2 of the alert handler module.
+The life cycle controller also contains two escalation receivers that are connected to escalation channels 1 and 2 of the alert handler module.
 The actions that are triggered by these escalation receivers are explained in the [escalation handling section](#escalation-handling) below.
 
 ### System Integration and TAP Isolation
 
-The figure below provides more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
+The subsections below provide more context about how the life cycle controller is integrated into the system, and how its control signals interact with various components.
+The life cycle controller itself is identical in all integrations.
+The integrations mainly differ in the non-volatile memories that store the life cycle state and the secrets protected by it, and in how the debug side accesses the life cycle CSRs.
+The table below summarizes the integrations of the OpenTitan tops.
 
-![LC Controller Block Diagram](../doc/lc_ctrl_system_view.svg)
+Aspect                          | Flash and OTP macro (Earl Grey 1.0)     | RRAM (Earl Grey 2.0)                       | OTP macro only (Darjeeling)
+--------------------------------|-----------------------------------------|--------------------------------------------|-----------------------------------------
+NVM controller                  | `flash_ctrl`                            | `rram_ctrl`                                | None
+OTP storage                     | Dedicated OTP macro                     | Emulated in the RRAM by `rram_ctrl`        | `otp_macro`
+RMA handshake                   | `flash_ctrl` and `otbn`                 | `rram_ctrl` and `otbn`                     | `otbn` only
+`NumRmaAckSigs`                 | 2                                       | 2                                          | 1
+Debug access to the CSRs        | Life cycle JTAG TAP via the pinmux      | Life cycle JTAG TAP via the pinmux         | DMI TL-UL port via `xbar_dbg` (`UseDmiInterface = 1`)
+Vendor test signals             | OTP macro                               | Not connected                              | `otp_macro`
+Clock bypass                    | `clkmgr`                                | `clkmgr`                                   | Looped back, no bypassable clocks
+Creator and owner seeds         | Flash and OTP                           | RRAM info pages and OTP                    | OTP
+Isolated partition              | Flash                                   | RRAM info page                             | None
+
+#### Integration with Flash and an OTP Macro
+
+This integration is used in Earl Grey 1.0, which has `flash_ctrl` with an embedded flash macro and `otp_ctrl` with a dedicated OTP macro.
+
+![LC Controller System View with Flash and OTP Macro](../doc/lc_ctrl_system_flash_otp.svg)
+
+The life cycle state, the transition counter and the transition tokens are stored in the OTP macro and read by `otp_ctrl`.
+`otp_ctrl` consumes `lc_escalate_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_check_byp_en`.
+The test access to the OTP macro is gated with `lc_dft_en`.
+The vendor-specific OTP test signals are forwarded from the life cycle controller CSRs to the OTP macro while `lc_raw_test_rma` is ON.
+
+`flash_ctrl` consumes the access control signals for the seed partitions and the isolated partition.
+It also implements the RMA handshake via `lc_nvm_rma_seed`, `lc_nvm_rma_req` and `lc_nvm_rma_ack`, together with `otbn`.
+The flash macro test TAP is connected to dedicated muxed pins and is gated with `lc_nvm_debug_en`.
 
 Although technically a life cycle feature, the sampling of the strap pins and JTAG / TAP isolation is performed in the pinmux after the life cycle controller has initialized.
 See the [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation) and the detailed selection listed in [Life Cycle Definition Table](../../../../doc/security/specs/device_life_cycle/README.md#manufacturing-states).
+
+#### Integration with RRAM
+
+This integration is used in Earl Grey 2.0, which replaces the flash and the OTP macro with `rram_ctrl` and `rram_macro`.
+
+![LC Controller System View with RRAM](../doc/lc_ctrl_system_rram.svg)
+
+`otp_ctrl` is still the owner of the life cycle state, the transition counter and the transition tokens.
+However, it does not have a dedicated OTP macro.
+Instead, its macro interface is connected to `rram_ctrl`, which emulates the OTP macro in RRAM.
+`otp_ctrl` consumes `lc_escalate_en`, `lc_check_byp_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_rma_state`.
+The vendor-specific OTP test interface of the life cycle controller is not connected.
+
+`rram_ctrl` consumes the access control signals for the seed partitions and the isolated partition.
+It also implements the RMA handshake via `lc_nvm_rma_seed`, `lc_nvm_rma_req` and `lc_nvm_rma_ack`, together with `otbn`.
+
+The strap sampling and TAP isolation in the pinmux work as in the integration with flash and an OTP macro.
+In addition, the RRAM macro test TAP is selected in the pinmux.
+The pinmux only selects it while the `RRAM_JTAG_SEL` CSR is set to True and `lc_nvm_debug_en` is ON.
+`rram_macro` additionally gates the TAP with its own synchronized copy of `lc_nvm_debug_en`.
+
+#### Integration with an OTP Macro Only
+
+This integration is used in Darjeeling, which has `otp_ctrl` with `otp_macro` but no NVM controller.
+
+![LC Controller System View with OTP Macro Only](../doc/lc_ctrl_system_otp.svg)
+
+The life cycle state, the transition counter and the transition tokens are stored in `otp_macro` and read by `otp_ctrl`.
+As there is no NVM, `otp_ctrl` also consumes `lc_owner_seed_sw_rw_en` in addition to `lc_escalate_en`, `lc_check_byp_en`, `lc_seed_hw_rd_en`, `lc_creator_seed_sw_rw_en` and `lc_rma_state`.
+The TL-UL test interface of `otp_macro` is gated with `lc_dft_en`, and the vendor-specific OTP test signals are forwarded to `otp_macro` while `lc_raw_test_rma` is ON.
+
+`otbn` is the only participant of the RMA handshake, hence `NumRmaAckSigs = 1`.
+`lc_nvm_debug_en`, `lc_iso_part_sw_rd_en`, `lc_iso_part_sw_wr_en`, `lc_nvm_rma_seed` and `hw_rev_o` are not connected.
+Since there are no bypassable clocks, `lc_clk_byp_req` is looped back to `lc_clk_byp_ack`.
+
+The debug side accesses the life cycle CSRs via the DMI TL-UL port (`UseDmiInterface = 1`), which is connected to the SoC debug crossbar `xbar_dbg` next to `rv_dm` and `soc_dbg_ctrl`.
+`soc_dbg_ctrl` consumes `lc_raw_test_rma`, `lc_dft_en`, `lc_hw_debug_en`, `lc_cpu_en` and `lc_rma_state`, and `rv_dm` receives `strap_en_override`.
 
 ### Life Cycle Manufacturing State Encodings
 
@@ -449,7 +527,7 @@ A decoded version of this counter is exposed in the [`LC_TRANSITION_CNT`](regist
 
 ### Life Cycle State Controller
 
-The life cycle state controller is the main entity that handles life cycle requests, escalation events and transactions with the OTP and flash controllers.
+The life cycle state controller is the main entity that handles life cycle requests, escalation events and transactions with the OTP and NVM controllers.
 The state diagram for the controller FSM is shown below.
 
 ![LC Controller FSM](../doc/lc_ctrl_fsm.svg)
@@ -467,14 +545,13 @@ Note that an initiated life cycle transition request always ends in `PostTransSt
 
 #### Escalation Handling
 
-The life cycle controller contains two escalation channels that are connected to the alert handler.
+The life cycle controller contains two escalation receivers that are connected to the alert handler (`esc_scrap_state0` and `esc_scrap_state1`).
+Both receivers trigger the same action, so the escalation is still effective if one of the two channels is tampered with.
 
-When the first channel `esc_wipe_secrets` is asserted, the life cycle controller permanently asserts the `lc_escalate_en` life cycle signal.
-That signal is routed to various security modules in OpenTitan and triggers local wiping and invalidation features.
-Note that this first escalation action does not affect the life cycle state.
-
-When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
+When either channel is asserted, the life cycle controller moves the FSM into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
+In `EscalateSt`, the life cycle controller asserts the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals and disables all other life cycle functions except for `lc_init_done`.
+`lc_escalate_en` is routed to various security modules in OpenTitan and triggers local wiping and invalidation features.
 Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals to be asserted.
 
 #### FSM Glitch Countermeasures
