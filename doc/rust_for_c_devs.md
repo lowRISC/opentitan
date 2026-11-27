@@ -294,6 +294,8 @@ Pointers can be dereferenced with the `*ptr` syntax[^32], though this is Unsafe 
 When pointers are dereferenced, they must be well-aligned and point to valid memory, like in C; failure to do so is UB.
 Unlike in C, the address-of operator, `&x`, produces a reference[^33], rather than a pointer.
 `&x as *const T` will create a pointer, instead.
+However, since this cast goes through an intermediate reference, it is undefined behavior if that reference would be invalid (e.g., because the pointee is unaligned or uninitialized).
+In such cases, use the [`std::ptr::addr_of!()`](https://doc.rust-lang.org/std/ptr/macro.addr_of.html) and [`std::ptr::addr_of_mut!()`](https://doc.rust-lang.org/std/ptr/macro.addr_of_mut.html) macros to create a pointer directly.
 
 Pointer dereference is still subject to move semantics, like in normal Rust[^34].
 the `read()` and `write()` methods on pointers can be used to ignore these rules[^35].
@@ -391,7 +393,7 @@ Rust, like C, has macros.
 Rust macros are much more powerful than C macros, and operate on Rust syntax trees, rather than by string replacement.
 Macro calls are differentiated from function calls with a `!` following the macro name.
 For example, `file!()` expands to a string literal with the file name.
-To learn more about macros, see [https://danielkeep.github.io/tlborm/book/index.html](https://danielkeep.github.io/tlborm/book/index.html).
+To learn more about macros, see [The Little Book of Rust Macros](https://veykril.github.io/tlborm/).
 
 
 #### Aliases
@@ -593,12 +595,9 @@ The same caveat applies in C: `volatile uint64_t` will emit multiple accesses on
 
 #### Inline Assembly
 
-Rust does not quite support inline assembly yet.
-Clang's inline assembly syntax is available behind the unstable macro `llvm_asm!()`, which will eventually be replaced with a Rust-specific syntax that better integrates with the language.
+Rust supports inline assembly through the stable macro `asm!()`, whose Rust-specific syntax better integrates with the language than Clang's assembly syntax.
 `global_asm!()` is the same, but usable in global scope, for defining whole functions.
-Naked functions can be created using `#[naked]`. See [https://doc.rust-lang.org/1.8.0/book/inline-assembly.html](https://doc.rust-lang.org/1.8.0/book/inline-assembly.html).
-
-[Note that this syntax is currently in the process of being redesigned and stabilized.](https://blog.rust-lang.org/inside-rust/2020/06/08/new-inline-asm.html)
+Naked functions can be created using `#[naked]`. See [https://doc.rust-lang.org/nomicon/asm.html](https://doc.rust-lang.org/nomicon/asm.html) and [https://doc.rust-lang.org/reference/inline-assembly.html](https://doc.rust-lang.org/reference/inline-assembly.html).
 
 #### Bit Casting
 
@@ -1193,6 +1192,19 @@ while let Some(x) = some_func() {
 }
 ```
 Unlike normal `let` statements, `if let` and `while let` expressions are meant to be used with refutable patterns.
+
+When a failed pattern match should instead exit early from the enclosing function, the `let ... else` construct provides a shorthand:
+```rust
+let Some(x) = my_option else {
+  // The pattern did not match; `x` is not bound here.
+  // This block must diverge: `return`, `break`, `continue`, or `panic!`.
+  return None;
+};
+// On the success path, `x` is bound and execution continues here,
+// without an extra level of indentation.
+do_thing(x);
+```
+Like `if let`, this is intended for use with refutable patterns; unlike `if let`, there is no "else branch" for the success case.
 
 In general, almost every place where a value is bound can be an irrefutable pattern, such as function parameters and `for` loop variables:
 ```rust
@@ -2219,7 +2231,7 @@ Merely materializing an invalid reference is Undefined Behavior, because LLVM wi
 
 [^70]: There's only a couple of dynamically sized types built into the language; user-defined DSTs exist, but they're a very advanced topic.
 
-[^71]: https://doc.rust-lang.org/std/str/index.html
+[^71]: [https://doc.rust-lang.org/std/str/index.html](https://doc.rust-lang.org/std/str/index.html)
 
 [^72]: It should be noted that `a..b` is itself an expression, which creates a `Range<T>` of the chosen numeric type.
 
