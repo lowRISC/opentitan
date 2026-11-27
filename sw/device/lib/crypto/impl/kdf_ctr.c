@@ -169,6 +169,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   // The counter value is updated within the loop
 
   uint32_t tag_data[kHmacMaxDigestWords];
+  uint32_t share0_data[kHmacMaxDigestWords];
 
   for (uint32_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
@@ -201,7 +202,6 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     uint32_t mask_data[kHmacMaxDigestWords];
     hardened_memshred(mask_data, words_to_copy);
 
-    uint32_t share0_data[kHmacMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
 
     HARDENED_TRY(keyblob_write_shares(
@@ -212,6 +212,9 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   }
   HARDENED_CHECK_EQ(words_written, required_word_len);
   HARDENED_CHECK_GT(words_written, 0);
+
+  hardened_memshred(tag_data, digest_word_len);
+  hardened_memshred(share0_data, digest_word_len);
 
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);

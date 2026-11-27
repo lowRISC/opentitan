@@ -575,6 +575,8 @@ otcrypto_status_t otcrypto_ed25519_sign(
       &r1));
   // Finish the execution and retrieve the signature.
   HARDENED_TRY(otcrypto_ed25519_sign_async_finalize(signature));
+  hardened_memshred(r0_data, ARRAYSIZE(r0_data));
+  hardened_memshred(s0_data, ARRAYSIZE(s0_data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -701,6 +703,9 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
   // Start the OTBN keygen app.
   HARDENED_TRY(curve25519_keygen_start(&s));
 
+  hardened_memshred(key_digest_data, ARRAYSIZE(key_digest_data));
+  hardened_memshred(s.share0, ARRAYSIZE(s.share0));
+  hardened_memshred(s.share1, ARRAYSIZE(s.share1));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -818,6 +823,12 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
   // Start the OTBN sign stage 1 app.
   HARDENED_TRY(curve25519_sign_stage1_start(&r, &s));
 
+  hardened_memshred(key_digest_data, ARRAYSIZE(key_digest_data));
+  hardened_memshred(msg_digest_data, ARRAYSIZE(msg_digest_data));
+  hardened_memshred(s.share0, ARRAYSIZE(s.share0));
+  hardened_memshred(s.share1, ARRAYSIZE(s.share1));
+  hardened_memshred(r.share0, ARRAYSIZE(r.share0));
+  hardened_memshred(r.share1, ARRAYSIZE(r.share1));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -889,6 +900,10 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   // Start the OTBN sign stage 2 app.
   HARDENED_TRY(curve25519_sign_stage2_start(challenge_digest.data, &r, &s));
 
+  hardened_memshred(s.share0, ARRAYSIZE(s.share0));
+  hardened_memshred(s.share1, ARRAYSIZE(s.share1));
+  hardened_memshred(r.share0, ARRAYSIZE(r.share0));
+  hardened_memshred(r.share1, ARRAYSIZE(r.share1));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 

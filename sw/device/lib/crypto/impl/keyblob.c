@@ -334,7 +334,9 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   uint32_t share0[kOtcryptoWrappedKeyMaxWords];
   HARDENED_TRY(hardened_xor(key, mask, key_words, share0));
 
-  return keyblob_from_shares(share0, mask, config, keyblob);
+  HARDENED_TRY(keyblob_from_shares(share0, mask, config, keyblob));
+  hardened_memshred(share0, key_words);
+  return OTCRYPTO_OK;
 }
 
 status_t keyblob_remask(otcrypto_blinded_key_t *key) {
