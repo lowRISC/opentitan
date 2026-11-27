@@ -31,8 +31,8 @@ Finally, we provide the same set of information for all available [top level des
 ## Processor cores
 
 * `core_ibex`
-  * [User manual](https://ibex-core.readthedocs.io/en/latest)
-  * [DV document](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html)
+  * [User manual](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0)
+  * [DV document](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification.html)
   * DV simulation results, with coverage (nightly) (TBD)
 
 ## Earl Grey top-level
