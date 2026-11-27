@@ -1,0 +1,817 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "cheriot_mem_sys"
+  // The planned functional checks of the CHERIoT memory subsystem FPV environment. A
+  // testpoint lists its requirements under `features`; each is defined, with its
+  // sources and the reason its checks prove it, in cheriot_mem_sys_fpv_requirements.hjson. A
+  // check row may also decide a requirement of another testpoint, which then says so.
+  testpoints: [
+    {
+      name: tf_forward
+      desc: '''Every core access reaches the host port once, unchanged, in the cycle the core presents it.
+Its answer carries the host answer's fields when its last part arrives.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | forwarded unchanged: `assert_TfForward_ForwardedUnchanged` | forward | [REQ_TF_01b](../doc/fpv/requirements.md#req_tf_01b), [REQ_TF_01e](../doc/fpv/requirements.md#req_tf_01e), [REQ_TF_01f](../doc/fpv/requirements.md#req_tf_01f), [REQ_TF_01g](../doc/fpv/requirements.md#req_tf_01g), [REQ_TF_01h](../doc/fpv/requirements.md#req_tf_01h), [REQ_TF_01i](../doc/fpv/requirements.md#req_tf_01i), [REQ_TF_01j](../doc/fpv/requirements.md#req_tf_01j), [REQ_TF_16a](../doc/fpv/requirements.md#req_tf_16a), [REQ_WTRC_13a](../doc/fpv/requirements.md#req_wtrc_13a), [REQ_WTRC_13b](../doc/fpv/requirements.md#req_wtrc_13b), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | no extra host request: `assert_TfForward_NoExtraHostRequest` | backward | [REQ_TF_01d](../doc/fpv/requirements.md#req_tf_01d), [REQ_TF_01c](../doc/fpv/requirements.md#req_tf_01c) |
+            | accepted after forwarded: `assert_TfForward_AcceptedAfterForwarded` | forward | [REQ_TF_01a](../doc/fpv/requirements.md#req_tf_01a) |
+            | answer has host fields: `assert_TfForward_AnswerHasHostFields` | forward | [REQ_TF_07a](../doc/fpv/requirements.md#req_tf_07a), [REQ_TF_07b](../doc/fpv/requirements.md#req_tf_07b), [REQ_TF_07c](../doc/fpv/requirements.md#req_tf_07c), [REQ_TF_07d](../doc/fpv/requirements.md#req_tf_07d), [REQ_TF_07e](../doc/fpv/requirements.md#req_tf_07e), [REQ_TF_07f](../doc/fpv/requirements.md#req_tf_07f) |
+            | answer on last part: `assert_TfForward_AnswerOnLastPart` | forward | [REQ_TF_16b](../doc/fpv/requirements.md#req_tf_16b), [REQ_WTRC_13b](../doc/fpv/requirements.md#req_wtrc_13b) |
+
+            18 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_01a", "REQ_TF_01d", "REQ_TF_01c", "REQ_TF_01b", "REQ_TF_01e", "REQ_TF_01f", "REQ_TF_01g", "REQ_TF_01h", "REQ_TF_01i", "REQ_TF_01j", "REQ_TF_07a", "REQ_TF_07b", "REQ_TF_07c", "REQ_TF_07d", "REQ_TF_07e", "REQ_TF_07f", "REQ_TF_16a", "REQ_TF_16b"]
+    }
+    {
+      name: tf_lookup
+      desc: '''A request that needs a lookup issues exactly one meta request, in the same cycle.
+Every other request issues none.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | lookup in same cycle: `assert_TfLookup_LookupInSameCycle` | forward | [REQ_TF_02a](../doc/fpv/requirements.md#req_tf_02a), [REQ_TF_03a](../doc/fpv/requirements.md#req_tf_03a), [REQ_TF_16c](../doc/fpv/requirements.md#req_tf_16c), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | no unneeded lookup: `assert_TfLookup_NoUnneededLookup` | backward | [REQ_TF_02b](../doc/fpv/requirements.md#req_tf_02b), [REQ_TF_03b](../doc/fpv/requirements.md#req_tf_03b), [REQ_TF_04a](../doc/fpv/requirements.md#req_tf_04a), [REQ_TF_04b](../doc/fpv/requirements.md#req_tf_04b), [REQ_WTRC_06b](../doc/fpv/requirements.md#req_wtrc_06b), [REQ_WTRC_08b](../doc/fpv/requirements.md#req_wtrc_08b), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | lookup carries valid integrity: `assert_TfLookup_LookupCarriesValidIntegrity` | forward | [REQ_TF_17](../doc/fpv/requirements.md#req_tf_17) |
+
+            8 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_02a", "REQ_TF_02b", "REQ_TF_03a", "REQ_TF_03b", "REQ_TF_04a", "REQ_TF_04b", "REQ_TF_16c", "REQ_TF_17"]
+    }
+    {
+      name: tf_meta_request
+      desc: '''Each meta request names the right tag word and bit, and a write asks for the tag its sideband carries.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | tag word and bit: `assert_TfMetaRequest_TagWordAndBit` | forward | [REQ_TF_05a](../doc/fpv/requirements.md#req_tf_05a), [REQ_TF_05b](../doc/fpv/requirements.md#req_tf_05b), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | write carries its tag: `assert_TfMetaRequest_WriteCarriesItsTag` | forward | [REQ_TF_06a](../doc/fpv/requirements.md#req_tf_06a), [REQ_TF_06b](../doc/fpv/requirements.md#req_tf_06b), [REQ_TF_06c](../doc/fpv/requirements.md#req_tf_06c), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03) |
+            | Get only for a read: `assert_TfMetaRequest_GetOnlyForARead` | forward | [REQ_TF_06a](../doc/fpv/requirements.md#req_tf_06a), [REQ_TF_06b](../doc/fpv/requirements.md#req_tf_06b), [REQ_TF_06c](../doc/fpv/requirements.md#req_tf_06c), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03) |
+
+            5 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_05a", "REQ_TF_05b", "REQ_TF_06a", "REQ_TF_06b", "REQ_TF_06c"]
+    }
+    {
+      name: tf_sticky_tag
+      desc: '''The tag returned with each answer is the meta tag for W0 of a capability load, the captured tag for the W1 after it, and 0 for every other answer.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | answer tag follows rule: `assert_TfStickyTag_AnswerTagFollowsRule` | forward | [REQ_TF_08](../doc/fpv/requirements.md#req_tf_08), [REQ_TF_09](../doc/fpv/requirements.md#req_tf_09), [REQ_TF_10](../doc/fpv/requirements.md#req_tf_10), [REQ_TF_11a](../doc/fpv/requirements.md#req_tf_11a), [REQ_TF_11b](../doc/fpv/requirements.md#req_tf_11b), [REQ_TF_11c](../doc/fpv/requirements.md#req_tf_11c), [REQ_TF_11d](../doc/fpv/requirements.md#req_tf_11d), [REQ_TF_18a](../doc/fpv/requirements.md#req_tf_18a), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | untagged answer carries MuBi4False: `assert_TfStickyTag_UntaggedAnswerCarriesMuBi4False` | forward | [REQ_TF_18b](../doc/fpv/requirements.md#req_tf_18b) |
+
+            9 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_08", "REQ_TF_09", "REQ_TF_10", "REQ_TF_11a", "REQ_TF_11b", "REQ_TF_11c", "REQ_TF_11d", "REQ_TF_18a", "REQ_TF_18b"]
+    }
+    {
+      name: tf_errors
+      desc: '''An error in the host or the meta answer reaches the core, no error is invented, and a merged error keeps the integrity valid or broken as it was.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | error when a part has one: `assert_TfErrors_ErrorWhenAPartHasOne` | forward | [REQ_TF_12a](../doc/fpv/requirements.md#req_tf_12a), [REQ_TF_12c](../doc/fpv/requirements.md#req_tf_12c) |
+            | no error without a cause: `assert_TfErrors_NoErrorWithoutACause` | backward | [REQ_TF_12b](../doc/fpv/requirements.md#req_tf_12b) |
+            | merged error keeps integrity: `assert_TfErrors_MergedErrorKeepsIntegrity` | forward | [REQ_TF_13a](../doc/fpv/requirements.md#req_tf_13a), [REQ_TF_13b](../doc/fpv/requirements.md#req_tf_13b) |
+
+            5 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_12a", "REQ_TF_12c", "REQ_TF_12b", "REQ_TF_13a", "REQ_TF_13b"]
+    }
+    {
+      name: tf_flow
+      desc: '''Meta answers are always taken, and every request is accepted and answered exactly once.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | meta answer taken: `assert_TfFlow_MetaAnswerTaken` | safety | [REQ_TF_14](../doc/fpv/requirements.md#req_tf_14), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+            | no extra answer: `assert_TfFlow_NoExtraAnswer` | backward | [REQ_TF_15c](../doc/fpv/requirements.md#req_tf_15c), [REQ_WTRC_05a](../doc/fpv/requirements.md#req_wtrc_05a) |
+            | request eventually accepted: `assert_TfFlow_RequestEventuallyAccepted` | liveness | [REQ_TF_15a](../doc/fpv/requirements.md#req_tf_15a), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+            | request eventually answered: `assert_TfFlow_RequestEventuallyAnswered` | liveness | [REQ_TF_15b](../doc/fpv/requirements.md#req_tf_15b), [REQ_WTRC_05a](../doc/fpv/requirements.md#req_wtrc_05a), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+
+            4 [requirements](../doc/fpv/requirements.md#tag-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TF_14", "REQ_TF_15a", "REQ_TF_15b", "REQ_TF_15c"]
+    }
+    {
+      name: wtrc_store
+      desc: '''A capability store to the NVM goes out as a `Get`, makes no lookup, and each word receives one untagged `AccessAck`.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | sent as a full-word Get: `assert_WtrcStore_SentAsAFullWordGet` | forward | [REQ_WTRC_01](../doc/fpv/requirements.md#req_wtrc_01) |
+            | Get has valid command integrity: `assert_WtrcStore_GetHasValidCommandIntegrity` | forward | [REQ_WTRC_02](../doc/fpv/requirements.md#req_wtrc_02) |
+            | no lookup for a capability store: `assert_WtrcStore_NoLookupForACapabilityStore` | backward | [REQ_WTRC_03a](../doc/fpv/requirements.md#req_wtrc_03a), [REQ_WTRC_03b](../doc/fpv/requirements.md#req_wtrc_03b) |
+            | untagged AccessAck answer: `assert_WtrcStore_UntaggedAccessAckAnswer` | forward | [REQ_WTRC_05b](../doc/fpv/requirements.md#req_wtrc_05b), [REQ_WTRC_05c](../doc/fpv/requirements.md#req_wtrc_05c), [REQ_WTRC_05d](../doc/fpv/requirements.md#req_wtrc_05d), [REQ_WTRC_05e](../doc/fpv/requirements.md#req_wtrc_05e) |
+
+            11 [requirements](../doc/fpv/requirements.md#wtrc) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_WTRC_01", "REQ_WTRC_02", "REQ_WTRC_03a", "REQ_WTRC_03b", "REQ_WTRC_05a", "REQ_WTRC_05b", "REQ_WTRC_05c", "REQ_WTRC_05d", "REQ_WTRC_05e", "REQ_WTRC_13a", "REQ_WTRC_13b"]
+    }
+    {
+      name: wtrc_compare
+      desc: '''The tag is set only when both words match the NVM, after W1's NVM answer and ahead of any later lookup.
+A mismatch gives an error and no alert.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | W0 error on mismatch: `assert_WtrcCompare_W0ErrorOnMismatch` | both | [REQ_WTRC_04a](../doc/fpv/requirements.md#req_wtrc_04a), [REQ_WTRC_04b](../doc/fpv/requirements.md#req_wtrc_04b) |
+            | only the owed tag write: `assert_WtrcCompare_OnlyTheOwedTagWrite` | forward | [REQ_WTRC_06a](../doc/fpv/requirements.md#req_wtrc_06a), [REQ_WTRC_06b](../doc/fpv/requirements.md#req_wtrc_06b), [REQ_WTRC_06c](../doc/fpv/requirements.md#req_wtrc_06c) |
+            | W1 answered after tag write: `assert_WtrcCompare_W1AnsweredAfterTagWrite` | forward | [REQ_WTRC_06a](../doc/fpv/requirements.md#req_wtrc_06a), [REQ_WTRC_07a](../doc/fpv/requirements.md#req_wtrc_07a), [REQ_WTRC_07b](../doc/fpv/requirements.md#req_wtrc_07b) |
+            | W1 error on mismatch: `assert_WtrcCompare_W1ErrorOnMismatch` | forward | [REQ_WTRC_08a](../doc/fpv/requirements.md#req_wtrc_08a), [REQ_WTRC_08b](../doc/fpv/requirements.md#req_wtrc_08b) |
+            | no alert without a cause: `assert_WtrcCompare_NoAlertWithoutACause` | backward | [REQ_WTRC_09](../doc/fpv/requirements.md#req_wtrc_09) |
+            | answer after NVM answer: `assert_WtrcCompare_AnswerAfterNvmAnswer` | backward | [REQ_WTRC_04a](../doc/fpv/requirements.md#req_wtrc_04a) |
+
+            10 [requirements](../doc/fpv/requirements.md#wtrc) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_WTRC_04a", "REQ_WTRC_04b", "REQ_WTRC_06a", "REQ_WTRC_06b", "REQ_WTRC_06c", "REQ_WTRC_07a", "REQ_WTRC_07b", "REQ_WTRC_08a", "REQ_WTRC_08b", "REQ_WTRC_09"]
+    }
+    {
+      name: wtrc_faults
+      desc: '''A word of a capability store that has a bad integrity code, is partial or is out of sequence is answered with an error, writes no tag and raises the fatal alert.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | faulty word answered with error: `assert_WtrcFaults_FaultyWordAnsweredWithError` | forward | [REQ_WTRC_10a](../doc/fpv/requirements.md#req_wtrc_10a) |
+            | faulty word raises alert: `assert_WtrcFaults_FaultyWordRaisesAlert` | liveness | [REQ_WTRC_11](../doc/fpv/requirements.md#req_wtrc_11) |
+            | other request out of sequence raises alert: `assert_WtrcFaults_OtherRequestOutOfSequenceRaisesAlert` | liveness | [REQ_WTRC_12](../doc/fpv/requirements.md#req_wtrc_12) |
+            | other answer passes unchanged: `assert_WtrcFaults_OtherAnswerPassesUnchanged` | forward | [REQ_WTRC_14a](../doc/fpv/requirements.md#req_wtrc_14a) |
+            | answer goes to its own access: `assert_WtrcFaults_AnswerGoesToItsOwnAccess` | forward | [REQ_WTRC_14b](../doc/fpv/requirements.md#req_wtrc_14b) |
+            | matched store after fault sets tag: `assert_WtrcFaults_MatchedStoreAfterFaultSetsTag` | forward | [REQ_WTRC_15](../doc/fpv/requirements.md#req_wtrc_15) |
+            | tag write only for matched pair: `assert_WtrcFaults_TagWriteOnlyForMatchedPair` | backward | [REQ_WTRC_10b](../doc/fpv/requirements.md#req_wtrc_10b), [REQ_WTRC_16](../doc/fpv/requirements.md#req_wtrc_16) |
+            | store W1 answered: `assert_WtrcFaults_StoreW1Answered` | liveness | [REQ_WTRC_15](../doc/fpv/requirements.md#req_wtrc_15), [REQ_WTRC_17](../doc/fpv/requirements.md#req_wtrc_17) |
+            | unmatched store after fault errors: `assert_WtrcFaults_UnmatchedStoreAfterFaultErrors` | forward | [REQ_WTRC_17](../doc/fpv/requirements.md#req_wtrc_17) |
+
+            9 [requirements](../doc/fpv/requirements.md#wtrc) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_WTRC_10a", "REQ_WTRC_10b", "REQ_WTRC_11", "REQ_WTRC_12", "REQ_WTRC_14a", "REQ_WTRC_14b", "REQ_WTRC_15", "REQ_WTRC_17", "REQ_WTRC_16"]
+    }
+    {
+      name: arb_forward
+      desc: '''Each request leaves the arbiter once, unchanged, with its own tag and bit select and its input number added to the source ID.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | keeps its own sideband: `assert_ArbForward_KeepsItsOwnSideband` | forward | [REQ_ARB_01a](../doc/fpv/requirements.md#req_arb_01a), [REQ_ARB_03a](../doc/fpv/requirements.md#req_arb_03a), [REQ_ARB_03b](../doc/fpv/requirements.md#req_arb_03b), [REQ_ARB_03c](../doc/fpv/requirements.md#req_arb_03c), [REQ_ARB_03d](../doc/fpv/requirements.md#req_arb_03d), [REQ_ARB_03e](../doc/fpv/requirements.md#req_arb_03e), [REQ_ARB_03f](../doc/fpv/requirements.md#req_arb_03f), [REQ_ARB_04a](../doc/fpv/requirements.md#req_arb_04a), [REQ_ARB_04b](../doc/fpv/requirements.md#req_arb_04b), [REQ_ARB_06](../doc/fpv/requirements.md#req_arb_06), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | from the named input: `assert_ArbForward_FromTheNamedInput` | backward | [REQ_ARB_01b](../doc/fpv/requirements.md#req_arb_01b), [REQ_ARB_02](../doc/fpv/requirements.md#req_arb_02), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | core request unchanged: `assert_ArbForward_CoreRequestUnchanged` | forward | [REQ_ARB_11](../doc/fpv/requirements.md#req_arb_11), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04) |
+
+            12 [requirements](../doc/fpv/requirements.md#21-tag-arbiter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_ARB_01a", "REQ_ARB_01b", "REQ_ARB_02", "REQ_ARB_03a", "REQ_ARB_03b", "REQ_ARB_03c", "REQ_ARB_03d", "REQ_ARB_03e", "REQ_ARB_03f", "REQ_ARB_04a", "REQ_ARB_04b", "REQ_ARB_11"]
+    }
+    {
+      name: arb_return
+      desc: '''Each answer goes back only to the input that asked, with its source ID restored and every other field unchanged.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | answer to its input: `assert_ArbReturn_AnswerToItsInput` | backward | [REQ_ARB_05b](../doc/fpv/requirements.md#req_arb_05b), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | taken with its input: `assert_ArbReturn_TakenWithItsInput` | both | [REQ_ARB_05a](../doc/fpv/requirements.md#req_arb_05a), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | source shifted back: `assert_ArbReturn_SourceShiftedBack` | forward | [REQ_ARB_06](../doc/fpv/requirements.md#req_arb_06) |
+            | fields unchanged: `assert_ArbReturn_FieldsUnchanged` | forward | [REQ_ARB_07a](../doc/fpv/requirements.md#req_arb_07a), [REQ_ARB_07b](../doc/fpv/requirements.md#req_arb_07b), [REQ_ARB_07c](../doc/fpv/requirements.md#req_arb_07c), [REQ_ARB_07d](../doc/fpv/requirements.md#req_arb_07d), [REQ_ARB_07e](../doc/fpv/requirements.md#req_arb_07e), [REQ_ARB_07f](../doc/fpv/requirements.md#req_arb_07f), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+
+            9 [requirements](../doc/fpv/requirements.md#21-tag-arbiter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_ARB_05a", "REQ_ARB_05b", "REQ_ARB_06", "REQ_ARB_07a", "REQ_ARB_07b", "REQ_ARB_07c", "REQ_ARB_07d", "REQ_ARB_07e", "REQ_ARB_07f"]
+    }
+    {
+      name: arb_flow
+      desc: '''Requests and answers pass in the same cycle, and neither input waits forever.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | alone in same cycle: `assert_ArbFlow_AloneInSameCycle` | forward | [REQ_ARB_09](../doc/fpv/requirements.md#req_arb_09), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | answer at once: `assert_ArbFlow_AnswerAtOnce` | forward | [REQ_ARB_10](../doc/fpv/requirements.md#req_arb_10) |
+            | no starvation: `assert_ArbFlow_NoStarvation` | liveness | [REQ_ARB_08](../doc/fpv/requirements.md#req_arb_08), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+
+            3 [requirements](../doc/fpv/requirements.md#21-tag-arbiter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_ARB_08", "REQ_ARB_09", "REQ_ARB_10"]
+    }
+    {
+      name: rmw_read
+      desc: '''A read fetches its meta word and returns the right bit.
+Back-to-back reads run at one per cycle.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | Get of its meta word: `assert_RmwRead_GetOfItsMetaWord` | forward | [REQ_RMW_01](../doc/fpv/requirements.md#req_rmw_01), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | returns its tag bit: `assert_RmwRead_ReturnsItsTagBit` | forward | [REQ_RMW_02](../doc/fpv/requirements.md#req_rmw_02), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | back-to-back read accepted: `assert_RmwRead_BackToBackReadAccepted` | forward | [REQ_RMW_11](../doc/fpv/requirements.md#req_rmw_11) |
+            | Get carries valid integrity: `assert_RmwRead_GetCarriesValidIntegrity` | forward | [REQ_RMW_18](../doc/fpv/requirements.md#req_rmw_18) |
+
+            4 [requirements](../doc/fpv/requirements.md#rmw-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_RMW_01", "REQ_RMW_02", "REQ_RMW_11", "REQ_RMW_18"]
+    }
+    {
+      name: rmw_write_skip
+      desc: '''A write reads its word first.
+If the bit already equals the tag it skips the write-back and answers with an `AccessAck`.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | full-word Get first: `assert_RmwWriteSkip_FullWordGetFirst` | forward | [REQ_RMW_03](../doc/fpv/requirements.md#req_rmw_03), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | no write-back: `assert_RmwWriteSkip_NoWriteBack` | backward | [REQ_RMW_04](../doc/fpv/requirements.md#req_rmw_04) |
+            | answered with AccessAck: `assert_RmwWriteSkip_AnsweredWithAccessAck` | forward | [REQ_RMW_05](../doc/fpv/requirements.md#req_rmw_05) |
+            | answer after Get answer: `assert_RmwWriteSkip_AnswerAfterGetAnswer` | backward | [REQ_RMW_03](../doc/fpv/requirements.md#req_rmw_03), [REQ_RMW_05](../doc/fpv/requirements.md#req_rmw_05), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+
+            3 [requirements](../doc/fpv/requirements.md#rmw-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_RMW_03", "REQ_RMW_04", "REQ_RMW_05"]
+    }
+    {
+      name: rmw_write_back
+      desc: '''A changed bit is written back alone, as a full-word `PutFullData` with fresh integrity, and its answer is passed up.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | carries the updated word: `assert_RmwWriteBack_CarriesTheUpdatedWord` | forward | [REQ_RMW_06a](../doc/fpv/requirements.md#req_rmw_06a), [REQ_RMW_06b](../doc/fpv/requirements.md#req_rmw_06b), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | full-word Put to same word: `assert_RmwWriteBack_FullWordPutToSameWord` | forward | [REQ_RMW_07a](../doc/fpv/requirements.md#req_rmw_07a), [REQ_RMW_07b](../doc/fpv/requirements.md#req_rmw_07b), [REQ_RMW_07c](../doc/fpv/requirements.md#req_rmw_07c), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | write-back answer passed up: `assert_RmwWriteBack_WriteBackAnswerPassedUp` | forward | [REQ_RMW_08](../doc/fpv/requirements.md#req_rmw_08) |
+            | keeps the write's source: `assert_RmwWriteBack_KeepsTheWritesSource` | forward | [REQ_RMW_09](../doc/fpv/requirements.md#req_rmw_09) |
+
+            7 [requirements](../doc/fpv/requirements.md#rmw-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_RMW_06a", "REQ_RMW_06b", "REQ_RMW_07a", "REQ_RMW_07b", "REQ_RMW_07c", "REQ_RMW_08", "REQ_RMW_09"]
+    }
+    {
+      name: rmw_single_op
+      desc: '''The RMW filter does one operation at a time, answers every request once and sends nothing else to the meta SRAM.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | one operation at a time: `assert_RmwSingleOp_OneOperationAtATime` | backward | [REQ_RMW_10](../doc/fpv/requirements.md#req_rmw_10), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | nothing else downstream: `assert_RmwSingleOp_NothingElseDownstream` | backward | [REQ_RMW_16a](../doc/fpv/requirements.md#req_rmw_16a), [REQ_RMW_16b](../doc/fpv/requirements.md#req_rmw_16b), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | one answer per operation: `assert_RmwSingleOp_OneAnswerPerOperation` | backward | [REQ_RMW_15b](../doc/fpv/requirements.md#req_rmw_15b), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+            | every operation answered: `assert_RmwSingleOp_EveryOperationAnswered` | liveness | [REQ_RMW_15a](../doc/fpv/requirements.md#req_rmw_15a), [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+
+            5 [requirements](../doc/fpv/requirements.md#rmw-filter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_RMW_10", "REQ_RMW_15a", "REQ_RMW_15b", "REQ_RMW_16a", "REQ_RMW_16b"]
+    }
+    {
+      name: rmw_errors
+      desc: '''A device error aborts the write-back and reaches the requester.
+No error is invented.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | Get error stops the write: `assert_RmwErrors_GetErrorStopsTheWrite` | backward | [REQ_RMW_13](../doc/fpv/requirements.md#req_rmw_13) |
+            | error passed up: `assert_RmwErrors_ErrorPassedUp` | forward | [REQ_RMW_14](../doc/fpv/requirements.md#req_rmw_14) |
+            | no error without a cause: `assert_RmwErrors_NoErrorWithoutACause` | backward | [REQ_RMW_17](../doc/fpv/requirements.md#req_rmw_17) |
+
+            3 [requirements](../doc/fpv/requirements.md#rmw-filter) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_RMW_13", "REQ_RMW_14", "REQ_RMW_17"]
+    }
+    {
+      name: tag_alerts
+      desc: '''A device error or an integrity fault on the tag path, or a core request with an invalid tag sideband, raises the fatal alert.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | device error raises alert: `assert_TagAlerts_DeviceErrorRaisesAlert` | liveness | [REQ_TAG_07](../doc/fpv/requirements.md#req_tag_07), [REQ_TBRE_33b](../doc/fpv/requirements.md#req_tbre_33b) |
+            | integrity fault raises alert: `assert_TagAlerts_IntegrityFaultRaisesAlert` | liveness | [REQ_TAG_08](../doc/fpv/requirements.md#req_tag_08) |
+            | invalid request tag raises alert: `assert_TagAlerts_InvalidRequestTagRaisesAlert` | liveness | [REQ_TAG_12](../doc/fpv/requirements.md#req_tag_12) |
+            | invalid tag fault has a cause: `assert_TagAlerts_InvalidTagFaultHasACause` | backward | [REQ_ALT_05](../doc/fpv/requirements.md#req_alt_05) |
+
+            3 [requirements](../doc/fpv/requirements.md#tag-path-alerts) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2S
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TAG_07", "REQ_TAG_08", "REQ_TAG_12"]
+    }
+    {
+      name: meta_forward
+      desc: '''A legal request reaches `meta_sram_tl` once, and every field except its source ID is unchanged.
+When no other port presents a request, the legal request arrives in the cycle in which it is presented.
+Nothing else reaches `meta_sram_tl`.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | legal request forwarded: `assert_MetaForward_LegalRequestForwarded` | forward | [REQ_META_01a](../doc/fpv/requirements.md#req_meta_01a), [REQ_META_02a](../doc/fpv/requirements.md#req_meta_02a), [REQ_META_02b](../doc/fpv/requirements.md#req_meta_02b), [REQ_META_02c](../doc/fpv/requirements.md#req_meta_02c), [REQ_META_02d](../doc/fpv/requirements.md#req_meta_02d), [REQ_META_02e](../doc/fpv/requirements.md#req_meta_02e), [REQ_META_02f](../doc/fpv/requirements.md#req_meta_02f), [REQ_META_02g](../doc/fpv/requirements.md#req_meta_02g), [REQ_META_14](../doc/fpv/requirements.md#req_meta_14), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | no extra meta SRAM request: `assert_MetaForward_NoExtraMetaSramRequest` | backward | [REQ_META_01b](../doc/fpv/requirements.md#req_meta_01b), [REQ_META_08](../doc/fpv/requirements.md#req_meta_08), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02), [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+
+            11 [requirements](../doc/fpv/requirements.md#access-checkers) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_META_01a", "REQ_META_01b", "REQ_META_02a", "REQ_META_02b", "REQ_META_02c", "REQ_META_02d", "REQ_META_02e", "REQ_META_02f", "REQ_META_02g", "REQ_META_08", "REQ_META_14"]
+    }
+    {
+      name: meta_refuse
+      desc: '''A request that is not legal never reaches `meta_sram_tl`.
+It receives exactly one error answer, with `d_error` set and a valid integrity.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | in own region: `assert_MetaRefuse_InOwnRegion` | backward | [REQ_META_03](../doc/fpv/requirements.md#req_meta_03) |
+            | only in CHERIoT mode: `assert_MetaRefuse_OnlyInCHERIoTMode` | backward | [REQ_META_04](../doc/fpv/requirements.md#req_meta_04) |
+            | only full words: `assert_MetaRefuse_OnlyFullWords` | backward | [REQ_META_05](../doc/fpv/requirements.md#req_meta_05) |
+            | only Get or PutFullData: `assert_MetaRefuse_OnlyGetOrPutFullData` | backward | [REQ_META_06](../doc/fpv/requirements.md#req_meta_06) |
+            | illegal request gets error: `assert_MetaRefuse_IllegalRequestGetsError` | forward | [REQ_META_07c](../doc/fpv/requirements.md#req_meta_07c) |
+            | error answer carries valid integrity: `assert_MetaRefuse_ErrorAnswerCarriesValidIntegrity` | forward | [REQ_META_16a](../doc/fpv/requirements.md#req_meta_16a), [REQ_META_16b](../doc/fpv/requirements.md#req_meta_16b) |
+
+            9 [requirements](../doc/fpv/requirements.md#access-checkers) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_META_03", "REQ_META_04", "REQ_META_05", "REQ_META_06", "REQ_META_07a", "REQ_META_07b", "REQ_META_07c", "REQ_META_16a", "REQ_META_16b"]
+    }
+    {
+      name: meta_return
+      desc: '''Each answer of the meta SRAM reaches only the requester port that sent the request, in the cycle in which the answer arrives.
+Its source ID is shifted back, and every other field is unchanged.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | answer to its port: `assert_MetaReturn_AnswerToItsPort` | forward | [REQ_META_09a](../doc/fpv/requirements.md#req_meta_09a), [REQ_META_15](../doc/fpv/requirements.md#req_meta_15), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | source shifted back: `assert_MetaReturn_SourceShiftedBack` | forward | [REQ_META_10](../doc/fpv/requirements.md#req_meta_10), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | fields unchanged: `assert_MetaReturn_FieldsUnchanged` | forward | [REQ_META_11a](../doc/fpv/requirements.md#req_meta_11a), [REQ_META_11b](../doc/fpv/requirements.md#req_meta_11b), [REQ_META_11c](../doc/fpv/requirements.md#req_meta_11c), [REQ_META_11d](../doc/fpv/requirements.md#req_meta_11d), [REQ_META_11e](../doc/fpv/requirements.md#req_meta_11e), [REQ_META_11f](../doc/fpv/requirements.md#req_meta_11f), [REQ_META_11g](../doc/fpv/requirements.md#req_meta_11g), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | taken with its port: `assert_MetaReturn_TakenWithItsPort` | forward | [REQ_META_09a](../doc/fpv/requirements.md#req_meta_09a), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+            | only the meta SRAM's answer: `assert_MetaReturn_OnlyTheMetaSRAMsAnswer` | backward | [REQ_META_09b](../doc/fpv/requirements.md#req_meta_09b), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) |
+
+            11 [requirements](../doc/fpv/requirements.md#41-arbiter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V1
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_META_09a", "REQ_META_09b", "REQ_META_10", "REQ_META_11a", "REQ_META_11b", "REQ_META_11c", "REQ_META_11d", "REQ_META_11e", "REQ_META_11f", "REQ_META_11g", "REQ_META_15"]
+    }
+    {
+      name: meta_flow
+      desc: '''The 4:1 arbiter forwards requests in round-robin order.
+Every request held on a requester port is accepted, and every accepted request is answered exactly once.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | round robin bound: `assert_MetaFlow_RoundRobinBound` | safety | [REQ_META_12](../doc/fpv/requirements.md#req_meta_12) |
+            | no extra answer: `assert_MetaFlow_NoExtraAnswer` | safety | [REQ_META_07b](../doc/fpv/requirements.md#req_meta_07b), [REQ_META_13b](../doc/fpv/requirements.md#req_meta_13b) |
+            | request eventually answered: `assert_MetaFlow_RequestEventuallyAnswered` | liveness | [REQ_META_07a](../doc/fpv/requirements.md#req_meta_07a), [REQ_META_13a](../doc/fpv/requirements.md#req_meta_13a) |
+            | request eventually accepted: `assert_MetaFlow_RequestEventuallyAccepted` | liveness | [REQ_META_12](../doc/fpv/requirements.md#req_meta_12) |
+
+            3 [requirements](../doc/fpv/requirements.md#41-arbiter) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_META_12", "REQ_META_13a", "REQ_META_13b"]
+    }
+    {
+      name: tag_isolation
+      desc: '''Only the tag port reaches the capability tag regions, and only in CHERIoT mode.
+The other three requester ports never reach them.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | tag port in tag regions: `assert_TagIsolation_TagPortInTagRegions` | backward | [REQ_TAG_05](../doc/fpv/requirements.md#req_tag_05) |
+            | tag port only in CHERIoT mode: `assert_TagIsolation_TagPortOnlyInCHERIoTMode` | backward | [REQ_TAG_06](../doc/fpv/requirements.md#req_tag_06) |
+            | other ports never reach tags: `assert_TagIsolation_OtherPortsNeverReachTags` | backward | [REQ_TAG_11](../doc/fpv/requirements.md#req_tag_11), [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01), [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04) |
+
+            3 [requirements](../doc/fpv/requirements.md#tag-store-isolation) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TAG_05", "REQ_TAG_06", "REQ_TAG_11"]
+    }
+    {
+      name: tbre_start
+      desc: '''A taken start makes the engine active.
+An ignored start leaves `TBRE_REGWEN`, `TBRE_STATUS.busy` and `TBRE_EPOCH` unchanged and sets `start_err`.
+Nothing else sets `start_err`.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | taken start activates: `assert_TbreStart_TakenStartActivates` | forward | [REQ_TBRE_01](../doc/fpv/requirements.md#req_tbre_01) |
+            | REGWEN falls only on start: `assert_TbreStart_RegwenFallsOnlyOnStart` | backward | [REQ_TBRE_01](../doc/fpv/requirements.md#req_tbre_01), [REQ_TBRE_02a](../doc/fpv/requirements.md#req_tbre_02a), [REQ_TBRE_07b](../doc/fpv/requirements.md#req_tbre_07b) |
+            | ignored start changes nothing: `assert_TbreStart_IgnoredStartChangesNothing` | stable | [REQ_TBRE_02b](../doc/fpv/requirements.md#req_tbre_02b), [REQ_TBRE_02c](../doc/fpv/requirements.md#req_tbre_02c), [REQ_TBRE_02d](../doc/fpv/requirements.md#req_tbre_02d) |
+            | ignored start sets error: `assert_TbreStart_IgnoredStartSetsError` | forward | [REQ_TBRE_03](../doc/fpv/requirements.md#req_tbre_03) |
+            | error set next cycle: `assert_TbreStart_ErrorSetNextCycle` | forward | [REQ_TBRE_03](../doc/fpv/requirements.md#req_tbre_03) |
+            | error only after ignored start: `assert_TbreStart_ErrorOnlyAfterIgnoredStart` | backward | [REQ_TBRE_04a](../doc/fpv/requirements.md#req_tbre_04a) |
+
+            7 [requirements](../doc/fpv/requirements.md#start-status-and-interrupt) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_01", "REQ_TBRE_02a", "REQ_TBRE_02b", "REQ_TBRE_02c", "REQ_TBRE_02d", "REQ_TBRE_03", "REQ_TBRE_04a"]
+    }
+    {
+      name: tbre_status
+      desc: '''`TBRE_REGWEN` is low from the cycle after a taken start until the sweep is resolved.
+`TBRE_STATUS.busy` follows it one cycle later, and the epoch's active bit is its inverse.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | REGWEN low after start: `assert_TbreStatus_RegwenLowAfterStart` | forward | [REQ_TBRE_07a](../doc/fpv/requirements.md#req_tbre_07a), [REQ_TBRE_12a](../doc/fpv/requirements.md#req_tbre_12a), [REQ_TBRE_12b](../doc/fpv/requirements.md#req_tbre_12b), [REQ_TBRE_12c](../doc/fpv/requirements.md#req_tbre_12c) |
+            | REGWEN rises only when resolved: `assert_TbreStatus_RegwenRisesOnlyWhenResolved` | backward | [REQ_TBRE_07a](../doc/fpv/requirements.md#req_tbre_07a) |
+            | busy follows REGWEN: `assert_TbreStatus_BusyFollowsRegwen` | forward | [REQ_TBRE_08](../doc/fpv/requirements.md#req_tbre_08), [REQ_TBRE_12c](../doc/fpv/requirements.md#req_tbre_12c) |
+            | active follows REGWEN: `assert_TbreStatus_ActiveFollowsRegwen` | forward | [REQ_TBRE_09](../doc/fpv/requirements.md#req_tbre_09), [REQ_TBRE_12b](../doc/fpv/requirements.md#req_tbre_12b) |
+
+            7 [requirements](../doc/fpv/requirements.md#start-status-and-interrupt) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_07a", "REQ_TBRE_07b", "REQ_TBRE_08", "REQ_TBRE_09", "REQ_TBRE_12a", "REQ_TBRE_12b", "REQ_TBRE_12c"]
+    }
+    {
+      name: tbre_epoch
+      desc: '''The epoch count increases by one when a sweep without an error ends, and at no other time.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | steps unless error: `assert_TbreEpoch_StepsUnlessError` | forward | [REQ_TBRE_10](../doc/fpv/requirements.md#req_tbre_10), [REQ_TBRE_11](../doc/fpv/requirements.md#req_tbre_11) |
+            | count stable otherwise: `assert_TbreEpoch_CountStableOtherwise` | stable | [REQ_TBRE_11](../doc/fpv/requirements.md#req_tbre_11) |
+
+            2 [requirements](../doc/fpv/requirements.md#start-status-and-interrupt) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_10", "REQ_TBRE_11"]
+    }
+    {
+      name: tbre_intr
+      desc: '''`INTR_STATE.tbre_done` is set when a sweep ends or when software writes 1 to `INTR_TEST.tbre_done`, and only then.
+The interrupt line `intr_tbre_done_o` follows whether `INTR_STATE.tbre_done` and `INTR_ENABLE.tbre_done` are both set.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | sweep end or test sets: `assert_TbreIntr_SweepEndOrTestSets` | forward | [REQ_TBRE_28](../doc/fpv/requirements.md#req_tbre_28) |
+            | set only on end or test: `assert_TbreIntr_SetOnlyOnEndOrTest` | backward | [REQ_TBRE_30](../doc/fpv/requirements.md#req_tbre_30) |
+            | line follows state: `assert_TbreIntr_LineFollowsState` | both | [REQ_TBRE_31](../doc/fpv/requirements.md#req_tbre_31) |
+
+            3 [requirements](../doc/fpv/requirements.md#start-status-and-interrupt) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_28", "REQ_TBRE_30", "REQ_TBRE_31"]
+    }
+    {
+      name: tbre_sweep
+      desc: '''A sweep reads exactly the words of the swept capabilities, with full-word `Get` requests that carry the hint and a valid integrity.
+At most two reads are outstanding at a time.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | sweep read carries valid integrity: `assert_TbreSweep_SweepReadCarriesValidIntegrity` | forward | [REQ_TBRE_40](../doc/fpv/requirements.md#req_tbre_40) |
+            | both words read: `assert_TbreSweep_BothWordsRead` | forward | [REQ_TBRE_13](../doc/fpv/requirements.md#req_tbre_13) |
+            | Gets inside sweep: `assert_TbreSweep_GetsInsideSweep` | backward | [REQ_TBRE_14](../doc/fpv/requirements.md#req_tbre_14) |
+            | at most two outstanding: `assert_TbreSweep_AtMostTwoOutstanding` | forward | [REQ_TBRE_15a](../doc/fpv/requirements.md#req_tbre_15a), [REQ_TBRE_15b](../doc/fpv/requirements.md#req_tbre_15b) |
+            | Gets carry hint: `assert_TbreSweep_GetsCarryHint` | forward | [REQ_TBRE_16](../doc/fpv/requirements.md#req_tbre_16) |
+
+            6 [requirements](../doc/fpv/requirements.md#sweep) belong to this testpoint.'''
+      stage: V2
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_13", "REQ_TBRE_14", "REQ_TBRE_15a", "REQ_TBRE_15b", "REQ_TBRE_16", "REQ_TBRE_40"]
+    }
+    {
+      name: tbre_done
+      desc: '''Every sweep ends, provided that the neighbours of the engine answer.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | sweep ends: `assert_TbreDone_SweepEnds` | liveness | [REQ_TBRE_37](../doc/fpv/requirements.md#req_tbre_37) |
+
+            1 [requirement](../doc/fpv/requirements.md#sweep) belongs to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_37"]
+    }
+    {
+      name: tbre_decision
+      desc: '''The engine looks up the revocation bit of a swept capability only when it can be revoked, and it presents a clear exactly for a revoked capability that no core write touched.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | lookup carries valid integrity: `assert_TbreDecision_LookupCarriesValidIntegrity` | forward | [REQ_TBRE_41](../doc/fpv/requirements.md#req_tbre_41) |
+            | lookup when needed: `assert_TbreDecision_LookupWhenNeeded` | forward | [REQ_TBRE_17](../doc/fpv/requirements.md#req_tbre_17) |
+            | no lookup outside main SRAM: `assert_TbreDecision_NoLookupOutsideMainSram` | backward | [REQ_TBRE_18](../doc/fpv/requirements.md#req_tbre_18) |
+            | lookup is bitmap Get: `assert_TbreDecision_LookupIsBitmapGet` | backward | [REQ_TBRE_17](../doc/fpv/requirements.md#req_tbre_17), [REQ_TBRE_18](../doc/fpv/requirements.md#req_tbre_18) |
+            | revoked gets cleared: `assert_TbreDecision_RevokedGetsCleared` | forward | [REQ_TBRE_19](../doc/fpv/requirements.md#req_tbre_19), [REQ_TBRE_34a](../doc/fpv/requirements.md#req_tbre_34a), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | clear only if revoked: `assert_TbreDecision_ClearOnlyIfRevoked` | backward | [REQ_TBRE_20](../doc/fpv/requirements.md#req_tbre_20) |
+
+            5 [requirements](../doc/fpv/requirements.md#decision-and-clears) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_17", "REQ_TBRE_18", "REQ_TBRE_19", "REQ_TBRE_20", "REQ_TBRE_41"]
+    }
+    {
+      name: tbre_clear
+      desc: '''Each clear is one tag write of tag 0 to the tag bit of the capability.
+The engine's tag filter follows the tag filter rules.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | clears tracked bit once: `assert_TbreClear_ClearsTrackedBitOnce` | forward | [REQ_TBRE_21a](../doc/fpv/requirements.md#req_tbre_21a), [REQ_TBRE_21b](../doc/fpv/requirements.md#req_tbre_21b), [REQ_TBRE_21c](../doc/fpv/requirements.md#req_tbre_21c), [REQ_TBRE_21d](../doc/fpv/requirements.md#req_tbre_21d), [REQ_TBRE_21e](../doc/fpv/requirements.md#req_tbre_21e), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | writes tag 0: `assert_TbreClear_WritesTag0` | backward | [REQ_TBRE_21a](../doc/fpv/requirements.md#req_tbre_21a), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | tag filter checks hold: `assert_TbreClear_TagFilterChecksHold` | both | [REQ_TBRE_22](../doc/fpv/requirements.md#req_tbre_22), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | write answered once: `assert_TbreClear_WriteAnsweredOnce` | forward | [REQ_TBRE_23a](../doc/fpv/requirements.md#req_tbre_23a), [REQ_TBRE_23b](../doc/fpv/requirements.md#req_tbre_23b), [REQ_TBRE_23c](../doc/fpv/requirements.md#req_tbre_23c), [REQ_TBRE_23d](../doc/fpv/requirements.md#req_tbre_23d) |
+
+            10 [requirements](../doc/fpv/requirements.md#decision-and-clears) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "1"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_21a", "REQ_TBRE_21b", "REQ_TBRE_21c", "REQ_TBRE_21d", "REQ_TBRE_21e", "REQ_TBRE_22", "REQ_TBRE_23a", "REQ_TBRE_23b", "REQ_TBRE_23c", "REQ_TBRE_23d"]
+    }
+    {
+      name: tbre_watch
+      desc: '''A capability that the core writes keeps its tag.
+After a touch in its watch window, the engine presents no clear for it.
+A touch between the presentation of the clear and its arrival at the RMW filter turns the clear into a read.
+A clear that waits at the RMW filter stays unchanged until the RMW filter accepts it.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | clear only if untouched: `assert_TbreWatch_ClearOnlyIfUntouched` | backward | [REQ_TBRE_24](../doc/fpv/requirements.md#req_tbre_24), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | stale clear becomes read: `assert_TbreWatch_StaleClearBecomesRead` | forward | [REQ_TBRE_25](../doc/fpv/requirements.md#req_tbre_25), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+            | fresh clear stays write: `assert_TbreWatch_FreshClearStaysWrite` | forward | [REQ_TBRE_26](../doc/fpv/requirements.md#req_tbre_26), [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) |
+            | clear held unchanged: `assert_TbreWatch_ClearHeldUnchanged` | stable | [REQ_TBRE_27a](../doc/fpv/requirements.md#req_tbre_27a), [REQ_TBRE_27b](../doc/fpv/requirements.md#req_tbre_27b), [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) |
+
+            5 [requirements](../doc/fpv/requirements.md#core-write-watch) belong to this testpoint.
+            The table also names requirements of other testpoints that its checks help decide.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_24", "REQ_TBRE_25", "REQ_TBRE_26", "REQ_TBRE_27a", "REQ_TBRE_27b"]
+    }
+    {
+      name: tbre_errors
+      desc: '''An error that the engine meets in a sweep sets `sweep_err`, and every such error except an error response to a read also raises `fatal_fault`.
+A failed bitmap lookup counts the capability as revoked.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | read error, no clear: `assert_TbreErrors_ReadErrorNoClear` | forward | [REQ_TBRE_32a](../doc/fpv/requirements.md#req_tbre_32a) |
+            | cause sets sweep error: `assert_TbreErrors_CauseSetsSweepError` | forward | [REQ_TBRE_32b](../doc/fpv/requirements.md#req_tbre_32b), [REQ_TBRE_33a](../doc/fpv/requirements.md#req_tbre_33a), [REQ_TBRE_34b](../doc/fpv/requirements.md#req_tbre_34b), [REQ_TBRE_35a](../doc/fpv/requirements.md#req_tbre_35a) |
+            | error set next cycle: `assert_TbreErrors_ErrorSetNextCycle` | forward | [REQ_TBRE_32b](../doc/fpv/requirements.md#req_tbre_32b), [REQ_TBRE_33a](../doc/fpv/requirements.md#req_tbre_33a), [REQ_TBRE_34b](../doc/fpv/requirements.md#req_tbre_34b), [REQ_TBRE_35a](../doc/fpv/requirements.md#req_tbre_35a) |
+            | bad answer raises fault: `assert_TbreErrors_BadAnswerRaisesFault` | forward | [REQ_TBRE_33b](../doc/fpv/requirements.md#req_tbre_33b), [REQ_TBRE_34c](../doc/fpv/requirements.md#req_tbre_34c) |
+            | RMW fault raises alert: `assert_TbreErrors_RmwFaultRaisesAlert` | forward | [REQ_TBRE_35b](../doc/fpv/requirements.md#req_tbre_35b) |
+            | error only for a cause: `assert_TbreErrors_ErrorOnlyForACause` | backward | [REQ_TBRE_36a](../doc/fpv/requirements.md#req_tbre_36a) |
+
+            11 [requirements](../doc/fpv/requirements.md#sweep-errors) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_32a", "REQ_TBRE_32b", "REQ_TBRE_32c", "REQ_TBRE_33a", "REQ_TBRE_33b", "REQ_TBRE_34a", "REQ_TBRE_34b", "REQ_TBRE_34c", "REQ_TBRE_35a", "REQ_TBRE_35b", "REQ_TBRE_36a"]
+    }
+    {
+      name: alert_causes
+      desc: '''The alert logic requests the alert only while a fault input of the tag path or of the engine is raised.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | alert only on a fault: `assert_AlertCauses_AlertOnlyOnAFault` | backward | [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04), [REQ_ALT_05](../doc/fpv/requirements.md#req_alt_05) |
+
+            No requirement belongs to this testpoint; its checks hold what the other testpoints rely on.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: []
+    }
+    {
+      name: alert
+      desc: '''The subsystem sends an alert event on `alert_tx_o` after each cause and repeats it until reset.
+It sends one event for each alert test and for each ping, and none without a cause.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | failed request alerts: `assert_Alert_FailedRequestAlerts` | forward | [REQ_TAG_10](../doc/fpv/requirements.md#req_tag_10), [REQ_ALT_01](../doc/fpv/requirements.md#req_alt_01) |
+            | fault input alerts: `assert_Alert_FaultInputAlerts` | forward | [REQ_TAG_10](../doc/fpv/requirements.md#req_tag_10) |
+            | fatal alert repeats: `assert_Alert_FatalAlertRepeats` | forward | [REQ_TAG_10](../doc/fpv/requirements.md#req_tag_10) |
+            | test sends an event: `assert_Alert_TestSendsAnEvent` | forward | [REQ_ALT_02](../doc/fpv/requirements.md#req_alt_02) |
+            | ping answered: `assert_Alert_PingAnswered` | forward | [REQ_ALT_06](../doc/fpv/requirements.md#req_alt_06) |
+            | no alert without a cause: `assert_Alert_NoAlertWithoutACause` | backward | [REQ_ALT_02](../doc/fpv/requirements.md#req_alt_02), [REQ_ALT_03b](../doc/fpv/requirements.md#req_alt_03b), [REQ_ALT_06](../doc/fpv/requirements.md#req_alt_06), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04), [REQ_ALT_05](../doc/fpv/requirements.md#req_alt_05) |
+
+            7 [requirements](../doc/fpv/requirements.md#registers-and-alert) belong to this testpoint.'''
+      stage: V2S
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_ALT_01", "REQ_ALT_02", "REQ_ALT_03b", "REQ_ALT_06", "REQ_TAG_10", "REQ_ALT_04", "REQ_ALT_05"]
+    }
+    {
+      name: bus
+      desc: '''The register interface follows the TL-UL device rules and sends valid integrity codes.
+A request with a broken integrity code receives an error and changes no register.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | device rules hold: `assert_Bus_DeviceRulesHold` | both | [REQ_REG_04a](../doc/fpv/requirements.md#req_reg_04a), [REQ_REG_04b](../doc/fpv/requirements.md#req_reg_04b), [REQ_REG_04c](../doc/fpv/requirements.md#req_reg_04c), [REQ_REG_04e](../doc/fpv/requirements.md#req_reg_04e), [REQ_REG_04f](../doc/fpv/requirements.md#req_reg_04f) |
+            | response codes correct: `assert_Bus_ResponseCodesCorrect` | forward | [REQ_REG_10a](../doc/fpv/requirements.md#req_reg_10a), [REQ_REG_10b](../doc/fpv/requirements.md#req_reg_10b) |
+            | failed request errors: `assert_Bus_FailedRequestErrors` | forward | [REQ_REG_07](../doc/fpv/requirements.md#req_reg_07) |
+            | failed write changes nothing: `assert_Bus_FailedWriteChangesNothing` | stable | [REQ_REG_08](../doc/fpv/requirements.md#req_reg_08) |
+            | accepted request answered: `assert_Bus_AcceptedRequestAnswered` | liveness | [REQ_REG_04d](../doc/fpv/requirements.md#req_reg_04d) |
+
+            10 [requirements](../doc/fpv/requirements.md#registers-and-alert) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_REG_04a", "REQ_REG_04b", "REQ_REG_04c", "REQ_REG_04d", "REQ_REG_04e", "REQ_REG_04f", "REQ_REG_07", "REQ_REG_08", "REQ_REG_10a", "REQ_REG_10b"]
+    }
+    {
+      name: csr
+      desc: '''Every register field has its reset value, its access type and its lock, and every cause of a bus error is answered with an error: the CSR checker decides these rows.
+The checks of this testpoint add what the register file hands to the engine and the request rate of the register interface.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | locked base stable: `assert_Csr_LockedBaseStable` | forward | [REQ_TBRE_05a](../doc/fpv/requirements.md#req_tbre_05a) |
+            | locked num stable: `assert_Csr_LockedNumStable` | forward | [REQ_TBRE_05b](../doc/fpv/requirements.md#req_tbre_05b) |
+            | locked start no strobe: `assert_Csr_LockedStartNoStrobe` | forward | [REQ_TBRE_05c](../doc/fpv/requirements.md#req_tbre_05c) |
+            | start strobe only unlocked: `assert_Csr_StartStrobeOnlyUnlocked` | backward | - |
+            | start strobe on write: `assert_Csr_StartStrobeOnWrite` | forward | - |
+            | base written: `assert_Csr_BaseWritten` | forward | [REQ_TBRE_06a](../doc/fpv/requirements.md#req_tbre_06a) |
+            | num written: `assert_Csr_NumWritten` | forward | [REQ_TBRE_06b](../doc/fpv/requirements.md#req_tbre_06b) |
+            | base changes only by write: `assert_Csr_BaseChangesOnlyByWrite` | backward | [REQ_TBRE_06a](../doc/fpv/requirements.md#req_tbre_06a) |
+            | num changes only by write: `assert_Csr_NumChangesOnlyByWrite` | backward | [REQ_TBRE_06b](../doc/fpv/requirements.md#req_tbre_06b) |
+            | intr set by set request: `assert_Csr_IntrSetBySetRequest` | backward | - |
+            | intr set takes: `assert_Csr_IntrSetTakes` | forward | - |
+            | intr stays set: `assert_Csr_IntrStaysSet` | forward | [REQ_TBRE_29a](../doc/fpv/requirements.md#req_tbre_29a) |
+            | intr clear wins: `assert_Csr_IntrClearWins` | forward | [REQ_TBRE_29b](../doc/fpv/requirements.md#req_tbre_29b) |
+            | read returns register: `assert_Csr_ReadReturnsRegister` | forward | [REQ_TBRE_06a](../doc/fpv/requirements.md#req_tbre_06a), [REQ_TBRE_06b](../doc/fpv/requirements.md#req_tbre_06b), [REQ_TBRE_06c](../doc/fpv/requirements.md#req_tbre_06c) |
+            | request every other cycle: `assert_Csr_RequestEveryOtherCycle` | forward | [REQ_REG_02](../doc/fpv/requirements.md#req_reg_02) |
+
+            The CSR checker decides these requirements, alone or with the checks above:
+
+            * [REQ_REG_01a](../doc/fpv/requirements.md#req_reg_01a)
+            * [REQ_REG_01b](../doc/fpv/requirements.md#req_reg_01b)
+            * [REQ_REG_03a](../doc/fpv/requirements.md#req_reg_03a)
+            * [REQ_REG_03b](../doc/fpv/requirements.md#req_reg_03b)
+            * [REQ_REG_05a](../doc/fpv/requirements.md#req_reg_05a)
+            * [REQ_REG_05b](../doc/fpv/requirements.md#req_reg_05b)
+            * [REQ_REG_05c](../doc/fpv/requirements.md#req_reg_05c)
+            * [REQ_REG_05d](../doc/fpv/requirements.md#req_reg_05d)
+            * [REQ_REG_05e](../doc/fpv/requirements.md#req_reg_05e)
+            * [REQ_REG_06](../doc/fpv/requirements.md#req_reg_06)
+            * [REQ_REG_09](../doc/fpv/requirements.md#req_reg_09)
+            * [REQ_ALT_03a](../doc/fpv/requirements.md#req_alt_03a)
+            * [REQ_ALT_03c](../doc/fpv/requirements.md#req_alt_03c)
+            * [REQ_TBRE_04b](../doc/fpv/requirements.md#req_tbre_04b)
+            * [REQ_TBRE_05a](../doc/fpv/requirements.md#req_tbre_05a)
+            * [REQ_TBRE_05b](../doc/fpv/requirements.md#req_tbre_05b)
+            * [REQ_TBRE_05c](../doc/fpv/requirements.md#req_tbre_05c)
+            * [REQ_TBRE_36b](../doc/fpv/requirements.md#req_tbre_36b)
+
+            24 [requirements](../doc/fpv/requirements.md#registers-and-alert) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_REG_01a", "REQ_REG_01b", "REQ_REG_02", "REQ_REG_03a", "REQ_REG_03b", "REQ_REG_05a", "REQ_REG_05b", "REQ_REG_05c", "REQ_REG_05d", "REQ_REG_05e", "REQ_REG_06", "REQ_REG_09", "REQ_ALT_03a", "REQ_ALT_03c", "REQ_TBRE_04b", "REQ_TBRE_05a", "REQ_TBRE_05b", "REQ_TBRE_05c", "REQ_TBRE_06a", "REQ_TBRE_06b", "REQ_TBRE_06c", "REQ_TBRE_29a", "REQ_TBRE_29b", "REQ_TBRE_36b"]
+    }
+    {
+      name: tlul_protocol
+      desc: '''Every TL-UL port of the environment follows the TL-UL rules, checked by one ABVIP instance per port.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | TL-UL rules hold: `assert_TlulProtocol_TlUlRulesHold` | both | - |
+
+            No requirement belongs to this testpoint; its checks hold what the other testpoints rely on.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: []
+    }
+    {
+      name: contracts
+      desc: '''Each property that one checker assumes about a neighbour is proven in the checker that holds the neighbour's logic.
+
+            | Check, and its planned assertion | Kind | Requirements |
+            |---|---|---|
+            | access request accepted and answered: `assert_Contracts_AccessRequestAcceptedAndAnswered` | liveness | [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+            | RMW request accepted and answered: `assert_Contracts_RmwRequestAcceptedAndAnswered` | liveness | - |
+            | engine meta request held: `assert_Contracts_EngineMetaRequestHeld` | safety | - |
+            | engine meta answer taken: `assert_Contracts_EngineMetaAnswerTaken` | safety | [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) |
+            | RMW filter takes answers: `assert_Contracts_RmwFilterTakesAnswers` | liveness | - |
+            | bitmap answer taken: `assert_Contracts_BitmapAnswerTaken` | liveness | - |
+            | core answers in order: `assert_Contracts_CoreAnswersInOrder` | safety | - |
+            | core meta request held: `assert_Contracts_CoreMetaRequestHeld` | safety | - |
+            | tag path faults have causes: `assert_Contracts_TagPathFaultsHaveCauses` | safety | [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04), [REQ_ALT_05](../doc/fpv/requirements.md#req_alt_05) |
+            | engine faults have causes: `assert_Contracts_EngineFaultsHaveCauses` | safety | [REQ_TBRE_32c](../doc/fpv/requirements.md#req_tbre_32c), [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04), [REQ_ALT_05](../doc/fpv/requirements.md#req_alt_05) |
+            | tag port answers in order: `assert_Contracts_TagPortAnswersInOrder` | safety | - |
+            | engine addresses whole words: `assert_Contracts_EngineAddressesWholeWords` | safety | [REQ_ALT_04](../doc/fpv/requirements.md#req_alt_04) |
+            | engine meta port follows TL-UL: `assert_Contracts_EngineMetaPortFollowsTlUl` | safety | - |
+
+            No requirement belongs to this testpoint; its checks hold what the other testpoints rely on.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: []
+    }
+    {
+      name: tag_read_after_write
+      desc: '''A hinted capability load returns the tag last written to that capability.
+A write sets the capability's tag to its tag sideband and changes no other tag.
+
+            This testpoint has no check of its own.
+            The checks of other testpoints decide its requirements together.
+
+            | Requirement | Decided by the checks of |
+            |---|---|
+            | [REQ_TAG_01](../doc/fpv/requirements.md#req_tag_01) | `arb_forward`, `arb_return`, `meta_forward`, `meta_return`, `rmw_read`, `rmw_single_op`, `rmw_write_back`, `tag_isolation`, `tf_meta_request`, `tf_sticky_tag` |
+            | [REQ_TAG_02](../doc/fpv/requirements.md#req_tag_02) | `arb_forward`, `meta_forward`, `rmw_single_op`, `rmw_write_back`, `rmw_write_skip`, `tf_lookup`, `tf_meta_request` |
+            | [REQ_TAG_03](../doc/fpv/requirements.md#req_tag_03) | `arb_forward`, `meta_forward`, `rmw_single_op`, `rmw_write_back`, `rmw_write_skip`, `tf_lookup`, `tf_meta_request` |
+            | [REQ_TAG_04](../doc/fpv/requirements.md#req_tag_04) | `arb_forward`, `meta_forward`, `rmw_single_op`, `rmw_write_back`, `tag_isolation`, `tf_meta_request` |
+
+            4 [requirements](../doc/fpv/requirements.md#end-to-end-requirements) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TAG_01", "REQ_TAG_02", "REQ_TAG_03", "REQ_TAG_04"]
+    }
+    {
+      name: tag_no_deadlock
+      desc: '''Every core request is answered, whatever the engine's tag filter asks of the shared RMW filter.
+
+            This testpoint has no check of its own.
+            The checks of other testpoints decide its requirements together.
+
+            | Requirement | Decided by the checks of |
+            |---|---|
+            | [REQ_TAG_09](../doc/fpv/requirements.md#req_tag_09) | `arb_flow`, `contracts`, `rmw_single_op`, `tf_flow` |
+
+            1 [requirement](../doc/fpv/requirements.md#end-to-end-requirements) belongs to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TAG_09"]
+    }
+    {
+      name: rev_end_to_end
+      desc: '''After a sweep with no `sweep_err`, a revoked capability reads back untagged.
+A capability that the core wrote in its watch window keeps its tag.
+
+            This testpoint has no check of its own.
+            The checks of other testpoints decide its requirements together.
+
+            | Requirement | Decided by the checks of |
+            |---|---|
+            | [REQ_TBRE_38](../doc/fpv/requirements.md#req_tbre_38) | `arb_forward`, `meta_forward`, `rmw_write_back`, `rmw_write_skip`, `tbre_clear`, `tbre_decision`, `tbre_watch` |
+            | [REQ_TBRE_39](../doc/fpv/requirements.md#req_tbre_39) | `arb_flow`, `rmw_single_op`, `tbre_watch`, `tf_forward`, `tf_lookup` |
+
+            2 [requirements](../doc/fpv/requirements.md#end-to-end-requirements) belong to this testpoint.'''
+      stage: V2
+      priority: "2"
+      tests: ["cheriot_mem_sys_fpv"]
+      features: ["REQ_TBRE_38", "REQ_TBRE_39"]
+    }
+  ]
+}
