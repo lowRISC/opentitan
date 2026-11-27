@@ -321,8 +321,10 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   // section 2.3).
   size_t words_written = 0;
 
-  // Array to hold T(i) from the previous loop iteration.
+  // Arrays to hold T(i) and per-iteration intermediates.
   uint32_t prev_t[kHmacMaxDigestWords];
+  uint32_t tag_data[kHmacMaxDigestWords];
+  uint32_t share0_data[kHmacMaxDigestWords];
 
   for (size_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
@@ -341,7 +343,6 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &counter_val, 1);
     HARDENED_TRY(otcrypto_hmac_update(&ctx, &counter_buf));
 
-    uint32_t tag_data[kHmacMaxDigestWords];
     otcrypto_word32_buf_t t_words =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, digest_words);
     HARDENED_TRY(otcrypto_hmac_final(&ctx, &t_words));
@@ -356,7 +357,6 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
     uint32_t mask_data[kHmacMaxDigestWords];
     hardened_memshred(mask_data, words_to_copy);
 
-    uint32_t share0_data[kHmacMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
 
     HARDENED_TRY(keyblob_write_shares(share0_data, mask_data, words_written,
@@ -367,6 +367,10 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   }
   HARDENED_CHECK_EQ(words_written, okm_wordlen);
   HARDENED_CHECK_GT(words_written, 0);
+
+  hardened_memshred(prev_t, digest_words);
+  hardened_memshred(tag_data, digest_words);
+  hardened_memshred(share0_data, digest_words);
 
   // Manually compute and assign the checksum
   okm->checksum = otcrypto_integrity_blinded_checksum(okm);

@@ -1126,6 +1126,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1));
   HARDENED_TRY(keyblob_from_shares(share0, share1, shared_secret->config,
                                    shared_secret->keyblob));
+  hardened_memshred(share0, ARRAYSIZE(share0));
 
   // Set the checksum.
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
