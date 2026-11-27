@@ -795,30 +795,38 @@ status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
   return reverse_bytes(encoded_message_len, encoded_message);
 }
 
+/**
+ * Check PKCS#1 v1.5 encryption padding and find the message start index in
+ * constant time without secret-dependent branches.
+ *
+ * Scans `EM = 0x00 || 0x02 || PS || 0x00 || M` (RFC 8017, section 7.2.2) in
+ * constant time and writes the index of the first byte after the first `0x00`
+ * byte in `EM[2..]` to `*message_start_idx` (or `0` if no `0x00` byte was
+ * found).
+ *
+ * @param encoded_message_bytes Big-endian encoded message bytes.
+ * @param encoded_message_bytelen Length of `encoded_message_bytes` in bytes.
+ * @param[out] message_start_idx Index of the start of the message (or `0`).
+ * @return `UINT32_MAX` if padding is valid, or `0` if invalid.
+ */
 OT_WARN_UNUSED_RESULT
-static status_t pkcs1v15_check_padding_and_find_message_start(
+static ct_bool32_t pkcs1v15_check_padding_and_find_message_start(
     const unsigned char *encoded_message_bytes, size_t encoded_message_bytelen,
     volatile uint32_t *message_start_idx) {
   *message_start_idx = 0;
   for (size_t i = 2; i < encoded_message_bytelen; i++) {
     ct_bool32_t is_zero = ct_seqz32(encoded_message_bytes[i]);
     ct_bool32_t is_before_message = ct_seqz32(*message_start_idx);
-    *message_start_idx =
-        ct_cmov32(is_zero & is_before_message, i + 1, *message_start_idx);
+    *message_start_idx = ct_cmov32(is_zero & is_before_message,
+                                   (uint32_t)(i + 1), *message_start_idx);
   }
   HARDENED_CHECK_LE(*message_start_idx, encoded_message_bytelen);
 
   // Check that EM starts with 0x00 || 0x02 and that the 0x00 separator was
   // found after at least 8 nonzero PS bytes (*message_start_idx >= 11).
-  ct_bool32_t decode_failure = ~ct_seqz32(encoded_message_bytes[0]) |
-                               ~ct_seq32(encoded_message_bytes[1], 0x02) |
-                               ct_sltu32(*message_start_idx, 11);
-  if (launder32(decode_failure) != 0) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(decode_failure, 0);
-  HARDENED_CHECK_GE(*message_start_idx, 11);
-  return OTCRYPTO_OK;
+  return ct_seqz32(encoded_message_bytes[0]) &
+         ct_seq32(encoded_message_bytes[1], 0x02) &
+         ~ct_sltu32(*message_start_idx, 11);
 }
 
 status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
@@ -829,29 +837,68 @@ status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
 
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
+  size_t max_message_bytelen = encoded_message_bytelen - 11;
   unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
 
+  // Run the constant-time padding check twice as an FI hardening measure,
+  // without branching on padding validity to prevent timing side channels.
   volatile uint32_t message_start_idx0 = 0;
   volatile uint32_t message_start_idx1 = 0;
-  status_t status0 = pkcs1v15_check_padding_and_find_message_start(
+  ct_bool32_t decode_valid0 = pkcs1v15_check_padding_and_find_message_start(
       encoded_message_bytes, encoded_message_bytelen, &message_start_idx0);
-  status_t status1 = pkcs1v15_check_padding_and_find_message_start(
+  ct_bool32_t decode_valid1 = pkcs1v15_check_padding_and_find_message_start(
       encoded_message_bytes, encoded_message_bytelen, &message_start_idx1);
-  if (launder32((uint32_t)status0.value) != kHardenedBoolTrue ||
-      launder32((uint32_t)status1.value) != kHardenedBoolTrue) {
-    hardened_memshred(encoded_message, encoded_message_len);
-    return OTCRYPTO_BAD_ARGS;
-  }
   HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
+  HARDENED_CHECK_EQ(decode_valid0, decode_valid1);
 
-  size_t decoded_bytelen = encoded_message_bytelen - message_start_idx0;
-  HARDENED_TRY(randomized_bytecopy(
-      message, encoded_message_bytes + message_start_idx0, decoded_bytelen));
-  HARDENED_CHECK_EQ(
-      consttime_memeq_byte(encoded_message_bytes + message_start_idx0, message,
-                           decoded_bytelen),
-      kHardenedBoolTrue);
-  *message_bytelen = decoded_bytelen;
+  // Clamp the start index into `[11, encoded_message_bytelen]` in constant
+  // time so invalid padding maps to `decoded_bytelen == 0`.
+  uint32_t clamped_start_idx = ct_cmov32(decode_valid0, message_start_idx0,
+                                         (uint32_t)encoded_message_bytelen);
+  uint32_t shift = clamped_start_idx - 11;
+  size_t decoded_bytelen = encoded_message_bytelen - clamped_start_idx;
+
+  // Left-shift `encoded_message_bytes[11..]` in-place by `shift` bytes using a
+  // constant-time barrel shifter so memory accesses and timing do not depend
+  // on `shift` or padding validity.
+  unsigned char *payload = encoded_message_bytes + 11;
+  for (size_t step = 1; step < max_message_bytelen; step <<= 1) {
+    ct_bool32_t do_shift = ~ct_seqz32(shift & (uint32_t)step);
+    for (size_t i = 0; i < max_message_bytelen - step; i++) {
+      payload[i] =
+          (unsigned char)ct_cmov32(do_shift, payload[i + step], payload[i]);
+    }
+  }
+
+  // Zero bytes at or past `decoded_bytelen` (and all bytes on invalid padding)
+  // before copying into `message`.
+  ct_bool32_t decode_valid = decode_valid0 & decode_valid1;
+  for (size_t idx = 0; idx < max_message_bytelen; idx++) {
+    ct_bool32_t in_message =
+        decode_valid & ct_sltu32((uint32_t)idx, (uint32_t)decoded_bytelen);
+    payload[idx] = (unsigned char)ct_cmov32(in_message, payload[idx], 0);
+  }
+
+  // Always copy and verify the full `max_message_bytelen` buffer so timing
+  // depends only on the public RSA modulus size.
+  HARDENED_TRY(randomized_bytecopy(message, payload, max_message_bytelen));
+  HARDENED_CHECK_EQ(consttime_memeq_byte(payload, message, max_message_bytelen),
+                    kHardenedBoolTrue);
+
+  *message_bytelen = ct_cmov32(decode_valid1, (uint32_t)decoded_bytelen, 0);
   hardened_memshred(encoded_message, encoded_message_len);
-  return OTCRYPTO_OK;
+
+  // Select the return status branchlessly from both independent padding checks.
+  // Capture `OTCRYPTO_BAD_ARGS` once so both checks match even when
+  // `OTCRYPTO_STATUS_DEBUG` embeds `__LINE__`.
+  const uint32_t ok_val = (uint32_t)OTCRYPTO_OK.value;
+  const uint32_t bad_args_val = (uint32_t)OTCRYPTO_BAD_ARGS.value;
+  status_t status0 = {
+      .value = (int32_t)ct_cmov32(decode_valid0, ok_val, bad_args_val),
+  };
+  status_t status1 = {
+      .value = (int32_t)ct_cmov32(decode_valid1, ok_val, bad_args_val),
+  };
+  HARDENED_CHECK_EQ(status0.value, status1.value);
+  return status0;
 }

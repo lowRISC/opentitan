@@ -375,6 +375,13 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * slower and more fragile than other encryption methods. Consult an expert
  * before using RSA encryption.
  *
+ * Security note for PKCS#1 v1.5 decryption (`kOtcryptoKeyModeRsaEncryptPkcs`):
+ * Padding validation and plaintext extraction run in constant time, but the
+ * returned status (`kOtcryptoStatusValueOk` vs. `kOtcryptoStatusValueBadArgs`)
+ * and `plaintext_bytelen` are secret. Callers must not reveal padding errors or
+ * plaintext lengths to untrusted peers (e.g., via error codes, branches, or
+ * variable-time post-processing).
+ *
  * @param private_key Pointer to blinded private key struct.
  * @param hash_mode Hash function to use for OAEP encoding.
  * @param ciphertext Ciphertext to decrypt.

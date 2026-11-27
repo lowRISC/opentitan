@@ -1402,12 +1402,22 @@ static otcrypto_status_t rsa_decrypt_finalize_with_mode(
 #endif
 
   // Call the unified `finalize()` operation, which will infer the RSA size
-  // from OTBN.
-  HARDENED_TRY_WIPE_DMEM(
-      rsa_decrypt_finalize(key_mode, hash_mode, label->data, label->len,
-                           plaintext->len, plaintext->data, plaintext_bytelen));
+  // from OTBN. Padding decode status is returned via `decode_status` so that
+  // `HARDENED_TRY_WIPE_DMEM` only fires on OTBN/argument errors and never
+  // issues a second DMEM wipe on invalid padding.
+  status_t decode_status = OTCRYPTO_BAD_ARGS;
+  HARDENED_TRY_WIPE_DMEM(rsa_decrypt_finalize(
+      key_mode, hash_mode, label->data, label->len, plaintext->len,
+      plaintext->data, plaintext_bytelen, &decode_status));
 
-  // Consistency check; this should never happen.
+  // Enforce fail-closed status encoding without branching on padding validity.
+  ct_bool32_t is_ok =
+      ct_seq32(OT_UNSIGNED(decode_status.value), kHardenedBoolTrue);
+  decode_status.value = (int32_t)ct_cmov32(
+      is_ok, kHardenedBoolTrue, OT_UNSIGNED(decode_status.value) | 0x80000000u);
+
+  // Consistency check; this should never happen (on error,
+  // `*plaintext_bytelen` is 0, which is always `<= plaintext->len`).
   if (launder32(*plaintext_bytelen) > plaintext->len) {
     HARDENED_TRAP();
     // COVERAGE (FI CM) Unreachable code, checked against fault injections.
@@ -1415,7 +1425,7 @@ static otcrypto_status_t rsa_decrypt_finalize_with_mode(
   }
   HARDENED_CHECK_LE(*plaintext_bytelen, plaintext->len);
 
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return otcrypto_eval_exit(decode_status);
 }
 
 otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
