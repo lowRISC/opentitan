@@ -44,19 +44,29 @@
     {
       name: alerts
       desc: '''
-            Verify recov_alert asserts when recov_alert_sts becomes non-zero.
-            Verify each respective bit of recov_alert_sts asserts when:
-            - Either of the 3 values in the control register are not valid kMultiBitBool values.
-            - When an initiate or reseed command is sent where flag0 is not a valid kMultiBitBool value.
-            - The genbits bus value is equal to the prior valid value.
-            - When an illegal command is used (0x0,0x6-0xf).
-            - When INT_STATE_NUM is written with a reserved instance index, which must be ignored.
-            Verify that INT_STATE_NUM cannot be written while INT_STATE_HALT is set.
-            Verify that writing zeros to the recoverable alert status register resets all the status bits.
-            Verify fatal_alert asserts when:
-            - An illegal state is reached.
-            - The AES block raises a fatal alert.
-            - There is an integrity failure on the bus (this is covered by an automated test).
+            Verify the recoverable and fatal alerts.
+
+            **Stimulus**:
+            - Use values other than kMultiBitBool4True and kMultiBitBool4False in each multi-bit field of CTRL, in INT_STATE_HALT, in GEN_ABORT and in the flag0 field of Instantiate and Reseed commands.
+            - Send commands that are refused, to each instance and with and without additional data:
+              - with an illegal acmd (0x0, 0x6-0xf),
+              - Generate commands with glen = 0,
+              - out of sequence: an Instantiate command to an instantiated instance, and Reseed, Generate or Update commands to an uninstantiated instance,
+              - more Generate commands than RESEED_INTERVAL allows, after an Instantiate command and again after a Reseed command.
+            - Make register writes that are not allowed: GEN_ABORT for an instance with no Generate command in progress, INT_STATE_NUM with a reserved instance index, and INT_STATE_NUM with a valid instance index while INT_STATE_HALT is set.
+            - Make the genbits bus repeat its prior valid value, and let an instance update its state while its internal state is being read or written via INT_STATE_VAL.
+            - Write zero to RECOV_ALERT_STS.
+            - Drive a state machine into an illegal state, cause a mismatch in a hardened counter, make the AES block raise a fatal alert, cause a FIFO error while CSRNG is enabled, and cause an integrity failure on the bus (covered by an automated test).
+
+            **Checks**:
+            - For each cause of a recoverable alert above, the corresponding RECOV_ALERT_STS bit is set and recov_alert is sent.
+            - For refused commands, the command is acknowledged with the corresponding error status and otherwise ignored: its additional data is discarded, no genbits are returned and the internal state is unchanged.
+              CSRNG continues to operate.
+              A Reseed command resets the count of Generate commands towards RESEED_INTERVAL.
+            - For register writes that are not allowed, the write is ignored.
+              A write to INT_STATE_NUM while INT_STATE_HALT is set raises no alert.
+            - When zero is written to RECOV_ALERT_STS, all its bits are cleared.
+            - For each cause of a fatal alert above, fatal_alert is sent.
             '''
       stage: V2
       tests: ["csrng_alert"]
