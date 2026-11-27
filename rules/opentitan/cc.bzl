@@ -554,6 +554,11 @@ def _opentitan_binary(ctx):
         if provides.get("rom32"):
             default_info.append(provides["rom32"])
 
+        # RRAM address-infection & scrambling depends on the physical slot,
+        # so we map slot A and slot B separately (see `scramble_rram()`).
+        if provides.get("vmem_slot_b"):
+            default_info.append(provides["vmem_slot_b"])
+
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
         ot_bin_env_info[exec_env.provider] = exec_env
@@ -658,18 +663,6 @@ common_binary_attrs = {
         doc = "Binary kind: flash, rram, ram or rom",
         default = "flash",
         values = ["flash", "rram", "ram", "rom"],
-    ),
-    "slot": attr.string(
-        doc = "Which firmware slot this binary occupies. Only relevant when kind == \"rram\": " +
-              "RRAM's scrambling tweak (and address infection) depend on the word's true " +
-              "absolute address in the (unified, slot-agnostic) RRAM data partition, but a " +
-              "slot's compiled image is always addressed starting at 0 (see " +
-              "gen-rram-img.py's --slot). Slot A starts at word address 0; slot B starts " +
-              "halfway through the data partition. \"virtual\" images are loaded via address " +
-              "translation rather than a fixed physical offset, so scrambling them is a build " +
-              "error - see scramble_rram().",
-        default = "a",
-        values = ["a", "b", "virtual"],
     ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
@@ -905,13 +898,14 @@ def _opentitan_binary_assemble_impl(ctx):
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
         action_param = {}
         action_param.update(exec_env.slot_spec)
+        nvm_size = exec_env.slot_spec.get("nvm_size")
 
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
         spec = spec.split(" ")
 
         # Generate the multislot bin.
-        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool, nvm_size)
 
         # Generate unscrambled VMEM files.
         #

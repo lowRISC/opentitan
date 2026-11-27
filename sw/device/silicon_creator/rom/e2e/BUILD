@@ -94,7 +94,6 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -134,7 +133,6 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -163,7 +161,6 @@ opentitan_test(
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -211,7 +208,10 @@ opentitan_test(
 # Note: the naming of the files is important for dvsim. The code expects file to be named:
 # - binary: <something>.<key_name>.signed.bin
 # - vmem: <something>.<key_name>.signed.64.vmem (flash) or .128.vmem (rram)
-# - scrambled vmem: <something>.<key_name>.signed.64.scr.vmem (flash) or .128.scr.vmem (rram)
+# - scrambled vmem:
+#   - <something>.<key_name>.signed.64.scr.vmem (for flash)
+#   - <something>.<key_name>.signed.slot_a.128.scr.vmem (for RRAM slot A),
+#     or .slot_b.128.scr.vmem (for RRAM slot B).
 [
     genrule(
         name = "empty_test_slot_{}_{}_corrupted_{}_signed_bin".format(slot, key, group),
@@ -230,9 +230,9 @@ opentitan_test(
 
 # The below rule sets (vmem_file, scramble_flash_vmem/scramble_rram_vmem, and
 # filegroup) are needed to run `sigverify_always` tests in DV. Tops with
-# rram_ctrl (e.g. top_earlgrey) need 128-bit-word rram-scrambled vmem; other
-# tops keep the pre-existing 64-bit-word flash-scrambled vmem, hence
-# vmem_file/scramble_*_vmem each appearing twice below, once per word size.
+# rram_ctrl (e.g. top_earlgrey) need 128-bit-word rram-scrambled vmems for
+# both physical slots, whereas tops with flash_ctrl use a 64-bit-word
+# flash-scrambled vmem:
 [
     vmem_file(
         name = "empty_test_slot_{}_{}_corrupted_sim_dv_vmem64_signed".format(slot, key),
@@ -273,7 +273,7 @@ opentitan_test(
         testonly = True,
         src = ":empty_test_slot_{}_{}_corrupted_sim_dv_vmem128_signed".format(slot, key),
         # Override the name to match what the dv testbench expects.
-        out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.128".format(slot, key),
+        out = "empty_test_slot_{}_corrupted_sim_dv.{}.signed.slot_{}.128".format(slot, key, slot),
         slot = slot,
     )
     for slot in SLOTS

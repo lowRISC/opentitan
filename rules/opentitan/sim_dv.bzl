@@ -16,8 +16,7 @@ load(
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
     "extract_software_logs",
-    "scramble_flash",
-    "scramble_rram",
+    "scramble_nvm",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
@@ -45,6 +44,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     hashfile = None
+    vmem_slot_b = None
     if ctx.attr.kind == "rom":
         (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
@@ -83,7 +83,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind in ("flash", "rram"):
         is_rram = ctx.attr.kind == "rram"
         word_size = 128 if is_rram else 64
-        scramble = scramble_rram if is_rram else scramble_flash
         scramble_tool = exec_env.rram_scramble_tool if is_rram else exec_env.flash_scramble_tool
 
         # First convert to VMEM, then scramble according to the technology's
@@ -107,11 +106,13 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             )
         else:
             vmem32 = None
+
         if scramble_tool != None:
-            vmem = scramble(
+            (vmem, vmem_slot_b) = scramble_nvm(
                 ctx,
+                kind = ctx.attr.kind,
+                word_size = word_size,
                 name = name,
-                suffix = "{}.scr.vmem".format(word_size),
                 src = vmem_base,
                 otp = get_fallback(ctx, "file.otp", exec_env),
                 otp_mmap = exec_env.otp_mmap,
@@ -145,6 +146,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "logs": logs,
         "mapfile": mapfile,
         "vmem": vmem,
+        "vmem_slot_b": vmem_slot_b,
         "vmem32": vmem32,
         "hashfile": hashfile,
     }
