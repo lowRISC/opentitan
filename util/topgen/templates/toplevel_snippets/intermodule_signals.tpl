@@ -4,7 +4,6 @@
 <%import topgen.lib as lib%>\
 <%from reggen.params import Parameter%>\
 <%page args="top, domain"/>\
-<%unused_resets = lib.get_unused_resets(top)%>\
 <%
   unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(
     [d for d in top["inter_signal"]["definitions"] if d["domain"] == domain])

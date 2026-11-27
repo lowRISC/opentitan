@@ -8,8 +8,11 @@ from collections import OrderedDict
 from typing import Dict, List, NamedTuple
 
 from basegen.typing import ConfigT, ParamsT
+from ipgen.manager_split import clkmgr_generated_clks, clkmgr_out_clks
+from reggen.lib import PART_PRIMARY
 from topgen.clocks import Clocks, ClockSignal
-from topgen.lib import find_module, get_ipgen_params
+from topgen.lib import (find_module, get_aon_clock, get_clkmgr_clock_out_partitions,
+                        get_clkmgr_src_partitions, get_ipgen_params, validate_split_clkmgr)
 
 
 class ClockMeasureConfig(NamedTuple):
@@ -42,6 +45,15 @@ def _clock_src_vars(obj) -> ConfigT:
 def get_clkmgr_params(top: ConfigT) -> ParamsT:
     """Gets parameters for clkmgr ipgen from top config."""
     clocks = top["clocks"]
+    # The dividers are in the primary partition, which does not receive the always-on source clock,
+    # so no derived clock can come from it. Check before the clock model is used, which would fail
+    # without saying why.
+    aon = get_aon_clock(top)
+    for name, clk in clocks.derived_srcs.items():
+        if clk.src.name == aon:
+            raise ValueError(f"The derived clock {name} comes from the always-on source clock "
+                             f"{aon}, which only the secondary partition of the clkmgr receives, "
+                             f"but only the primary partition has the dividers.")
     assert isinstance(clocks, Clocks)
 
     typed_clocks = clocks.typed_clocks()
@@ -93,6 +105,28 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
         "primary_clk":
         primary_clk,
     })
+    # Tell the templates which partition receives or outputs each clock.
+    # Check that the clkmgr is split, and that exactly one partition receives each source clock.
+    validate_split_clkmgr(top)
+    # Record the partition that receives each source clock.
+    partitions = get_clkmgr_src_partitions(top)
+    for name, src in ipgen_params["src_clks"].items():
+        src["clkmgr_partition"] = partitions[name]
+    # Record the partitions that output each clock.
+    outputs = get_clkmgr_clock_out_partitions(top)
+    for clks in ipgen_params["typed_clocks"].values():
+        for name, clk in clks.items():
+            clk["out_partitions"] = outputs[name]
+    # The primary partition outputs every clock that it generates. A clock that only the always-on
+    # power domain would use is not supported.
+    generated = clkmgr_generated_clks(ipgen_params["typed_clocks"], ipgen_params["src_clks"],
+                                      PART_PRIMARY)
+    output = clkmgr_out_clks(ipgen_params["typed_clocks"], PART_PRIMARY)
+    unused = [k for k in generated if k not in output]
+    if unused:
+        raise ValueError(f"The primary partition of the clkmgr generates the clocks {unused}, but "
+                         f"no module in its power domain uses them. A clock that only the "
+                         f"always-on power domain uses is not supported.")
     return ipgen_params
 
 

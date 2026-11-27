@@ -35,8 +35,11 @@ for m in top['module']:
     continue
   block = name_to_block[m['type']]
   if block.scan_en:
-    # Scan / DFT ports are emitted for the primary partition only.
-    feature_info['has_scan_en'][m['domain']] = True
+    # Scan / DFT ports are emitted for one partition only, the one that the IP names in
+    # scan_partition.
+    scan_domain = (m['domain_secondary'] if block.scan_partition == lib.PART_SECONDARY
+                   else m['domain'])
+    feature_info['has_scan_en'][scan_domain] = True
 
 if feature_info['has_pinmux']:
   cio_info['num_mio_inputs'] = top['pinmux']['io_counts']['muxed']['inouts'] + \

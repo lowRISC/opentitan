@@ -129,6 +129,7 @@ reset_request_list | optional | list | list of signals requesting reset
 scan | optional | python Bool | Indicates the module have `scanmode_i`
 scan_reset | optional | python Bool | Indicates the module have `scan_rst_ni`
 scan_en | optional | python Bool | Indicates the module has `scan_en_i`
+scan_partition | optional | string | the partition of a split IP that has the scan ports (`scan`, `scan_reset`, `scan_en`): primary or secondary, never both. Defaults to primary.
 SPDX-License-Identifier | optional | string | License identifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block
@@ -1179,7 +1180,8 @@ alert_list: [
 ]
 ```
 
-All registers, scan/DFT signals and the RACL connections are always in the primary partition only.
+All registers and the RACL connections are always in the primary partition only.
+So are the scan/DFT signals, unless `scan_partition` puts them in the secondary partition.
 
 Note that reggen internally uses the order of the specified alerts and interrupts to number the bits in their registers.
 In theory, all consumers of this data should use the reggen generated constants.
