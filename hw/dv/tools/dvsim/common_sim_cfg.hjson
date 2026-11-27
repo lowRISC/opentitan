@@ -152,6 +152,9 @@
   xcelium_cov_cfg_file: "{{build_mode}_xcelium_cov_cfg_file}"
   xcelium_unr_cfg_file:  "{dv_root}/tools/xcelium/unr.cfg"
   xcelium_cov_excl_script: "{dv_root}/tools/xcelium/common_cov_excl.tcl"
+  // The module that contains the whole DUT, for Xcelium's -covdut. A block whose DUT is more than
+  // one module overrides this with the module that contains them all.
+  xcelium_covdut: "{dut}"
   xcelium_cov_refine_files: []
 
   // Build-specific coverage cfg files for Xcelium.

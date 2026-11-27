@@ -243,7 +243,7 @@
       build_opts: [// Enable the required cov metrics.
                    "-coverage {cov_metrics}",
                    // Limit the scope of coverage collection to the DUT.
-                   "-covdut {dut}",
+                   "-covdut {xcelium_covdut}",
                    // Set the coverage configuration file
                    "-covfile {xcelium_cov_cfg_file}",
                    // Don't warn about the switches we set that will be default in future releases.

@@ -35,6 +35,7 @@ package rstmgr_env_pkg;
 
   // Sorted instances of rstmgr_leaf_rst instances with security checks enabled.
 <%
+  # The leaves are in the partition of the rstmgr that generates them.
   leafs = []
   shadowed_leafs = []
   for rst in leaf_rsts:
@@ -44,11 +45,13 @@ package rstmgr_env_pkg;
       names.append(f'{names[0]}_shadowed')
     for domain in power_domains:
       if domain in rst['domains']:
+        part = (rst.get('partition') or {}).get(domain, 'primary')
+        prefix = f'dut_{part}.u_d{domain.lower()}_'
         if rst['shadowed']:
-	  shadowed_leafs.append(f'u_d{domain.lower()}_{names[0]}')
+          shadowed_leafs.append(prefix + names[0])
         if not disabled:
           for name in names:
-            leafs.append(f'u_d{domain.lower()}_{name}')
+            leafs.append(prefix + name)
 %>\
   parameter string LIST_OF_LEAFS[] = {
 % for leaf in sorted(leafs):

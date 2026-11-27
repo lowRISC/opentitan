@@ -3,9 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //======================================================================
-// This file contains outputs of clkmgr tied to constants.
+// This file contains outputs of the clkmgr's primary partition tied to constants.
 //======================================================================
 
 % for k in typed_clocks['ft_clks']:
--module_node clkmgr cg_en_o.${k.split('clk_')[-1]}
+-module_node clkmgr_part_primary cg_en_o.${k.split('clk_')[-1]}
 % endfor

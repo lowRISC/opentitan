@@ -23,7 +23,7 @@ RSTMGR testbench has been constructed based on the [CIP testbench architecture](
 
 ### Top level testbench
 The top level testbench is located at [`hw/top_${topname}/ip_autogen/rstmgr/dv/tb.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/tb.sv).
-It instantiates the RSTMGR DUT module [`hw/top_${topname}/ip_autogen/rstmgr/rtl/rstmgr.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/rtl/rstmgr.sv).
+It instantiates the two partitions of the RSTMGR, `rstmgr_part_primary` and `rstmgr_part_secondary` (in `hw/top_${topname}/ip_autogen/rstmgr/rtl/`), connected as in one power domain, under the named block `dut`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
@@ -110,15 +110,15 @@ The latter are described in the testplan.
 * Response to `cpu_i.ndmreset_req` input: after it is asserted, rstmgr's `rst_sys_src_n` should go active.
   Checked via SVA in [`hw/top_${topname}/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/pwrmgr/dv/sva/pwrmgr_rstmgr_sva_if.sv).
 * Resets cascade hierarchically per [Reset Topology](../doc/theory_of_operation.md#reset-topology).
-  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
+  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv) and [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv).
 * POR must be active for at least 32 consecutive cycles before going inactive before output resets go inactive.
-  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
+  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv) and [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv).
 * The scan reset `scan_rst_ni` qualified by `scanmode_i` triggers all cascaded resets that `por_n_i` does.
-  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv).
+  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_secondary_sva_if.sv) and [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_primary_sva_if.sv).
 * Software resets to peripherals also cascade hierarchically.
   Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv).
 * The output `rst_en_o` for alert_handler tracks their corresponding resets.
-  Checked via SVA in both [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_cascading_sva_if.sv) and [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv).
+  Checked via SVA in [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_rst_en_track_secondary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_rst_en_track_secondary_sva_if.sv), [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_rst_en_track_primary_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_rst_en_track_primary_sva_if.sv) and [`hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_sw_rst_sva_if.sv).
 * The `alert` and `cpu_info_attr` indicate the number of 32-bit words needed to capture their inputs.
   Checked via SVA in `hw/top_${topname}/ip_autogen/rstmgr/dv/sva/rstmgr_attrs_sva_if.sv`.
 
