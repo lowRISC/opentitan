@@ -9,7 +9,7 @@
 `define PD_AON_HIER           `DUT_HIER.top_earlgrey.earlgrey_pd_aon
 
 `define ALERT_HANDLER_HIER    `PD_MAIN_HIER.u_alert_handler
-`define CLKMGR_HIER           `PD_AON_HIER.u_clkmgr
+`define CLKMGR_HIER           `PD_MAIN_HIER.u_clkmgr_part_primary
 `define CPU_HIER              `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER         `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER   `CPU_HIER.tl_adapter_host_d_ibex
@@ -21,7 +21,7 @@
 `define RAM_MAIN_HIER         `PD_MAIN_HIER.u_sram_ctrl_main.u_prim_ram_1p_scr
 `define RAM_RET_HIER          `PD_AON_HIER.u_sram_ctrl_ret.u_prim_ram_1p_scr
 `define ROM_CTRL_HIER         `PD_MAIN_HIER.u_rom_ctrl
-`define RSTMGR_HIER           `PD_AON_HIER.u_rstmgr
+`define RSTMGR_HIER           `PD_MAIN_HIER.u_rstmgr_part_primary
 `define SPI_DEVICE_HIER       `PD_MAIN_HIER.u_spi_device
 `define UART_HIER             `PD_MAIN_HIER.u_uart
 `define USBDEV_HIER           `PD_MAIN_HIER.u_usbdev
