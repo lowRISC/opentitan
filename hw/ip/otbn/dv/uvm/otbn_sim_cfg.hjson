@@ -443,9 +443,7 @@ name:
         "otbn_smoke", "otbn_smoke_vectorized", "otbn_single", "otbn_csr_hw_reset", "otbn_csr_rw",
         "otbn_csr_bit_bash", "otbn_csr_aliasing",
         "otbn_csr_mem_rw_with_rand_reset",
-        "otbn_mem_partial_access",
-        # V1 but known broken
-        # "otbn_mem_walk",
+        "otbn_mem_partial_access", "otbn_mem_walk",
         # V2
         "otbn_reset", "otbn_multi", "otbn_stress_all",
         "otbn_zero_state_err_urnd", "otbn_sw_errs_fatal_chk", "otbn_alert_test",
