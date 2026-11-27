@@ -89,19 +89,53 @@
     {
       name: cmds
       desc: '''
-            Verify all csrng commands req/status behave as predicted on all applications: HW0, HW1 and SW.
-            Verify above for all valid values of acmd, clen, flags, glen.
-            Verify for multiple hw app interfaces running in parallel.
-            Verify sw/hw app interfaces running in parallel.
-            Verify main_sm_state for sw/hw apps.
-            Verify that genbits generates the amount specified by glen.
-            Verify fips bit is set to the inverse of flag0 that was used on the last initialize or reseed.
-            Verify that if CTRL.SW_APP_ENABLE and CTRL.READ_INT_STATE are set, genbits and int_state_value registers are readable, respectively, and unreadable otherwise.
-            Verify commands with continuous/non-continuous valid.
-            Verify that if FIPS bit drops at input from entropy source that the generated block also has FIPS low.
+            Verify that each command is processed as predicted on the HW and SW instances.
+
+            **Stimulus**:
+            - Send each command to each instance with random valid values of clen, flag0 and glen.
+              - For Instantiate and Reseed, use every combination of flag0 and clen.
+              - For Generate, include additional data that is all-zero.
+            - Send commands to several instances in parallel, mixing HW and SW instances.
+            - Send command words both back-to-back and with gaps in between, and apply back-pressure on the genbits bus.
+            - Vary the FIPS flag of the entropy input, CTRL.FIPS_FORCE_ENABLE, FIPS_FORCE and CTRL.SW_APP_ENABLE.
+            - Disable and re-enable CSRNG at random times, including while commands are in progress, following the enable order in the programmer's guide.
+
+            **Checks**:
+            - For each command, the response status, generated bits, internal state and RESEED_COUNTER match the model of that instance, also when instances run in parallel.
+              For the SW instance, SW_CMD_STS and GENBITS_VLD also match the model.
+            - For each instance, a new command is accepted only after the previous one has been acknowledged.
+            - For Instantiate and Reseed:
+              - The seed follows the flag0 and clen table in the theory of operation.
+              - Entropy is requested from ENTROPY_SRC only when flag0 is cleared.
+            - For Generate:
+              - The number of blocks returned matches glen.
+              - With additional data, even if all-zero, the internal state is updated with it before generating.
+                Without additional data, this update is skipped.
+              - The command is acknowledged only after all its blocks have been delivered.
+            - For Update, RESEED_COUNTER is left unchanged.
+            - For the generated bits, the FIPS flag is set only if the last Instantiate or Reseed command used FIPS-compliant entropy, or if it is forced via FIPS_FORCE.
+            - With CTRL.SW_APP_ENABLE cleared, GENBITS reads as 0.
+            - When CSRNG is disabled and re-enabled, the responses, generated bits and internal state of each instance afterwards match the model.
             '''
       stage: V2
       tests: ["csrng_cmds"]
+    }
+    {
+      name: nist_test_vectors
+      desc: '''
+            Verify that CSRNG matches the NIST SP 800-90A known-answer vectors for CTR_DRBG with AES-256 and no derivation function.
+
+            **Stimulus**:
+            - For each vector, Instantiate an instance, optionally Reseed it, and then Generate twice, using the entropy input, personalization string and additional input of the vector.
+            - Drive the entropy input of the vector on the entropy source interface with flag0 cleared, and send the personalization string or additional input as additional data.
+            - Also run each vector with flag0 set, sending the entropy input xor'ed with the personalization string or additional input as additional data.
+            - Use both the HW and SW instances.
+
+            **Checks**:
+            - The bits returned by the second Generate match the expected output of the vector, with the additional data and GENBITS words in the order given in the programmer's guide.
+            '''
+      stage: V2
+      tests: []
     }
     {
       name: life cycle
@@ -161,6 +195,10 @@
               - flag0 false and clen >0
               - flag0 true and clen 0
               - flag0 true and clen >0
+            - For the Generate command:
+              - clen 0
+              - clen >0 with random additional data
+              - clen >0 with all-zero additional data
             '''
     }
     {
