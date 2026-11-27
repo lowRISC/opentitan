@@ -10,11 +10,12 @@ class otbn_env extends cip_base_env #(
   );
   `uvm_component_utils(otbn_env)
 
-  otbn_model_agent    model_agent;
-  otbn_trace_monitor  trace_monitor;
-  otbn_sideload_agent keymgr_sideload_agent;
+  otbn_model_agent       model_agent;
+  otbn_trace_monitor     trace_monitor;
+  otbn_sideload_agent    keymgr_sideload_agent;
+  otp_key_agent          key_agent;
+  kmac_app_device_agent  m_kmac_agent;
   kmac_app_host_agent keymgr_app_agent;
-  otp_key_agent       key_agent;
 
   `uvm_component_new
 
@@ -39,6 +40,9 @@ class otbn_env extends cip_base_env #(
     uvm_config_db#(otbn_sideload_agent_cfg)::set(
       this, "keymgr_sideload_agent*", "cfg", cfg.keymgr_sideload_agent_cfg);
 
+    m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
+    uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
+    cfg.m_kmac_agent_cfg.en_cov = cfg.en_cov;
     keymgr_app_agent = kmac_app_host_agent::type_id::create("keymgr_app_agent", this);
     uvm_config_db#(kmac_app_agent_cfg)::set(
       this, "keymgr_app_agent*", "cfg", cfg.keymgr_app_agent_cfg);

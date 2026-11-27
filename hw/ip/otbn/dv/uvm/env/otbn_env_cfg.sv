@@ -14,6 +14,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
 
   rand otp_key_agent_cfg key_cfg;
 
+  rand kmac_app_agent_cfg m_kmac_agent_cfg;
+
   virtual clk_rst_if otp_clk_rst_vif;
 
   `uvm_object_utils_begin(otbn_env_cfg)
@@ -100,6 +102,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
     keymgr_sideload_agent_cfg = otbn_sideload_agent_cfg::type_id::create(
       "keymgr_sideload_agent_cfg");
 
+    m_kmac_agent_cfg = kmac_app_agent_cfg::type_id::create("m_kmac_agent_cfg");
+    m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
     keymgr_app_agent_cfg = kmac_app_agent_cfg::type_id::create("keymgr_app_agent_cfg");
     // OTBN is the device on this interface, so the agent is the host (the keymgr).
     keymgr_app_agent_cfg.if_mode = dv_utils_pkg::Host;
