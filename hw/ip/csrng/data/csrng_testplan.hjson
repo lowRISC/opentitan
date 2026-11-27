@@ -119,6 +119,45 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: halt_save_restore
+      desc: '''
+            Verify halting an instance and saving and restoring its internal state via INT_STATE_VAL.
+
+            **Stimulus**:
+            - Halt a random instance via INT_STATE_HALT while it is idle, while it processes a command, and during a Generate command, including while its final block is waiting to be read.
+            - Send further commands to the halted instance and to the other instances, then resume the halted instance.
+            - Save the state of an instance both while it is halted and while it is not.
+              Include the SW instance, which does not need to be halted to be saved.
+            - While an instance is halted, write a saved or modified state back and resume it.
+              Restore states with:
+              - a Generate command in progress, including one with no remaining blocks,
+              - the Generate flag cleared but the other Generate fields set,
+              - a reseed counter at or beyond RESEED_INTERVAL,
+              - the counter in the low bits of V a few blocks from wrapping around, followed by a Generate command that crosses the wrap.
+            - Stop a restore part-way through, so that the instance resumes with a mix of the restored and previous state.
+            - Access INT_STATE_VAL with the CTRL and per-instance read and write enables set and cleared, and after writing INT_STATE_NUM part-way through a sequence.
+            - While an instance is halted, mix reads and writes of INT_STATE_VAL within one sequence, and continue past the 26th access so that the word pointer wraps around.
+            - Write INT_STATE_VAL while the instance is not halted.
+            - Halt an instance with its INT_STATE_HALT_ENABLE bit cleared.
+            - Write the read, write and halt enables with their REGWENs cleared.
+
+            **Checks**:
+            - Based on what the instance was doing, predict when it halts and check INT_STATE_STS, cs_cmd_req_done, SW_CMD_STS.CMD_RDY and the EDN request handshake against it.
+            - While an instance is halted, it accepts no commands: EDN requests are back-pressured and SW_CMD_STS.CMD_RDY stays low.
+              Commands sent meanwhile are processed against the restored state once the instance is resumed.
+            - The state read matches the model.
+            - Within an access sequence, reads and writes advance one shared word pointer, and the 27th access returns to the first word.
+            - After a restore, the generated bits, command statuses and internal state match the model, which continues from the restored state.
+              The counter in V wraps around to zero, leaving the upper bits unchanged, without raising an error or alert.
+            - When the last word of a restore is written, unread genbits and a pending GEN_ABORT are discarded.
+            - Accesses and halts that are not allowed have no effect: reads return 0, writes are dropped and the word pointer doesn't advance.
+            - When the state changes while it is being read without a halt, INT_STATE_OVERWRITE_ALERT is raised.
+            - Commands on the other instances complete as normal.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             Run randomly chosen smoke, cmds and intr_test sequences back-to-back, with or without a reset between them.
@@ -230,6 +269,22 @@
       desc: '''
             Covers FIPS/CC bit in genbits_vld register
             genbits_fips_cp: Covers GENBITS_FIPS in GENBITS_VLD register
+            '''
+    }
+    {
+      name: csrng_halt_save_restore_cg
+      desc: '''
+            Covers halting and internal state access per instance.
+            - What the instance was doing when it was halted.
+            - Reads and writes of INT_STATE_VAL against the enables and whether the instance is halted.
+            - Access sequences that mix reads and writes, and sequences that wrap the word pointer past the 26th word.
+            - For the state before and after a restore:
+              - the instantiated and FIPS bits,
+              - the reseed counter at zero, mid-range, and at or near RESEED_INTERVAL,
+              - the Generate flag and the remaining Generate blocks,
+              - the counter in the low bits of V near wrapping around,
+              - whether the state was written back unchanged or modified, and whether the restore was complete or partial.
+            - Crosses of these fields.
             '''
     }
   ]
