@@ -1456,6 +1456,8 @@ module i3c_core
     .DirTx     (FIFO_Count'((1 << FIFO_CmdQ)    | (1 << FIFO_TxBuf)    |
                             (1 << FIFO_TxTarg0) | (1 << FIFO_TxDTarg0) |
                             (1 << FIFO_TxTarg1) | (1 << FIFO_TxDTarg1) |
+                            (1 << FIFO_TxTarg2) | (1 << FIFO_TxDTarg2) |
+                            (1 << FIFO_TxTarg3) | (1 << FIFO_TxDTarg3) |
                             (1 << FIFO_IBITarg) | (1 << FIFO_IBIDTarg))),
     .DefMin    (BufDefMin)
   ) u_buf (
