@@ -1,2 +1,2 @@
-# "ok" code should be HARDENED_BOOL_TRUE.
-x2 = 0x739
+# Set to 1 if p384_check_isoncurve returned without exiting early.
+x2 = 0x1

@@ -284,7 +284,8 @@ ecdsa_sign_sideloaded:
  * @param[in]    dmem[s]: s part of signature
  * @param[in]    dmem[x]: x-coordinate of public key
  * @param[in]    dmem[y]: y-coordinate of public key
- * @param[out] dmem[x_r]: x1 coordinate to be compared to rs
+ * @param[out] dmem[ok]:  whether the public key and signature passed basic checks
+ * @param[out] dmem[x_r]: x1 coordinate to be compared to r
  */
 ecdsa_verify:
   /* Validate the public key (ends the program on failure). */
@@ -468,6 +469,15 @@ shared_key_from_seed:
  */
 point_on_curve_check:
   jal x1, p384_check_isoncurve
+
+  /* If we got here the check passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
+  /* Add an extra instruction to keep the valid instruction count distinct from
+     the invalid-check instruction count. */
+  nop
 
   ecall
 

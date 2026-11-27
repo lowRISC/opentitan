@@ -87,8 +87,8 @@ enum {
    */
   kModeKeygenInsCnt = 1961345,
   kModeKeygenSideloadInsCnt = 1961249,
-  kModeEcdhInsCnt = 1985521,
-  kModeEcdhSideloadInsCnt = 1985674,
+  kModeEcdhInsCnt = 1985516,
+  kModeEcdhSideloadInsCnt = 1985669,
   kModeEcdsaSignConfigKInsCnt = 1600494,
   kModeEcdsaSignInsCnt = 1600721,
   kModeEcdsaSignSideloadInsCnt = 1600874,

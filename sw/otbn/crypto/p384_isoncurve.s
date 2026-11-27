@@ -11,7 +11,6 @@
  *
  * Should match the values in `hardened_asm.h`.
  */
-.equ HARDENED_BOOL_TRUE, 0x739
 .equ HARDENED_BOOL_FALSE, 0x1d4
 
  .section .text
@@ -331,14 +330,6 @@ p384_check_isoncurve:
   bn.cmp    w5, w7
   /* Fail if FG0.Z is false. */
   jal       x1, p384_trigger_input_error_if_fg0_not_z
-
-  /* If we got here the check passed, so set `ok` to true. */
-  la       x2, ok
-  addi     x3, x0, HARDENED_BOOL_TRUE
-  sw       x3, 0(x2)
-
-  /* Add a extra instruction to increase the instruction counter. */
-  nop
 
   ret
 
