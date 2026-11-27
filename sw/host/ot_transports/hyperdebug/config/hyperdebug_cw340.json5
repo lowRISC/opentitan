@@ -21,7 +21,9 @@
     {
       "name": "SPI_DEV_D1",
       "mode": "Alternate",
-      "pull_mode": "PullUp",
+      // DO NOT MERGE: experiment to find tests that rely on an undriven MISO
+      // reading high.
+      "pull_mode": "PullDown",
       "alias_of": "CN10_10"
     },
     {
