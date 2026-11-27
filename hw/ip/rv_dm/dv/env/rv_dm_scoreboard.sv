@@ -392,30 +392,48 @@ class rv_dm_scoreboard extends cip_base_scoreboard #(
 
     if (!$cast(blk, ral_model)) `uvm_fatal(get_full_name(), "Wrong type for mem reg block")
 
+    // The mem interface contains registers (HALTED, ..., FLAGS_*) and also contains a memory (ROM).
+    // Is this TL access a accessing one of the registers?
     csr_addr = ral_model.get_word_aligned_addr(item.a_addr);
     csr      = ral_model.get_default_map().get_reg_by_offset(csr_addr);
 
     if (csr == null) begin
-      // An unknown CSR for the mem reg block might be absolutely fine: it just means we're
-      // accessing an address that lies above the top of our model of the debug memory. The
-      // dm_mem implementation ignores that sort of access.
-      //
-      // Check that the response is not an error and a read has a d_data response of 0
-      if (item.d_error || (!is_write && item.d_data != 0)) begin
-        string problems[$];
-        if (item.d_error) problems.push_back("Expected d_error=0 but it was 1.");
-        if (!is_write && item.d_data != 0) begin
-          problems.push_back($sformatf("Expected read d_data=0, but it was 0x%0h", item.d_data));
-        end
+      // The TL access doesn't target a register. Does it target the debug ROM?
+      if (is_mem_addr(item.a_addr, blk)) begin
+        // Yes! If so, we expect writes to be rejected with an error and reads to be given the
+        // contents of the ROM.
+        //
+        // Since we got to this function, we know the access is a read: if it was a write then
+        // cip_base_scoreboard::process_tl_d_item would have called predict_tl_err, which would have
+        // reported an error, causing process_tl_d_item to return early.
+        //
+        // We don't have a model of the contents of the ROM, so our only expectation is that the D
+        // channel response has d_error=0: any reason to get an error would have caused
+        // process_tl_d_item to return early as described above.
+        if (item.d_error) begin
+          import tlul_pkg::tl_a_op_e;
 
-        `uvm_error(get_full_name(),
-                   $sformatf({"Unexpected response to %0s address 0x%0h in mem reg block. ",
-                              "Problems: %0p. Item: (%0s)."},
-                             is_write ? "write to" : "read from", csr_addr, problems,
-                             item.sprint(uvm_default_line_printer)))
+          tl_a_op_e a_opcode = tl_a_op_e'(item.a_opcode);
+          string a_op_name = (a_opcode.name() == "") ? "(??)" : a_opcode.name();
+
+          `uvm_error("d_error_from_debug_rom",
+                     $sformatf({"%0s (%0d) access to address 0x%0h is not predicted to respond ",
+                                "with an error but D-channel response seen with d_error = 1.\n",
+                                "Item details:\n%0s"},
+                               a_op_name, item.a_opcode, item.a_addr,
+                               item.sprint()))
+        end
+      end else begin
+        // This address is not mapped to a register or a memory in the block. We shouldn't be able
+        // to get here, because cip_base_scoreboard::process_tl_d_item calls predict_tl_err. Because
+        // the rv_dm scoreboard does not call set_unmapped_access_ok for this block, that predictor
+        // should have predicted an error, which means cip_base_scoreboard::process_tl_d_item should
+        // exit early instead of calling this function.
+        `uvm_fatal("unmapped_addr",
+                   $sformatf("Access to unmapped 0x%0h shouldn't have got to on_mem_access_d.",
+                             item.a_addr))
       end
 
-      // Nothing else to do: we don't have any model that needs updating.
       return;
     end
 
