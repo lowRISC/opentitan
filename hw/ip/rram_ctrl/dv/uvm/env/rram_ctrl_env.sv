@@ -55,6 +55,8 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
 
   m_key_agent = nvm_otp_key_agent::type_id::create("m_key_agent", this);
   uvm_config_db#(nvm_otp_key_agent_cfg)::set(this, "m_key_agent", "cfg", cfg.m_key_agent_cfg);
+
+  scoreboard.set_backdoors(cfg.m_data_bkdr_util, cfg.m_info_bkdr_util);
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);

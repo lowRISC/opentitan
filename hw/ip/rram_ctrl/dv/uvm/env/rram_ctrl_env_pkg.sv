@@ -12,7 +12,6 @@ package rram_ctrl_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
-  import rram_ctrl_pkg::*;
   import rram_ctrl_core_ral_pkg::*;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
@@ -21,13 +20,30 @@ package rram_ctrl_env_pkg;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
 
+  import otp_ctrl_pkg::NvmKeyWidth;
+
+  import rram_ctrl_pkg::DataWidth;
+  import rram_ctrl_pkg::WordsPerPage;
+  import rram_ctrl_pkg::TotalDataPages;
+  import rram_ctrl_pkg::TotalInfoPages;
+  import rram_ctrl_pkg::OtpStartPage;
+  import rram_ctrl_pkg::NumOutstandingRdReq;
+  import rram_ctrl_pkg::rram_op_e;
+  import rram_ctrl_pkg::RramOpRead, rram_ctrl_pkg::RramOpWrite, rram_ctrl_pkg::RramOpRewrite;
+  import rram_ctrl_pkg::rram_part_e, rram_ctrl_pkg::RramPartData, rram_ctrl_pkg::RramPartInfo;
+
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
 
+  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
+
   import rram_ctrl_reg_pkg::NumRegions;
   import rram_ctrl_reg_pkg::NumDataPages;
   import rram_ctrl_reg_pkg::NumInfoPages;
+  import rram_ctrl_reg_pkg::NumEmulInfoRegions;
+  import rram_ctrl_reg_pkg::NumEmulInfoSubregions;
 
   import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
 
@@ -73,6 +89,7 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
+  `include "rram_partition_model.svh"
   `include "rram_ctrl_reg_cbs.svh"
   `include "rram_ctrl_scoreboard.sv"
   `include "rram_ctrl_env.sv"
