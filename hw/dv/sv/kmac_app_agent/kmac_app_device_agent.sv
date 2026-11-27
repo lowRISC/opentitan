@@ -26,8 +26,9 @@ endfunction
 function void kmac_app_device_agent::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
-  // Get the handle to the interface
-  if (!uvm_config_db#(virtual kmac_app_if)::get(this, "", "vif", cfg.vif)) begin
+  // Get the handle to the interface if it hasn't already been provided
+  if (cfg.vif == null &&
+      !uvm_config_db#(virtual kmac_app_if)::get(this, "", "vif", cfg.vif)) begin
     `uvm_fatal(`gfn, "failed to get kmac_app_if handle from uvm_config_db")
   end
 

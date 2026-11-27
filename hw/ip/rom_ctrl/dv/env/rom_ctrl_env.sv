@@ -48,17 +48,32 @@ class rom_ctrl_env extends cip_base_env #(
 endclass
 
 function void rom_ctrl_env::build_phase(uvm_phase phase);
+  virtual rom_ctrl_if vif;
   bit integrity_check_disabled;
 
+  // Get the main bound-in rom_ctrl interface, writing it to a local variable for now (because cfg
+  // is only created by dv_base_env::build_phase).
+  if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", vif))
+    `uvm_fatal("config_db", "Failed to get rom_ctrl_vif from uvm_config_db")
+
+  // When the dv_base_env::build_phase runs, it will try to look up clock/reset interfaces for the
+  // two RAL names. Pass them explicitly through uvm_config_db (we can't do this through cfg because
+  // it hasn't yet been created).
+  uvm_config_db#(virtual clk_rst_if)::set(this, "", "clk_rst_vif", vif.u_clk_rst_if);
+  uvm_config_db#(virtual clk_rst_if)::set(this, "", "clk_rst_vif_rom_ctrl_prim_reg_block",
+                                          vif.u_rom_clk_rst_if);
+
   super.build_phase(phase);
+
+  // Now we actually have a cfg object, set its rom_ctrl_vif. Also, tell that interface whether the
+  // environment is active.
+  cfg.rom_ctrl_vif = vif;
+  cfg.rom_ctrl_vif.set_active(cfg.is_active);
 
   // Get the rom_bkdr interface.
   if (!uvm_config_db#(rom_ctrl_bkdr_util)::get(this, "", "rom_ctrl_bkdr_util",
                                                cfg.rom_ctrl_bkdr_util_h))
     `uvm_fatal("config_db", "Failed to get rom_ctrl_bkdr_util from uvm_config_db")
-
-  if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif))
-    `uvm_fatal("config_db", "Failed to get rom_ctrl_vif from uvm_config_db")
 
   // Check whether the integrity check has been disabled (because DISABLE_ROM_INTEGRITY_CHECK was
   // defined).
@@ -85,8 +100,19 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
                  "Active environment could not get rom_ctrl_compare_vif from uvm_config_db")
   end
 
+  // Provide interfaces for the TileLink agents
+  uvm_config_db#(virtual tl_if)::set(this, "m_tl_agent_rom_ctrl_prim_reg_block", "vif",
+                                     cfg.rom_ctrl_vif.u_tl_rom_if);
+  uvm_config_db#(virtual tl_if)::set(this, "m_tl_agent_rom_ctrl_regs_reg_block", "vif",
+                                     cfg.rom_ctrl_vif.u_tl_regs_if);
+
+  // Provide an interface for the alert agent
+  uvm_config_db#(virtual alert_if)::set(this, "m_alert_agent_fatal", "vif",
+                                        cfg.rom_ctrl_vif.u_alert_if);
+
   // Build the KMAC agent
   m_kmac_agent = kmac_app_device_agent::type_id::create("m_kmac_agent", this);
+  cfg.m_kmac_agent_cfg.vif = cfg.rom_ctrl_vif.u_kmac_app_if;
   uvm_config_db#(kmac_app_agent_cfg)::set(this, "m_kmac_agent", "cfg", cfg.m_kmac_agent_cfg);
 
   // Build the reset agent to track the current reset state

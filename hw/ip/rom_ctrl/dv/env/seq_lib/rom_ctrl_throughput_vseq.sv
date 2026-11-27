@@ -31,7 +31,7 @@ task rom_ctrl_throughput_vseq::body();
   // The actual time that the reads have taken
   int num_cycles;
 
-  wait (cfg.rom_ctrl_vif.pwrmgr_data_o_i.done == prim_mubi_pkg::MuBi4True);
+  wait (cfg.rom_ctrl_vif.pwrmgr_data.done == prim_mubi_pkg::MuBi4True);
 
   `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_mem_reads)
   `uvm_info(get_full_name(), $sformatf("Measuring time for %0d ROM reads", num_mem_reads), UVM_LOW)

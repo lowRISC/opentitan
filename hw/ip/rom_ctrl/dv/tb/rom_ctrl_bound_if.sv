@@ -23,8 +23,20 @@ interface rom_ctrl_bound_if #(
   parameter bit Bound = 0,
   parameter bit SecDisableScrambling = 0
 ) (
-  wire clk_i,
-  wire rst_ni
+  // Connections to ports of rom_ctrl. These are all wires and some are driven by u_rom_ctrl_if
+  // (inside this interface) when in active mode.
+  inout wire                             clk,
+  inout wire                             rst_n,
+  inout wire tlul_pkg::tl_h2d_t          rom_h2d,
+  input wire tlul_pkg::tl_d2h_t          rom_d2h,
+  inout wire tlul_pkg::tl_h2d_t          regs_h2d,
+  input wire tlul_pkg::tl_d2h_t          regs_d2h,
+  inout wire prim_alert_pkg::alert_rx_t  alert_rx,
+  input wire prim_alert_pkg::alert_tx_t  alert_tx,
+  input wire rom_ctrl_pkg::pwrmgr_data_t pwrmgr_data,
+  input wire rom_ctrl_pkg::keymgr_data_t keymgr_data,
+  input wire kmac_pkg::app_req_t         kmac_req_data,
+  inout wire kmac_pkg::app_rsp_t         kmac_rsp_data
 );
   if (Bound) begin : gen_bound
     // The pwrmgr_data_o output port from rom_ctrl. When scrambling is enabled, this is computed by
@@ -98,14 +110,14 @@ interface rom_ctrl_bound_if #(
         fork : isolation_fork0 begin
           fork
             wait(u_tl_adapter_rom.tl_i.a_valid);
-            wait(!rst_ni);
+            wait(!rst_n);
           join_any
           disable fork;
         end join
 
         // If reset has not been asserted, a_valid must have been asserted. Override the address
         // coming out of the TL adapter that is being addressed by the A channel we've just seen.
-        if (rst_ni) begin
+        if (rst_n) begin
           force u_tl_adapter_rom.addr_o = desired_bus_rom_idx;
 
           // Wait until the valid signal from the A channel drops again, showing that the A channel
@@ -113,7 +125,7 @@ interface rom_ctrl_bound_if #(
           fork : isolation_fork begin
             fork
               wait(!u_tl_adapter_rom.tl_i.a_valid);
-              wait(!rst_ni);
+              wait(!rst_n);
             join_any
             disable fork;
           end join
@@ -155,19 +167,29 @@ interface rom_ctrl_bound_if #(
     task static wait_n_clk_or_rst();
       fork : isolation_fork begin
         fork
-          @(negedge clk_i);
-          wait(!rst_ni);
+          @(negedge clk);
+          wait(!rst_n);
         join_any
         disable fork;
       end join
     endtask
 
     rom_ctrl_if u_rom_ctrl_if (
-      .clk_i  (clk_i),
+      // rom_ctrl port connections
+      .clk,
+      .rst_n,
+      .rom_h2d,
+      .rom_d2h,
+      .regs_h2d,
+      .regs_d2h,
+      .alert_rx,
+      .alert_tx,
+      .pwrmgr_data,
+      .keymgr_data,
+      .kmac_req_data,
+      .kmac_rsp_data,
 
-      .pwrmgr_data_o_i (pwrmgr_data),
-      .keymgr_data_o_i (keymgr_data),
-
+      // Specific ports for communicating with tasks defined above
       .override_bus_rom_idx_o   (override_bus_rom_idx),
       .desired_bus_rom_idx_o    (desired_bus_rom_idx),
       .bus_rom_idx_overridden_i (bus_rom_idx_overridden),
