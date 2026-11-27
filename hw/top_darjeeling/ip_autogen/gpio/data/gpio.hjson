@@ -29,7 +29,7 @@
     {
       version:            "2.0.0",
       life_stage:         "L1",
-      design_stage:       "D1",
+      design_stage:       "D2",
       verification_stage: "V1",
       dif_stage:          "S1",
       notes:              ""
