@@ -823,6 +823,32 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "rv_dm_cheriot_mode_switch",
+    srcs = ["rv_dm_cheriot_mode_switch.S"],
+    dv = dv_params(
+        defines = ["DV_TEST_STATUS"],
+    ),
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+        "//hw/top_earlgrey:sim_verilator": None,
+    },
+    fpga = fpga_params(
+        needs_jtag = True,
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """,
+        test_harness = "//sw/host/tests/chip/rv_dm:cheriot_mode_switch",
+    ),
+    platform = CHERIOT_PLATFORM,
+    verilator = verilator_params(
+        timeout = "long",
+        needs_jtag = True,
+        test_harness = "//sw/host/tests/chip/rv_dm:cheriot_mode_switch",
+    ),
+    deps = CHERIOT_SMOKETEST_DEPS,
+)
+
+opentitan_test(
     name = "cheriot_trvk_revocation_test",
     srcs = ["cheriot_trvk_revocation_test.S"],
     dv = dv_params(
