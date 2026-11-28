@@ -7,10 +7,12 @@ To initialize the ENTROPY_SRC block, see the Device Interface Functions (DIFs) s
 
 ## Entropy Processing
 
-Once entropy has been prepared for delivery, it can be consumed by either hardware (CSRNG block hardware instance) or by a software interface (CSRNG software instance).
+Once entropy has been prepared for delivery, it can be consumed by either:
+- hardware connecting to one of the hardware application interfaces of the CSRNG block via one of the EDNs, or by
+- software, for example from the CSRNG software instance or directly via the [`ENTROPY_DATA`](registers.md#entropy_data) register of the ENTROPY_SRC block.
 
-Note that when software makes frequent re-seed requests to CSRNG, any stored up entropy seeds in the final entropy FIFO will quickly consumed.
-Once the FIFO is empty, subsequent entropy seed requests will have to wait the worst case latency time while new entropy is being created.
+Note that when software makes frequent re-seed requests to CSRNG or read requests to the [`ENTROPY_DATA`](registers.md#entropy_data) register, any entropy seeds stored in the esfinal FIFO of ENTROPY_SRC will quickly get consumed.
+Once the esfinal FIFO is empty, subsequent entropy seed requests will have to wait the worst case latency time while new entropy is being created.
 
 
 ## Entropy Source Module Disable
@@ -43,13 +45,6 @@ To this end, firmware has to:
 1. Set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 1. Set the `FW_OV_ENTROPY_INSERT` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 
-If firmware wants to use hardware conditioning for the inserted entropy bits, it also has to:
-1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
-1. Set `ES_TYPE` or `ES_ROUTE` (or both) in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4False`.
-
-It further has to set the `FW_OV_INSERT_START` field in the [`FW_OV_SHA3_START`](registers.md#fw_ov_sha3_start) register to `kMultiBitBool4True`.
-Once all entropy bits have been written to the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register, firmware can set `FW_OV_INSERT_START` to `kMultiBitBool4False` to trigger the hardware conditioning mechanism.
-
 Note that if the `FW_OV_ENTROPY_INSERT` field is set to `kMultiBitBool4True`, post-health test entropy bits do NOT continue to flow through the hardware pipeline.
 The observe FIFO will collect 1 kBit of contiguous entropy bits.
 Any entropy bits arriving after the observe FIFO is full are being discarded.
@@ -58,18 +53,15 @@ Only entropy bits inserted by firmware by writing the [`FW_OV_WR_DATA`](register
 
 Also, the hardware startup health testing is skipped and firmware becomes responsible for performing any startup health testing.
 
-If firmware does not want to use hardware conditioning for the inserted entropy bits, it has to do one of the two following points:
-1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
-In this case, the entropy is routed to the hardware endpoints.
-1. Set `ES_TYPE` and `ES_ROUTE` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`.
-In this case, the unconditioned entropy is not routed to the hardware endpoints but instead to the  [`ENTROPY_DATA`](registers.md#entropy_data) register.
+Whether hardware conditioning is applied to the inserted entropy bits depends on the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register:
+- `kMultiBitBool4True`: Firmware has to set the `FW_OV_INSERT_START` field in the [`FW_OV_SHA3_START`](registers.md#fw_ov_sha3_start) register to `kMultiBitBool4True` before writing the entropy bits to the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register.
+  Afterwards, it sets `FW_OV_INSERT_START` to `kMultiBitBool4False` to trigger the hardware conditioning.
+- `kMultiBitBool4False`: The inserted entropy bits bypass the hardware conditioning (see [Hardware Conditioning Bypass](#hardware-conditioning-bypass)).
 
 ### Hardware Conditioning Bypass
 
-Firmware can enable bypassing of the hardware conditioning inside the ENTROPY_SRC block.
-To this end, firmware has to either:
-- set the `ES_TYPE` and `ES_ROUTE` fields in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True` (this causes the ENTROPY_SRC block to not pass any entropy to the block hardware interface), or
-- set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False` to disable FIPS mode and enable the bypass or boot-time mode.
+Firmware can enable bypassing of the hardware conditioning inside the ENTROPY_SRC block by setting the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
+This disables FIPS mode and enables the bypass or boot-time mode.
 
 Note that in bypass or boot-time mode, health test window sizes other than 384 bits (the seed length) are currently not tested nor supported.
 
@@ -77,11 +69,14 @@ Note that in bypass or boot-time mode, health test window sizes other than 384 b
 
 Firmware can read the entropy output of the ENTROPY_SRC block from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
 To this end, firmware has to:
-1. Set the `ENTROPY_DATA_REG_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
-1. Set the `ES_ROUTE` field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register to `kMultiBitBool4True`.
+1. Set the `ENTROPY_DATA_REG_ENABLE` field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register to `kMultiBitBool4True`.
+1. Request the routing of a single seed to the [`ENTROPY_DATA`](registers.md#entropy_data) register by writing the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register to `kMultiBitBool4True`.
+1. Wait for the [`ENTROPY_DATA_VALID`](registers.md#entropy_data_valid) register to read `kMultiBitBool4True`.
+1. Read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times to retrieve the entire 384-bit seed (12 * 32 bits = 384 bits in total).
 
-Note that once the field `ES_ROUTE` is set to `kMultiBitBool4True`, no entropy is being passed to the block hardware interface.
-This mode is compatible with [Hardware Conditioning Bypass](#hardware-conditioning-bypass) (enabled by setting the `ES_TYPE` field in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`).
+While the request is pending, no seed is passed to the block hardware interface.
+To ensure a seed is only ever read by firmware, firmware has to place the request before the seed is produced, e.g., before enabling the ENTROPY_SRC block in bypass or boot-time mode, or before inserting the entropy bits in [Firmware Override - Extract & Insert](#firmware-override---extract--insert) mode.
+Note that while firmware is retrieving the requested seed from the [`ENTROPY_DATA`](registers.md#entropy_data) register, the hardware can pass subsequent seeds to the block hardware interface.
 
 
 ## Single RNG Bit Mode

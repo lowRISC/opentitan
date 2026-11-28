@@ -123,6 +123,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       do_reenable = 0;
     end
     super.enable_dut();
+    // The request is ignored if ENTROPY_DATA is not readable.
+    request_entropy_data();
   endtask
 
   virtual task disable_dut();
@@ -253,9 +255,6 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     if (switch_to_fips_mode) begin
       `uvm_info(`gfn, "SWITCHING to FIPS mode", UVM_MEDIUM)
       csr_wr(.ptr(ral.conf.fips_enable), .value(MuBi4True));
-      if (`gmv(ral.entropy_control.es_route) == MuBi4True) begin
-        csr_wr(.ptr(ral.entropy_control.es_type), .value(MuBi4False));
-      end
     end
 
     if (check_sw_update_explicit &&
@@ -340,8 +339,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       do_entropy_data_read(.source(TlSrcEntropyDataReg),
                            .bundles_found(bundles_found));
       `uvm_info(`gfn, $sformatf("Found %d entropy_data bundles", bundles_found), UVM_FULL)
-      if (`gmv(ral.entropy_control.es_type)  == MuBi4True ||
-          `gmv(ral.conf.fips_enable)         == MuBi4False) begin
+      if (`gmv(ral.conf.fips_enable) == MuBi4False) begin
         do_reenable = 1;
       end
     end
@@ -675,18 +673,18 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   // it can only generate one seed.
   task reinit_monitor_thread();
     bit boot_mode_csrng;
-    logic [MuBi4Width-1:0] fips_enable, es_route;
+    logic [MuBi4Width-1:0] fips_enable, entropy_data_reg_enable;
 
     `uvm_info(`gfn, "Starting re-init monitor", UVM_LOW)
 
     wait(cfg.under_reset == 0);
     csr_rd(.ptr(ral.conf.fips_enable), .value(fips_enable));
-    csr_rd(.ptr(ral.entropy_control.es_route), .value(es_route));
+    csr_rd(.ptr(ral.entropy_control.entropy_data_reg_enable), .value(entropy_data_reg_enable));
 
     // We don't need to monitor the CSRNG bus if nothing will be coming on it, or
-    // if the DUT is already configured to output FIPS data.
-    boot_mode_csrng = fips_enable != MuBi4True &&
-                      es_route != MuBi4True;
+    // if the DUT is already configured to output FIPS data. If ENTROPY_DATA is readable, the boot
+    // mode seed is requested by firmware and doesn't go to the CSRNG bus.
+    boot_mode_csrng = fips_enable != MuBi4True && entropy_data_reg_enable != MuBi4True;
 
     if (boot_mode_csrng && do_background_procs) begin
       `uvm_info(`gfn, "Waiting for CSRNG Seed", UVM_MEDIUM)
@@ -738,16 +736,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   endtask
 
   task reconfig_timer_thread();
-    realtime delta = -1, random_delta, timeout_delta, init_time;
+    realtime delta = -1, random_delta, init_time;
     string  msg;
 
     init_time = $realtime();
 
-    timeout_delta = !cfg.generates_seeds(mubi4_t'(`gmv(ral.entropy_control.es_route)),
-                                         mubi4_t'(`gmv(ral.conf.entropy_data_reg_enable))) ?
-                    cfg.max_silent_reconfig_time : -1;
-
-    if (cfg.mean_rand_reconfig_time <= 0 && timeout_delta <= 0) begin
+    if (cfg.mean_rand_reconfig_time <= 0) begin
       `uvm_info(`gfn, "Skipping reconfig timer thread", UVM_LOW)
       return;
     end
@@ -759,16 +753,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       random_delta = (sched_reconfig_time - init_time);
     end
 
-    case ({random_delta > 0, timeout_delta > 0})
-      2'b11: delta = random_delta < timeout_delta ? random_delta : timeout_delta;
-      2'b10: delta = random_delta;
-      2'b01: delta = timeout_delta;
-      2'b00: delta = -1;
-      default: delta = -1;
-    endcase
+    delta = random_delta > 0 ? random_delta : -1;
 
-    msg = $sformatf("random_delta: %0.2fms, timeout_delta: %0.2fms, delta: %0.2fms",
-                    random_delta/1ms, timeout_delta/1ms, delta/1ms);
+    msg = $sformatf("random_delta: %0.2fms, delta: %0.2fms", random_delta/1ms, delta/1ms);
     `uvm_info(`gfn, msg, UVM_DEBUG)
 
     if(delta > 0) begin

@@ -26,7 +26,6 @@ status_t entropy_testutils_entropy_src_init(void) {
       .fips_flag = true,
       .rng_fips = true,
       .route_to_firmware = false,
-      .bypass_conditioner = false,
       .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_window_size = 0x0200,

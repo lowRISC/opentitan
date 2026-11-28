@@ -22,6 +22,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
   bit [15:0] path_err_val;
 
+  // Taken from the applied configuration, see request_entropy_data().
+  bit     use_invalid_entropy_data_request;
+  mubi4_t invalid_entropy_data_request_val;
+
   virtual entropy_src_cov_if   cov_vif;
 
 
@@ -180,9 +184,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     completed = 0;
 
+    use_invalid_entropy_data_request = newcfg.use_invalid_mubi &&
+        newcfg.which_invalid_mubi == invalid_entropy_data_request;
+    invalid_entropy_data_request_val = newcfg.invalid_entropy_data_request_val;
+
     // Controls
-    ral.entropy_control.es_type.set(newcfg.type_bypass);
-    ral.entropy_control.es_route.set(newcfg.route_software);
+    ral.entropy_control.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
     ral.entropy_control.esfinal_fifo_clear_while_disabled.set(newcfg.esfinal_clr_while_dsbld);
     csr_update(.csr(ral.entropy_control));
     pause_until_reset_or_flag(pause, stop_early);
@@ -248,7 +255,6 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (stop_early || cfg.under_reset) return;
 
     ral.conf.fips_enable.set(newcfg.fips_enable);
-    ral.conf.entropy_data_reg_enable.set(newcfg.entropy_data_reg_enable);
     ral.conf.fips_flag.set(newcfg.fips_flag);
     ral.conf.rng_fips.set(newcfg.rng_fips);
     ral.conf.rng_bit_enable.set(newcfg.rng_bit_enable);
@@ -376,14 +382,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.intr_state), .value(32'hf));
     if (cfg.under_reset) return;
 
-    ral.entropy_control.es_type.set(MuBi4False);
-    ral.entropy_control.es_route.set(MuBi4False);
+    ral.entropy_control.entropy_data_reg_enable.set(MuBi4False);
     ral.entropy_control.esfinal_fifo_clear_while_disabled.set(MuBi4True);
     csr_update(.csr(ral.entropy_control));
     if (cfg.under_reset) return;
 
     ral.conf.fips_enable.set(MuBi4False);
-    ral.conf.entropy_data_reg_enable.set(MuBi4False);
     ral.conf.fips_flag.set(MuBi4False);
     ral.conf.rng_fips.set(MuBi4False);
     ral.conf.rng_bit_enable.set(MuBi4False);
@@ -447,7 +451,22 @@ class entropy_src_base_vseq extends cip_base_vseq #(
       end
     endcase
 
+    if (source == TlSrcEntropyDataReg) request_entropy_data();
     csr_spinwait(.ptr(intr_field), .exp_data(1'b1), .spinwait_delay_ns(spinwait_delay_ns));
+  endtask
+
+  // Request the next seed for the ENTROPY_DATA register unless a seed is already available or a
+  // request is already pending. Requesting in these cases would discard the unread seed.
+  task request_entropy_data();
+    uvm_reg_data_t valid, request;
+    csr_rd(.ptr(ral.entropy_data_request), .value(request));
+    csr_rd(.ptr(ral.entropy_data_valid), .value(valid));
+    if (valid != MuBi4True && request != MuBi4True) begin
+      if (use_invalid_entropy_data_request) begin
+        csr_wr(.ptr(ral.entropy_data_request), .value(invalid_entropy_data_request_val));
+      end
+      csr_wr(.ptr(ral.entropy_data_request), .value(MuBi4True));
+    end
   endtask
 
 
@@ -475,6 +494,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     bit intr_status;
     bit done;
     bit read_max = 0;
+    bit rerequest = 0;
     int num_words_to_read = 1;
     uvm_reg_field intr_field;
     uvm_reg       data_reg;
@@ -505,6 +525,10 @@ class entropy_src_base_vseq extends cip_base_vseq #(
           if (source == TlSrcEntropyDataReg) begin
             // The seed length (CSRNG_BUS_WIDTH) is an integer multiple of the bus width.
             num_words_to_read = entropy_src_pkg::CSRNG_BUS_WIDTH / TL_DW;
+            // Sometimes stop early and discard the rest of the seed with a new request.
+            rerequest = (max_bundles < 0) &&
+                        ($urandom_range(0, 99) < cfg.entropy_data_rerequest_pct);
+            if (rerequest) num_words_to_read = $urandom_range(0, num_words_to_read - 1);
           end else begin
             // Check that the Observe FIFO hasn't overflown yet.
             // By checking for overflows before and after reading the observe FIFO we can make sure
@@ -535,7 +559,12 @@ class entropy_src_base_vseq extends cip_base_vseq #(
               bit [TL_DW-1:0] entropy_tlul;
               csr_rd(.ptr(data_reg), .value(entropy_tlul), .blocking(1'b1));
             end
-            bundles_found += (source == TlSrcObserveFIFO ? num_words_to_read : 1);
+            if (source == TlSrcObserveFIFO) begin
+              bundles_found += num_words_to_read;
+            end else if (!rerequest) begin
+              // Only count entirely read seeds.
+              bundles_found += 1;
+            end
             num_words_to_read = 0;
 
             // Check whether no overflow occurred while reading the observe FIFO and we are
@@ -556,9 +585,14 @@ class entropy_src_base_vseq extends cip_base_vseq #(
             done = (max_bundles >= 0) && (bundles_found >= max_bundles);
           end while (num_words_to_read > 0 && !done);
 
+          // Discard the partially read seed before clearing the interrupt to not clear the
+          // interrupt of the next seed.
+          if (rerequest) csr_wr(.ptr(ral.entropy_data_request), .value(MuBi4True));
           // Clear the appropriate interrupt bit
           `uvm_info(`gfn, "CLEARING FIFO INTERRUPT", UVM_DEBUG)
           csr_wr(.ptr(intr_field), .value(1'b1), .blocking(1'b1));
+          // Request the next seed only after clearing the interrupt to not miss its interrupt.
+          if (source == TlSrcEntropyDataReg && !done && !rerequest) request_entropy_data();
         end
       end while (intr_status && !done);, // do begin
     $sformatf("Timeout encountered while reading %s", source.name()), timeout_ns)

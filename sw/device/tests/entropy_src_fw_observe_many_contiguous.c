@@ -124,7 +124,6 @@ static status_t entropy_config(
       (dif_entropy_src_config_t){
           .fips_enable = true,
           .route_to_firmware = false,
-          .bypass_conditioner = false,
           .clear_esfinal_fifo_while_disabled = true,
           .single_bit_mode = single_bit_mode,
           .health_test_threshold_scope = false,

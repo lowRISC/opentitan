@@ -18,7 +18,7 @@ module entropy_src
   parameter int RngBusWidth                       = 4,
   parameter int RngBusBitSelWidth                 = 2,
   parameter int HealthTestWindowWidth             = 18,
-  parameter int EsFifoDepth                       = 3,
+  parameter int EsFifoDepth                       = 2,
   parameter int DistrFifoDepth                    = 3,
   parameter bit Stub                              = 1'b0
 ) (

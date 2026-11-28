@@ -17,7 +17,6 @@ class entropy_src_alert_test extends entropy_src_base_test;
     cfg.dut_cfg.fw_read_pct                 = 0;
     cfg.dut_cfg.fw_over_pct                 = 0;
     cfg.dut_cfg.bad_mubi_cfg_pct            = 0;
-    cfg.dut_cfg.route_software_pct          = 0;
     cfg.dut_cfg.module_enable_pct           = 0;
     cfg.dut_cfg.default_ht_thresholds_pct   = 100;
 

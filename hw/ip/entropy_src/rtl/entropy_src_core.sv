@@ -10,7 +10,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusWidth           = 4,
   parameter int RngBusBitSelWidth     = 2,
   parameter int HealthTestWindowWidth = 18,
-  parameter int EsFifoDepth           = 3,
+  parameter int EsFifoDepth           = 2,
   parameter int DistrFifoDepth        = 3,
   parameter int BucketHtDataWidth     = 4,
   parameter int NumBucketHtInst       = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
@@ -79,9 +79,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   localparam int Clog2ObserveFifoDepth = $clog2(ObserveFifoDepth);
   localparam int EsEnableCopies = 15;
   localparam int EsEnPulseCopies = 1;
-  localparam int unsigned NumSwReadsSeed = SeedLen / FullRegWidth;
-  localparam int unsigned LastSwRead = NumSwReadsSeed - 1;
-  localparam int unsigned SwReadIdxWidth = prim_util_pkg::vbits(NumSwReadsSeed);
 
   //-----------------------
   // SHA3parameters
@@ -120,9 +117,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic       rng_bit_enable_pfa;
   logic [RngBusBitSelWidth-1:0] rng_bit_sel;
   logic       rng_enable_q, rng_enable_d;
-  logic       entropy_data_reg_en_pfe;
-  logic       entropy_data_reg_en_pfa;
-  logic       es_data_reg_rd_en;
   logic       event_es_entropy_valid;
   logic       event_es_health_test_failed;
   logic       event_es_observe_fifo_ready;
@@ -203,12 +197,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic                     health_test_done_pulse;
   logic [RngBusWidth-1:0]   health_test_esbus;
   logic                     health_test_esbus_vld;
-  logic                     es_route_pfe;
-  logic                     es_route_pfa;
-  logic                     es_type_pfe;
-  logic                     es_type_pfa;
-  logic                     es_route_to_sw;
-  logic                     es_bypass_to_sw;
+  logic                     entropy_data_reg_en_pfe;
+  logic                     entropy_data_reg_en_pfa;
   logic                     es_bypass_mode;
   logic                     esfinal_fifo_clear_while_disabled_pfe;
   logic                     esfinal_fifo_clear_while_disabled_pfa;
@@ -375,10 +365,14 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [PipelineDepthW-1:0] pipeline_depth;
   logic                      pipeline_depth_cntr_err;
 
-  logic [SwReadIdxWidth-1:0] swread_idx_d, swread_idx_q;
-  logic                      swread_idx_incr, swread_idx_clr;
+  logic                      sw_seed_requested;
+  logic                      pfifo_swread_push;
+  logic                      pfifo_swread_clr;
+  logic                      pfifo_swread_not_full;
+  logic                      pfifo_swread_not_empty;
   logic [FullRegWidth-1:0]   swread_data, swread_data_buf;
-  logic                      swread_done;
+  logic                      entropy_data_request_pfe;
+  logic                      entropy_data_request_pfa;
 
   logic [SeedLen-1:0]       final_es_data;
   logic                     es_hw_if_req;
@@ -680,25 +674,6 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // SEC_CM: CONFIG.MUBI
-  mubi4_t mubi_entropy_reg_en;
-  mubi4_t [1:0] mubi_entropy_reg_en_fanout;
-  assign mubi_entropy_reg_en = mubi4_t'(reg2hw.conf.entropy_data_reg_enable.q);
-  assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en_fanout[0]);
-  assign entropy_data_reg_en_pfa = mubi4_test_invalid(mubi_entropy_reg_en_fanout[1]);
-  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de = entropy_data_reg_en_pfa;
-  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d =  entropy_data_reg_en_pfa;
-
-  prim_mubi4_sync #(
-    .NumCopies(2),
-    .AsyncOn(0)
-  ) u_prim_mubi4_sync_entropy_data_reg_en (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(mubi_entropy_reg_en),
-    .mubi_o(mubi_entropy_reg_en_fanout)
-  );
-
-  // SEC_CM: CONFIG.MUBI
   mubi4_t mubi_threshold_oneway;
   mubi4_t [1:0] mubi_threshold_oneway_fanout;
   assign mubi_threshold_oneway = mubi4_t'(reg2hw.threshold_oneway.q);
@@ -862,8 +837,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
 
   // set the interrupt event when enabled
-  assign event_es_entropy_valid =
-      sfifo_esfinal_not_empty && es_route_to_sw && es_data_reg_rd_en;
+  assign event_es_entropy_valid = pfifo_swread_not_empty;
 
 
   // Collect all internal FIFO errors.
@@ -1326,41 +1300,22 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign event_es_observe_fifo_ready = observe_fifo_thresh_met;
 
   // SEC_CM: CONFIG.MUBI
-  mubi4_t mubi_es_route;
-  mubi4_t [1:0] mubi_es_route_fanout;
-  assign mubi_es_route = mubi4_t'(reg2hw.entropy_control.es_route.q);
-  assign es_route_pfe = mubi4_test_true_strict(mubi_es_route_fanout[0]);
-  assign es_route_pfa = mubi4_test_invalid(mubi_es_route_fanout[1]);
-  assign hw2reg.recov_alert_sts.es_route_field_alert.de = es_route_pfa;
-  assign hw2reg.recov_alert_sts.es_route_field_alert.d  = es_route_pfa;
+  mubi4_t mubi_entropy_reg_en;
+  mubi4_t [1:0] mubi_entropy_reg_en_fanout;
+  assign mubi_entropy_reg_en = mubi4_t'(reg2hw.entropy_control.entropy_data_reg_enable.q);
+  assign entropy_data_reg_en_pfe = mubi4_test_true_strict(mubi_entropy_reg_en_fanout[0]);
+  assign entropy_data_reg_en_pfa = mubi4_test_invalid(mubi_entropy_reg_en_fanout[1]);
+  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.de = entropy_data_reg_en_pfa;
+  assign hw2reg.recov_alert_sts.entropy_data_reg_en_field_alert.d =  entropy_data_reg_en_pfa;
 
   prim_mubi4_sync #(
     .NumCopies(2),
     .AsyncOn(0)
-  ) u_prim_mubi4_sync_es_route (
+  ) u_prim_mubi4_sync_entropy_data_reg_en (
     .clk_i,
     .rst_ni,
-    .mubi_i(mubi_es_route),
-    .mubi_o(mubi_es_route_fanout)
-  );
-
-  // SEC_CM: CONFIG.MUBI
-  mubi4_t mubi_es_type;
-  mubi4_t [1:0] mubi_es_type_fanout;
-  assign mubi_es_type = mubi4_t'(reg2hw.entropy_control.es_type.q);
-  assign es_type_pfe = mubi4_test_true_strict(mubi_es_type_fanout[0]);
-  assign es_type_pfa = mubi4_test_invalid(mubi_es_type_fanout[1]);
-  assign hw2reg.recov_alert_sts.es_type_field_alert.de = es_type_pfa;
-  assign hw2reg.recov_alert_sts.es_type_field_alert.d  = es_type_pfa;
-
-  prim_mubi4_sync #(
-    .NumCopies(2),
-    .AsyncOn(0)
-  ) u_prim_mubi4_sync_es_type (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(mubi_es_type),
-    .mubi_o(mubi_es_type_fanout)
+    .mubi_i(mubi_entropy_reg_en),
+    .mubi_o(mubi_entropy_reg_en_fanout)
   );
 
   // SEC_CM: CONFIG.MUBI
@@ -1395,33 +1350,11 @@ module entropy_src_core import entropy_src_pkg::*; #(
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.de = threshold_scope_pfa;
   assign hw2reg.recov_alert_sts.threshold_scope_field_alert.d  = threshold_scope_pfa;
 
-  assign es_route_to_sw = es_route_pfe;
-  assign es_bypass_to_sw = es_type_pfe;
   assign threshold_scope = threshold_scope_pfe;
   assign esfinal_fifo_clear_while_disabled = esfinal_fifo_clear_while_disabled_pfe;
 
-  // The es_bypass_mode signal determines whether the conditioner is bypassed or not.
-  // The conditioner can be bypassed by either disabling fips_enable_pfe or by enabling
-  // both es_bypass_to_sw and es_route_to_sw.
-  // The combination of es_bypass_to_sw and es_route_to_sw allows for four distinct cases:
-  //  _________________ ________________
-  // |                 |                |
-  // | es_bypass_to_sw | es_route_to_sw |
-  // |_________________|________________|
-  // |                 |                |
-  // |        0        |       0        | In this case the entropy passes through the conditioner
-  // |_________________|________________| and the entropy is forwarded to the HW endpoints.
-  // |                 |                |
-  // |        0        |       1        | In this case the entropy passes through the conditioner
-  // |_________________|________________| and the entropy is forwarded to software.
-  // |                 |                |
-  // |        1        |       0        | In this case nothing happens and whether the conditioner
-  // |_________________|________________| is bypassed solely depends on fips_enable_pfe.
-  // |                 |                |
-  // |        1        |       1        | In this case the conditioner is bypassed and the entropy
-  // |_________________|________________| is forwarded to software.
-
-  assign es_bypass_mode = (!fips_enable_pfe) || (es_bypass_to_sw && es_route_to_sw);
+  // The conditioner is bypassed when FIPS mode is disabled.
+  assign es_bypass_mode = !fips_enable_pfe;
 
   // send off to AST RNG for possibly faster entropy generation
   assign rng_fips_o = rng_fips_pfe;
@@ -2052,14 +1985,13 @@ module entropy_src_core import entropy_src_pkg::*; #(
          fips_flag_pfa ||
          rng_fips_pfa ||
          entropy_data_reg_en_pfa ||
+         entropy_data_request_pfa ||
          threshold_scope_pfa ||
          rng_bit_enable_pfa ||
          threshold_oneway_pfa ||
          fw_ov_mode_pfa ||
          fw_ov_entropy_insert_pfa ||
          fw_ov_sha3_start_pfa ||
-         es_route_pfa ||
-         es_type_pfa ||
          esfinal_fifo_clear_while_disabled_pfa ||
          es_main_sm_alert ||
          es_bus_cmp_alert ||
@@ -2537,9 +2469,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    (pfifo_precon_depth)
   );
 
-  // When bypassing the hardware conditioning - due to a) disabling FIPS mode or b) routing entropy
-  // to the ENTROPY_DATA register (ES_ROUTE) and bypassing the conditioner (ES_TYPE) - nothing is
-  // going into the conditioner.
+  // When bypassing the hardware conditioning due to disabling FIPS mode, nothing is going into the
+  // conditioner.
   assign pfifo_precon_push = es_bypass_mode ? 1'b0 :
                              // In firmware override mode with extract & insert enabled, only bits
                              // inserted by firmware continue down the pipeline.
@@ -2762,9 +2693,8 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .depth_o    ()
   );
 
-  // Unless the hardware conditioning is bypassed - due to a) disabling FIPS mode or b) routing
-  // entropy to the ENTROPY_DATA register (ES_ROUTE) and bypassing the conditioner (ES_TYPE) -
-  // nothing is going into the bypass FIFO.
+  // Unless the hardware conditioning is bypassed due to disabling FIPS mode, nothing is going into
+  // the bypass FIFO.
   assign pfifo_bypass_push = !es_bypass_mode ? 1'b0 :
                              // In firmware override mode with extract & insert enabled, only bits
                              // inserted by firmware continue down the pipeline
@@ -2924,7 +2854,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
 
   assign sfifo_esfinal_clr = esfinal_fifo_clear_while_disabled && !es_enable_fo[14];
   assign sfifo_esfinal_wdata = {fips_compliance,final_es_data};
-  assign sfifo_esfinal_pop = es_route_to_sw ? swread_done : es_hw_if_fifo_pop;
+  assign sfifo_esfinal_pop = pfifo_swread_push || es_hw_if_fifo_pop;
   assign {esfinal_fips_flag,esfinal_data} = sfifo_esfinal_rdata;
 
   // fifo err
@@ -2948,8 +2878,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
     .rst_ni           (rst_ni),
     .req_i            (es_hw_if_req),
     .ack_o            (es_hw_if_ack),
-    .fifo_not_empty_i (sfifo_esfinal_not_empty && !es_route_to_sw &&
-                       !sfifo_esfinal_clr),
+    .fifo_not_empty_i (sfifo_esfinal_not_empty && !sw_seed_requested && !sfifo_esfinal_clr),
     .local_escalate_i (fatal_loc_events),
     .fifo_pop_o       (es_hw_if_fifo_pop),
     .ack_sm_err_o     (es_ack_sm_err)
@@ -2982,38 +2911,34 @@ module entropy_src_core import entropy_src_pkg::*; #(
   // software es read path via ENTROPY_DATA register
   //----------------------------------------------------
 
-  // Is the ENTROPY_DATA register readable?
-  assign es_data_reg_rd_en = entropy_data_reg_en_pfe;
+  // Pop the next seed from the esfinal FIFO into the unpacker upon request. A request while the
+  // unpacker still holds a seed first clears the unpacker. While a request is pending, no seed is
+  // passed to the hardware interface.
+  assign sw_seed_requested = entropy_data_reg_en_pfe && entropy_data_request_pfe;
+  assign pfifo_swread_push = sw_seed_requested && sfifo_esfinal_not_empty &&
+                             pfifo_swread_not_full && !sfifo_esfinal_clr;
+  assign pfifo_swread_clr = !entropy_data_reg_en_pfe || sfifo_esfinal_clr ||
+                            (entropy_data_request_pfe && pfifo_swread_not_empty);
 
-  // Interface the esfinal FIFO and cut its 384-bit output into 32-bit chunks for software.
-  // We're done after the last read.
-  assign swread_done = reg2hw.entropy_data.re && (swread_idx_q == LastSwRead[SwReadIdxWidth-1:0]);
-
-  // Increment the index counter upon reads from software.
-  assign swread_idx_incr = reg2hw.entropy_data.re && sfifo_esfinal_not_empty;
-
-  // Unless the ENTROPY_DATA CSR is readable, keep clearing the index counter. Clear the counter
-  // after a full seed has been read, or when the FIFO is cleared.
-  assign swread_idx_clr = !es_data_reg_rd_en || swread_done || sfifo_esfinal_clr;
-
-  // Index counter
-  assign swread_idx_d = swread_idx_clr    ? '0                  :
-                        swread_idx_incr   ? swread_idx_q + 1'b1 : swread_idx_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : swread_idx_reg
-    if (!rst_ni) begin
-      swread_idx_q <= '0;
-    end else begin
-      swread_idx_q <= swread_idx_d;
-    end
-  end
-
-  // Forward the relevant part of the valid esfinal output or 0 if ES_ROUTE is off.
-  assign swread_data = sfifo_esfinal_not_empty && es_route_to_sw ?
-      esfinal_data[swread_idx_q * FullRegWidth +: FullRegWidth] : '0;
+  // Cut the 384-bit seed into 32-bit chunks for software.
+  prim_packer_fifo #(
+    .InW(SeedLen),
+    .OutW(FullRegWidth)
+  ) u_prim_packer_fifo_swread (
+    .clk_i      (clk_i),
+    .rst_ni     (rst_ni),
+    .clr_i      (pfifo_swread_clr),
+    .wvalid_i   (pfifo_swread_push),
+    .wdata_i    (esfinal_data),
+    .wready_o   (pfifo_swread_not_full),
+    .rvalid_o   (pfifo_swread_not_empty),
+    .rdata_o    (swread_data),
+    .rready_i   (reg2hw.entropy_data.re),
+    .depth_o    ()
+  );
 
   // This primitive is used to place a size-only constraint on the buffers to act as a synthesis
-  // optimization barrier. This ensures ES_ROUTE and ENTROPY_DATA_REG_ENABLE are taken into account
-  // in separately.
+  // optimization barrier. This ensures ENTROPY_DATA_REG_ENABLE is taken into account separately.
   prim_buf #(
     .Width(FullRegWidth)
   ) u_prim_buf_swread_data (
@@ -3022,7 +2947,36 @@ module entropy_src_core import entropy_src_pkg::*; #(
   );
 
   // Forward the data to the ENTROPY_DATA CSR or 0 if the CSR is not readable.
-  assign hw2reg.entropy_data.d = es_data_reg_rd_en ? swread_data_buf : '0;
+  assign hw2reg.entropy_data.d = entropy_data_reg_en_pfe ? swread_data_buf : '0;
+
+  // SEC_CM: CONFIG.MUBI
+  mubi4_t mubi_entropy_data_request;
+  mubi4_t [1:0] mubi_entropy_data_request_fanout;
+  assign mubi_entropy_data_request = mubi4_t'(reg2hw.entropy_data_request.q);
+  assign entropy_data_request_pfe = mubi4_test_true_strict(mubi_entropy_data_request_fanout[0]);
+  assign entropy_data_request_pfa = mubi4_test_invalid(mubi_entropy_data_request_fanout[1]);
+  assign hw2reg.recov_alert_sts.entropy_data_request_field_alert.de = entropy_data_request_pfa;
+  assign hw2reg.recov_alert_sts.entropy_data_request_field_alert.d  = entropy_data_request_pfa;
+
+  prim_mubi4_sync #(
+    .NumCopies(2),
+    .AsyncOn(0)
+  ) u_prim_mubi4_sync_entropy_data_request (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(mubi_entropy_data_request),
+    .mubi_o(mubi_entropy_data_request_fanout)
+  );
+
+  // The request stays set until the seed has been moved into the unpacker. Requests while the
+  // ENTROPY_DATA CSR is not readable and invalid requests are cleared right away.
+  assign hw2reg.entropy_data_request.de = pfifo_swread_push || !entropy_data_reg_en_pfe ||
+                                          sfifo_esfinal_clr || entropy_data_request_pfa;
+  assign hw2reg.entropy_data_request.d  = prim_mubi_pkg::MuBi4False;
+
+  assign hw2reg.entropy_data_valid.de = 1'b1;
+  assign hw2reg.entropy_data_valid.d  = pfifo_swread_not_empty ? prim_mubi_pkg::MuBi4True :
+                                                                 prim_mubi_pkg::MuBi4False;
 
 
   //--------------------------------------------

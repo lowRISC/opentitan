@@ -147,4 +147,11 @@ module tb;
     run_test();
   end
 
+  // Testpoint entropy_data_request: no seed is passed to the CSRNG HW interface while firmware
+  // has a seed request pending.
+  `ASSERT(NoCsrngAckWhileEntropyDataRequested_A,
+          dut.reg2hw.entropy_control.entropy_data_reg_enable.q == prim_mubi_pkg::MuBi4True &&
+          dut.reg2hw.entropy_data_request.q == prim_mubi_pkg::MuBi4True |-> !csrng_if.ack,
+          clk, !rst_n)
+
 endmodule

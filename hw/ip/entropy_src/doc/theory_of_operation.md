@@ -16,11 +16,29 @@ This assumes that proper defaults are chosen for the health test thresholds and 
 Once the ENTROPY_SRC block is enabled, also the PTRNG noise source starts up.
 The ENTROPY_SRC block will then start to collect entropy bits indefinitely until disabled.
 
+### Modes of Operation
+
+The mode of operation is defined by the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register and the `FW_OV_MODE` and `FW_OV_ENTROPY_INSERT` fields in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register.
+The table below lists all modes.
+
+| Mode                                                              | FIPS_ENABLE | FW_OV_MODE | FW_OV_ENTROPY_INSERT | Conditioning                     | Health test window | Seeds                         |
+|:------------------------------------------------------------------|:------------|:-----------|:---------------------|:---------------------------------|:-------------------|:------------------------------|
+| Boot-time / bypass mode                                           | False       | False      | False                | None                             | BYPASS_WINDOW      | 1                             |
+| Boot-time / bypass mode, observe                                  | False       | True       | False                | None                             | BYPASS_WINDOW      | 1                             |
+| FIPS/CC compliant mode                                            | True        | False      | False                | Hardware (SHA3)                  | FIPS_WINDOW        | Unlimited                     |
+| FIPS/CC compliant mode, observe                                   | True        | True       | False                | Hardware (SHA3)                  | FIPS_WINDOW        | Unlimited                     |
+| Firmware override mode: extract & insert, without HW conditioning | False       | True       | True                 | Up to firmware                   | BYPASS_WINDOW      | Unlimited (firmware inserted) |
+| Firmware override mode: extract & insert, with HW conditioning    | True        | True       | True                 | Hardware (SHA3) on inserted bits | FIPS_WINDOW        | Unlimited (firmware inserted) |
+
+In all modes, seeds are passed to the block hardware interface by default.
+Firmware can request the next seed to be routed to the [`ENTROPY_DATA`](registers.md#entropy_data) register instead (see [Routing Entropy to Firmware](#routing-entropy-to-firmware)).
+`FW_OV_ENTROPY_INSERT` has no effect unless `FW_OV_MODE` is True.
+
 ### Boot-Time / Bypass Mode
 
 After a reset, the ENTROPY_SRC block will start up in boot-time / bypass mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
-Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
+Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 512 symbols (2048 bits for a symbol size of 4 bits).
 
 ### FIPS/CC Compliant Mode
 
@@ -109,11 +127,14 @@ The same holds for [`EXTHT_FAIL_COUNTS`](registers.md#extht_fail_counts) which r
 ### Routing Entropy to Firmware
 
 Firmware has a path to read entropy from the ENTROPY_SRC block.
-The [`ES_ROUTE`](registers.md#entropy_control--es_route) field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register allows firmware to set the internal multiplexers to steer entropy data to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-When enabled, no entropy is being passed to the block hardware interface.
-The control field [`ES_TYPE`](registers.md#entropy_control--es_type) sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
-A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-The firmware needs to read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
+The [`ENTROPY_CONTROL.entropy_data_reg_enable`](registers.md#entropy_control--entropy_data_reg_enable) setting allows firmware to request the routing of individual seeds from the esfinal FIFO to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
+To place such a request, firmware can write the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register.
+The request moves the next seed from the esfinal FIFO into an unpacker FIFO.
+If the previous seed has not been read entirely, it is discarded.
+While the request is pending, no seed is passed to the block hardware interface.
+When the requested seed can be read from the [`ENTROPY_DATA`](registers.md#entropy_data) register, this is indicated in the [`ENTROPY_DATA_VALID`](registers.md#entropy_data_valid) register and with an interrupt.
+Firmware then needs to read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times to retrieve the entire 384-bit seed (12 * 32 bits = 384 bits in total).
+Meanwhile, subsequent seeds can still be passed to the block hardware interface.
 
 ### Disabling
 

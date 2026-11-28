@@ -218,7 +218,6 @@ _start:
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
   li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
-         (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_FLAG_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_RNG_FIPS_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET) | \

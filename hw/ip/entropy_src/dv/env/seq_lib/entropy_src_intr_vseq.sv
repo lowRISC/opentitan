@@ -22,13 +22,11 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
   task test_es_entropy_valid();
     // Turn off the dut while we write to its registers.
     disable_dut();
-    // Route the entropy to the SW output.
-    csr_wr(.ptr(ral.entropy_control.es_route), .value(prim_mubi_pkg::MuBi4True));
+    // Allow for entropy to be read via the SW register.
+    csr_wr(.ptr(ral.entropy_control.entropy_data_reg_enable), .value(prim_mubi_pkg::MuBi4True));
     // Turn off ov mode since we don't need to observe the post helth test entropy
     // and don't want to insert entropy via the register FW_OV_WR_DATA.
     csr_wr(.ptr(ral.fw_ov_control), .value(32'h99));
-    // Allow for entropy to be read via the SW register.
-    csr_wr(.ptr(ral.conf.entropy_data_reg_enable), .value(prim_mubi_pkg::MuBi4True));
     // Enable only entropy valid interrupts.
     csr_wr(.ptr(ral.intr_enable), .value(1 << EntropyValid));
     // Turn on the DUT.
@@ -40,8 +38,8 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     m_rng_push_seq.num_trans = entropy_src_pkg::CSRNG_BUS_WIDTH/`RNG_BUS_WIDTH;
     run_rng_host_seq(m_rng_push_seq);
 
-    // Wait for the entropy_valid interrupt.
-    csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
+    // Request a seed and wait for the entropy_valid interrupt.
+    poll(.source(TlSrcEntropyDataReg));
     // Expect and clear interrupt bit for entropy valid interrupts.
     check_interrupts(.interrupts((1 << EntropyValid)), .check_set(1'b1));
   endtask // test_es_entropy_valid
@@ -123,17 +121,14 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     // Enable only es_health_test_failed interrupts.
     csr_wr(.ptr(ral.intr_enable), .value(1 << HealthTestFailed));
     csr_wr(.ptr(ral.alert_threshold), .value(32'hfffe0001));
-    // Make the entropy readable via FW or HW depending on the value of cfg.es_route_sw.
-    csr_wr(.ptr(ral.entropy_control.es_route), .value(cfg.es_route_sw));
-    csr_wr(.ptr(ral.conf.entropy_data_reg_enable), .value(cfg.es_route_sw));
+    // Make the entropy readable via FW or HW depending on the value of cfg.entropy_data_reg_enable.
+    csr_wr(.ptr(ral.entropy_control.entropy_data_reg_enable), .value(cfg.entropy_data_reg_enable));
     // Bypass the conditioner in boot mode.
     if (cfg.which_ht_state inside {BootHTRunning, BootPhaseDone}) begin
-      csr_wr(.ptr(ral.entropy_control.es_type), .value(prim_mubi_pkg::MuBi4True));
       csr_wr(.ptr(ral.conf.fips_enable), .value(prim_mubi_pkg::MuBi4False));
     end
     // Do not bypass the conditioner in continuous mode.
     if (cfg.which_ht_state inside {StartupFail1, ContHTRunning}) begin
-      csr_wr(.ptr(ral.entropy_control.es_type), .value(prim_mubi_pkg::MuBi4False));
       csr_wr(.ptr(ral.conf.fips_enable), .value(prim_mubi_pkg::MuBi4True));
     end
 
@@ -309,9 +304,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);
       begin
         // Consume entropy via the entropy_data register.
-        if (cfg.es_route_sw == MuBi4True) begin
+        if (cfg.entropy_data_reg_enable == MuBi4True) begin
           for (int i = 0; i < (m_csrng_pull_seq.num_trans - 1); i++) begin
-            csr_spinwait(.ptr(ral.intr_state.es_entropy_valid), .exp_data(1'b1));
+            poll(.source(TlSrcEntropyDataReg));
             do_entropy_data_read(.max_bundles(1), .bundles_found(bundles_found));
             `DV_CHECK((bundles_found == 1))
           end
@@ -332,10 +327,13 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
     csr_rd_check(.ptr(ral.main_sm_state.main_sm_state),
                  .compare_value(alert_state));
     // Check if we can consume entropy via the entropy_data register.
-    if (cfg.es_route_sw == MuBi4True) begin
-      // The scoreboard ensures we can only read 0.
-      do_entropy_data_read(.max_bundles(1), .bundles_found(bundles_found));
-      `DV_CHECK(bundles_found == 1)
+    if (cfg.entropy_data_reg_enable == MuBi4True) begin
+      uvm_reg_data_t entropy_data_valid;
+      // Request another seed and check that it doesn't arrive.
+      request_entropy_data();
+      cfg.clk_rst_vif.wait_clks(100);
+      csr_rd(.ptr(ral.entropy_data_valid), .value(entropy_data_valid));
+      `DV_CHECK(entropy_data_valid != MuBi4True)
     // Check if we can consume entropy via the CSRNG interface.
     end else begin
       // There should be 1 transaction left for m_csrng_pull_seq.

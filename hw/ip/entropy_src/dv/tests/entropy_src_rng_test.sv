@@ -22,7 +22,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
     // TODO (V3/Enhancement): Add coverpoints (with sampling ifs) and assertions to
     // confirm that data is actually being dropped in the DUT. (Silent configs are not counted
     // by existing CP's as we only sample when seeds are generated)
-    cfg.max_silent_reconfig_time    = 100us;
     cfg.soft_mtbf                   = 7500us;
 
     // Apply standards ranging from strict to relaxed
@@ -50,7 +49,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.dut_cfg.preconfig_disable_pct       = 50;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
-    cfg.dut_cfg.route_software_pct          = 50;
 
     cfg.dut_cfg.ht_threshold_oneway_pct     = 10;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
@@ -60,13 +58,14 @@ class entropy_src_rng_test extends entropy_src_base_test;
     // will automatically switch the DUT from non-fips to fips mode once a seed
     // is observed, or else will otherwise reconfigure
     cfg.dut_cfg.fips_enable_pct             = 25;
-    cfg.dut_cfg.type_bypass_pct             = 75;
 
     // Sometimes read data from the Observe FIFO (but almost always take entropy from RNG)
     cfg.dut_cfg.fw_read_pct                 = 50;
     cfg.dut_cfg.fw_over_pct                 = 10;
     // Sometimes inject data, even if not configured
     cfg.spurious_inject_entropy_pct = 50;
+    // Sometimes discard a partially read ENTROPY_DATA seed with a new request
+    cfg.entropy_data_rerequest_pct  = 20;
 
     cfg.dut_cfg.rng_bit_enable_pct          = 80;
 

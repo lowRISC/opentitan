@@ -63,12 +63,10 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   }
 
   // ENTROPY_CONTROL register configuration.
+  // Configure entropy data register enable (enables firmware to read entropy).
   uint32_t entropy_ctrl_reg = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD,
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ENTROPY_DATA_REG_ENABLE_FIELD,
       config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
-  entropy_ctrl_reg = bitfield_field32_write(
-      entropy_ctrl_reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-      config.bypass_conditioner ? kMultiBitBool4True : kMultiBitBool4False);
   entropy_ctrl_reg = bitfield_field32_write(
       entropy_ctrl_reg,
       ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
@@ -95,11 +93,6 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
       entropy_conf_reg, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
       config.rng_fips ? kMultiBitBool4True : kMultiBitBool4False);
 
-  // Configure entropy data register enable (enables firmware to read entropy).
-  entropy_conf_reg = bitfield_field32_write(
-      entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False);
-
   // Configure the health test threshold scope.
   entropy_conf_reg = bitfield_field32_write(
       entropy_conf_reg, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
@@ -118,18 +111,12 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   entropy_conf_reg = bitfield_field32_write(
       entropy_conf_reg, ENTROPY_SRC_CONF_RNG_BIT_SEL_FIELD, rng_bit_sel);
 
-  uint32_t sw_rd_en =
-      config.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
-  entropy_conf_reg = bitfield_field32_write(
-      entropy_conf_reg, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-      sw_rd_en);
-
   mmio_region_write32(entropy_src->base_addr, ENTROPY_SRC_CONF_REG_OFFSET,
                       entropy_conf_reg);
 
   // Configure health test window.
   // Note: the only supported bypass window size is the default value of 0x60 at
-  // the moment, hence even if `bypass_conditioner` is set, we should not change
+  // the moment, hence even if `fips_enable` is not set, we should not change
   // the bypass window size.
   uint32_t health_test_window_sizes =
       bitfield_field32_write(ENTROPY_SRC_HEALTH_TEST_WINDOWS_REG_RESVAL,
@@ -470,9 +457,25 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
 }
 
 static bool is_entropy_available(const dif_entropy_src_t *entropy_src) {
-  return mmio_region_get_bit32(entropy_src->base_addr,
-                               ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                               ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
+  uint32_t valid = bitfield_field32_read(
+      mmio_region_read32(entropy_src->base_addr,
+                         ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET),
+      ENTROPY_SRC_ENTROPY_DATA_VALID_ENTROPY_DATA_VALID_FIELD);
+  if (valid == kMultiBitBool4True) {
+    return true;
+  }
+
+  // Request the next seed unless a request is already pending.
+  uint32_t request = bitfield_field32_read(
+      mmio_region_read32(entropy_src->base_addr,
+                         ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET),
+      ENTROPY_SRC_ENTROPY_DATA_REQUEST_ENTROPY_DATA_REQUEST_FIELD);
+  if (request != kMultiBitBool4True) {
+    mmio_region_write32(entropy_src->base_addr,
+                        ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+                        kMultiBitBool4True);
+  }
+  return false;
 }
 
 dif_result_t dif_entropy_src_is_entropy_available(
