@@ -307,7 +307,7 @@ endtask
 virtual task run_tl_errors_vseq(int num_times = 1, bit do_wait_clk = 0);
   set_tl_assert_en(.enable(0));
   for (int trans = 1; trans <= num_times; trans++) begin
-    if (cfg.stop_transaction_generators()) return;
+    if (cfg.stop_transaction_generators()) break;
     `uvm_info(`gfn, $sformatf("Running run_tl_errors_vseq %0d/%0d", trans, num_times), UVM_LOW)
     `loop_ral_models_to_create_threads(run_tl_errors_vseq_sub(do_wait_clk, ral_name);)
   end
@@ -384,10 +384,8 @@ virtual task run_tl_errors_vseq_sub(bit do_wait_clk = 0, string ral_name);
   join
   // when reset occurs, end this seq ASAP to avoid killing seq while sending trans
   if (do_wait_clk) begin
-    repeat($urandom_range(500, 10_000)) begin
-      if (cfg.under_reset) return;
-      cfg.clk_rst_vif.wait_clks(1);
-    end
+    int unsigned num_clks = $urandom_range(500, 10_000);
+    `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_clks(num_clks);, wait (cfg.under_reset);)
   end
 endtask : run_tl_errors_vseq_sub
 
