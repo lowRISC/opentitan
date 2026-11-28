@@ -509,6 +509,12 @@ def _opentitan_binary_blob(ctx):
         ),
     ]
 
+def _maybe_list(input):
+    if type(input) == "list":
+        return input
+    else:
+        return [input]
+
 def _opentitan_binary(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
@@ -528,7 +534,12 @@ def _opentitan_binary(ctx):
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(kind = kind, **provides))
-        default_info.append(provides["default"])
+        default_info.extend(_maybe_list(provides["default"]))
+
+        # Currently, the code expects those to be just files, not lists.
+        for entry in ["elf", "disassembly", "mapfile"]:
+            if type(provides[entry]) == "list":
+                fail("In {}: output {} of transform needs to be a file, not a list".format(ctx.label, entry))
         default_info.append(provides["elf"])
         default_info.append(provides["disassembly"])
         default_info.append(provides["mapfile"])
@@ -536,23 +547,7 @@ def _opentitan_binary(ctx):
         # FIXME(cfrantz): logs are a special case and get added into
         # the DefaultInfo provider.
         if "logs" in provides:
-            default_info.extend(provides["logs"])
-
-        # FIXME: vmem is a special case for ram targets used in ROM e2e test
-        # cases. Some tops like Darjeeling expect a different word size than
-        # Earlgrey.
-        if provides.get("vmem"):
-            default_info.append(provides["vmem"])
-        if provides.get("vmem32"):
-            default_info.append(provides["vmem32"])
-
-        # FIXME(cfrantz): Special case: The englishbreakfast verilator model
-        # requires a non-scrambled ROM image.
-        #
-        # DV simulation might also need non-scrambled ROM to reduce simulation
-        # run times.
-        if provides.get("rom32"):
-            default_info.append(provides["rom32"])
+            default_info.extend(_maybe_list(provides["logs"]))
 
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
@@ -658,18 +653,6 @@ common_binary_attrs = {
         doc = "Binary kind: flash, rram, ram or rom",
         default = "flash",
         values = ["flash", "rram", "ram", "rom"],
-    ),
-    "slot": attr.string(
-        doc = "Which firmware slot this binary occupies. Only relevant when kind == \"rram\": " +
-              "RRAM's scrambling tweak (and address infection) depend on the word's true " +
-              "absolute address in the (unified, slot-agnostic) RRAM data partition, but a " +
-              "slot's compiled image is always addressed starting at 0 (see " +
-              "gen-rram-img.py's --slot). Slot A starts at word address 0; slot B starts " +
-              "halfway through the data partition. \"virtual\" images are loaded via address " +
-              "translation rather than a fixed physical offset, so scrambling them is a build " +
-              "error - see scramble_rram().",
-        default = "a",
-        values = ["a", "b", "virtual"],
     ),
     # FIXME(cfrantz): This should come from the ExecEnvInfo provider, but
     # I was unable to make that work.  See the comment in `exec_env.bzl`.
@@ -905,13 +888,14 @@ def _opentitan_binary_assemble_impl(ctx):
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
         action_param = {}
         action_param.update(exec_env.slot_spec)
+        nvm_size = exec_env.slot_spec.get("nvm_size")
 
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
         spec = spec.split(" ")
 
         # Generate the multislot bin.
-        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool, nvm_size)
 
         # Generate unscrambled VMEM files.
         #
