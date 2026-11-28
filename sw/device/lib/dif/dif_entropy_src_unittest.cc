@@ -28,7 +28,6 @@ class ConfigTest : public EntropySrcTest {
       .fips_flag = true,
       .rng_fips = true,
       .route_to_firmware = false,
-      .bypass_conditioner = false,
       .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_window_size = 1};
@@ -62,7 +61,6 @@ struct ConfigParams {
   bool fips_flag;
   bool rng_fips;
   bool route_to_firmware;
-  bool bypass_conditioner;
   bool clear_esfinal_fifo_while_disabled;
   dif_entropy_src_single_bit_mode_t single_bit_mode;
   bool health_test_threshold_scope;
@@ -80,7 +78,6 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   config_.fips_flag = test_param.fips_flag;
   config_.rng_fips = test_param.rng_fips;
   config_.route_to_firmware = test_param.route_to_firmware;
-  config_.bypass_conditioner = test_param.bypass_conditioner;
   config_.clear_esfinal_fifo_while_disabled =
       test_param.clear_esfinal_fifo_while_disabled;
   config_.single_bit_mode = test_param.single_bit_mode;
@@ -92,8 +89,6 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
 
   multi_bit_bool_t route_to_firmware_mubi =
       test_param.route_to_firmware ? kMultiBitBool4True : kMultiBitBool4False;
-  multi_bit_bool_t bypass_conditioner_mubi =
-      test_param.bypass_conditioner ? kMultiBitBool4True : kMultiBitBool4False;
   multi_bit_bool_t clear_esfinal_fifo_while_disabled_mubi =
       test_param.clear_esfinal_fifo_while_disabled ? kMultiBitBool4True
                                                    : kMultiBitBool4False;
@@ -101,8 +96,8 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
   EXPECT_WRITE32(
       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
       {
-          {ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_OFFSET, route_to_firmware_mubi},
-          {ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_OFFSET, bypass_conditioner_mubi},
+          {ENTROPY_SRC_ENTROPY_CONTROL_ENTROPY_DATA_REG_ENABLE_OFFSET,
+           route_to_firmware_mubi},
           {ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_OFFSET,
            clear_esfinal_fifo_while_disabled_mubi},
       });
@@ -129,8 +124,6 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
       ENTROPY_SRC_CONF_REG_OFFSET,
       {
           {ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET, fips_enable_mubi},
-          {ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_OFFSET,
-           route_to_firmware_mubi},
           {ENTROPY_SRC_CONF_FIPS_FLAG_OFFSET, fips_flag_mubi},
           {ENTROPY_SRC_CONF_RNG_FIPS_OFFSET, rng_fips_mubi},
           {ENTROPY_SRC_CONF_THRESHOLD_SCOPE_OFFSET, threshold_scope_mubi},
@@ -165,41 +158,36 @@ TEST_P(ConfigTestAllParams, ValidConfigurationMode) {
 INSTANTIATE_TEST_SUITE_P(ConfigTestAllParams, ConfigTestAllParams,
                          testing::Values(
                              // Test FIPS enabled.
-                             ConfigParams{true, true, true, false, false, true,
+                             ConfigParams{true, true, true, false, true,
                                           kDifEntropySrcSingleBitModeDisabled,
                                           false, 0xFFFF, 2, kDifToggleEnabled},
                              // Test route to firmware.
-                             ConfigParams{false, true, true, true, false, true,
-                                          kDifEntropySrcSingleBitModeDisabled,
-                                          false, 2, kDifToggleEnabled},
-                             // Test bypass conditioner.
-                             ConfigParams{false, false, false, false, true,
-                                          true,
+                             ConfigParams{false, true, true, true, true,
                                           kDifEntropySrcSingleBitModeDisabled,
                                           false, 2, kDifToggleEnabled},
                              // Test single_bit_mode.
-                             ConfigParams{false, true, true, false, false, true,
+                             ConfigParams{false, true, true, false, true,
                                           kDifEntropySrcSingleBitMode0, false,
                                           512, 2, kDifToggleEnabled},
-                             ConfigParams{false, true, true, false, false, true,
+                             ConfigParams{false, true, true, false, true,
                                           kDifEntropySrcSingleBitMode1, false,
                                           256, 2, kDifToggleEnabled},
-                             ConfigParams{false, true, true, false, false, true,
+                             ConfigParams{false, true, true, false, true,
                                           kDifEntropySrcSingleBitMode2, false,
                                           128, 2, kDifToggleEnabled},
-                             ConfigParams{false, true, true, false, false, true,
+                             ConfigParams{false, true, true, false, true,
                                           kDifEntropySrcSingleBitMode3, false,
                                           64, 2, kDifToggleEnabled},
                              // Test alerts disabled.
-                             ConfigParams{false, false, false, false, false,
-                                          true, kDifEntropySrcSingleBitMode0,
-                                          false, 1, 0, kDifToggleDisabled},
+                             ConfigParams{false, false, false, false, true,
+                                          kDifEntropySrcSingleBitMode0, false,
+                                          1, 0, kDifToggleDisabled},
                              // Test all disabled.
-                             ConfigParams{false, false, false, false, false,
-                                          true, kDifEntropySrcSingleBitMode0,
-                                          false, 1, 2, kDifToggleDisabled},
+                             ConfigParams{false, false, false, false, true,
+                                          kDifEntropySrcSingleBitMode0, false,
+                                          1, 2, kDifToggleDisabled},
                              // Test all enabled.
-                             ConfigParams{true, true, true, true, false, true,
+                             ConfigParams{true, true, true, true, true,
                                           kDifEntropySrcSingleBitModeDisabled,
                                           true, 32, 2, kDifToggleEnabled}));
 
@@ -475,16 +463,26 @@ TEST_F(IsEntropyAvailableTest, NullHandle) {
   EXPECT_DIF_BADARG(dif_entropy_src_is_entropy_available(nullptr));
 }
 
-TEST_F(IsEntropyAvailableTest, Unavailable) {
-  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, false}});
+TEST_F(IsEntropyAvailableTest, UnavailableRequest) {
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+                kMultiBitBool4False);
+  EXPECT_WRITE32(ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+                 kMultiBitBool4True);
+  EXPECT_EQ(dif_entropy_src_is_entropy_available(&entropy_src_),
+            kDifUnavailable);
+}
+
+TEST_F(IsEntropyAvailableTest, UnavailableRequestPending) {
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+                kMultiBitBool4True);
   EXPECT_EQ(dif_entropy_src_is_entropy_available(&entropy_src_),
             kDifUnavailable);
 }
 
 TEST_F(IsEntropyAvailableTest, Available) {
-  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                {{ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT, true}});
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET, kMultiBitBool4True);
   EXPECT_DIF_OK(dif_entropy_src_is_entropy_available(&entropy_src_));
 }
 
@@ -498,7 +496,9 @@ TEST_F(NonBlockingReadTest, NullArgs) {
 }
 
 TEST_F(NonBlockingReadTest, DataUnavailable) {
-  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET, 0);
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET, kMultiBitBool4False);
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+                kMultiBitBool4True);
   uint32_t word;
   EXPECT_EQ(dif_entropy_src_non_blocking_read(&entropy_src_, &word),
             kDifUnavailable);
@@ -506,8 +506,7 @@ TEST_F(NonBlockingReadTest, DataUnavailable) {
 
 TEST_F(NonBlockingReadTest, Success) {
   const uint32_t expected_word = 0x65585497;
-  EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
-                1 << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);
+  EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_VALID_REG_OFFSET, kMultiBitBool4True);
   EXPECT_READ32(ENTROPY_SRC_ENTROPY_DATA_REG_OFFSET, expected_word);
   EXPECT_READ32(ENTROPY_SRC_INTR_STATE_REG_OFFSET,
                 1 << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT);

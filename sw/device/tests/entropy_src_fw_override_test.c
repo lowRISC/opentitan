@@ -264,8 +264,7 @@ static status_t configure_interrupts(void) {
 
 // Configure the entropy complex.
 static status_t entropy_config(
-    dif_entropy_src_single_bit_mode_t single_bit_mode,
-    bool bypass_conditioner) {
+    dif_entropy_src_single_bit_mode_t single_bit_mode) {
   // Don't let the extract and insert interrupt handler run until we've enabled
   // the entropy source.
   irq_external_ctrl(false);
@@ -294,7 +293,6 @@ static status_t entropy_config(
           .fips_flag = true,
           .rng_fips = true,
           .route_to_firmware = false,
-          .bypass_conditioner = bypass_conditioner,
           .clear_esfinal_fifo_while_disabled = true,
           .single_bit_mode = single_bit_mode,
           .health_test_threshold_scope = false,
@@ -321,8 +319,7 @@ static status_t entropy_config(
 
 // Configure the entropy complex.
 static status_t reenable_entropy_src(
-    dif_entropy_src_single_bit_mode_t single_bit_mode,
-    bool bypass_conditioner) {
+    dif_entropy_src_single_bit_mode_t single_bit_mode) {
   uint32_t data;
   bool entropy_req_intr = false;
   size_t words_written = 0;
@@ -394,13 +391,11 @@ static status_t reenable_entropy_src(
  * consumers.
  */
 status_t firmware_override_extract_insert(
-    dif_entropy_src_single_bit_mode_t single_bit_mode, bool bypass_conditioner,
-    bool reenable_es) {
+    dif_entropy_src_single_bit_mode_t single_bit_mode, bool reenable_es) {
   LOG_INFO("==================");
-  LOG_INFO("Configuring single_bit_mode=%u, bypass_conditioner=%d",
-           single_bit_mode, bypass_conditioner);
+  LOG_INFO("Configuring single_bit_mode=%u", single_bit_mode);
 
-  entropy_config(single_bit_mode, bypass_conditioner);
+  entropy_config(single_bit_mode);
 
   // Generate some random numbers.
   LOG_INFO("Generating random numbers...");
@@ -421,7 +416,7 @@ status_t firmware_override_extract_insert(
   if (reenable_es) {
     // Now that we know that a seed was produced we reenable the entropy_src
     // and see whether the entropy complex still works as expected.
-    reenable_entropy_src(single_bit_mode, bypass_conditioner);
+    reenable_entropy_src(single_bit_mode);
   }
 
   // Run an AES encryption and decryption process.
@@ -529,17 +524,13 @@ bool test_main(void) {
 
   for (size_t i = 0; i < entropy_src_mode_count; i++) {
     EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i],
-                 false, false);
-    EXECUTE_TEST(test_result, firmware_override_extract_insert, kModes[i], true,
                  false);
   }
 
   // Rerun the test with single bit mode disabled, this time we reenable the
   // entropy_src without reenabling the rest of the entropy complex.
   EXECUTE_TEST(test_result, firmware_override_extract_insert,
-               kDifEntropySrcSingleBitModeDisabled, false, true);
-  EXECUTE_TEST(test_result, firmware_override_extract_insert,
-               kDifEntropySrcSingleBitModeDisabled, true, true);
+               kDifEntropySrcSingleBitModeDisabled, true);
 
   if (kDeviceType == kDeviceSimVerilator) {
     // If running on Verilator, then we skip the final phase of testing,
@@ -553,9 +544,7 @@ bool test_main(void) {
   // this time with an output delay.
   fw_ov_insert_wait_enabled = true;
   EXECUTE_TEST(test_result, firmware_override_extract_insert,
-               kDifEntropySrcSingleBitModeDisabled, false, false);
-  EXECUTE_TEST(test_result, firmware_override_extract_insert,
-               kDifEntropySrcSingleBitModeDisabled, true, false);
+               kDifEntropySrcSingleBitModeDisabled, false);
 
   return status_ok(test_result);
 }

@@ -283,7 +283,6 @@ status_t enable_realistic_entropy_src_fips_mode(
       .route_to_firmware = false,
       .fips_flag = true,
       .rng_fips = true,
-      .bypass_conditioner = false,
       .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = true,
@@ -312,7 +311,6 @@ status_t set_threshold_and_enable_stringent_entropy_src_fips_mode(void) {
       .route_to_firmware = false,
       .fips_flag = true,
       .rng_fips = true,
-      .bypass_conditioner = false,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = true,
       .health_test_window_size = 4096,
@@ -325,7 +323,6 @@ status_t set_threshold_and_enable_stringent_entropy_src_fips_mode(void) {
   LOG_INFO("route_to_firmware: %d", config.route_to_firmware);
   LOG_INFO("fips_flag: %d", config.fips_flag);
   LOG_INFO("rng_fips: %d", config.rng_fips);
-  LOG_INFO("bypass_conditioner: %d", config.bypass_conditioner);
   LOG_INFO("single_bit_mode: %d", config.single_bit_mode);
   LOG_INFO("health_test_threshold_scope: %d",
            config.health_test_threshold_scope);

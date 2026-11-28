@@ -16,9 +16,10 @@
  *
  * @param entropy_src Entropy source handle.
  * @param buffer_threshold Firmware override buffer threshold.
- * @param firmware_override_enable Set to true to output entropy data to
- * registers instead of the CSRNG block.
- * @param bypass_conditioner Set to true to bypass the entropy_src conditioner.
+ * @param firmware_override_enable Set to true to allow firmware to request
+ * entropy data to be routed to registers instead of the CSRNG block.
+ * @param bypass_conditioner Set to true to bypass the entropy_src conditioner
+ * by disabling FIPS mode.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_src_testutils_fw_override_enable(

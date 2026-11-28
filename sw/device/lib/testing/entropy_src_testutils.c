@@ -23,11 +23,10 @@ status_t entropy_src_testutils_fw_override_enable(
                                             kDifToggleEnabled));
 
   const dif_entropy_src_config_t config = {
-      .fips_enable = true,
+      .fips_enable = !bypass_conditioner,
       .fips_flag = true,
       .rng_fips = true,
       .route_to_firmware = route_to_firmware,
-      .bypass_conditioner = bypass_conditioner,
       .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = false,

@@ -315,17 +315,13 @@ static status_t entropy_src_kat_configure(void) {
                                 kMultiBitBool4False);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
                                 kMultiBitBool4False);
-  conf = bitfield_field32_write(
-      conf, ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD, kMultiBitBool4True);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
                                 kMultiBitBool4True);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET, conf);
 
   uint32_t entropy_control = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, kMultiBitBool4True);
-  entropy_control = bitfield_field32_write(
-      entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-      kMultiBitBool4False);
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ENTROPY_DATA_REG_ENABLE_FIELD,
+      kMultiBitBool4True);
   entropy_control = bitfield_field32_write(
       entropy_control,
       ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
@@ -381,6 +377,10 @@ static status_t entropy_src_fifo_write(const uint32_t *data, size_t len) {
   // Wait for the packer FIFO to drain before clearing FW_OV_SHA3_START so
   // ES_FW_OV_DISABLE_ALERT is not triggered.
   HARDENED_TRY(entropy_src_fw_ov_fifo_wait_not_full());
+  // Request the resulting seed to be routed to the ENTROPY_DATA register.
+  abs_mmio_write32(
+      entropy_src_base() + ENTROPY_SRC_ENTROPY_DATA_REQUEST_REG_OFFSET,
+      kMultiBitBool4True);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
                    bitfield_field32_write(
                        0, ENTROPY_SRC_FW_OV_SHA3_START_FW_OV_INSERT_START_FIELD,

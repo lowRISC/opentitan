@@ -120,20 +120,11 @@ typedef struct dif_entropy_src_config {
    */
   bool rng_fips;
   /**
-   * If set, entropy will be routed to a firmware-visible register instead of
-   * being distributed to other hardware IPs.
+   * If set, firmware can request individual seeds to be routed to a
+   * firmware-visible register instead of being distributed to other hardware
+   * IPs (see `dif_entropy_src_non_blocking_read()`).
    */
   bool route_to_firmware;
-  /**
-   * If set, raw entropy will be sent to CSRNG, bypassing the conditioner block
-   * and disabling the FIPS flag. Note that the FIPS flag is different from
-   * running the block in FIPS mode. FIPS mode refers to running the entropy_src
-   * in continuous mode. Also note that if `fips_enable` is set to `True`, then
-   * at most one of either `route_to_firmware` or `bypass_conditioner` may be
-   * set, but will result in disabling the FIPS mode of operation from a
-   * hardware perspective.
-   */
-  bool bypass_conditioner;
   /**
    * If set, the esfinal FIFO holding previously produced entropy seeds is
    * cleared upon disabling the module. Otherwise, previously produced entropy
@@ -392,100 +383,100 @@ typedef struct dif_entropy_src_debug_state {
  */
 typedef enum dif_entropy_src_alert_cause {
   /**
-   * Triggered when the FIPS_ENABLE field in the CONF register is set to an
-   * unsupported value.
-   */
-  kDifEntropySrcAlertFipsEnableField = 1U << 0,
-  /**
-   * Triggered when the ENTROPY_DATA_REG_ENABLE field in the CONF register is
-   * set to an unsupported value.
-   */
-  kDifEntropySrcAlertEntropyDataRegEnField = 1U << 1,
-  /**
    * Triggered when the MODULE_ENABLE field in the MODULE_ENABLE register is set
    * to an unsupported value.
    */
-  kDifEntropySrcAlertModuleEnableField = 1U << 2,
+  kDifEntropySrcAlertModuleEnableField = 1U << 0,
+  /**
+   * Triggered when the FIPS_ENABLE field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertFipsEnableField = 1U << 1,
+  /**
+   * Triggered when the FIPS_FLAG field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertFipsFlagField = 1U << 2,
   /**
    * Triggered when the THRESHOLD_SCOPE field in the CONF register is set to an
    * unsupported value.
    */
   kDifEntropySrcAlertThresholdScopeField = 1U << 3,
   /**
-   * Triggered when the THRESHOLD_ONEWAY field in the CONF register is set to an
+   * Triggered when the RNG_FIPS field in the CONF register is set to an
    * unsupported value.
    */
-  kDifEntropySrcAlertThresholdOnewayField = 1U << 4,
+  kDifEntropySrcAlertRngFipsField = 1U << 4,
   /**
    * Triggered when the RNG_BIT_ENABLE field in the CONF register is set to an
    * unsupported value.
    */
   kDifEntropySrcAlertRngBitEnableField = 1U << 5,
   /**
-   * Triggered when the FW_OV_SHA3_START field in the FW_OV_SHA3_START register
-   * is set to an unsupported value.
+   * Triggered when the ENTROPY_DATA_REG_ENABLE field in the ENTROPY_CONTROL
+   * register is set to an unsupported value.
    */
-  kDifEntropySrcAlertFwOvSha3StartField = 1U << 7,
+  kDifEntropySrcAlertEntropyDataRegEnField = 1U << 6,
   /**
-   * Triggered when the FW_OV_MODE field in the FW_OV_CONTROL register is set to
-   * an unsupported value.
+   * Triggered when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the
+   * ENTROPY_CONTROL register is set to an unsupported value.
    */
-  kDifEntropySrcAlertFwOvModeField = 1U << 8,
+  kDifEntropySrcAlertEsfinalFifoClearWhileDisabledField = 1U << 7,
   /**
-   * Triggered when the FW_OV_ENTROPY_INSERT field in the FW_OV_CONTROL register
-   * is set to an unsupported value.
+   * Triggered when the ENTROPY_DATA_REQUEST register is set to an unsupported
+   * value.
    */
-  kDifEntropySrcAlertFwOvEntropyInsertField = 1U << 9,
+  kDifEntropySrcAlertEntropyDataRequestField = 1U << 8,
   /**
-   * Triggered when the ES_ROUTE field in the ENTROPY_CONTROL register is set to
-   * an unsupported value.
+   * Triggered when the THRESHOLD_ONEWAY register is set to an unsupported
+   * value.
    */
-  kDifEntropySrcAlertEsRouteField = 1U << 10,
-  /**
-   * Triggered when the ES_TYPE field in the ENTROPY_CONTROL register is set to
-   * an unsupported value.
-   */
-  kDifEntropySrcAlertEsTypeField = 1U << 11,
-  /**
-   * Triggered when the main state machine detects a threshold failure state.
-   */
-  kDifEntropySrcAlertMainStateMachine = 1U << 12,
-  /**
-   * Triggered when the internal entropy bus value is equal to the prior valid
-   * value on the bus, indicating a possible attack.
-   */
-  kDifEntropySrcAlertDuplicateValue = 1U << 13,
+  kDifEntropySrcAlertThresholdOnewayField = 1U << 9,
   /**
    * Triggered when the ALERT_THRESHOLD register is not configured properly,
    * i.e., the upper field must be the exact inverse of the lower field.
    */
-  kDifEntropySrcAlertThresholdConfig = 1U << 14,
+  kDifEntropySrcAlertThresholdConfig = 1U << 10,
+  /**
+   * Triggered when the FW_OV_MODE field in the FW_OV_CONTROL register is set to
+   * an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvModeField = 1U << 11,
+  /**
+   * Triggered when the FW_OV_ENTROPY_INSERT field in the FW_OV_CONTROL register
+   * is set to an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvEntropyInsertField = 1U << 12,
+  /**
+   * Triggered when the FW_OV_INSERT_START field in the FW_OV_SHA3_START
+   * register is set to an unsupported value.
+   */
+  kDifEntropySrcAlertFwOvSha3StartField = 1U << 13,
   /**
    * Triggered when the packer FIFO has been written but was full at the time
    * and we are in FW_OV_MODE and FW_OV_ENTROPY_INSERT modes.
    */
-  kDifEntropySrcAlertFirmwareOverrideWrite = 1U << 15,
+  kDifEntropySrcAlertFirmwareOverrideWrite = 1U << 14,
   /**
    * Triggered when FW_OV_SHA3_START has been set to kMultiBitBool4False,
    * without waiting for the bypass packer FIFO to clear.
    */
-  kDifEntropySrcAlertFirmwareOverrideDisable = 1U << 16,
+  kDifEntropySrcAlertFirmwareOverrideDisable = 1U << 15,
   /**
-   * Triggered when the FIPS_FLAG field in the CONF register is set to an
-   * unsupported value.
+   * Triggered when the main state machine detects a threshold failure state.
    */
-  kDifEntropySrcAlertFipsFlagField = 1U << 17,
+  kDifEntropySrcAlertMainStateMachine = 1U << 16,
   /**
-   * Triggered when the RNG_FIPS field in the CONF register is set to an
-   * unsupported value.
+   * Triggered when the internal entropy bus value is equal to the prior valid
+   * value on the bus, indicating a possible attack.
    */
-  kDifEntropySrcAlertRngFipsField = 1U << 18,
+  kDifEntropySrcAlertDuplicateValue = 1U << 17,
   /**
    * All alert reasons.
    *
    * This is useful when clearing all recoverable alerts at once.
    */
-  kDifEntropySrcAlertAllAlerts = (1U << 19) - 1,
+  kDifEntropySrcAlertAllAlerts = (1U << 18) - 1,
 } dif_entropy_src_alert_cause_t;
 
 /**
@@ -716,6 +707,10 @@ dif_result_t dif_entropy_src_get_alert_fail_counts(
 /**
  * Checks to see if entropy is available for software consumption.
  *
+ * If no entropy is available and no request is pending, this requests the
+ * next seed to be routed to the ENTROPY_DATA register. While the request is
+ * pending, no seed is passed to the hardware interface.
+ *
  * @param entropy_src An entropy source handle.
  * @return The result of the operation.
  */
@@ -725,6 +720,9 @@ dif_result_t dif_entropy_src_is_entropy_available(
 
 /**
  * Reads a word of entropy from the entropy source.
+ *
+ * Requests the next seed in the same way as
+ * `dif_entropy_src_is_entropy_available()` if no entropy is available.
  *
  * @param entropy_src An entropy source handle.
  * @param[out] word Out-param for the entropy word.

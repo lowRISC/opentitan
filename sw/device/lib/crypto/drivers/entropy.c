@@ -167,15 +167,10 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t rng_fips;
   /**
-   * If set, entropy will be routed to a firmware-visible register instead of
-   * being distributed to other hardware IPs.
+   * If set, firmware can request individual seeds to be routed to the
+   * ENTROPY_DATA register instead of being distributed to other hardware IPs.
    */
-  multi_bit_bool_t route_to_firmware;
-  /**
-   * If set, raw entropy will be sent to CSRNG, bypassing the conditioner block
-   * and disabling the FIPS hardware generated flag.
-   */
-  multi_bit_bool_t bypass_conditioner;
+  multi_bit_bool_t entropy_data_reg_enable;
   /**
    * If set, the esfinal FIFO holding previously produced entropy seeds is
    * cleared upon disabling the module. Otherwise, previously produced entropy
@@ -280,8 +275,7 @@ static const entropy_complex_config_t
                         .fips_enable = kMultiBitBool4True,
                         .fips_flag = kMultiBitBool4True,
                         .rng_fips = kMultiBitBool4True,
-                        .route_to_firmware = kMultiBitBool4False,
-                        .bypass_conditioner = kMultiBitBool4False,
+                        .entropy_data_reg_enable = kMultiBitBool4False,
                         .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                         .single_bit_mode = kMultiBitBool4False,
                         .threshold_scope = kMultiBitBool4False,
@@ -362,8 +356,7 @@ static const entropy_complex_config_t
                     .fips_enable = kMultiBitBool4True,
                     .fips_flag = kMultiBitBool4True,
                     .rng_fips = kMultiBitBool4True,
-                    .route_to_firmware = kMultiBitBool4False,
-                    .bypass_conditioner = kMultiBitBool4False,
+                    .entropy_data_reg_enable = kMultiBitBool4False,
                     .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                     .single_bit_mode = kMultiBitBool4False,
                     .threshold_scope = kMultiBitBool4True,
@@ -860,18 +853,10 @@ void entropy_complex_stop_all(void) {
 OT_WARN_UNUSED_RESULT
 OT_USED static status_t entropy_src_configure(
     const entropy_src_config_t *config) {
-  if (config->bypass_conditioner != kMultiBitBool4False) {
-    HARDENED_CHECK_NE(config->bypass_conditioner, kMultiBitBool4False);
-    // Bypassing the conditioner is not supported.
-    return OTCRYPTO_BAD_ARGS;
-  }
-
   // Control register configuration.
   uint32_t entropy_control = bitfield_field32_write(
-      0, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD, config->route_to_firmware);
-  entropy_control = bitfield_field32_write(
-      entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
-      config->bypass_conditioner);
+      0, ENTROPY_SRC_ENTROPY_CONTROL_ENTROPY_DATA_REG_ENABLE_FIELD,
+      config->entropy_data_reg_enable);
   entropy_control = bitfield_field32_write(
       entropy_control,
       ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
@@ -886,9 +871,6 @@ OT_USED static status_t entropy_src_configure(
                                 config->fips_flag);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_FIPS_FIELD,
                                 config->rng_fips);
-  conf = bitfield_field32_write(conf,
-                                ENTROPY_SRC_CONF_ENTROPY_DATA_REG_ENABLE_FIELD,
-                                config->route_to_firmware);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_THRESHOLD_SCOPE_FIELD,
                                 config->threshold_scope);
   conf = bitfield_field32_write(conf, ENTROPY_SRC_CONF_RNG_BIT_ENABLE_FIELD,
@@ -984,11 +966,8 @@ OT_USED static status_t entropy_src_configure(
  */
 OT_WARN_UNUSED_RESULT
 OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
-  if (config->fips_enable != kMultiBitBool4True ||
-      config->bypass_conditioner != kMultiBitBool4False ||
-      config->route_to_firmware != kMultiBitBool4False) {
-    // This check only supports FIPS-compatible configurations which do not
-    // bypass the conditioner or route to firmware.
+  if (config->fips_enable != kMultiBitBool4True) {
+    // This check only supports FIPS-compatible configurations.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -999,14 +978,10 @@ OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
     return OTCRYPTO_RECOV_ERR;
   }
 
-  // Check that entropy_src is running in a FIPS-enabled mode without bypassing
-  // the conditioner (es_type) and while making results available to hardware
-  // (es_route):
+  // Check that entropy_src is running in a FIPS-enabled mode:
   //   1. CONF.FIPS_ENABLE = true
   //   2. CONF.RNG_BIT_ENABLE = false
-  //   3. CONTROL.ES_TYPE = false
-  //   4. CONTROL.ES_ROUTE = false
-  //   5. CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD = true
+  //   3. CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD = true
   reg = abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET);
   uint32_t conf_fips_enable =
       bitfield_field32_read(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD);
@@ -1018,15 +993,9 @@ OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
   }
   reg = abs_mmio_read32(entropy_src_base() +
                         ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET);
-  uint32_t control_es_type =
-      bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD);
-  uint32_t control_es_route =
-      bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD);
   uint32_t control_esfinal_fifo_clear_while_disabled = bitfield_field32_read(
       reg, ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD);
-  if (control_es_type != kMultiBitBool4False ||
-      control_es_route != kMultiBitBool4False ||
-      control_esfinal_fifo_clear_while_disabled != kMultiBitBool4True) {
+  if (control_esfinal_fifo_clear_while_disabled != kMultiBitBool4True) {
     return OTCRYPTO_RECOV_ERR;
   }
 
