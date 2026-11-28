@@ -5,6 +5,7 @@
 use crate::app::NoProgressBar;
 use crate::io::eeprom::{AddressMode, MODE_111, MODE_112, MODE_114, Mode, Transaction};
 use crate::io::spi::Target;
+use crate::spiflash::sfdp;
 use crate::spiflash::sfdp::{
     BlockEraseSize, FastReadParam, SectorErase, Sfdp, SupportedAddressModes,
 };
@@ -283,6 +284,17 @@ impl SpiFlash {
             }
             buf.resize(Sfdp::length_required(&buf)?, 0);
             tries += 1;
+        }
+    }
+
+    /// Check whether the `spi` target responds to READ_SFDP with a valid header.
+    pub fn sfdp_present(spi: &dyn Target) -> Result<bool> {
+        match Self::read_sfdp(spi) {
+            Ok(_) => Ok(true),
+            Err(e) => match e.downcast_ref::<sfdp::Error>() {
+                Some(sfdp::Error::WrongHeaderSignature(_)) => Ok(false),
+                _ => Err(e),
+            },
         }
     }
 

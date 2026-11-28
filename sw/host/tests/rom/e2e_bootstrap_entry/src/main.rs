@@ -7,16 +7,13 @@ use anyhow::{Result, bail};
 use clap::Parser;
 use humantime::parse_duration;
 use regex::Regex;
-use std::matches;
 use std::ops::Drop;
 use std::time::Duration;
 
 use opentitanlib::app::{TransportWrapper, UartRx};
 use opentitanlib::execute_test;
 use opentitanlib::io::spi::Transfer;
-use opentitanlib::spiflash::{
-    BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity, sfdp,
-};
+use opentitanlib::spiflash::{BlockEraseSize, SpiFlash, SupportedAddressModes, WriteGranularity};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::{ExitStatus, UartConsole};
 use opentitanlib::util::parse_int::ParseInt;
@@ -139,18 +136,9 @@ fn test_bootstrap_enabled_not_requested(opts: &Opts, transport: &TransportWrappe
         bail!("FAIL: {:?}", result);
     };
 
-    // Now check whether the SPI device is responding to commands.
-    // Note: CIPO line is in high-z state when CMD_INFO registers are not configured.
-    // Use READ_SFDP instead of READ_STATUS to avoid false negatives when bootstrap is not
-    // requested
+    // Check that the SPI device is not responding as a flash.
     let spi = transport.spi("BOOTSTRAP")?;
-    assert!(matches!(
-        SpiFlash::read_sfdp(&*spi)
-            .unwrap_err()
-            .downcast::<sfdp::Error>()
-            .unwrap(),
-        sfdp::Error::WrongHeaderSignature(..)
-    ));
+    assert!(!SpiFlash::sfdp_present(&*spi)?);
     Ok(())
 }
 
@@ -315,13 +303,7 @@ fn test_bootstrap_shutdown(transport: &TransportWrapper, cmd: u8, bfv: &str) -> 
         bail!("FAIL: {:?}", result);
     }
     // Also verify that the chip is no longer in bootstrap mode.
-    assert!(matches!(
-        SpiFlash::read_sfdp(&*spi)
-            .unwrap_err()
-            .downcast::<sfdp::Error>()
-            .unwrap(),
-        sfdp::Error::WrongHeaderSignature(..)
-    ));
+    assert!(!SpiFlash::sfdp_present(&*spi)?);
 
     Ok(())
 }
@@ -478,13 +460,7 @@ fn test_bootstrap_phase2_reset(transport: &TransportWrapper) -> Result<()> {
         bail!("FAIL: {:?}", result);
     }
 
-    assert!(matches!(
-        SpiFlash::read_sfdp(&*spi)
-            .unwrap_err()
-            .downcast::<sfdp::Error>()
-            .unwrap(),
-        sfdp::Error::WrongHeaderSignature(..)
-    ));
+    assert!(!SpiFlash::sfdp_present(&*spi)?);
 
     Ok(())
 }
