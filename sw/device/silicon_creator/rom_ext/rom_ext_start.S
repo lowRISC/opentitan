@@ -93,6 +93,10 @@ _rom_ext_start_boot:
 
   // Initialize the pre-C coverage counter.
   // It's no-op when coverage mode is not enabled.
+  // In coverage builds where imm_section exports its coverage descriptor,
+  // this also (re)initializes imm_section's counters: before
+  // _rom_ext_immutable_start (making imm_section_start.S's init a no-op), or
+  // after the ROM already ran imm_section (re-arming them for CDI_1).
   COVERAGE_ASM_INIT()
   COVERAGE_ASM_TRANSPORT_INIT()
   COVERAGE_ASM_MANUAL_MARK(t6,0)

@@ -203,9 +203,15 @@ cc_library(
 )
 
 ld_library(
+    name = "ld_imm_coverage",
+    includes = ["imm_coverage.ld"],
+)
+
+ld_library(
     name = "ld_common",
     includes = ["rom_ext_common.ld"],
     deps = [
+        ":ld_imm_coverage",
         "//sw/device:info_sections",
         "//sw/device/lib/coverage:coverage_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",

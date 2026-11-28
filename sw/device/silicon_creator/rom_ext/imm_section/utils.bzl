@@ -109,7 +109,7 @@ create_imm_section_targets = rv_rule(
         ),
         "prefix_exports": attr.string(
             default = "imm_shared_",
-            doc = "A prefix to prepend to each exported symbol name to avoid naming collisions.",
+            doc = "A prefix to prepend to each exported symbol name to avoid naming collisions. Note: `sw/device/lib/coverage` relies on this default for `imm_shared_coverage_profile_desc`.",
         ),
         "_add_shared_symbols_tool": attr.label(
             default = "//util:add_shared_symbols",

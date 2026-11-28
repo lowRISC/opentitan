@@ -20,6 +20,7 @@ _dv_log_offset = 0x10000;
 ENTRY(_imm_section_start_boot)
 
 REGION_ALIAS("coverage_flash", rom_ext_flash);
+INCLUDE sw/device/silicon_creator/rom_ext/imm_coverage.ld
 
 SECTIONS {
   /**
@@ -154,6 +155,20 @@ SECTIONS {
     . = ALIGN(4);
     _bss_end = .;
   } > ram_main
+
+  /* Reserve a disjoint region at the top of ram_main (just below _stack_start)
+   * for imm_section's coverage runtime BSS and single-byte counters when
+   * coverage instrumentation is enabled. Exported imm_shared_* functions (e.g.
+   * imm_shared_dice_attest_next_cdi) are invoked by mutable ROM_EXT at runtime;
+   * placing imm_section's counters here ensures they do not overlap mutable
+   * ROM_EXT's .bss (such as dice_mldsa_rom_ext_scratch_stack) or its own
+   * coverage counter array. */
+  __ot_imm_coverage_pad (NOLOAD) : {
+    ASSERT(
+      !DEFINED(_ot_coverage_enabled) || . <= _imm_coverage_region_start,
+      "imm_section .bss exceeds reserved imm_section coverage region base");
+    . = DEFINED(_ot_coverage_enabled) ? _imm_coverage_region_start : .;
+  } > ram_main :NONE
 
   INCLUDE sw/device/lib/coverage/bss.ld
 
