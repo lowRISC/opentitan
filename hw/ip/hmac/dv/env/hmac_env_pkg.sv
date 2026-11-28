@@ -12,6 +12,7 @@ package hmac_env_pkg;
   import cryptoc_dpi_pkg::*;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
+  import sec_cm_pkg::*;
   import test_vectors_pkg::*;
   import hmac_ral_pkg::*;
   import prim_sha2_pkg::*;

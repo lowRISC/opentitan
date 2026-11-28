@@ -32,8 +32,12 @@ The HMAC module is a [SHA-2][sha256-spec] hash-based authentication code generat
 It supports SHA-2 256/384/512 and 128/256/384/512/1024-bit keys in HMAC mode, so long as the key length does not exceed the block size of the configured SHA-2 digest size, i.e., 1024-bit keys are not supported for SHA-2 256 where the block size is 512-bit.
 It generates a different authentication code with the same message if the secret key is different.
 
-This HMAC implementation is not hardened against side channel or fault injection attacks.
-It is meant purely for hashing acceleration.
+This HMAC implementation is not hardened against side-channel attacks.
+It implements the following fault injection countermeasures:
+- Sparsely encoded FSMs
+- Multi-bit encoded configuration signals
+- A redundant check that both the inner and the outer hash have been computed
+Detected faults trigger a fatal alert and lock up the block until the next reset.
 If hardened MAC operations are required, users should use either [KMAC](../kmac/README.md) or a software implementation.
 
 The secret key is written in [`KEY_0-KEY_31`](doc/registers.md#key), and the key length relevant to the HMAC operation is configured in [`CFG.key_length`](doc/registers.md#cfg--key_length).

@@ -35,5 +35,29 @@
       stage: V2S
       tests: ["N/A"]
     }
+    {
+      name: sec_cm_fsm_sparse
+      desc: "Verify the countermeasure(s) FSM.SPARSE."
+      stage: V2S
+      tests: ["hmac_sec_cm"]
+    }
+    {
+      name: sec_cm_fsm_local_esc
+      desc: "Verify the countermeasure(s) FSM.LOCAL_ESC."
+      stage: V2S
+      tests: ["hmac_sec_cm"]
+    }
+    {
+      name: sec_cm_config_mubi
+      desc: "Verify the countermeasure(s) CONFIG.MUBI."
+      stage: V2S
+      tests: ["N/A"]
+    }
+    {
+      name: sec_cm_ctr_redun
+      desc: "Verify the countermeasure(s) CTR.REDUN."
+      stage: V2S
+      tests: ["N/A"]
+    }
   ]
 }
