@@ -36,11 +36,11 @@ class entropy_src_dut_cfg extends uvm_object;
 
   // Constraint knobs for Boolean fields in CONF register
   // (RNG_BIT_SEL is always uniform)
-  uint          fips_enable_pct, entropy_data_reg_enable_pct, fips_flag_pct,
+  uint          fips_enable_pct, fips_flag_pct,
                 rng_fips_pct, ht_threshold_scope_pct, rng_bit_enable_pct;
 
   // Constraint knobs for Boolean fields in ENTROPY_CONTROL register
-  uint          route_software_pct, type_bypass_pct, esfinal_clr_while_dsbld_pct;
+  uint          entropy_data_reg_enable_pct, esfinal_clr_while_dsbld_pct;
 
   // Constraint knobs for Boolean fields in FW_OV_CONTROL register
   uint          fw_read_pct, fw_over_pct, fw_ov_insert_start_pct;
@@ -84,7 +84,7 @@ class entropy_src_dut_cfg extends uvm_object;
   rand bit                      preconfig_disable;
   rand bit [1:0]                rng_bit_sel;
 
-  rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, fips_flag, route_software, type_bypass,
+  rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, fips_flag,
                                 rng_fips, entropy_data_reg_enable, rng_bit_enable,
                                 ht_threshold_oneway, ht_threshold_scope,
                                 esfinal_clr_while_dsbld;
@@ -200,14 +200,6 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint rng_fips_c {rng_fips dist {
       prim_mubi_pkg::MuBi4True  :/ rng_fips_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - rng_fips_pct) };}
-
-  constraint route_c {route_software dist {
-      prim_mubi_pkg::MuBi4True  :/ route_software_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - route_software_pct) };}
-
-  constraint bypass_c {type_bypass dist {
-      prim_mubi_pkg::MuBi4True  :/ type_bypass_pct,
-      prim_mubi_pkg::MuBi4False :/ (100 - type_bypass_pct) };}
 
   constraint esfinal_clr_while_dsbld_c {esfinal_clr_while_dsbld dist {
       prim_mubi_pkg::MuBi4True  :/ esfinal_clr_while_dsbld_pct,
@@ -411,10 +403,6 @@ class entropy_src_dut_cfg extends uvm_object;
                   fips_flag.name()),
         $sformatf("\n\t |***** rng_fips                    : %12s *****| \t",
                   rng_fips.name()),
-        $sformatf("\n\t |***** route_software              : %12s *****| \t",
-                  route_software.name()),
-        $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
-                  type_bypass.name()),
         $sformatf("\n\t |***** esfinal_clr_while_dsbld     : %12s *****| \t",
                   esfinal_clr_while_dsbld.name()),
         $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
@@ -463,10 +451,6 @@ class entropy_src_dut_cfg extends uvm_object;
                   fips_flag_pct),
         $sformatf("\n\t |***** rng_fips_pct                : %12d *****| \t",
                   rng_fips_pct),
-        $sformatf("\n\t |***** route_software_pct          : %12d *****| \t",
-                  route_software_pct),
-        $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t",
-                  type_bypass_pct),
         $sformatf("\n\t |***** esfinal_clr_while_dsbld_pct : %12d *****| \t",
                   esfinal_clr_while_dsbld_pct),
         $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t",
@@ -545,8 +529,6 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_fw_ov_mode: fw_read_enable = invalid_mubi_val;
         invalid_fw_ov_entropy_insert: fw_over_enable = invalid_mubi_val;
         invalid_fw_ov_insert_start: fw_ov_insert_start = invalid_mubi_val;
-        invalid_es_route: route_software = invalid_mubi_val;
-        invalid_es_type: type_bypass = invalid_mubi_val;
         invalid_esfinal_clr_while_dsbld: esfinal_clr_while_dsbld = invalid_mubi_val;
         invalid_alert_threshold: begin
           // Let the alert_threshold_inv field take some
@@ -585,8 +567,6 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(ht_threshold_oneway_pct <= 100);
     `DV_CHECK(ht_threshold_scope_pct <= 100);
     `DV_CHECK(rng_bit_enable_pct <= 100);
-    `DV_CHECK(route_software_pct <= 100);
-    `DV_CHECK(type_bypass_pct <= 100);
     `DV_CHECK(esfinal_clr_while_dsbld_pct <= 100);
     `DV_CHECK(fw_read_pct <= 100);
     `DV_CHECK(fw_over_pct <= 100);

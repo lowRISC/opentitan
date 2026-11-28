@@ -54,10 +54,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   // seeds into the esfinal FIFO if the HTs pass.
   // When observing a seed on the hardware interface, all seeds in fips_csrng_q are thus compared
   // against this seed. In contrast, when reading the entropy_data CSR, we must not try to match
-  // the received data against entropy_data_q if the esfinal FIFO is actually empty.
-  int esfinal_fifo_depth = 0;
-  int esfinal_fifo_depth_prev = 0;
-  bit esfinal_fifo_empty = 1'b0;
+  // the received data against entropy_data_q if the ENTROPY_DATA unpacker holds no seed.
+  bit entropy_data_invalid = 1'b1;
 
   // Queue of RNG data for health testing
   queue_of_rng_val_t               health_test_data_q;
@@ -1130,7 +1128,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     bit entropy_data_reg_enable;
     bit module_enabled;
     bit esfinal_clr_while_dsbld;
-    entropy_data_reg_enable = ral.conf.entropy_data_reg_enable.get_mirrored_value() == MuBi4True;
+    entropy_data_reg_enable =
+        ral.entropy_control.entropy_data_reg_enable.get_mirrored_value() == MuBi4True;
     module_enabled = ral.module_enable.module_enable.get_mirrored_value() == MuBi4True;
     esfinal_clr_while_dsbld =
         ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value() == MuBi4True;
@@ -1170,10 +1169,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
               mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
               ral.conf.rng_bit_sel.get_mirrored_value(),
-              mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
-              mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
               mubi4_t'(ral.entropy_control.esfinal_fifo_clear_while_disabled.get_mirrored_value()),
-              mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+              mubi4_t'(ral.entropy_control.entropy_data_reg_enable.get_mirrored_value()),
               mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
               mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value()),
               full_seed_found
@@ -1577,14 +1574,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "entropy_data": begin
         if (!write && channel == AddrChannel) begin
-          // We need to know whether the esfinal FIFO is actually empty. If is empty, it will
-          // return 0 and we must not try to match this against the entropy_data_q queue.
-          // predictions.
-          esfinal_fifo_depth_prev = esfinal_fifo_depth;
-          esfinal_fifo_depth = int'(csr_peek(ral.debug_status.entropy_fifo_depth));
-          // In case this is the last read, the esfinal FIFO got already popped at this point.
-          esfinal_fifo_empty = !(esfinal_fifo_depth || esfinal_fifo_depth_prev);
+          // If the unpacker holds no seed, the read returns 0 and we must not try to match this
+          // against the entropy_data_q queue.
+          entropy_data_invalid = csr_peek(ral.entropy_data_valid) != MuBi4True;
         end
+      end
+      "entropy_data_request": begin
+        do_read_check = 1'b0;
+      end
+      "entropy_data_valid": begin
+        do_read_check = 1'b0;
       end
       "health_test_windows": begin
         locked_reg_access = dut_reg_locked;
@@ -1708,9 +1707,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               bit es_fw_ov_insert_mode, es_bypass_mode, module_enable;
               es_fw_ov_insert_mode = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
                   (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
-              es_bypass_mode = (`gmv(ral.conf.fips_enable) != MuBi4True) ||
-                  ((`gmv(ral.entropy_control.es_type) == MuBi4True) &&
-                  (`gmv(ral.entropy_control.es_route) == MuBi4True));
+              es_bypass_mode = `gmv(ral.conf.fips_enable) != MuBi4True;
               module_enable = (`gmv(ral.module_enable.module_enable) == MuBi4True);
 
               // fw_ov_wr_fifo_full should only be high if we are in the FW override insert mode,
@@ -1895,8 +1892,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                     esfinal_fifo_cleared =
                         `gmv(ral.entropy_control.esfinal_fifo_clear_while_disabled) == MuBi4True;
                     if (esfinal_fifo_cleared) begin
-                      esfinal_fifo_depth = 0;
-                      esfinal_fifo_depth_prev = 0;
+                      seed_tl_read_cnt = 0;
                     end
                   end
                 join_none : background_process
@@ -1905,9 +1901,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             "conf": begin
               check_redundancy_val("conf", "fips_enable", "fips_enable_field_alert",
                                    invalid_fips_enable);
-              check_redundancy_val("conf", "entropy_data_reg_enable",
-                                   "entropy_data_reg_en_field_alert",
-                                   invalid_entropy_data_reg_enable);
               check_redundancy_val("conf", "fips_flag", "fips_flag_field_alert",
                                    invalid_fips_flag);
               check_redundancy_val("conf", "rng_fips", "rng_fips_field_alert",
@@ -1918,10 +1911,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                                    invalid_rng_bit_enable);
             end
             "entropy_control": begin
-              check_redundancy_val("entropy_control", "es_route", "es_route_field_alert",
-                                   invalid_es_route);
-              check_redundancy_val("entropy_control", "es_type", "es_type_field_alert",
-                                   invalid_es_type);
+              check_redundancy_val("entropy_control", "entropy_data_reg_enable",
+                                   "entropy_data_reg_en_field_alert",
+                                   invalid_entropy_data_reg_enable);
               check_redundancy_val("entropy_control", "esfinal_fifo_clear_while_disabled",
                                    "esfinal_fifo_clear_while_disabled_field_alert",
                                    invalid_esfinal_clr_while_dsbld);
@@ -1931,8 +1923,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
                 fips_csrng_q.delete();
                 entropy_data_q.delete();
                 esfinal_fifo_cleared = 1;
-                esfinal_fifo_depth = 0;
-                esfinal_fifo_depth_prev = 0;
+                seed_tl_read_cnt = 0;
+              end
+            end
+            "entropy_data_request": begin
+              // A request while a seed is only partially read discards that seed.
+              if (`gmv(ral.entropy_control.entropy_data_reg_enable) == MuBi4True &&
+                  item.a_data[3:0] == MuBi4True && seed_tl_read_cnt > 0) begin
+                void'(entropy_data_q.pop_front());
+                entropy_data_drops++;
+                seed_tl_read_cnt = 0;
               end
             end
             "threshold_oneway": begin
@@ -1977,10 +1977,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               // The fw_ov_sha3_start field triggers the internal processing of SHA data
               mubi4_t start_mubi  = mubi4_t'(
                   ral.fw_ov_sha3_start.fw_ov_insert_start.get_mirrored_value());
-              bit fips_enabled    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-              bit es_route        = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
-              bit es_type         = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
-              bit is_fips_mode    = fips_enabled && !(es_route && es_type);
+              bit is_fips_mode    = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
               mubi4_t fw_ov_mubi  = mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value());
 
               bit fw_ov_mode      = fw_ov_mubi == MuBi4True;
@@ -2179,7 +2176,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           // internal state of the entropy_data and observe FIFOs.  At this point however
           // the environment can run satisfactorily by checking whether the FIFOs have
           // been cleared in a disable event.
-          if (esfinal_fifo_cleared || esfinal_fifo_empty) begin
+          if (esfinal_fifo_cleared || entropy_data_invalid) begin
             `DV_CHECK_FATAL(csr.predict(.value('0), .kind(UVM_PREDICT_READ)))
           end else begin
             process_entropy_data_csr_access(item, csr);
@@ -2241,7 +2238,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   task monitor_fw_ov_write_exceptions(virtual entropy_subsys_fifo_exception_if#(1) vif,
                                       bit active_in_fips_mode);
-    bit fw_ov_mode, fw_ov_insert, fips_enabled, es_route, es_type, is_fips_mode;
+    bit fw_ov_mode, fw_ov_insert, is_fips_mode;
     int i;
 
     forever begin
@@ -2249,10 +2246,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       fw_ov_mode   = `gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True;
       fw_ov_insert = fw_ov_mode && (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
-      fips_enabled = `gmv(ral.conf.fips_enable) == MuBi4True;
-      es_route     = `gmv(ral.entropy_control.es_route) == MuBi4True;
-      es_type      = `gmv(ral.entropy_control.es_type) == MuBi4True;
-      is_fips_mode = fips_enabled && !(es_route && es_type);
+      is_fips_mode = `gmv(ral.conf.fips_enable) == MuBi4True;
 
       // If we are not in FW_OV mode at this time, then this error event doesn't matter.
       // (Such events seem to happen in normal HW-driven operation, but they do not
@@ -2313,17 +2307,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
   endfunction
 
   function bit do_condition_data();
-    bit             route_sw;
-    bit             sw_bypass;
-    bit             fips_enable;
     bit             is_fips_mode;
     bit             predict_conditioned;
 
-    route_sw    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
-    sw_bypass   = (`gmv(ral.entropy_control.es_type)  == MuBi4True);
-    fips_enable = (`gmv(ral.conf.fips_enable)         == MuBi4True);
-
-    is_fips_mode = fips_enable && !(route_sw && sw_bypass);
+    is_fips_mode = (`gmv(ral.conf.fips_enable) == MuBi4True);
 
     predict_conditioned = is_fips_mode;
 
@@ -2711,17 +2698,15 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   // Propagate internal repetition counter to watermark register.
   function automatic void propagate_repcnt_to_watermark();
-    bit fips_enable, bypass_to_sw, route_to_sw, bypass_mode, rng_bit_en;
+    bit fips_enable, bypass_mode, rng_bit_en;
     bit [1:0] rng_bit_sel;
     int max_repcnt = 0;
     ht_watermark_num_e ht_watermark_num;
     // Determine whether FIPS or bypass mode is now active.
     fips_enable = `gmv(ral.conf.fips_enable) == MuBi4True;
-    bypass_to_sw = `gmv(ral.entropy_control.es_type) == MuBi4True;
-    route_to_sw = `gmv(ral.entropy_control.es_route) == MuBi4True;
     rng_bit_en  = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
     rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
-    bypass_mode = ~fips_enable | (bypass_to_sw & route_to_sw);
+    bypass_mode = ~fips_enable;
     ht_watermark_num = ht_watermark_num_e'(`gmv(ral.ht_watermark_num));
     // Calculate the new value for repcnt_event_cnt, since it can change when we toggle rng_bit_en.
     for (int i = 0; i < `RNG_BUS_WIDTH; i++) begin
@@ -2746,7 +2731,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     int                       pass_requirement, pass_count, startup_fail_count;
     bit                       fw_ov_insert;
     bit                       is_fips_mode;
-    bit                       fips_enable, es_route, es_type;
     bit                       rng_bit_en;
     bit [1:0]                 rng_bit_sel;
     int                       failures_in_window;
@@ -2761,13 +2745,9 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
       wait_enabled();
 
-      fips_enable = (`gmv(ral.conf.fips_enable)         == MuBi4True);
-      es_route    = (`gmv(ral.entropy_control.es_route) == MuBi4True);
-      es_type     = (`gmv(ral.entropy_control.es_type)  == MuBi4True);
-      rng_bit_en  = (`gmv(ral.conf.rng_bit_enable)      == MuBi4True);
-      rng_bit_sel = `gmv(ral.conf.rng_bit_sel);
-
-      is_fips_mode  = fips_enable && !(es_route && es_type);
+      is_fips_mode = (`gmv(ral.conf.fips_enable)    == MuBi4True);
+      rng_bit_en   = (`gmv(ral.conf.rng_bit_enable) == MuBi4True);
+      rng_bit_sel  = `gmv(ral.conf.rng_bit_sel);
 
       fw_ov_insert = (`gmv(ral.fw_ov_control.fw_ov_mode) == MuBi4True) &&
                      (`gmv(ral.fw_ov_control.fw_ov_entropy_insert) == MuBi4True);
@@ -2951,7 +2931,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     // Independently of `entropy_data_reg_enable`, we push the seed into both the HW interface
     // queue and the SW queue. Whether reading from that inteface is actually permitted is checked
-    // during the actual read operation via illegal coverage bins (see cp_es_route coverpoints).
+    // during the actual read operation via illegal coverage bins (see cp_entropy_data_reg_enable
+    // coverpoints).
     fips_csrng = predict_fips_csrng();
     fips_csrng_q.push_back(fips_csrng);
     csrng_seed = get_csrng_seed(fips_csrng);
@@ -3042,9 +3023,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             mubi4_t'(ral.conf.threshold_scope.get_mirrored_value()),
             mubi4_t'(ral.conf.rng_bit_enable.get_mirrored_value()),
             ral.conf.rng_bit_sel.get_mirrored_value(),
-            mubi4_t'(ral.entropy_control.es_route.get_mirrored_value()),
-            mubi4_t'(ral.entropy_control.es_type.get_mirrored_value()),
-            mubi4_t'(ral.conf.entropy_data_reg_enable.get_mirrored_value()),
+            mubi4_t'(ral.entropy_control.entropy_data_reg_enable.get_mirrored_value()),
             mubi4_t'(ral.fw_ov_control.fw_ov_mode.get_mirrored_value()),
             mubi4_t'(ral.fw_ov_control.fw_ov_entropy_insert.get_mirrored_value())
         );
@@ -3056,9 +3035,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
   virtual task predict_fw_ov_wr_full();
     bit [StateWidthPad-1:0] sha3pad_state, sha3pad_state_next;
-    bit fips_enabled;
-    bit es_route;
-    bit es_type;
     bit is_fips_mode;
     bit fw_ov_entropy_insert;
     forever begin
@@ -3070,10 +3046,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         continue;
       end
 
-      fips_enabled = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
-      es_route     = ral.entropy_control.es_route.get_mirrored_value() == MuBi4True;
-      es_type      = ral.entropy_control.es_type.get_mirrored_value() == MuBi4True;
-      is_fips_mode = fips_enabled && !(es_route && es_type);
+      is_fips_mode = ral.conf.fips_enable.get_mirrored_value() == MuBi4True;
 
       fw_ov_entropy_insert =
           (ral.fw_ov_control.fw_ov_mode.get_mirrored_value() == MuBi4True) &&

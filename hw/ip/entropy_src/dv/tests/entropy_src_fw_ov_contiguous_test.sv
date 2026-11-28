@@ -12,13 +12,10 @@ class entropy_src_fw_ov_contiguous_test extends entropy_src_base_test;
 
     cfg.en_scb                              = 1;
 
-    cfg.dut_cfg.route_software_pct          = 50;
-
     cfg.dut_cfg.ht_threshold_oneway_pct     = 10;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;
     cfg.dut_cfg.default_ht_thresholds_pct   = 100;
     cfg.dut_cfg.fips_enable_pct             = 50;
-    cfg.dut_cfg.type_bypass_pct             = 50;
 
     cfg.dut_cfg.fw_read_pct                 = 100;
     // To read from the observe FIFO, FW_OV_CONTROL.FW_OV_MODE needs to be enabled.

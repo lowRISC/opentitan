@@ -25,10 +25,8 @@ class entropy_src_rng_max_rate_test extends entropy_src_rng_test;
     // is observed. However, as we reconfigure the DUT very frequently, this automatic
     // switch might not happen.
     cfg.dut_cfg.fips_enable_pct = 60;
-    // We want to hit all rng_bit_enable settings (off, bit 0 - 3) w/ and w/o bypass and
-    // fips_enable.
+    // We want to hit all rng_bit_enable settings (off, bit 0 - 3) w/ and w/o fips_enable.
     cfg.dut_cfg.rng_bit_enable_pct = 80;
-    cfg.dut_cfg.type_bypass_pct = 50;
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 
     `uvm_info(`gfn, $sformatf("%s", cfg.convert2string()), UVM_LOW)

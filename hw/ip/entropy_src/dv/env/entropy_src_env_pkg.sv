@@ -52,13 +52,11 @@ package entropy_src_env_pkg;
     invalid_fw_ov_mode              = 5,
     invalid_fw_ov_entropy_insert    = 6,
     invalid_fw_ov_insert_start      = 7,
-    invalid_es_route                = 8,
-    invalid_es_type                 = 9,
-    invalid_esfinal_clr_while_dsbld = 10,
-    invalid_alert_threshold         = 11,
-    invalid_fips_flag               = 12,
-    invalid_rng_fips                = 13,
-    invalid_threshold_oneway        = 14
+    invalid_esfinal_clr_while_dsbld = 8,
+    invalid_alert_threshold         = 9,
+    invalid_fips_flag               = 10,
+    invalid_rng_fips                = 11,
+    invalid_threshold_oneway        = 12
   } invalid_mubi_e;
 
   typedef enum int {

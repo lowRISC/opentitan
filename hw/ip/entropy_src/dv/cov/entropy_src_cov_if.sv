@@ -115,8 +115,6 @@ interface entropy_src_cov_if
                                                      mubi4_t   threshold_scope,
                                                      mubi4_t   rng_bit_enable,
                                                      bit [1:0] rng_bit_sel,
-                                                     mubi4_t   es_route,
-                                                     mubi4_t   es_type,
                                                      mubi4_t   esfinal_fifo_clear_while_disabled,
                                                      mubi4_t   entropy_data_reg_enable,
                                                      mubi4_t   fw_ov_mode,
@@ -157,19 +155,6 @@ interface entropy_src_cov_if
       bins        disabled =  { [3'b000 : 3'b011] };
     }
 
-    // Signal an error if data is observed when es_route is false.
-    // Sample this even if we don't have a full seed, to detect partial seed
-    // leakage.
-    cp_es_route: coverpoint es_route {
-      bins         mubi_true  = { MuBi4True };
-      illegal_bins mubi_false = { MuBi4False };
-    }
-
-    cp_es_type: coverpoint es_type iff(full_seed) {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
-    }
-
     cp_esfinal_fifo_clear_while_disabled: coverpoint
         esfinal_fifo_clear_while_disabled iff(full_seed) {
       bins        mubi_true  = { MuBi4True };
@@ -199,8 +184,7 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Large cross covering entropy data interface over all valid configurations
-    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit,
-                     cp_es_type {
+    cr_config: cross cp_fips_enable, cp_fips_flag, cp_rng_fips, cp_threshold_scope, cp_rng_bit {
       // The threshold scope needs to be set to false if we are in the single lane mode.
       ignore_bins thresh_scope_true_rng_bit_true =
           binsof(cp_threshold_scope) intersect {MuBi4True} &&
@@ -210,16 +194,7 @@ interface entropy_src_cov_if
     // Finer crosses
     cr_fips_scope: cross cp_fips_enable, cp_threshold_scope;
     cr_fips_bit: cross cp_fips_enable, cp_rng_bit;
-    cr_fips_type: cross cp_fips_enable, cp_es_type;
     cr_fips_scope_bit: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit {
-      // The threshold scope needs to be set to false if we are in the single lane mode.
-      ignore_bins thresh_scope_true_rng_bit_true =
-          binsof(cp_threshold_scope) intersect {MuBi4True} &&
-          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
-    }
-    cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
-    cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
-    cr_scope_bit_type: cross cp_threshold_scope, cp_rng_bit, cp_es_type {
       // The threshold scope needs to be set to false if we are in the single lane mode.
       ignore_bins thresh_scope_true_rng_bit_true =
           binsof(cp_threshold_scope) intersect {MuBi4True} &&
@@ -248,8 +223,6 @@ interface entropy_src_cov_if
                                               bit [3:0] threshold_scope,
                                               bit [3:0] rng_bit_enable,
                                               bit [1:0] rng_bit_sel,
-                                              bit [3:0] es_route,
-                                              bit [3:0] es_type,
                                               bit [3:0] esfinal_fifo_clear_while_disabled,
                                               bit [3:0] entropy_data_reg_enable,
                                               bit [3:0] fw_ov_mode,
@@ -294,26 +267,12 @@ interface entropy_src_cov_if
       bins        disabled =  { [3'b000 : 3'b011] };
     }
 
-    // Signal an error if data is observed when es_route is true.
-    cp_es_route: coverpoint es_route {
-      illegal_bins mubi_true  = { MuBi4True };
-      bins         mubi_false = { MuBi4False };
-    }
-
-    // This should have no effect on the CSRNG HW IF
-    // but we should cover it anyway.
-    cp_es_type: coverpoint es_type {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
-    }
-
     cp_esfinal_fifo_clear_while_disabled: coverpoint esfinal_fifo_clear_while_disabled {
       bins        mubi_true  = { MuBi4True };
       bins        mubi_false = { MuBi4False };
     }
 
-    // This should have no effect on the CSRNG HW IF
-    // but we should cover it anyway.
+    // Seeds can reach the CSRNG HW IF in both cases, as long as firmware has no request pending.
     cp_entropy_data_reg_enable: coverpoint entropy_data_reg_enable {
       bins         mubi_true  = { MuBi4True };
       bins         mubi_false = { MuBi4False };
@@ -335,7 +294,7 @@ interface entropy_src_cov_if
 
     // CSRNG HW interface is tested with all valid configurations
     cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit_enable,
-                     cp_es_type, cp_entropy_data_reg_enable
+                     cp_entropy_data_reg_enable
     {
       // The threshold scope needs to be set to false if we are in the single lane mode.
       ignore_bins thresh_scope_true_rng_bit_true =
@@ -344,20 +303,12 @@ interface entropy_src_cov_if
     }
 
     // Smaller crosses
-    cr_fips_scope_type: cross cp_fips_enable, cp_threshold_scope, cp_es_type;
     cr_fips_scope_data_enable: cross cp_fips_enable, cp_threshold_scope, cp_entropy_data_reg_enable;
     cr_fips_scope_fw_ov: cross cp_fips_enable, cp_threshold_scope, cp_fw_ov_mode, cp_entropy_insert;
 
-    cr_fips_bit_type: cross cp_fips_enable, cp_rng_bit, cp_es_type;
     cr_fips_bit_data_enable: cross cp_fips_enable, cp_rng_bit, cp_entropy_data_reg_enable;
     cr_fips_bit_fw_ov: cross cp_fips_enable, cp_rng_bit, cp_fw_ov_mode, cp_entropy_insert;
 
-    cr_scope_bit_type:  cross cp_threshold_scope, cp_rng_bit, cp_es_type {
-      // The threshold scope needs to be set to false if we are in the single lane mode.
-      ignore_bins thresh_scope_true_rng_bit_true =
-          binsof(cp_threshold_scope) intersect {MuBi4True} &&
-          binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
-    }
     cr_scope_bit_data_enable:  cross cp_threshold_scope, cp_rng_bit, cp_entropy_data_reg_enable {
       // The threshold scope needs to be set to false if we are in the single lane mode.
       ignore_bins thresh_scope_true_rng_bit_true =
@@ -398,8 +349,6 @@ interface entropy_src_cov_if
                                                         mubi4_t   threshold_scope,
                                                         mubi4_t   rng_bit_enable,
                                                         bit [1:0] rng_bit_sel,
-                                                        mubi4_t   es_route,
-                                                        mubi4_t   es_type,
                                                         mubi4_t   entropy_data_reg_enable,
                                                         mubi4_t   fw_ov_mode,
                                                         mubi4_t   entropy_insert);
@@ -444,20 +393,6 @@ interface entropy_src_cov_if
 
     // This should have no effect on the Observe FIFO IF
     // but we should cover it anyway.
-    cp_es_route: coverpoint es_route {
-      bins         mubi_true  = { MuBi4True };
-      bins         mubi_false = { MuBi4False };
-    }
-
-    // This should have no effect on the Observe FIFO IF
-    // but we should cover it anyway.
-    cp_es_type: coverpoint es_type {
-      bins        mubi_true  = { MuBi4True };
-      bins        mubi_false = { MuBi4False };
-    }
-
-    // This should have no effect on the Observe FIFO IF
-    // but we should cover it anyway.
     cp_entropy_data_reg_enable: coverpoint entropy_data_reg_enable {
       bins         mubi_true  = { MuBi4True };
       bins         mubi_false = { MuBi4False };
@@ -477,8 +412,7 @@ interface entropy_src_cov_if
     // Cross coverage points
 
     // Entropy data interface is tested with all valid configurations
-    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_es_route, cp_es_type,
-                     cp_entropy_data_reg_enable {
+    cr_config: cross cp_fips_enable, cp_threshold_scope, cp_rng_bit, cp_entropy_data_reg_enable {
       // The threshold scope needs to be set to false if we are in the single lane mode.
       ignore_bins thresh_scope_true_rng_bit_true =
           binsof(cp_threshold_scope) intersect {MuBi4True} &&
@@ -493,8 +427,6 @@ interface entropy_src_cov_if
           binsof(cp_threshold_scope) intersect {MuBi4True} &&
           binsof(cp_rng_bit) intersect { [3'b100 : 3'b111] };
     }
-    cr_rng_insert_route: cross cp_rng_bit, cp_entropy_insert, cp_es_route;
-    cr_rng_insert_type: cross cp_rng_bit, cp_entropy_insert, cp_es_type;
     cr_rng_insert_reg_en: cross cp_rng_bit, cp_entropy_insert, cp_entropy_data_reg_enable;
 
   endgroup : observe_fifo_event_cg
@@ -952,7 +884,7 @@ interface entropy_src_cov_if
     option.per_instance = 1;
 
     cp_alert_bit : coverpoint alert_bit {
-      bins alert_bits[] = {0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 31};
+      bins alert_bits[] = {[0:17], 31};
     }
   endgroup : recov_alert_cg
 
@@ -1008,16 +940,13 @@ interface entropy_src_cov_if
                                                     mubi4_t   threshold_scope,
                                                     mubi4_t   rng_bit_enable,
                                                     bit [1:0] rng_bit_sel,
-                                                    mubi4_t   es_route,
-                                                    mubi4_t   es_type,
                                                     mubi4_t   esfinal_fifo_clear_while_disabled,
                                                     mubi4_t   entropy_data_reg_enable,
                                                     mubi4_t   fw_ov_mode,
                                                     mubi4_t   entropy_insert,
                                                     bit       full_seed);
     seed_output_csr_cg_inst.sample(module_enable, fips_enable, fips_flag, rng_fips, threshold_scope,
-                                   rng_bit_enable, rng_bit_sel,
-                                   es_route, es_type, esfinal_fifo_clear_while_disabled,
+                                   rng_bit_enable, rng_bit_sel, esfinal_fifo_clear_while_disabled,
                                    entropy_data_reg_enable, fw_ov_mode,
                                    entropy_insert, full_seed);
   endfunction
@@ -1029,15 +958,12 @@ interface entropy_src_cov_if
                                              bit [3:0] threshold_scope,
                                              bit [3:0] rng_bit_enable,
                                              bit [1:0] rng_bit_sel,
-                                             bit [3:0] es_route,
-                                             bit [3:0] es_type,
                                              bit [3:0] esfinal_fifo_clear_while_disabled,
                                              bit [3:0] entropy_data_reg_enable,
                                              bit [3:0] fw_ov_mode,
                                              bit [3:0] entropy_insert);
     csrng_hw_cg_inst.sample(module_enable, fips_enable, fips_flag, rng_fips, threshold_scope,
-                            rng_bit_enable, rng_bit_sel,
-                            es_route, es_type, esfinal_fifo_clear_while_disabled,
+                            rng_bit_enable, rng_bit_sel, esfinal_fifo_clear_while_disabled,
                             entropy_data_reg_enable, fw_ov_mode, entropy_insert);
   endfunction
 
@@ -1047,13 +973,11 @@ interface entropy_src_cov_if
                                                        mubi4_t   threshold_scope,
                                                        mubi4_t   rng_bit_enable,
                                                        bit [1:0] rng_bit_sel,
-                                                       mubi4_t   es_route,
-                                                       mubi4_t   es_type,
                                                        mubi4_t   entropy_data_reg_enable,
                                                        mubi4_t   fw_ov_mode,
                                                        mubi4_t   entropy_insert);
     observe_fifo_event_cg_inst.sample(fips_enable, fips_flag, rng_fips, threshold_scope,
-                                      rng_bit_enable, rng_bit_sel, es_route, es_type,
+                                      rng_bit_enable, rng_bit_sel,
                                       entropy_data_reg_enable, fw_ov_mode, entropy_insert);
   endfunction
 
@@ -1142,8 +1066,8 @@ interface entropy_src_cov_if
 
   // Sample the csrng_hw_cg whenever data is output on the csrng pins
   logic csrng_if_req, csrng_if_ack;
-  mubi4_t fips_enable_csr, threshold_scope_csr, rng_bit_enable_csr, rng_bit_sel_csr, es_route_csr,
-          es_type_csr, entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
+  mubi4_t fips_enable_csr, threshold_scope_csr, rng_bit_enable_csr, rng_bit_sel_csr,
+          entropy_data_reg_enable_csr, fw_ov_mode_csr, entropy_insert_csr;
 
   // Assign req/ack signals to track those in the entropy_src_hw_if_i/o ports of the entropy_src
   // instance into which this interface has been bound.
@@ -1172,10 +1096,8 @@ interface entropy_src_cov_if
                            entropy_src.reg2hw.conf.threshold_scope.q,
                            entropy_src.reg2hw.conf.rng_bit_enable.q,
                            entropy_src.reg2hw.conf.rng_bit_sel.q,
-                           entropy_src.reg2hw.entropy_control.es_route.q,
-                           entropy_src.reg2hw.entropy_control.es_type.q,
                            entropy_src.reg2hw.entropy_control.esfinal_fifo_clear_while_disabled.q,
-                           entropy_src.reg2hw.conf.entropy_data_reg_enable.q,
+                           entropy_src.reg2hw.entropy_control.entropy_data_reg_enable.q,
                            entropy_src.reg2hw.fw_ov_control.fw_ov_mode.q,
                            entropy_src.reg2hw.fw_ov_control.fw_ov_entropy_insert.q);
       end

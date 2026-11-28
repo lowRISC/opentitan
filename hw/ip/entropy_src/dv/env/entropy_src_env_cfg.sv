@@ -60,9 +60,6 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Default: Negative, meaning no random reconfigs
   realtime mean_rand_csr_alert_time = -1;
 
-  // Maximum time to wait for non-seed generating DUT configurations
-  realtime max_silent_reconfig_time = -1;
-
   // Time to pause between register configs.
   realtime configuration_pause_time = 0ns;
 
@@ -137,7 +134,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   rand bit   induce_targeted_transition;
   // Read the entropy over the entropy_data register if this is set.
-  rand mubi4_t es_route_sw;
+  rand mubi4_t entropy_data_reg_enable;
 
   // fw_ov_rd_cnt is the number of words read from the observe FIFO.
   rand int   fw_ov_rd_cnt;
@@ -217,7 +214,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     1                         :/ induce_targeted_transition_pct,
     0                         :/ (100 - induce_targeted_transition_pct) };}
 
-  constraint es_route_sw_c {es_route_sw inside {MuBi4False, MuBi4True};}
+  constraint entropy_data_reg_enable_c {entropy_data_reg_enable inside {MuBi4False, MuBi4True};}
 
   // We need to make sure that we can read out 1024 contiguous symbols, that's why
   // we set the probability for the last value to 40 pct (this is exactly 1024 symbols
@@ -289,18 +286,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
     `DV_CHECK(induce_targeted_transition_pct <= 100);
   endfunction
 
-  // Some combinations of environment and DUT configurations do not generate seeds. This function
-  // helps vseqs identify these inactive configurations to more quickly prompt a reconfiguration
-  // to get more coverage in a given run.
-  function bit generates_seeds(mubi4_t route_software, mubi4_t entropy_data_reg_enable);
-    if (route_software == MuBi4True) begin
-      return entropy_data_reg_enable == MuBi4True;
-    end
-    return 1;
-  endfunction
-
-  // Similar to generates_seeds(), returns true if a configuration should be able to
-  // generate observe_data
+  // Returns true if a configuration should be able to generate observe_data
   function bit generates_observe_data(mubi4_t fw_read_enable);
      return fw_read_enable == MuBi4True;
   endfunction
