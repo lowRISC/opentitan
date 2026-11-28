@@ -9,21 +9,26 @@ The OTP controller is a module that is a peripheral on the chip interconnect bus
 
 The OTP is a module that provides a device with one-time-programming functionality.
 The result of this programming is non-volatile, and unlike flash, cannot be reversed.
-The OTP functionality is constructed through an open-source OTP controller and a proprietary OTP IP.
+The OTP functionality is constructed through an open-source OTP controller and a backend that provides the non-volatile storage.
+The backend is either a dedicated, typically proprietary OTP IP wrapped in `otp_macro`, or `rram_ctrl`, which emulates OTP in a reserved region of the RRAM.
+In this top, the backend is `${macro_backend}`.
 
 The OTP controller provides:
-- An open-source abstraction interface that software can use to interact with a proprietary OTP block underneath.
-- An open-source abstraction interface that hardware components (for example [life cycle controller](../../../ip/lc_ctrl/README.md) and [key manager](../../../ip/keymgr_dpe/README.md)) can use to interact with a proprietary OTP block underneath.
+- An open-source abstraction interface that software can use to interact with the OTP backend underneath.
+- An open-source abstraction interface that hardware components (for example [life cycle controller](../../../ip/lc_ctrl/README.md) and [key manager](../../../ip/keymgr_dpe/README.md)) can use to interact with the OTP backend underneath.
 - High level logical security protection, such as integrity checks and scrambling of sensitive content.
 - Software isolation for when OTP contents are readable and programmable.
 
-The proprietary OTP IP provides:
+The backend provides:
 - Reliable, non-volatile storage.
 - Technology-specific redundancy or error correction mechanisms.
 - Physical defensive features such as SCA and FI resistance.
 - Visual and electrical probing resistance.
 
-Together, the OTP controller and IP provide secure one-time-programming functionality that is used throughout the life cycle (LC) of a device.
+Together, the OTP controller and the backend provide secure one-time-programming functionality that is used throughout the life cycle (LC) of a device.
+With the `rram_ctrl` backend, the OTP is emulated in a reserved region of the RRAM.
+Since the RRAM itself is rewritable, the one-time-programmable behavior is enforced by `rram_ctrl`.
+Writes from the OTP controller can only set bits, and software cannot read or program the OTP region through `rram_ctrl`.
 
 ${"##"} Features
 
@@ -38,22 +43,55 @@ ${"##"} Features
   - Supports life cycle functions, but cannot be integrity locked
 - Lightweight scrambling of secret OTP partition using a global netlist constant
 - Lightweight ephemeral key derivation function for RAM scrambling mechanisms
-- Lightweight key derivation function for FLASH scrambling mechanism
+- Lightweight key derivation function for the NVM (flash or RRAM) scrambling mechanism
+
+${"##"} Supported Parameter Sets
+
+The following table lists the instantiation parameters of OTP.
+Note that parameters prefixed with `RndCnst` are random netlist constants that need to be regenerated via topgen before the tapeout (typically by the silicon creator).
+
+Parameter                   | Default             | Top ${topname.capitalize()}  | Description
+----------------------------|---------------------|---------------|---------------
+`AlertAsyncOn`              | `{NumAlerts{1'b1}}` | Set by topgen | Adds synchronizers to the alert senders for an alert handler on another clock.
+`AlertSkewCycles`           | `1`                 | `1`           | Cycles of skew tolerated on the differential alert signals, set by topgen.
+`RndCnstLfsrSeed`           | (see RTL)           | (see RTL)     | Seed to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
+`RndCnstLfsrPerm`           | (see RTL)           | (see RTL)     | Permutation to be used for the internal 40bit partition check timer LFSR. This needs to be replaced by the silicon creator before the tapeout.
+`RndCnstScrmblKeyInit`      | (see RTL)           | (see RTL)     | Reset value of the scrambling key and nonce registers.
+`RndCnstScrmblKey<i>`       | `'0`                | (see RTL)     | Random scrambling keys for secret partitions, to be used in the [scrambling datapath](doc/theory_of_operation.md#scrambling-datapath). There is one parameter per key in the memory map.
+`RndCnstDigestConst<i>`     | `'0`                | (see RTL)     | Random digest finalization constants, to be used in the [scrambling datapath](doc/theory_of_operation.md#scrambling-datapath). There is one parameter per digest in the memory map.
+`RndCnstDigestIV<i>`        | `'0`                | (see RTL)     | Random digest initialization vectors, to be used in the [scrambling datapath](doc/theory_of_operation.md#scrambling-datapath). There is one parameter per digest in the memory map.
+`RndCnstPartInvDefault`     | `'0`                | (see RTL)     | Default value of the buffered partitions while they are invalid.
+
+The OTP controller is generated by ipgen, and the following template parameters define its configuration.
+
+Template Parameter          | Top ${topname.capitalize()} | Description
+----------------------------|------------------|---------------
+`otp_mmap`                  | `hw/top_${topname}/data/otp/otp_ctrl_mmap.hjson` | Memory map of the OTP partitions and items, and the scrambling configuration.
+`enable_nvm_key`            | `${"true" if enable_nvm_key else "false"}` | Enables the NVM scrambling key interface.
+`num_sram_key_req_slots`    | `${num_sram_key_req_slots}` | Number of SRAM scrambling key request ports.
+
+Only the configuration that this top generates, listed in the Top ${topname.capitalize()} columns above, is verified and signed off.
+The block-level testbench of this top is generated from the same memory map and template parameters, so it verifies the same configuration.
+The random netlist constants do not change the architecture, so any value of them is supported.
 
 ${"##"} OTP Controller Overview
 
-The functionality of OTP is split into an open-source and a closed-source part, with a clearly defined boundary in between, as illustrated in the simplified high-level block diagram below.
+The functionality of OTP is split into the open-source OTP controller and a backend, with a clearly defined boundary in between, as illustrated in the simplified high-level block diagram below.
 
 ![OTP Controller Overview](./doc/otp_ctrl_overview.svg)
+
+This top uses the `${macro_backend}` backend.
 
 It is the task of the open-source controller to provide a common, non-technology specific interface to OTP users with a common register interface and a clearly defined I/O interface to hardware.
 The open-source controller implements logical isolation and partitioning of OTP storage that enables users to separate different functions of the OTP into "partitions" with different properties.
 Finally, the open-source controller provides a high level of security for specific partitions by provisioning integrity digests for each partition, and scrambling of partitions where required.
 
-The proprietary IP on the other hand translates a common access interface to the technology-specific OTP interface, both for functional and debug accesses (for example register accesses to the macro-internal control structure).
+The backend on the other hand translates a common access interface, the macro interface, to the underlying storage.
+Two backends are available.
+- [`otp_macro`](../../../ip/otp_macro/README.md) wraps a dedicated, technology-specific OTP IP, both for functional and debug accesses (for example register accesses to the macro-internal control structure).
+  In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, `otp_macro` also contains a generalized and synthesizable model of the OTP IP.
+- [`rram_ctrl`](../../../ip/rram_ctrl/README.md) emulates OTP in a reserved region of the RRAM.
 
-This split implies that every proprietary OTP IP must implement a translation layer from a standardized OpenTitan interface to the module underneath.
+This split implies that every backend must implement the standardized macro interface.
 It also implies that no matter how the OTP storage or word size may change underneath, the open-source controller must present a consistent and coherent software and hardware interface.
-This standardized interface is defined further below, and the wrapper leverages the same [technology primitive mechanism](../../../ip/prim/README.md) that is employed in other parts of OpenTitan in order to wrap and abstract technology-specific macros (such as memories and clocking cells) that are potentially closed-source.
-
-In order to enable simulation and FPGA emulation of the OTP controller even without access to the proprietary OTP IP, a generalized and synthesizable model of the OTP IP is provided in the form of a [OTP MACRO hardware IP](https://github.com/lowRISC/opentitan/blob/master/hw/ip/otp_macro/rtl/otp_macro.sv).
+The macro interface is described in the [theory of operation](doc/theory_of_operation.md#macro-interface-and-backends).

@@ -35,7 +35,7 @@ Within each logical partition, there are specific enforceable properties
 This verification takes two forms, partition integrity checks, and storage consistency checks.
 - Zeroizability
   - This controls whether a particular partition can be subject to zeroization in line with FIPS and [OCP L.O.C.K.](https://www.opencompute.org/documents/ocp-l-o-c-k-0-8-1-pdf-1) requirements.
-  - A zeroized partition has all its fuses (including the digest field) blown. Currently, the OTP macro is configured to also zeroize the redundant ECC bits of each partition word.
+  - A zeroized partition has all its fuses (including the digest field) blown. The macro interface backend also zeroizes the redundant ECC bits of each partition word.
 
 Since the OTP is memory-like in nature (it only outputs a certain number of bits per address location), some of the logical partitions are buffered in registers for instantaneous and parallel access by hardware.
 This is a critical point, since after power-up, these particular OTP contents are stored in flip flops and sourced to the system.
@@ -93,7 +93,8 @@ Calculation of the integrity digest depends on whether the partition requires pe
 ### Vendor Test Partition
 
 The vendor test partition is intended to be used for OTP programming smoke checks during the manufacturing flow.
-The silicon creator may implement these checks inside the proprietary version of the `otp_macro` wrapper.
+The silicon creator may implement these checks inside the proprietary version of the `otp_macro` backend.
+Whether such checks are available depends on the [macro interface backend](#macro-interface-and-backends) of this top.
 This partition behaves like any other SW partition, with the exception that ECC uncorrectable errors will not lead to fatal errors / alerts as they do in all other partitions.
 This is due to the nature of the OTP programming smoke checks, which may leave certain OTP words in a state inconsistent with the ECC polynomial employed upon OTP readout.
 
@@ -124,9 +125,9 @@ Note however that only the life cycle controller has access to this partition, i
 When a partition is configured as zeroizable, software can zeroize each word in a partition individually through the Direct-Access Interface (DAI).
 In order to efficiently identify already (or in the process of being) zeroized partitions, they are equipped with a dedicated 64-bit zeroization marker field that is inserted at the end of every zeroizable partition (see [Zeroization Detection](#zeroization-detection)).
 These marker fields can be inspected in the memory as part of the [Programmer's Guide](programmers_guide.md#direct-access-memory-map).
-The zeroization flow needs to be supported by the attached OTP macro with a dedicated `ZEROIZE` command.
+The zeroization flow needs to be supported by the macro interface backend with a dedicated `Zeroize` command.
 Zeroizing a word in a partition is semantically different from an ordinary write request due to its side-effects related to background checks and ECC handling of subsequent reads.
-Furthermore, as software needs to verify for each word that it was successfully zeroized, the OTP macro has to return the zeroized word back to the OTP controller which will further process it before releasing it to software for inspection.
+Furthermore, as software needs to verify for each word that it was successfully zeroized, the backend has to return the zeroized word back to the OTP controller which will further process it before releasing it to software for inspection.
 Note that every word in a zeroizable partition is always erasable, whereas writes to locked partitions or the digest field in hardware partitions are not permitted.
 
 Zeroizing a partition affects its behavior during initialization and with respect to consistency and integrity checks (see [Partition Checks](#partition-checks) and [Design Details](#design-details)) .
@@ -274,26 +275,23 @@ For more details on how the software programs the OTP, please refer to the [Prog
 
 ### Block Diagram
 
-The following is a high-level block diagram of the Earlygrey OTP that illustrates everything that has been discussed.
+The following is a high-level block diagram of the OTP controller that illustrates everything that has been discussed.
 
 ![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
-Each of the partitions (e.g. P0-P7 for Earlgrey) has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
+Each partition has its [own controller FSM](#partition-controllers) that interacts with the [macro interface](#macro-interface-and-backends) and the [scrambling datapath](#scrambling-datapath) to fulfil its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
 Further, the only two blocks that have (conditional) write access to the OTP are the DAI and the Life Cycle Interface (LCI) blocks.
-The partitions can only issue read transactions to the OTP macro.
+The partitions can only issue read transactions to the backend.
 Note that the access ranges of the DAI and the LCI are mutually exclusive.
 I.e., the DAI cannot read from nor write to the life cycle partition.
 The LCI cannot read the OTP, but is allowed to write to the life cycle partition.
 
-The CSR node on the left side of this diagram connects to the DAI, the OTP partitions (e.g. P0-P7 for Earlgrey) and the OTP wrapper through a gated TL-UL interface.
+The CSR node on the left side of this diagram connects to the DAI and the OTP partitions.
 All connections from the partitions to the CSR node are read-only, and typically only carry a subset of the information available.
 E.g., the secret partitions only expose their digest value via the CSRs.
 
 The Key Derivation Interface (KDI) on the bottom right side interacts with the scrambling datapath, the EDN and the partition holding the scrambling root keys in order to derive static and ephemeral scrambling keys for NVM and SRAM scrambling.
-
-The test access gate shown at the top of the block diagram is governed by the life cycle qualification signal `dft_en_i`, which is only enabled during the TEST_UNLOCKED* life cycle states.
-Otherwise, test access via this TL-UL window is locked down.
 
 In addition to the blocks mentioned so far, the OTP controller also contains an LFSR timer that creates pseudo-randomly distributed partition check requests, and provides pseudo random data at high bandwidth in the event of a secure erase request due to chip-wide alert escalation.
 For security reasons, the LFSR is periodically reseeded with entropy coming from EDN.
@@ -438,7 +436,7 @@ These constants are chosen by the silicon creator prior to the tapeout.
 
 ### Access Arbitration
 
-Access to the OTP wrapper and the scrambling datapath are both round-robin arbitrated, where the former arbitration occurs at cycle level (i.e., individual OTP memory accesses), and the latter occurs at the level of complete transactions (i.e., full digest or encryption).
+Access to the macro interface and the scrambling datapath are both round-robin arbitrated, where the former arbitration occurs at cycle level (i.e., individual OTP memory accesses), and the latter occurs at the level of complete transactions (i.e., full digest or encryption).
 Arbitration at transaction level is implemented similarly to cycle-based arbitration, with the difference that the grant signals remain asserted until the requestor deasserts the request (thereby releasing the arbiter, which acts as a mutex in this case).
 This is behavior illustrated in the example below.
 
@@ -455,84 +453,122 @@ This is behavior illustrated in the example below.
 ]}
 ```
 
-### Primitive Wrapper and FPGA Emulation
 
-![OTP Wrapper Block Diagram](otp_ctrl_prim_otp.svg)
+### Macro Interface and Backends
 
-The OTP IP is wrapped up in a primitive wrapper that exposes a TL-UL interface for testing purposes, and a generalized open-source interface for functional operation (described below).
-Any OTP redundancy mechanism like per-word ECC is assumed to be handled inside the wrapper, which means that the word width exposed as part of the generalized interface is the effective word width.
+The OTP controller does not contain the OTP storage itself.
+Instead, it issues commands via a generalized open-source macro interface (`otp_macro_o` / `otp_macro_i`) to a separate backend that provides the non-volatile storage.
+Two backends implement this interface.
 
-Note that the register space exposed via the TL-UL test interface, as well as DFT and power-related signals are dependent on the underlying proprietary OTP IP.
-They are therefore not further described in this document.
+![OTP Macro Backends](otp_ctrl_macro_backends.svg)
+
+- [`otp_macro`](../../../../ip/otp_macro/README.md) wraps a dedicated OTP macro.
+  It is either a proprietary, technology-specific OTP IP or a generic simulation and FPGA emulation model.
+  All vendor-specific test and DFT functionality lives in `otp_macro`, for example its TL-UL test interface, the vendor test signals from the life cycle controller, power sequencing and observability signals.
+  The TL-UL test interface of `otp_macro` is gated with the life cycle qualification signal `lc_dft_en`, which is only ON in the TEST_UNLOCKED* and RMA life cycle states.
+  Otherwise, test access via this interface is locked down.
+- [`rram_ctrl`](../../../../ip/rram_ctrl/doc/theory_of_operation.md#otp-hardware-plug) emulates the OTP macro in a reserved OTP region of the RRAM.
+  The `rram_ctrl_otp` submodule implements the macro interface and emulates the one-time-programmable semantics on top of the RRAM.
+  This backend does not provide any OTP-specific test or DFT functionality.
+
+{{#include otp_ctrl_macro_backend.md}}
+
+The OTP controller behaves identically with both backends.
+Any OTP redundancy mechanism like per-word ECC is handled inside the backend, which means that the word width exposed by the macro interface is the effective word width.
 
 #### Generalized Open-source Interface
 
-The generalized open-source interface uses a couple of parameters (defaults set for Earlgrey configuration).
+The macro interface is defined in `otp_ctrl_macro_pkg`, which is generated together with the OTP controller.
+It uses the following parameters.
 
-Parameter      | Default                 | Top Earlgrey            | Description
----------------|-------------------------|-------------------------|---------------
-`Width`        | 16                      | 16                      | Native OTP word width.
-`Depth`        | 1024                    | 1024                    | Depth of OTP macro.
-`CmdWidth`     | 7                       | 7                       | Width of the OTP command.
-`ErrWidth`     | 3                       | 3                       | Width of error code output signal.
-`PwrSeqWidth`  | 2                       | 2                       | Width of power sequencing signals to/from AST.
-`SizeWidth`    | 2                       | 2                       | Width of the size field.
-`IfWidth`      | 2^`SizeWidth` * `Width` | 2^`SizeWidth` * `Width` | Data interface width.
+Parameter        | Value                           | Description
+-----------------|---------------------------------|---------------
+`OtpWidth`       | Set by the memory map           | Native OTP word width in bits.
+`OtpDepth`       | Set by the memory map           | Number of native OTP words.
+`OtpCmdWidth`    | 7                               | Width of the OTP command.
+`OtpErrWidth`    | 3                               | Width of the error code.
+`OtpSizeWidth`   | 2                               | Width of the size field.
+`OtpAddrWidth`   | `$clog2(OtpDepth)`              | Width of the native OTP word address.
+`OtpIfWidth`     | 2^`OtpSizeWidth` * `OtpWidth`   | Data interface width.
 
-The generalized open-source interface is a simple command interface with a ready / valid handshake that makes it possible to introduce back pressure if the OTP macro is not able to accept a command due to an ongoing operation.
+The interface is a simple command interface with a ready / valid handshake that makes it possible to introduce back pressure if the backend is not able to accept a command due to an ongoing operation.
 
-In order to facilitate the scrambling and digest operations, the data width has been sized such that data blocks up to the PRESENT block size (64bit) can be transferred across the generalized interface. The actual size of a transfer is determined via the size_i field. Transfer sizes are specified in multiples of the native OTP block size, as listed below.
+In order to facilitate the scrambling and digest operations, the data width has been sized such that data blocks up to the PRESENT block size (64bit) can be transferred across the interface.
+The actual size of a transfer is set via the `size` field, which encodes the number of native OTP words minus one.
+For example, with a native word width of 16bit, the transfer sizes map as follows.
 
-Value of `size_i` | #Native OTP Words | Bit Slice
-------------------|-------------------|------------
-2'b00             |                 1 | `{word0} = data[15:0]`
-2'b01             |                 2 | `{word1, word0} = data[31:0]`
-2'b10             |                 3 | `{word2, word1, word0} = data[47:0]`
-2'b11             |                 4 | `{word3, word2, word1, word0} = data[63:0]`
+Value of `size` | #Native OTP Words | Bit Slice
+----------------|-------------------|------------
+2'b00           |                 1 | `{word0} = data[15:0]`
+2'b01           |                 2 | `{word1, word0} = data[31:0]`
+2'b10           |                 3 | `{word2, word1, word0} = data[47:0]`
+2'b11           |                 4 | `{word3, word2, word1, word0} = data[63:0]`
+
+The OTP controller only issues transfers of one, two or four native words (16, 32 or 64bit), and these accesses are naturally aligned.
+Transfers of three native words (`size = 2'b10`) are not used and are not supported by the `rram_ctrl` backend.
 
 Responses are returned in-order via an unidirectional response interface (i.e., without back pressure capability).
 Downstream logic must be able to sink the response in any case.
 The response optionally carries read data, depending on whether the operation that took place was a read or not.
-Also, an error signal returns a non-zero error code in case an error occurred while carrying out the OTP command.
+Also, an error field returns a non-zero error code in case an error occurred while carrying out the OTP command.
 
-The signals pertaining to the generalized open-source interface are listed below.
+The request struct `otp_ctrl_macro_req_t` (`otp_macro_o`) contains the following fields.
 
-Signal                  | Direction        | Type                        | Description
-------------------------|------------------|-----------------------------|---------------
-`fatal_alert_o`         | `output`         | `logic`                     | Fatal alert output from the primitive. This is connected to a separate alert channel in the instantiating IP. The instantiating IP latches the alert indication and continuously outputs alert events until reset.
-`recov_alert_o`         | `output`         | `logic`                     | Recoverable alert output from the primitive. This is connected to a separate alert channel in the instantiating IP. Should only be pulsed high for each alert occurrence. The instantiating IP then sends out a single alert event for each pulse.
-`ready_o`               | `output`         | `logic`                     | Ready signal for the command handshake.
-`valid_i`               | `input`          | `logic`                     | Valid signal for the command handshake.
-`size_i`                | `input`          | `logic [SizeWidth-1:0]`     | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
-`cmd_i`                 | `input`          | `logic [CmdWidth-1:0]`      | OTP command: `7'b1000101 = read`, `7'b0110111 = write`, `7'b1111001 = read raw`, `7'b1100010 = write raw`,  `7'b0101100 = initialize`
-`addr_i`                | `input`          | `logic [$clog2(Depth)-1:0]` | OTP word address.
-`wdata_i`               | `input`          | `logic [IfWidth-1:0]`       | Write data for write commands.
-`valid_o`               | `output`         | `logic`                     | Valid signal for command response.
-`rdata_o`               | `output`         | `logic [IfWidth-1:0]`       | Read data from read commands.
-`err_o`                 | `output`         | `logic [ErrWidth-1:0]`      | Error code.
+Field    | Type                       | Description
+---------|----------------------------|---------------
+`valid`  | `logic`                    | Valid signal for the command handshake.
+`cmd`    | `cmd_e`                    | OTP command, see the table below.
+`size`   | `logic [OtpSizeWidth-1:0]` | Number of native OTP words to transfer, minus one: `2'b00 = 1 native word` ... `2'b11 = 4 native words`.
+`addr`   | `logic [OtpAddrWidth-1:0]` | OTP word address.
+`wdata`  | `logic [OtpIfWidth-1:0]`   | Write data for write commands.
 
-The `write raw` and `read raw` command instructs the `otp_macro` wrapper to store / read the data in raw format without generating nor checking integrity information.
-That means that the wrapper must return the raw, uncorrected data and no integrity errors.
+The response struct `otp_ctrl_macro_rsp_t` (`otp_macro_i`) contains the following fields.
 
-The `otp_macro` wrapper implements the `Macro*` error codes (0x0 - 0x4) defined in the [Programmer's Guide](programmers_guide.md#error-handling).
+Field              | Type                     | Description
+-------------------|--------------------------|---------------
+`ready`            | `logic`                  | Ready signal for the command handshake.
+`rvalid`           | `logic`                  | Valid signal for the command response.
+`rdata`            | `logic [OtpIfWidth-1:0]` | Read data from read and zeroize commands.
+`err`              | `err_e`                  | Error code, see the `Macro*` error codes in the [Programmer's Guide](programmers_guide.md#error-handling).
+`fatal_lc_fsm_err` | `logic`                  | Fatal error from the life cycle gate FSM of the backend test interface. The OTP controller reports it as a `fatal_bus_integ_error`.
+`fatal_alert`      | `logic`                  | Fatal alert from the backend. The OTP controller forwards it to the `fatal_prim_otp_alert` alert channel.
+`recov_alert`      | `logic`                  | Recoverable alert from the backend. The OTP controller forwards it to the `recov_prim_otp_alert` alert channel. Should only be pulsed high for one cycle.
+
+The `rram_ctrl` backend reports its faults via its own alerts, and therefore ties `fatal_lc_fsm_err`, `fatal_alert` and `recov_alert` to zero.
+
+The commands are sparsely encoded as follows.
+
+Command    | Encoding     | Description
+-----------|--------------|---------------
+`Read`     | `7'b1111010` | Read data and check integrity.
+`Write`    | `7'b1001001` | Write data and generate integrity information.
+`ReadRaw`  | `7'b1010100` | Read data without checking integrity.
+`WriteRaw` | `7'b1100111` | Write data without generating integrity information.
+`Init`     | `7'b0100000` | Initialize the backend.
+`Zeroize`  | `7'b0111101` | Zeroize a word including its redundancy bits and return the zeroized word.
+
+The `ReadRaw` and `WriteRaw` commands instruct the backend to store / read the data in raw format without generating nor checking integrity information.
+That means that the backend must return the raw, uncorrected data and no integrity errors.
+
+The backend implements the `Macro*` error codes (0x0 - 0x4) defined in the [Programmer's Guide](programmers_guide.md#error-handling).
 
 The timing diagram below illustrates the timing of a command.
 Note that both read and write commands return a response, and each command is independent of the previously issued commands.
-The latency from accepting a command to returning a response depends on the underlying OTP IP and is typically larger than 10 cycles.
+The latency from accepting a command to returning a response depends on the backend and is typically larger than 10 cycles.
 The returned values depend on the command type and whether an error occurred or not.
 
 ```wavejson
 {
   signal: [
-    { name: 'clk_i',    wave: 'p.............' },
-    { name: 'ready_o',  wave: '0..10|.10.|...' , node: '...a...c'},
-    { name: 'valid_i',  wave: '01..0|1.0.|...' },
-    { name: 'size_i',   wave: '03..0|3.0.|...' },
-    { name: 'cmd_i',    wave: '04..0|4.0.|...' },
-    { name: 'wdata_i',  wave: '05..0|5.0.|...' },
-    { name: 'valid_o',  wave: '0....|..10|.10' , node: '........b...d'},
-    { name: 'rdata_o',  wave: '0....|..50|.50' },
-    { name: 'err_o',    wave: '0....|..40|.40' },
+    { name: 'clk_i',               wave: 'p.............' },
+    { name: 'otp_macro_i.ready',   wave: '0..10|.10.|...' , node: '...a...c'},
+    { name: 'otp_macro_o.valid',   wave: '01..0|1.0.|...' },
+    { name: 'otp_macro_o.size',    wave: '03..0|3.0.|...' },
+    { name: 'otp_macro_o.cmd',     wave: '04..0|4.0.|...' },
+    { name: 'otp_macro_o.wdata',   wave: '05..0|5.0.|...' },
+    { name: 'otp_macro_i.rvalid',  wave: '0....|..10|.10' , node: '........b...d'},
+    { name: 'otp_macro_i.rdata',   wave: '0....|..50|.50' },
+    { name: 'otp_macro_i.err',     wave: '0....|..40|.40' },
   ],
   edge: [
    'a~>b',
@@ -552,8 +588,10 @@ Note that the open source OTP controller allows up to two outstanding OTP comman
 
 #### Generic Simulation and FPGA Emulation Model
 
-For open-source simulation and FPGA emulation, a synthesizable and generic OTP wrapper module is provided (`otp_macro`).
-This is automatically selected in the OpenTitan build flow via the technology primitive mechanism if no proprietary OTP macro is available for a specific technology.
-The OTP storage in `otp_macro` is emulated using a standard RAM primitive `prim_generic_ram_1p`.
+For open-source simulation and FPGA emulation, `otp_macro` contains a synthesizable and generic model of the OTP IP.
+This model is used if no proprietary OTP macro is available for a specific technology.
+The OTP storage in the generic model is emulated using a standard RAM primitive.
 While this storage element is volatile, the primitive is constructed such that the contents are not wiped upon a system-wide reset.
 I.e., only a power-cycle wipes the RAM primitive, thereby enabling limited emulation of the OTP function and life cycle transitions also on an FPGA device.
+
+With the `rram_ctrl` backend, the OTP contents are stored in the RRAM and no separate emulation model is needed.

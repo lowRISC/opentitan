@@ -36,11 +36,12 @@ The LIFE_CYCLE partition is the only partition that is modified in the field - b
 OTP words cannot be programmed twice, and doing so may damage the memory array.
 Hence the OTP controller performs a blank check and returns an error if a write operation is issued to an already programmed location.
 
-### Potential Side-Effects on Flash via Life Cycle
+### Potential Side-Effects on the NVM via Life Cycle
 
-It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the [`SECRET2_DIGEST_0`](registers.md#secret2_digest)) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
-That means that creator-seed-related collateral needs to be provisioned to Flash **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding flash region is lost.
-See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md#id-state-of-the-device) for more details.
+It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the [`SECRET2_DIGEST_0`](registers.md#secret2_digest)) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in the non-volatile memory (NVM) and OTP.
+The NVM is the embedded flash (`flash_ctrl`) or the RRAM (`rram_ctrl`), depending on the top.
+That means that creator-seed-related collateral needs to be provisioned to the NVM **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding NVM region is lost.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/doc/theory_of_operation.md#id-state-of-the-device) for more details.
 
 ## Direct Access Interface
 

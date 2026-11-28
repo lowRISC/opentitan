@@ -65,7 +65,7 @@ has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
     {
       version:            "3.0.0",
       life_stage:         "L1",
-      design_stage:       "D1",
+      design_stage:       "D2",
       verification_stage: "V0",
       dif_stage:          "S1",
       notes:              "",

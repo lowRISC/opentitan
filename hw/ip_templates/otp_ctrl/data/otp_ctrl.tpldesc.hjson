@@ -34,6 +34,15 @@
       default: "true"
     }
     {
+      name: "macro_backend"
+      desc: '''
+            Type of the module that implements the OTP macro interface, i.e., otp_macro or
+            rram_ctrl. This is only used to tailor the documentation to the top.
+            '''
+      type: "string"
+      default: "otp_macro"
+    }
+    {
       name: "num_sram_key_req_slots"
       desc: "Number of key derivation interfaces for SRAM scrambling devices."
       type: "int"

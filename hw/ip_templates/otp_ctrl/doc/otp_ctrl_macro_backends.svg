@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 820 390" width="820" height="390">
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0 0 L10 5 L0 10 z" fill="#000000"/>
+    </marker>
+    <style>
+      text { font-family: "Inconsolata", "DejaVu Sans Mono", "Courier New", monospace; font-size: 12px; fill: #000000; }
+      .c { text-anchor: middle; }
+      .ip { font-size: 13px; font-weight: bold; }
+      .hdr { font-size: 12px; font-style: italic; fill: #444444; }
+      .or { font-size: 14px; font-weight: bold; fill: #666666; }
+      .top { fill: #f3f3f3; stroke: #000000; stroke-width: 1; }
+      .ctrl { fill: #c9daf8; stroke: #000000; stroke-width: 1; }
+      .sub { fill: #ffffff; stroke: #000000; stroke-width: 1; }
+      .mem { fill: #cccccc; stroke: #000000; stroke-width: 1; }
+      .shim { fill: #ffd966; stroke: #000000; stroke-width: 1; }
+      .vend { fill: #f4cccc; stroke: #000000; stroke-width: 1; }
+      .w { stroke: #000000; stroke-width: 1; fill: none; }
+      .d { stroke: #999999; stroke-width: 1; stroke-dasharray: 5 4; fill: none; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="820" height="390" fill="#ffffff"/>
+
+  <!-- otp_ctrl -->
+  <rect class="ctrl" x="20" y="140" width="170" height="110"/>
+  <text class="ip c" x="105" y="185">otp_ctrl</text>
+  <text class="c" x="105" y="205">(open-source)</text>
+
+  <!-- macro interface fan-out -->
+  <line class="w" x1="190" y1="195" x2="240" y2="195"/>
+  <polyline class="w" points="240,195 240,100 300,100" marker-end="url(#ah)"/>
+  <polyline class="w" points="240,195 240,290 300,290" marker-end="url(#ah)"/>
+  <text x="196" y="186">otp_macro_o/i</text>
+  <circle cx="240" cy="195" r="3" fill="#000000"/>
+
+  <!-- option 1: otp_macro -->
+  <text class="hdr" x="300" y="26">Option 1: dedicated OTP macro</text>
+  <rect class="top" x="300" y="35" width="290" height="140"/>
+  <text class="ip" x="310" y="167">otp_macro</text>
+  <rect class="shim" x="320" y="55" width="110" height="90"/>
+  <text class="c" x="375" y="90">Interface</text>
+  <text class="c" x="375" y="105">Adapter</text>
+  <rect class="vend" x="455" y="55" width="120" height="90"/>
+  <text class="c" x="515" y="85">OTP IP</text>
+  <text class="c" x="515" y="103">(proprietary or</text>
+  <text class="c" x="515" y="118">generic model)</text>
+  <line class="w" x1="430" y1="100" x2="455" y2="100" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <line class="w" x1="590" y1="55" x2="640" y2="55" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="646" y="59">TL-UL test interface</text>
+  <line class="w" x1="640" y1="82" x2="590" y2="82" marker-end="url(#ah)"/>
+  <text x="646" y="86">lc_otp_vendor_test</text>
+  <line class="w" x1="640" y1="109" x2="590" y2="109" marker-end="url(#ah)"/>
+  <text x="646" y="113">lc_dft_en</text>
+  <line class="w" x1="590" y1="136" x2="640" y2="136" marker-start="url(#ah)" marker-end="url(#ah)"/>
+  <text x="646" y="140">power sequencing,</text>
+  <text x="646" y="155">observability</text>
+
+  <!-- separator -->
+  <line class="d" x1="290" y1="205" x2="800" y2="205"/>
+  <text class="or" x="250" y="250">or</text>
+
+  <!-- option 2: rram_ctrl -->
+  <text class="hdr" x="300" y="228">Option 2: OTP emulated in RRAM</text>
+  <rect class="top" x="300" y="237" width="290" height="135"/>
+  <text class="ip" x="310" y="364">rram_ctrl</text>
+  <rect class="shim" x="320" y="255" width="110" height="80"/>
+  <text class="c" x="375" y="292">rram_ctrl_otp</text>
+  <rect class="sub" x="455" y="255" width="120" height="80"/>
+  <text class="c" x="515" y="292">rram_phy</text>
+  <line class="w" x1="430" y1="295" x2="455" y2="295" marker-start="url(#ah)" marker-end="url(#ah)"/>
+
+  <rect class="top" x="620" y="237" width="180" height="135"/>
+  <text class="ip" x="630" y="364">rram_macro</text>
+  <rect class="mem" x="640" y="255" width="140" height="80"/>
+  <text class="c" x="710" y="280">RRAM Array</text>
+  <rect class="sub" x="655" y="292" width="110" height="32"/>
+  <text class="c" x="710" y="312">OTP Region</text>
+  <line class="w" x1="575" y1="295" x2="640" y2="295" marker-start="url(#ah)" marker-end="url(#ah)"/>
+</svg>
