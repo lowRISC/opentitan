@@ -50,7 +50,7 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
   return (status_t){.value = (int32_t)launder32((uint32_t)OTCRYPTO_OK.value)};
 }
 
-void hardened_memshred(uint32_t *dest, size_t word_len) {
+size_t hardened_memshred(uint32_t *dest, size_t word_len) {
   random_order_t order;
   random_order_init(&order, word_len);
 
@@ -58,7 +58,7 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
 
   uintptr_t data_addr = (uintptr_t)dest;
 
-  for (; count < word_len; count = launderw(count) + 1) {
+  for (; launderw(count) < word_len; count = launderw(count) + 1) {
     size_t byte_idx = launderw(random_order_advance(&order)) * sizeof(uint32_t);
     barrierw(byte_idx);
 
@@ -71,6 +71,8 @@ void hardened_memshred(uint32_t *dest, size_t word_len) {
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, word_len);
+
+  return launderw(count);
 }
 
 /**

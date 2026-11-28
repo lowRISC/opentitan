@@ -63,8 +63,9 @@ status_t hardened_memcpy(uint32_t *OT_RESTRICT dest,
  *
  * @param dest The destination of the set.
  * @param word_len The number of words to write.
+ * @return The number of words shredded.
  */
-void hardened_memshred(uint32_t *dest, size_t word_len);
+size_t hardened_memshred(uint32_t *dest, size_t word_len);
 
 /**
  * Compare two potentially-overlapping 32-bit aligned regions of memory for
