@@ -251,29 +251,27 @@ Setting this field to `kMultiBitBool4True` selects the mode targeting FIPS/CC co
 The ENTROPY_SRC block will use the FIPS_WINDOW value of the [`HEALTH_TEST_WINDOWS`](#health_test_windows) register.
 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the [`CONF.FIPS_FLAG`](#conf) field.
-Note that the hardware conditioning can still be disabled in FIPS mode by setting the [`ENTROPY_CONTROL.BYPASS_CONDITIONING`](#entropy_control) field to `kMultiBitBool4True`.
-However, no entropy is being passed to the block hardware interface in this mode.
 
-Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
+Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed and the BYPASS_WINDOW value of the [`HEALTH_TEST_WINDOWS`](#health_test_windows) register is used.
+In this mode, a single seed is produced, unless firmware override extract & insert mode is enabled, in which case a seed is produced for every 384 bits firmware writes to the [`FW_OV_WR_DATA`](#fw_ov_wr_data) register.
 
 ## ENTROPY_CONTROL
 Entropy control register
 - Offset: `0x20`
-- Reset default: `0x699`
-- Reset mask: `0xfff`
+- Reset default: `0x69`
+- Reset mask: `0xff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "BYPASS_CONDITIONING", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 350}}
+{"reg": [{"name": "ENTROPY_DATA_REG_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 350}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                     |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------|
-| 31:12  |        |         | Reserved                                                                                 |
-|  11:8  |   rw   |   0x6   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED](#entropy_control--esfinal_fifo_clear_while_disabled) |
-|  7:4   |   rw   |   0x9   | [BYPASS_CONDITIONING](#entropy_control--bypass_conditioning)                             |
+|  31:8  |        |         | Reserved                                                                                 |
+|  7:4   |   rw   |   0x6   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED](#entropy_control--esfinal_fifo_clear_while_disabled) |
 |  3:0   |   rw   |   0x9   | [ENTROPY_DATA_REG_ENABLE](#entropy_control--entropy_data_reg_enable)                     |
 
 ### ENTROPY_CONTROL . ESFINAL_FIFO_CLEAR_WHILE_DISABLED
@@ -282,14 +280,6 @@ Any previously produced seeds are lost.
 If the field is set to `kMultiBitBool4False`, previously produced seeds remain in the esfinal FIFO and keep getting served to the block hardware interface even while the ENTROPY_SRC block is disabled.
 This allows extending the period during which the ENTROPY_SRC block is disabled while downstream entropy consumers remain active thereby improving energy efficiency and reducing aging of the PTRNG.
 If needed, firmware can manually clear the esfinal FIFO while ENTROPY_SRC is disabled (e.g. when switching to a different configuration) by setting this field to `kMultiBitBool4True` and then back to `kMultiBitBool4False`.
-
-### ENTROPY_CONTROL . BYPASS_CONDITIONING
-When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled when running in FIPS/CC compliance mode.
-Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
-In this case, no entropy is being passed to the block hardware interface, but firmware can request the reading of unconditioned, raw entropy from the [`ENTROPY_DATA`](#entropy_data) register via the [`ENTROPY_DATA_REQUEST`](#entropy_data_request) register.
-
-Alternatively, the hardware conditioning can be bypassed by setting [`CONF.FIPS_ENABLE`](#conf) to `kMultiBitBool4False`.
-This enables the bypass / boot-time mode in which the ENTROPY_SRC block will pass a single seed's worth of entropy to the block hardware interface only.
 
 ### ENTROPY_CONTROL . ENTROPY_DATA_REG_ENABLE
 Setting this field to `kMultiBitBool4True` will enable reading entropy values from the [`ENTROPY_DATA`](#entropy_data) register.
@@ -314,9 +304,14 @@ Entropy data request register
 ### ENTROPY_DATA_REQUEST . ENTROPY_DATA_REQUEST
 Firmware can write `kMultiBitBool4True` to this field to request the routing of the next 384-bit seed from the esfinal FIFO to the [`ENTROPY_DATA`](#entropy_data) register.
 For this to work, [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) needs to be set to `kMultiBitBool4True`.
-Otherwise, this field keeps reading as `kMultiBitBool4False` and the request is ignored.
+Otherwise, the request is ignored.
+If the previous seed has not been read entirely from the [`ENTROPY_DATA`](#entropy_data) register, it is discarded and replaced by the next seed.
 
-If the esfinal FIFO is not empty while firmware writes `kMultiBitBool4True` to this field, the field immediately sets back to `kMultiBitBool4False` and [`ENTROPY_DATA_VALID`](#entropy_data_valid) switches to `kMultiBitBool4True` to indicate that the seed can now be read from the [`ENTROPY_DATA`](#entropy_data) register.
+If the esfinal FIFO is empty, the request is kept until the next seed arrives.
+While the request is pending, no seed is passed to the block hardware interface.
+The field stays `kMultiBitBool4True` until the seed has been routed and then sets back to `kMultiBitBool4False`.
+Ignored requests set the field back to `kMultiBitBool4False` the cycle after it has been written.
+[`ENTROPY_DATA_VALID`](#entropy_data_valid) switches to `kMultiBitBool4True` to indicate that the seed can now be read from the [`ENTROPY_DATA`](#entropy_data) register.
 
 ## ENTROPY_DATA_VALID
 Entropy data valid register
@@ -339,6 +334,7 @@ Entropy data valid register
 When this field is `kMultiBitBool4True`, the [`ENTROPY_DATA`](#entropy_data) register contains a valid 384-bit seed readable by firmware.
 
 After firmware has read the entire seed by reading [`ENTROPY_DATA`](#entropy_data) register 12 times, this field drops back to `kMultiBitBool4False`.
+It also drops back to `kMultiBitBool4False` if firmware requests a new seed via [`ENTROPY_DATA_REQUEST`](#entropy_data_request) before the current one has been read entirely, or if the esfinal FIFO is cleared.
 
 Note that for this field to ever read as `kMultiBitBool4True` and for [`ENTROPY_DATA`](#entropy_data) to become readable, also [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) needs to be set to `kMultiBitBool4True`.
 
@@ -362,7 +358,8 @@ Entropy data bits
 A read of this register provides generated entropy bits to firmware.
 For this to work also [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) needs to be set to `kMultiBitBool4True`.
 
-Before reading the register, firmware has to request the routing of the next 384-bit seed to this register via [`ENTROPY_DATA_REQUEST`](#entropy_data_request) and wait for the seed to be ready by checking [`ENTROPY_DATA_VALID.`](#entropy_data_valid)
+Firmware first has to write [`ENTROPY_DATA_REQUEST`](#entropy_data_request) to request the routing of the next 384-bit seed to this register.
+Before reading the register, firmware has to wait for the seed to be ready by checking [`ENTROPY_DATA_VALID.`](#entropy_data_valid)
 Otherwise, the register reads as 0.
 
 ## HEALTH_TEST_WINDOWS
@@ -1214,30 +1211,29 @@ Debug status register
 Recoverable alert status register
 - Offset: `0xc4`
 - Reset default: `0x0`
-- Reset mask: `0x8007ffff`
+- Reset mask: `0x8003ffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BYPASS_CONDITIONING_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REQUEST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 12}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
+{"reg": [{"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REQUEST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 13}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                                             |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------------------------------|
 |   31   |  rw0c  |   0x0   | [POSTHT_ENTROPY_DROP_ALERT](#recov_alert_sts--postht_entropy_drop_alert)                                         |
-| 30:19  |        |         | Reserved                                                                                                         |
-|   18   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
-|   17   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
-|   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                                               |
-|   15   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                                                         |
-|   14   |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)                                   |
-|   13   |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert)                           |
-|   12   |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                                               |
-|   11   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                                                     |
-|   10   |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)                                   |
-|   9    |  rw0c  |   0x0   | [ENTROPY_DATA_REQUEST_FIELD_ALERT](#recov_alert_sts--entropy_data_request_field_alert)                           |
-|   8    |  rw0c  |   0x0   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT](#recov_alert_sts--esfinal_fifo_clear_while_disabled_field_alert) |
-|   7    |  rw0c  |   0x0   | [BYPASS_CONDITIONING_FIELD_ALERT](#recov_alert_sts--bypass_conditioning_field_alert)                             |
+| 30:18  |        |         | Reserved                                                                                                         |
+|   17   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
+|   16   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
+|   15   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                                               |
+|   14   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                                                         |
+|   13   |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)                                   |
+|   12   |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert)                           |
+|   11   |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                                               |
+|   10   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                                                     |
+|   9    |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)                                   |
+|   8    |  rw0c  |   0x0   | [ENTROPY_DATA_REQUEST_FIELD_ALERT](#recov_alert_sts--entropy_data_request_field_alert)                           |
+|   7    |  rw0c  |   0x0   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT](#recov_alert_sts--esfinal_fifo_clear_while_disabled_field_alert) |
 |   6    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)                             |
 |   5    |  rw0c  |   0x0   | [RNG_BIT_ENABLE_FIELD_ALERT](#recov_alert_sts--rng_bit_enable_field_alert)                                       |
 |   4    |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                                                   |
@@ -1284,7 +1280,7 @@ register before each write to the [`FW_OV_WR_DATA`](#fw_ov_wr_data) register.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . FW_OV_SHA3_START_FIELD_ALERT
-This bit is set when the [`FW_OV_SHA3_START.FW_OV_SHA3_START`](#fw_ov_sha3_start) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+This bit is set when the [`FW_OV_SHA3_START.FW_OV_INSERT_START`](#fw_ov_sha3_start) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . FW_OV_ENTROPY_INSERT_FIELD_ALERT
@@ -1310,10 +1306,6 @@ Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT
 This bit is set when the [`ENTROPY_CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED`](#entropy_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . BYPASS_CONDITIONING_FIELD_ALERT
-This bit is set when the [`ENTROPY_CONTROL.BYPASS_CONDITIONING`](#entropy_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ENTROPY_DATA_REG_EN_FIELD_ALERT

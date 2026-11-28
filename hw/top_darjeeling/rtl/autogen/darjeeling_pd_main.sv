@@ -336,7 +336,7 @@ module darjeeling_pd_main #(
   localparam keymgr_dpe_pkg::kdf_engine_sel_e KeymgrDpeKdfEngineSel =
       keymgr_dpe_pkg::KdfEngineBoth;
   // local parameters for entropy_src
-  localparam int EntropySrcEsFifoDepth = 3;
+  localparam int EntropySrcEsFifoDepth = 2;
   localparam int unsigned EntropySrcDistrFifoDepth = 11;
   // local parameters for edn0
   localparam int unsigned Edn0NumEndPoints = 8;
