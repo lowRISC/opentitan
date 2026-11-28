@@ -100,7 +100,8 @@ module tb;
     .EnMasking(`EN_MASKING),
     .EnFullKmac(`EN_FULL_KMAC),
     .SwKeyMasked(`SW_KEY_MASKED),
-    .NumAppIntf(NUM_APP_INTF)
+    .NumAppIntf(NUM_APP_INTF),
+    .AppIdxKeyMgr(AppKeymgr)
   ) dut (
     .clk_i              (clk            ),
     .rst_ni             (rst_n          ),
@@ -121,8 +122,9 @@ module tb;
     .keymgr_key_i       (kmac_sideload_key),
 
     // KeyMgr KDF datapath
-    .app_i              (app_req ),
-    .app_o              (app_rsp ),
+    .app_i                  (app_req ),
+    .app_o                  (app_rsp ),
+    .keymgr_sensitive_key_i (kmac_if.keymgr_sensitive_key_i),
 
     // Interrupts
     .intr_kmac_done_o   (interrupts[KmacDone]      ),

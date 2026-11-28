@@ -28,8 +28,11 @@ Any value other than `kMultiBitBool4True` or `kMultiBitBool4False` makes subsequ
 SW can recover by writing a valid value, unless `KDF_ENGINE_REGWEN.EN` has been cleared.
 Operations that do not involve a KDF engine (the first advance call, erase, load and disable) are not affected.
 
+When KMAC is selected, the KDF requests are issued on the `kmac_app` interface.
+The internal key is handed to KMAC through its sideload key interface and `kmac_sensitive_key_o` (KMAC's `keymgr_sensitive_key`) is asserted while it is in use.
+
 When OTBN is selected, the KDF requests are issued on the `otbn_app` interface (OTBN's `keymgr_app`) instead of the KMAC interface.
-The internal key is handed to OTBN through its sideload key interface and `sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
+The internal key is handed to OTBN through its sideload key interface and `otbn_sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
 If such a key is presented, OTBN is required to ensure (by HW) that this key is never exposed to host SW.
 
 ## Initialize (first advance call)

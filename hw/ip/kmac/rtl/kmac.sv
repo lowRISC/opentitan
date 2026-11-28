@@ -36,6 +36,7 @@ module kmac
   parameter int unsigned NumAppIntf         = 4,
   parameter app_config_t AppCfg[NumAppIntf] = '{EnFullKmac ? AppCfgKeyMgr : AppCfgKeyMgrStripped,
                                                 AppCfgLcCtrl, AppCfgRomCtrl, AppCfgOtbn},
+  parameter int unsigned AppIdxKeyMgr       = 0,
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
@@ -67,6 +68,7 @@ module kmac
   // KeyMgr KDF data path
   input  app_req_t [NumAppIntf-1:0] app_i,
   output app_rsp_t [NumAppIntf-1:0] app_o,
+  input  prim_mubi_pkg::mubi4_t     keymgr_sensitive_key_i,
 
   // EDN interface
   output edn_pkg::edn_req_t entropy_o,
@@ -1221,7 +1223,8 @@ module kmac
     .EnFullKmac(EnFullKmac),
     .SecIdleAcceptSwMsg(SecIdleAcceptSwMsg),
     .NumAppIntf(NumAppIntf),
-    .AppCfg(AppCfg)
+    .AppCfg(AppCfg),
+    .AppIdxKeyMgr(AppIdxKeyMgr)
   ) u_app_intf (
     .clk_i,
     .rst_ni,
@@ -1247,6 +1250,7 @@ module kmac
     // Application data in / digest out interface
     .app_i,
     .app_o,
+    .keymgr_sensitive_key_i,
 
     // Secret Key output to KMAC Core
     .key_data_o  (key_data),

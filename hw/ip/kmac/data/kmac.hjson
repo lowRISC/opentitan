@@ -159,6 +159,13 @@
       local:               "false"
       expose:              "true"
     }
+    { name:    "AppIdxKeyMgr"
+      type:    "int"
+      default: "0"
+      desc:    "Index of the keymgr app interface"
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "NumWordsKey"
       type:    "int"
       default: "16"
@@ -235,6 +242,13 @@
       width:   "NumAppIntf"
       default: "kmac_pkg::APP_REQ_DEFAULT"
     }
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "keymgr_sensitive_key",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+    },
     { struct:  "edn"
       type:    "req_rsp"
       name:    "entropy"
@@ -319,6 +333,9 @@
     }
     { name: "LC_ESCALATE_EN.INTERSIG.MUBI"
       desc: "The global escalation input signal from the life cycle is multibit encoded"
+    }
+    { name: "KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI"
+      desc: "The sensitive key indicator from the key manager is multibit encoded. Invalid values count as true."
     }
     { name: "SW_KEY.KEY.MASKING"
       desc: '''Data storage and secret key are two share to guard against 1st

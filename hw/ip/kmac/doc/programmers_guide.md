@@ -26,6 +26,12 @@ The two shares of the secret key are the values that represent the secret key va
 The software can XOR the unmasked secret key with entropy.
 The XORed value is a share and the entropy used is the other share.
 
+Alternatively, the software can set [`CFG_SHADOWED.sideload`](registers.md#cfg_shadowed) to use the key provided by the key manager.
+While the key manager runs an advance or generate operation with KMAC as its KDF engine, it forwards its internal key on the sideload interface.
+During that time the sideloaded key is unusable for software, and a software-initiated KMAC operation with the sideloaded key fails with a `KeyNotValid` error (see [Error Handling](#error-handling)).
+This also happens if the key manager operation starts while the KMAC operation is ongoing.
+The software must therefore not run a KMAC operation with the sideloaded key concurrently with a key manager advance or generate operation.
+
 After configuring, the software notifies the KMAC/SHA3 engine to accept incoming messages by issuing Start command into [`CMD`](registers.md#cmd) .
 If Start command is not issued, the incoming message is discarded.
 If KMAC is enabled, the software pushes the `right_encode(output_length)` value at the end of the message.

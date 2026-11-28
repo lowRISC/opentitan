@@ -10,15 +10,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct            | Type    | Act   | Width      | Description   |
-|:---------------|:---------------------------|:--------|:------|:-----------|:--------------|
-| keymgr_key     | keymgr_dpe_pkg::hw_key_req | uni     | rcv   | 1          |               |
-| app            | kmac_pkg::app              | req_rsp | rsp   | NumAppIntf |               |
-| entropy        | edn_pkg::edn               | req_rsp | req   | 1          |               |
-| idle           | prim_mubi_pkg::mubi4       | uni     | req   | 1          |               |
-| en_masking     | logic                      | uni     | req   | 1          |               |
-| lc_escalate_en | lc_ctrl_pkg::lc_tx         | uni     | rcv   | 1          |               |
-| tl             | tlul_pkg::tl               | req_rsp | rsp   | 1          |               |
+| Port Name            | Package::Struct            | Type    | Act   | Width      | Description   |
+|:---------------------|:---------------------------|:--------|:------|:-----------|:--------------|
+| keymgr_key           | keymgr_dpe_pkg::hw_key_req | uni     | rcv   | 1          |               |
+| app                  | kmac_pkg::app              | req_rsp | rsp   | NumAppIntf |               |
+| keymgr_sensitive_key | prim_mubi_pkg::mubi4       | uni     | rcv   | 1          |               |
+| entropy              | edn_pkg::edn               | req_rsp | req   | 1          |               |
+| idle                 | prim_mubi_pkg::mubi4       | uni     | req   | 1          |               |
+| en_masking           | logic                      | uni     | req   | 1          |               |
+| lc_escalate_en       | lc_ctrl_pkg::lc_tx         | uni     | rcv   | 1          |               |
+| tl                   | tlul_pkg::tl               | req_rsp | rsp   | 1          |               |
 
 ## Interrupts
 
@@ -41,6 +42,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:----------------------------------------|:-------------------------------------------------------------------------------------------------------|
 | KMAC.BUS.INTEGRITY                      | End-to-end bus integrity scheme.                                                                       |
 | KMAC.LC_ESCALATE_EN.INTERSIG.MUBI       | The global escalation input signal from the life cycle is multibit encoded                             |
+| KMAC.KEYMGR_SENSITIVE_KEY.INTERSIG.MUBI | The sensitive key indicator from the key manager is multibit encoded. Invalid values count as true.    |
 | KMAC.SW_KEY.KEY.MASKING                 | Data storage and secret key are two share to guard against 1st order attack.                           |
 | KMAC.KEY.SIDELOAD                       | Key from KeyMgr is sideloaded.                                                                         |
 | KMAC.CFG_SHADOWED.CONFIG.SHADOW         | Shadowed CFG and ENTROPY_CFG registers.                                                                |

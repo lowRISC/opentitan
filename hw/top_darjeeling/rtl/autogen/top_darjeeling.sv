@@ -69,6 +69,7 @@ module top_darjeeling #(
         kmac_pkg::AppCfgLcCtrl,
         kmac_pkg::AppCfgRomCtrl,
         kmac_pkg::AppCfgRomCtrl},
+  parameter int KmacAppIdxKeyMgr = 0,
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -385,6 +386,7 @@ module top_darjeeling #(
   .SecKmacIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
   .KmacNumAppIntf(KmacNumAppIntf),
   .KmacAppCfg(KmacAppCfg),
+  .KmacAppIdxKeyMgr(KmacAppIdxKeyMgr),
   .OtbnStub(OtbnStub),
   .OtbnRegFile(OtbnRegFile),
   .SecOtbnFixMaiOpSeq(SecOtbnFixMaiOpSeq),

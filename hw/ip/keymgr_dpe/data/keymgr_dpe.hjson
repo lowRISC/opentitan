@@ -83,6 +83,13 @@
       act:     "req",
       package: "kmac_pkg",  // Origin package (only needs for the requester)
     },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "kmac_sensitive_key",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+    },
     { struct:  "app",   // kmac_pkg::app_req_t, kmac_pkg::app_rsp_t
       type:    "req_rsp",
       name:    "otbn_app",   // otbn_app_o (req), otbn_app_i (rsp)
@@ -91,7 +98,7 @@
     },
     { struct:  "mubi4",
       type:    "uni",
-      name:    "sensitive_key",
+      name:    "otbn_sensitive_key",
       act:     "req",
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4False",

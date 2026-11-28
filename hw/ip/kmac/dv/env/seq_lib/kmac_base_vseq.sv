@@ -280,6 +280,8 @@ class kmac_base_vseq extends cip_base_vseq #(
   virtual task kmac_vif_init();
     // Any value that is not `lc_ctrl_pkg::On` is considered `lc_ctrl_pkg::Off`.
     cfg.kmac_vif.drive_lc_escalate(lc_ctrl_pkg::Off);
+    // KeyMgr does not forward its internal key on the sideload interface.
+    cfg.kmac_vif.drive_keymgr_sensitive_key(prim_mubi_pkg::MuBi4False);
   endtask
 
   // setup basic kmac features

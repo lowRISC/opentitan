@@ -5395,6 +5395,15 @@
           expose: "true"
           name_top: KmacAppCfg
         }
+        {
+          name: AppIdxKeyMgr
+          desc: Index of the keymgr app interface
+          type: int
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: KmacAppIdxKeyMgr
+        }
       ]
       inter_signal_list:
       [
@@ -5433,6 +5442,20 @@
           end_idx: -1
           top_type: one-to-N
           top_signame: kmac_app
+          index: -1
+        }
+        {
+          name: keymgr_sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: kmac
+          end_idx: -1
+          top_type: broadcast
+          top_signame: kmac_keymgr_sensitive_key
           index: -1
         }
         {
@@ -6015,6 +6038,19 @@
           index: 0
         }
         {
+          name: kmac_sensitive_key
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: keymgr_dpe
+          domain: Main
+          top_signame: kmac_keymgr_sensitive_key
+          index: -1
+        }
+        {
           name: otbn_app
           struct: app
           package: kmac_pkg
@@ -6028,7 +6064,7 @@
           index: -1
         }
         {
-          name: sensitive_key
+          name: otbn_sensitive_key
           struct: mubi4
           package: prim_mubi_pkg
           type: uni
@@ -11544,13 +11580,17 @@
       [
         keymgr_dpe.kmac_en_masking
       ]
+      kmac.keymgr_sensitive_key:
+      [
+        keymgr_dpe.kmac_sensitive_key
+      ]
       otbn.keymgr_app:
       [
         keymgr_dpe.otbn_app
       ]
       otbn.keymgr_sensitive_key:
       [
-        keymgr_dpe.sensitive_key
+        keymgr_dpe.otbn_sensitive_key
       ]
       clkmgr.idle:
       [
@@ -26157,6 +26197,20 @@
         index: -1
       }
       {
+        name: keymgr_sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: kmac
+        end_idx: -1
+        top_type: broadcast
+        top_signame: kmac_keymgr_sensitive_key
+        index: -1
+      }
+      {
         name: entropy
         struct: edn
         package: edn_pkg
@@ -26495,6 +26549,19 @@
         index: 0
       }
       {
+        name: kmac_sensitive_key
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: keymgr_dpe
+        domain: Main
+        top_signame: kmac_keymgr_sensitive_key
+        index: -1
+      }
+      {
         name: otbn_app
         struct: app
         package: kmac_pkg
@@ -26508,7 +26575,7 @@
         index: -1
       }
       {
-        name: sensitive_key
+        name: otbn_sensitive_key
         struct: mubi4
         package: prim_mubi_pkg
         type: uni
@@ -35405,6 +35472,18 @@
         act: req
         suffix: ""
         default: 1'b0
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: kmac_keymgr_sensitive_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
       }
       {
         package: kmac_pkg

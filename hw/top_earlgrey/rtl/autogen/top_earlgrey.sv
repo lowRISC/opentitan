@@ -108,6 +108,7 @@ module top_earlgrey #(
   parameter int KmacNumAppIntf = 4,
   parameter kmac_pkg::app_config_t KmacAppCfg[KmacNumAppIntf] =
       '{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgOtbn},
+  parameter int KmacAppIdxKeyMgr = 0,
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -503,6 +504,7 @@ module top_earlgrey #(
   .SecKmacIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
   .KmacNumAppIntf(KmacNumAppIntf),
   .KmacAppCfg(KmacAppCfg),
+  .KmacAppIdxKeyMgr(KmacAppIdxKeyMgr),
   .OtbnStub(OtbnStub),
   .OtbnRegFile(OtbnRegFile),
   .SecOtbnFixMaiOpSeq(SecOtbnFixMaiOpSeq),
