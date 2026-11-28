@@ -81,6 +81,9 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
   // Knob to inject entropy even if the DUT is configured to not accept it
   uint          spurious_inject_entropy_pct;
 
+  // Knob to stop reading an ENTROPY_DATA seed early and discard it with a new request
+  uint          entropy_data_rerequest_pct;
+
   // Behavioral constraint knob: dictates how often each sequence
   // performs a survey of the health test diagnostics.
   // (100% corresponds to a full diagnostic check after every HT alert,
@@ -282,6 +285,7 @@ class entropy_src_env_cfg extends cip_base_env_cfg #(.RAL_T(entropy_src_reg_bloc
 
   function void check_knob_vals();
     `DV_CHECK(spurious_inject_entropy_pct <= 100);
+    `DV_CHECK(entropy_data_rerequest_pct <= 100);
     `DV_CHECK(do_check_ht_diag_pct <= 100);
     `DV_CHECK(induce_targeted_transition_pct <= 100);
   endfunction

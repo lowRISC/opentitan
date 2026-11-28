@@ -888,6 +888,59 @@ interface entropy_src_cov_if
     }
   endgroup : recov_alert_cg
 
+  // Covergroup sampled on every request written to the ENTROPY_DATA_REQUEST register
+  covergroup entropy_data_request_cg with function sample(mubi4_t   entropy_data_reg_enable,
+                                                          bit       seed_valid,
+                                                          bit       seed_partially_read,
+                                                          bit       esfinal_empty,
+                                                          bit       csrng_req,
+                                                          mubi4_t   fips_enable,
+                                                          mubi4_t   fw_ov_mode,
+                                                          mubi4_t   entropy_insert);
+    option.name         = "entropy_data_request_cg";
+    option.per_instance = 1;
+
+    cp_entropy_data_reg_enable: coverpoint entropy_data_reg_enable {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_unpacker_state: coverpoint {seed_valid, seed_partially_read} {
+      bins        empty        = { 2'b00, 2'b01 };
+      bins        unread_seed  = { 2'b10 };
+      bins        partial_seed = { 2'b11 };
+    }
+
+    cp_esfinal_empty: coverpoint esfinal_empty;
+
+    cp_csrng_req: coverpoint csrng_req;
+
+    cp_fips_enable: coverpoint fips_enable {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_fw_ov_mode: coverpoint fw_ov_mode {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    cp_entropy_insert: coverpoint entropy_insert {
+      bins        mubi_true  = { MuBi4True };
+      bins        mubi_false = { MuBi4False };
+    }
+
+    // The unpacker only holds a seed while ENTROPY_DATA is readable.
+    cr_reg_enable_unpacker: cross cp_entropy_data_reg_enable, cp_unpacker_state {
+      ignore_bins reg_disabled_unpacker_not_empty =
+          binsof(cp_entropy_data_reg_enable) intersect {MuBi4False} &&
+          !binsof(cp_unpacker_state.empty);
+    }
+    cr_unpacker_esfinal: cross cp_unpacker_state, cp_esfinal_empty;
+    cr_esfinal_csrng_req: cross cp_esfinal_empty, cp_csrng_req;
+    cr_mode: cross cp_fips_enable, cp_fw_ov_mode, cp_entropy_insert;
+  endgroup : entropy_data_request_cg
+
   `DV_FCOV_INSTANTIATE_CG(err_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(mubi_err_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(sm_err_cg, en_full_cov)
@@ -908,6 +961,7 @@ interface entropy_src_cov_if
   `DV_FCOV_INSTANTIATE_CG(ht_watermark_num_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(ht_watermark_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(recov_alert_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(entropy_data_request_cg, en_full_cov)
 
   // Sample functions needed for xcelium
   function automatic void cg_err_test_sample(bit [4:0] err_code);
@@ -1053,6 +1107,19 @@ interface entropy_src_cov_if
 
   function automatic void cg_recov_alert_sample(int which_bit);
     recov_alert_cg_inst.sample(which_bit);
+  endfunction
+
+  function automatic void cg_entropy_data_request_sample(mubi4_t entropy_data_reg_enable,
+                                                         bit     seed_valid,
+                                                         bit     seed_partially_read,
+                                                         bit     esfinal_empty,
+                                                         bit     csrng_req,
+                                                         mubi4_t fips_enable,
+                                                         mubi4_t fw_ov_mode,
+                                                         mubi4_t entropy_insert);
+    entropy_data_request_cg_inst.sample(entropy_data_reg_enable, seed_valid, seed_partially_read,
+                                        esfinal_empty, csrng_req, fips_enable, fw_ov_mode,
+                                        entropy_insert);
   endfunction
 
   function automatic void cg_ht_watermark_num_sample(logic [3:0] num);

@@ -98,6 +98,26 @@
       tests: ["entropy_src_intr", "entropy_src_rng"]
     }
     {
+      name: entropy_data_request
+      desc: '''
+            Verify the ENTROPY_DATA request path in all modes of operation (boot-time / bypass
+            mode, FIPS mode and firmware override extract & insert mode with and without hardware
+            conditioning):
+            - A request routes the next seed to the ENTROPY_DATA register and ENTROPY_DATA_VALID
+              asserts once the seed can be read.
+            - A request while the esfinal FIFO is empty stays pending until the next seed arrives.
+            - While a request is pending, no seed is passed to the CSRNG hardware interface.
+            - A seed routed to the ENTROPY_DATA register is never also passed to the CSRNG
+              hardware interface.
+            - A request while the previous seed has not been read entirely discards that seed.
+            - A request while ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE is False is ignored.
+            - Clearing the esfinal FIFO also clears a pending request and the ENTROPY_DATA
+              unpacker.
+            '''
+      stage: V2
+      tests: ["entropy_src_rng"]
+    }
+    {
       name: alerts
       desc: '''
             Verify that all recoverable alerts are asserted as expected.
@@ -164,10 +184,10 @@
     {
       name: mubi_err_cg
       desc: '''
-            Covers that all 11 register fields with built in redundancy (All multi-bit encoded
+            Covers that all 14 register fields with built in redundancy (All multi-bit encoded
             except for ALERT_THRESHOLD) have been programmed with at least one one invalid mubi
             value, and that the corresponding recoverable alert has been registered.  This
-            includes the 10 boolean register fields which are MultiBit encoded as well as the
+            includes the 13 boolean register fields which are MultiBit encoded as well as the
             ALERT_THRESHOLD register, which is a pair of numeric values which must be inverses
             of each other.
             '''
@@ -400,6 +420,19 @@
             the mubi_err_cg, fifo_err_cg, and sm_err_cg covergroups though it also covers a number
             of other recoverable errors, such as violations of the FW_OV usage model, or errors
             internal to the SHA conditioning unit.
+            '''
+    }
+    {
+      name: entropy_data_request_cg
+      desc: '''
+            Covers writes of kMultiBitBool4True to the ENTROPY_DATA_REQUEST register for:
+            - ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE (True and False)
+            - The state of the ENTROPY_DATA unpacker (empty, holding a partially read seed,
+              holding an unread seed)
+            - The esfinal FIFO being empty and not empty
+            - The CSRNG hardware interface requesting and not requesting entropy
+            - CONF.FIPS_ENABLE (True and False)
+            - FW_OV_MODE and FW_OV_ENTROPY_INSERT (True or False)
             '''
     }
   ]

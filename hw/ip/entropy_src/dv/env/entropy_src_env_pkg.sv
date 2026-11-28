@@ -56,7 +56,8 @@ package entropy_src_env_pkg;
     invalid_alert_threshold         = 9,
     invalid_fips_flag               = 10,
     invalid_rng_fips                = 11,
-    invalid_threshold_oneway        = 12
+    invalid_threshold_oneway        = 12,
+    invalid_entropy_data_request    = 13
   } invalid_mubi_e;
 
   typedef enum int {

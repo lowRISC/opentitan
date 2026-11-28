@@ -64,6 +64,8 @@ class entropy_src_rng_test extends entropy_src_base_test;
     cfg.dut_cfg.fw_over_pct                 = 10;
     // Sometimes inject data, even if not configured
     cfg.spurious_inject_entropy_pct = 50;
+    // Sometimes discard a partially read ENTROPY_DATA seed with a new request
+    cfg.entropy_data_rerequest_pct  = 20;
 
     cfg.dut_cfg.rng_bit_enable_pct          = 80;
 

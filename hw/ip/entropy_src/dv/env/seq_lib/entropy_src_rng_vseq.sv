@@ -123,7 +123,8 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       do_reenable = 0;
     end
     super.enable_dut();
-    if (`gmv(ral.entropy_control.entropy_data_reg_enable) == MuBi4True) request_entropy_data();
+    // The request is ignored if ENTROPY_DATA is not readable.
+    request_entropy_data();
   endtask
 
   virtual task disable_dut();

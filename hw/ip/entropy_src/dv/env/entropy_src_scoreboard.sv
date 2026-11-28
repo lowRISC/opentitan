@@ -1155,6 +1155,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
             full_seed_found = 1;
             seed_tl_read_cnt = 0;
             full_seed = entropy_data_q.pop_front();
+            remove_from_fips_csrng_q(full_seed);
             entropy_data_seeds++;
             cfg.total_seeds_consumed++;
 
@@ -1927,10 +1928,14 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
               end
             end
             "entropy_data_request": begin
+              check_redundancy_val("entropy_data_request", "entropy_data_request",
+                                   "entropy_data_request_field_alert",
+                                   invalid_entropy_data_request);
+              if (cfg.en_cov && item.a_data[3:0] == MuBi4True) sample_entropy_data_request_cg();
               // A request while a seed is only partially read discards that seed.
               if (`gmv(ral.entropy_control.entropy_data_reg_enable) == MuBi4True &&
                   item.a_data[3:0] == MuBi4True && seed_tl_read_cnt > 0) begin
-                void'(entropy_data_q.pop_front());
+                remove_from_fips_csrng_q(entropy_data_q.pop_front());
                 entropy_data_drops++;
                 seed_tl_read_cnt = 0;
               end
@@ -2939,6 +2944,37 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     entropy_data_q.push_back(csrng_seed);
   endfunction
 
+  // Sample the state in which a request written to ENTROPY_DATA_REQUEST arrives.
+  function void sample_entropy_data_request_cg();
+    cov_vif.cg_entropy_data_request_sample(
+        .entropy_data_reg_enable(mubi4_t'(`gmv(ral.entropy_control.entropy_data_reg_enable))),
+        .seed_valid(csr_peek(ral.entropy_data_valid) == MuBi4True),
+        .seed_partially_read(seed_tl_read_cnt > 0),
+        .esfinal_empty(csr_peek(ral.debug_status.entropy_fifo_depth) == 0),
+        .csrng_req(cov_vif.csrng_if_req),
+        .fips_enable(mubi4_t'(`gmv(ral.conf.fips_enable))),
+        .fw_ov_mode(mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_mode))),
+        .entropy_insert(mubi4_t'(`gmv(ral.fw_ov_control.fw_ov_entropy_insert))));
+  endfunction
+
+  // A seed routed to the ENTROPY_DATA register must not also be passed to the CSRNG HW interface.
+  function void remove_from_fips_csrng_q(bit [CSRNG_BUS_WIDTH - 1:0] seed);
+    int idx[$] = fips_csrng_q.find_first_index(s) with (get_csrng_seed(s) == seed);
+    if (idx.size() > 0) fips_csrng_q.delete(idx[0]);
+  endfunction
+
+  // A seed passed to the CSRNG HW interface must not also be routed to the ENTROPY_DATA register.
+  function void remove_from_entropy_data_q(bit [CSRNG_BUS_WIDTH - 1:0] seed);
+    // Skip the front seed if it is currently being read via ENTROPY_DATA.
+    int unsigned first = seed_tl_read_cnt > 0;
+    int idx[$] = entropy_data_q.find_first_index(s) with (s.index >= first && s == seed);
+    if (idx.size() > 0) begin
+      entropy_data_q.delete(idx[0]);
+    end else if (first && entropy_data_q[0] == seed) begin
+      `uvm_error(`gfn, "Seed passed to both the CSRNG HW interface and ENTROPY_DATA register")
+    end
+  endfunction
+
   virtual task process_csrng();
     push_pull_item#(.HostDataWidth(FIPS_CSRNG_BUS_WIDTH))  item;
     `uvm_info(`gfn, "task \"process_csrng\" starting\n", UVM_FULL)
@@ -2967,6 +3003,7 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         // Unlike in the TL case, there is no need to leave seed predictions in the queue.
         prediction = fips_csrng_q.pop_front();
         if (prediction == item.d_data) begin
+          remove_from_entropy_data_q(get_csrng_seed(prediction));
           csrng_seeds++;
           cfg.total_seeds_consumed++;
           match_found = 1;

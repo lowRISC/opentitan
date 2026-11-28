@@ -130,6 +130,9 @@ class entropy_src_dut_cfg extends uvm_object;
   rand bit             use_invalid_mubi;
   rand invalid_mubi_e  which_invalid_mubi;
 
+  // Invalid value written to ENTROPY_DATA_REQUEST before each request.
+  prim_mubi_pkg::mubi4_t invalid_entropy_data_request_val;
+
   /////////////////
   // Constraints //
   /////////////////
@@ -530,6 +533,7 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_fw_ov_entropy_insert: fw_over_enable = invalid_mubi_val;
         invalid_fw_ov_insert_start: fw_ov_insert_start = invalid_mubi_val;
         invalid_esfinal_clr_while_dsbld: esfinal_clr_while_dsbld = invalid_mubi_val;
+        invalid_entropy_data_request: invalid_entropy_data_request_val = invalid_mubi_val;
         invalid_alert_threshold: begin
           // Let the alert_threshold_inv field take some
           // improper value.
