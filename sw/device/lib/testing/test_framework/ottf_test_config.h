@@ -50,7 +50,7 @@ typedef struct ottf_console_tx_indicator {
   bool enable;
   /**
    * Indicates the GPIO to use to signal to the host that the SPI console buffer
-   * is not empty.
+   * is not empty. Pins 0-31 are on the GPIO0 instance, pins 32-63 on GPIO1.
    */
   uint32_t spi_console_tx_ready_gpio;
   /**

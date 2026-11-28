@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
 #define OPENTITAN_SW_DEVICE_LIB_TESTING_PINMUX_TESTUTILS_H_
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "hw/top/dt/pinmux.h"
@@ -31,20 +32,20 @@ typedef struct pinmux_testutils_mio_pin {
 /**
  * Default pinmux initialization.
  *
- * Initializes GPIOs to map to the lowest-numbered MIOs, except where it
- * conflicts with UARTs. Then initializes 2 UART mappings to (IOC3,IOC8) and
- * (IOC4,IOC9), denoted as (RX pin,TX pin).
+ * Connects the SW strap pads to their GPIO inputs. Then initializes UART0 to
+ * (IOC3,IOC4), denoted as (RX pin,TX pin).
  *
- * Also ensures IOR0 and IOR1 outputs are disabled, for use as USB sense inputs.
+ * Also ensures the IOC7 output is disabled, for use as USB sense input.
  *
  * This function is specific to top_earlgrey and top_englishbreakfast.
  */
 void pinmux_testutils_init(dif_pinmux_t *pinmux);
 
 /**
- * Maps the chip IOs to the GPIO peripheral in input and output directions.
+ * Maps the chip IOs to the GPIO peripherals in input and output directions,
+ * per GPIO instance and pin.
  */
-extern const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins];
+extern const dt_pad_t kPinmuxTestutilsGpioPads[kDtGpioCount][kDifGpioNumPins];
 
 /**
  * Connect a peripheral I/O to a pad.
@@ -78,12 +79,23 @@ status_t pinmux_testutils_connect(const dif_pinmux_t *pinmux,
                                   dt_periph_io_dir_t dir, dt_pad_t pad);
 
 /**
- * Returns the mask of testable GPIO pins.
+ * Returns the mask of testable GPIO pins of a GPIO instance.
  *
  * Returns a simulation-device-specific mask that enables testing of only a
  * subset of GPIOs depending on the IO allocation limitations.
  */
-uint32_t pinmux_testutils_get_testable_gpios_mask(void);
+uint32_t pinmux_testutils_get_testable_gpios_mask(dt_gpio_t gpio);
+
+/**
+ * Returns whether another device on the FPGA board can drive the pad.
+ *
+ * A test must not drive such a pad from the chip. Only the CW340 is described,
+ * the function returns false on every other device.
+ *
+ * @param pad A pad.
+ * @return Whether the board can drive the pad.
+ */
+bool pinmux_testutils_is_board_driven_pad(dt_pad_t pad);
 
 /**
  * Reads a pin as a four-valued strapping pin.
@@ -111,7 +123,7 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
  * [IOC2, IOC1, IOC0] and ranges from [0..63].
  * This function assumes the Earlgrey configuration where the external
  * pads IOC{0,1,2} are used as software straps and that the pinmux is
- * configured to map those pads to GPIOs 22, 23 and 24.
+ * configured to map those pads to gpio1 bits 2, 3 and 4.
  *
  * @return A result in the range [0..63].
  */

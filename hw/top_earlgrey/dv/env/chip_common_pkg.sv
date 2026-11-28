@@ -96,25 +96,19 @@ package chip_common_pkg;
     JtagTapDft = 2'b11
   } chip_jtag_tap_e;
 
+  // The pins of each GPIO instance that chip_if connects. gpio1 pins 29-31 share
+  // their pads with pins 25-27 and are not tested.
+  // TODO: Find a way how to include these as well.
+  // gpio1 pins 7 and 10 are on the TAP strap pads. In DFT-enabled LC states the TAP straps are
+  // sampled continuously, so toggling these pins switches the selected TAP, and the undriven JTAG
+  // pads make the selected TAP's inputs X. So they are not tested either.
+  parameter bit [NUM_GPIOS-1:0] GpioPadsMask[NUM_GPIO_INSTS] = '{32'hffff_ffff, 32'h1fff_fb7f};
+
   // This maps the DIO on the pinmux / peripheral side to the DIO on the pad side, both of
   // which have different enum numbering in top_earlgrey_pkg.sv.
   parameter top_earlgrey_pkg::dio_pad_e DioToDioPadMap [top_earlgrey_pkg::DioCount] = '{
     top_earlgrey_pkg::DioPadUsbP,       /* DioUsbdevUsbDp */
-    top_earlgrey_pkg::DioPadUsbN,       /* DioUsbdevUsbDn */
-    top_earlgrey_pkg::DioPadSpiHostD0,  /* DioSpiHost0Sd0 */
-    top_earlgrey_pkg::DioPadSpiHostD1,  /* DioSpiHost0Sd1 */
-    top_earlgrey_pkg::DioPadSpiHostD2,  /* DioSpiHost0Sd2 */
-    top_earlgrey_pkg::DioPadSpiHostD3,  /* DioSpiHost0Sd3 */
-    top_earlgrey_pkg::DioPadSpiDevD0,   /* DioSpiDeviceSd0 */
-    top_earlgrey_pkg::DioPadSpiDevD1,   /* DioSpiDeviceSd1 */
-    top_earlgrey_pkg::DioPadSpiDevD2,   /* DioSpiDeviceSd2 */
-    top_earlgrey_pkg::DioPadSpiDevD3,   /* DioSpiDeviceSd3 */
-    top_earlgrey_pkg::DioPadIor8,       /* DioSysrstCtrlEcRstL */
-    top_earlgrey_pkg::DioPadIor9,       /* DioSysrstCtrlFlashWpL */
-    top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
-    top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
-    top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb0 */
+    top_earlgrey_pkg::DioPadUsbN        /* DioUsbdevUsbDn */
   };
 
   typedef struct packed {

@@ -18,42 +18,14 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static dif_gpio_t gpio;
+static demo_gpio_t gpio;
 static dif_pinmux_t pinmux;
 static dif_uart_t uart;
-
-static dif_pinmux_index_t leds[] = {
-    kTopEarlgreyPinmuxMioOutIor10,
-    kTopEarlgreyPinmuxMioOutIor11,
-    kTopEarlgreyPinmuxMioOutIor12,
-    kTopEarlgreyPinmuxMioOutIor13,
-};
-
-static dif_pinmux_index_t switches[] = {
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob9,
-    kTopEarlgreyPinmuxInselIob10,
-    kTopEarlgreyPinmuxInselIor5,
-};
-
-void configure_pinmux(void) {
-  pinmux_testutils_init(&pinmux);
-  // Hook up some LEDs.
-  for (size_t i = 0; i < ARRAYSIZE(leds); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxOutselGpio0Gpio0 + i;
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, leds[i], gpio));
-  }
-  // Hook up DIP switches.
-  for (size_t i = 0; i < ARRAYSIZE(switches); ++i) {
-    dif_pinmux_index_t gpio = kTopEarlgreyPinmuxPeripheralInGpio0Gpio8 + i;
-    CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio, switches[i]));
-  }
-}
 
 void _ottf_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  configure_pinmux();
+  pinmux_testutils_init(&pinmux);
 
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart));
@@ -72,10 +44,7 @@ void _ottf_main(void) {
              }));
   base_uart_stdout(&uart);
 
-  CHECK_DIF_OK(dif_gpio_init(
-      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
-  // Enable GPIO: 0-3 is output; 8-11 is input.
-  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0xF));
+  demo_gpio_init(&pinmux, &gpio);
 
   // Add DATE and TIME because I keep fooling myself with old versions
   LOG_INFO("Hello World!");
@@ -85,7 +54,7 @@ void _ottf_main(void) {
 
   // Now have UART <-> Buttons/LEDs demo
   // all LEDs off
-  CHECK_DIF_OK(dif_gpio_write_all(&gpio, 0x0000));
+  demo_gpio_leds_write(&gpio, 0);
   LOG_INFO("Try out USERDIP switches 0-thru-3 on the board");
   LOG_INFO("or type anything into the console window.");
   LOG_INFO(

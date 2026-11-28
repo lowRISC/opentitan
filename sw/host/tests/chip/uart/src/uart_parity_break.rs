@@ -17,6 +17,7 @@ use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::uart::console::UartConsole;
+use test_uarts::select_uart;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -121,11 +122,11 @@ fn uart_parity_break(
     // Configure the UART under test and the parity to use.
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
     MemWriteReq::execute(console, *parity_addr, &[dif_parity])?;
-    MemWriteReq::execute(console, *uart_id_addr, &[*uart_id])?;
+    let (console, uart) = select_uart(transport, console, *uart_id_addr, *uart_id)?;
+    let console = &*console;
 
     // Connect to the UART once configured.
     UartConsole::wait_for(console, r"UART\d configured", opts.timeout)?;
-    let uart = transport.uart("dut")?;
     // NOTE: for some reason setting HyperDebug's parity causes it to invent
     // a NULL byte which doesn't exist on the UART lines. Sleep for the USB
     // timeout (so that the byte arrives at the host) and then clear the buf.

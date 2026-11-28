@@ -11,16 +11,16 @@
 #include "sw/device/lib/dif/dif_sysrst_ctrl.h"
 
 /**
- * Setup the sysrst_ctrl direct IO (DIO) pins, that is flash write protect (WP)
- * and EC reset.
+ * Setup the sysrst_ctrl flash write protect (WP) and EC reset pins IOR9 and
+ * IOR8. The pinmux connects them to sysrst_ctrl by default.
  *
- * This function sets up the DIO pins as virtual open drain.
+ * This function sets up the pins as virtual open drain.
  *
  * This function will panic on error.
  *
  * @param pinmux Pointer to an initialized pinmux DIF.
  */
-void sysrst_ctrl_testutils_setup_dio(dif_pinmux_t *pinmux);
+void sysrst_ctrl_testutils_setup_io(dif_pinmux_t *pinmux);
 
 /**
  * Release the flash WP and EC reset so that the output is not overidden to low

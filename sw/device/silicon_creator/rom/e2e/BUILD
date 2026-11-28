@@ -423,6 +423,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",

@@ -29,21 +29,22 @@
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-// ATE Indicator GPIOs.
-static const dif_gpio_pin_t kGpioPinTestStart = 0;
-static const dif_gpio_pin_t kGpioPinTestDone = 1;
-static const dif_gpio_pin_t kGpioPinTestError = 2;
-static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 3;
-static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 4;
+// ATE Indicator GPIOs. Pin number of GPIO1.
+static const dif_gpio_pin_t kGpioPinTestStart = 22;          // gpio1, IOR7
+static const dif_gpio_pin_t kGpioPinTestDone = 28;           // gpio1, IOR13
+static const dif_gpio_pin_t kGpioPinTestError = 27;          // gpio1, IOR12
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 25;  // gpio1, IOR10
+static const dif_gpio_pin_t kGpioPinSpiConsoleRxReady = 26;  // gpio1, IOR11
 
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .silence_console_prints = true,
         .console_tx_indicator.enable = true,
-        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIor10,
+        // The GPIO id is global, so skip the 32 gpio0 pins to reach gpio1.
         .console_tx_indicator.spi_console_tx_ready_gpio =
-            kGpioPinSpiConsoleTxReady);
+            kDifGpioNumPins + kGpioPinSpiConsoleTxReady);
 
 static dif_gpio_t gpio;
 static dif_lc_ctrl_t lc_ctrl;
@@ -56,7 +57,7 @@ static uint32_t ast_cfg_data[kNvmInfoAstCalibrationDataSizeIn32BitWords];
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR),
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO1_BASE_ADDR),
                     &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
@@ -71,29 +72,31 @@ static status_t peripheral_handles_init(void) {
  * Configure the ATE GPIO indicator pins.
  */
 static status_t configure_ate_gpio_indicators(void) {
-  // IOA6 / gpio0 pin 4 is for SPI console RX ready signal.
+  // IOR11 / gpio1 pin 26 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleRxReady));
-  // IOA5 / gpio0 pin 3 is for SPI console TX ready signal.
+      &pinmux, kTopEarlgreyPinmuxMioOutIor11,
+      kTopEarlgreyPinmuxOutselGpio1Gpio0 + kGpioPinSpiConsoleRxReady));
+  // IOR10 / gpio1 pin 25 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
-  // IOA0 / gpio0 pin 2 is for error reporting.
+      &pinmux, kTopEarlgreyPinmuxMioOutIor10,
+      kTopEarlgreyPinmuxOutselGpio1Gpio0 + kGpioPinSpiConsoleTxReady));
+  // IOR12 / gpio1 pin 27 is for error reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
-      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestError));
-  // IOA1 / gpio0 pin 1 is for test done reporting.
+      &pinmux, kTopEarlgreyPinmuxMioOutIor12,
+      kTopEarlgreyPinmuxOutselGpio1Gpio0 + kGpioPinTestError));
+  // IOR13 / gpio1 pin 28 is for test done reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
-      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestDone));
-  // IOA4 / gpio0 pin 0 is for test start reporting.
+      &pinmux, kTopEarlgreyPinmuxMioOutIor13,
+      kTopEarlgreyPinmuxOutselGpio1Gpio0 + kGpioPinTestDone));
+  // IOR7 / gpio1 pin 22 is for test start reporting.
   TRY(dif_pinmux_output_select(
-      &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
-      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestStart));
-  TRY(dif_gpio_output_set_enabled_all(&gpio,
-                                      0x1f));       // Enable first 5 GPIOs.
-  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Intialize all to 0.
+      &pinmux, kTopEarlgreyPinmuxMioOutIor7,
+      kTopEarlgreyPinmuxOutselGpio1Gpio0 + kGpioPinTestStart));
+  TRY(dif_gpio_output_set_enabled_all(
+      &gpio, (1u << kGpioPinTestStart) | (1u << kGpioPinTestDone) |
+                 (1u << kGpioPinTestError) | (1u << kGpioPinSpiConsoleTxReady) |
+                 (1u << kGpioPinSpiConsoleRxReady)));
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));  // Initialize all to 0.
   return OK_STATUS();
 }
 

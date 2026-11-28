@@ -52,10 +52,10 @@ static const dif_pinmux_index_t kPeripheralInputs[] = {
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
-    kTopEarlgreyPinmuxInselIob3,
-    kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob8,
-    kTopEarlgreyPinmuxInselIor13,
+    kTopEarlgreyPinmuxInselIor1,
+    kTopEarlgreyPinmuxInselIor3,
+    kTopEarlgreyPinmuxInselIor5,
+    kTopEarlgreyPinmuxInselIor0,
 };
 
 static const dif_pinmux_index_t kPeripheralOutputs[] = {
@@ -68,9 +68,9 @@ static const dif_pinmux_index_t kPeripheralOutputs[] = {
 };
 
 static const dif_pinmux_index_t kOutputPads[] = {
-    kTopEarlgreyPinmuxMioOutIob9, kTopEarlgreyPinmuxMioOutIor5,
-    kTopEarlgreyPinmuxMioOutIor6, kTopEarlgreyPinmuxMioOutIoc7,
-    kTopEarlgreyPinmuxMioOutIoc9, kTopEarlgreyPinmuxMioOutIob7,
+    kTopEarlgreyPinmuxMioOutIor6,  kTopEarlgreyPinmuxMioOutIor13,
+    kTopEarlgreyPinmuxMioOutIor7,  kTopEarlgreyPinmuxMioOutIor10,
+    kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxMioOutIor4,
 };
 
 static const dif_sysrst_ctrl_pin_t kSysrstCtrlOutputs[] = {

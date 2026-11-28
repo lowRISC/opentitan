@@ -195,15 +195,15 @@ void config_i2c_with_index(void) {
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-          kTopEarlgreyPinmuxInselIob9));
+          kTopEarlgreyPinmuxInselIob11));
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-          kTopEarlgreyPinmuxInselIob10));
+          kTopEarlgreyPinmuxInselIob12));
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopEarlgreyPinmuxMioOutIob9,
+                                            kTopEarlgreyPinmuxMioOutIob11,
                                             kTopEarlgreyPinmuxOutselI2c1Scl));
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopEarlgreyPinmuxMioOutIob10,
+                                            kTopEarlgreyPinmuxMioOutIob12,
                                             kTopEarlgreyPinmuxOutselI2c1Sda));
       break;
     case 2:
@@ -225,15 +225,15 @@ void config_i2c_with_index(void) {
 
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c2Scl,
-          kTopEarlgreyPinmuxInselIob11));
+          kTopEarlgreyPinmuxInselIob9));
       CHECK_DIF_OK(dif_pinmux_input_select(
           &pinmux, kTopEarlgreyPinmuxPeripheralInI2c2Sda,
-          kTopEarlgreyPinmuxInselIob12));
+          kTopEarlgreyPinmuxInselIob10));
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopEarlgreyPinmuxMioOutIob11,
+                                            kTopEarlgreyPinmuxMioOutIob9,
                                             kTopEarlgreyPinmuxOutselI2c2Scl));
       CHECK_DIF_OK(dif_pinmux_output_select(&pinmux,
-                                            kTopEarlgreyPinmuxMioOutIob12,
+                                            kTopEarlgreyPinmuxMioOutIob10,
                                             kTopEarlgreyPinmuxOutselI2c2Sda));
       break;
     default:

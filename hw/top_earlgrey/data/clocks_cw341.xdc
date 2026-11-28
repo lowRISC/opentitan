@@ -72,32 +72,28 @@ create_generated_clock -name usb_embed_out_clk -multiply_by 1 \
 set_output_delay -min -clock usb_embed_out_clk 7 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}]
 set_output_delay -max -clock usb_embed_out_clk 14 [get_ports {IO_USB_DP_TX IO_USB_DN_TX}] -add_delay
 
-## Muxed I/Os
-set ioa_muxed_ports [get_ports IOA*]
-set iob_muxed_ports [get_ports IOB*]
-set ioc_muxed_ports [get_ports IOC*]
-set ior_muxed_ports [get_ports -filter {NAME != IOR8 && NAME != IOR9} IOR*]
-set all_muxed_ports "${ioa_muxed_ports} ${iob_muxed_ports} ${ioc_muxed_ports} ${ior_muxed_ports}"
+## Pads the pinmux allows for the SPI device TPM CSB
+set tpm_csb_ports [get_ports {IOA2 IOA4 IOA7}]
 
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
-create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
-create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOA5]
+create_generated_clock -name lc_jtag_tck -source [get_ports IOA5] -divide_by 1 \
     [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
-create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name rv_jtag_tck -source [get_ports IOA5] -divide_by 1 \
     [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
-create_generated_clock -name rram_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name rram_jtag_tck -source [get_ports IOA5] -divide_by 1 \
     [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rram/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
 
 # Assign input and output delays.
-set_output_delay -add_delay -clock jtag_tck -max 10.0 [get_ports IOR1]
-set_output_delay -add_delay -clock jtag_tck -min -5.0 [get_ports IOR1]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOR0 IOR2}]
+set_output_delay -add_delay -clock jtag_tck -max 10.0 [get_ports IOA1]
+set_output_delay -add_delay -clock jtag_tck -min -5.0 [get_ports IOA1]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOA0 IOA4}]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOA0 IOA4}]
 # The TAPs have no combinational path from TMS/TDI to TDO. Any port-to-port path
 # between them only exists through the pinmux and is not a JTAG timing path.
 # The delays above still constrain the paths to and from the TAP flops.
-set_false_path -from [get_ports {IOR0 IOR2}] -to [get_ports IOR1]
+set_false_path -from [get_ports {IOA0 IOA4}] -to [get_ports IOA1]
 
 ## SPI clocks
 set spi_dev_period 80.00
@@ -195,9 +191,9 @@ set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
 
 # TPM CSB
 set_input_delay -clock clk_spi_tpm -clock_fall -min ${spi_dev_in_delay_min} \
-    [get_ports ${all_muxed_ports}] -add_delay
+    ${tpm_csb_ports} -add_delay
 set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
-    [get_ports ${all_muxed_ports}] -add_delay
+    ${tpm_csb_ports} -add_delay
 
 # Use half-cycle sampling to comply with TPM spec.
 set_output_delay -clock clk_spi_tpm -min ${spi_dev_out_hold}  ${spi_dev_data} -add_delay
@@ -316,7 +312,7 @@ set_false_path -from [get_clocks {clk_spi_in clk_spi_out clk_spi_pt}] -through $
 #set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
 #    -to [get_clocks clk_spi_out] 1
 set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
-    -through [get_ports ${all_muxed_ports}] \
+    -through ${tpm_csb_ports} \
     -to [get_clocks clk_spi_tpm_out] 1
 
 
@@ -330,82 +326,79 @@ set_false_path -from [get_clocks clk_usb_48] -to [get_pins ${u_ast_primary}/u_us
 # detection. Both reach the clock buffers in u_targ_inbufs through the MIO
 # pinmux. Pin the pinmux input selects of the I3C inputs to fixed pads, so each
 # I3C clock tree is driven from exactly one pad and no other muxed-pad clock
-# (e.g. jtag_tck on IOR3) propagates into it. Only these pads are analyzed;
+# (e.g. jtag_tck on IOA5) propagates into it. Only these pads are analyzed;
 # software may still select others.
-#   I3C0: SCL = IOB10 (insel 21), SDA = IOB9  (insel 20)
-#   I3C1: SCL = IOB11 (insel 22), SDA = IOB12 (insel 23)
-set i3c0_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_70/q_reg
-set i3c0_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_71/q_reg
-set i3c1_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_72/q_reg
-set i3c1_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_73/q_reg
+#   I3C0: SCL = IOB11 (insel 34), SDA = IOB12 (insel 35)
+#   I3C1: SCL = IOB9  (insel 32), SDA = IOB10 (insel 33)
+set i3c0_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_82/q_reg
+set i3c0_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_83/q_reg
+set i3c1_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_84/q_reg
+set i3c1_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_85/q_reg
 
-# insel 21 = 6'b010101
-set_case_analysis 1 [get_pins [list ${i3c0_scl_insel}\[0\]/Q ${i3c0_scl_insel}\[2\]/Q \
-    ${i3c0_scl_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c0_scl_insel}\[1\]/Q ${i3c0_scl_insel}\[3\]/Q \
-    ${i3c0_scl_insel}\[5\]/Q]]
-# insel 20 = 6'b010100
-set_case_analysis 1 [get_pins [list ${i3c0_sda_insel}\[2\]/Q ${i3c0_sda_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c0_sda_insel}\[0\]/Q ${i3c0_sda_insel}\[1\]/Q \
-    ${i3c0_sda_insel}\[3\]/Q ${i3c0_sda_insel}\[5\]/Q]]
-# insel 22 = 6'b010110
-set_case_analysis 1 [get_pins [list ${i3c1_scl_insel}\[1\]/Q ${i3c1_scl_insel}\[2\]/Q \
-    ${i3c1_scl_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c1_scl_insel}\[0\]/Q ${i3c1_scl_insel}\[3\]/Q \
-    ${i3c1_scl_insel}\[5\]/Q]]
-# insel 23 = 6'b010111
-set_case_analysis 1 [get_pins [list ${i3c1_sda_insel}\[0\]/Q ${i3c1_sda_insel}\[1\]/Q \
-    ${i3c1_sda_insel}\[2\]/Q ${i3c1_sda_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c1_sda_insel}\[3\]/Q ${i3c1_sda_insel}\[5\]/Q]]
+# insel 34 = 6'b100010
+set_case_analysis 1 [get_pins [list ${i3c0_scl_insel}\[1\]/Q ${i3c0_scl_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c0_scl_insel}\[0\]/Q ${i3c0_scl_insel}\[2\]/Q \
+    ${i3c0_scl_insel}\[3\]/Q ${i3c0_scl_insel}\[4\]/Q]]
+# insel 35 = 6'b100011
+set_case_analysis 1 [get_pins [list ${i3c0_sda_insel}\[0\]/Q ${i3c0_sda_insel}\[1\]/Q \
+    ${i3c0_sda_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c0_sda_insel}\[2\]/Q ${i3c0_sda_insel}\[3\]/Q \
+    ${i3c0_sda_insel}\[4\]/Q]]
+# insel 32 = 6'b100000
+set_case_analysis 1 [get_pins [list ${i3c1_scl_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_scl_insel}\[0\]/Q ${i3c1_scl_insel}\[1\]/Q \
+    ${i3c1_scl_insel}\[2\]/Q ${i3c1_scl_insel}\[3\]/Q ${i3c1_scl_insel}\[4\]/Q]]
+# insel 33 = 6'b100001
+set_case_analysis 1 [get_pins [list ${i3c1_sda_insel}\[0\]/Q ${i3c1_sda_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_sda_insel}\[1\]/Q ${i3c1_sda_insel}\[2\]/Q \
+    ${i3c1_sda_insel}\[3\]/Q ${i3c1_sda_insel}\[4\]/Q]]
 
 # The Target Reset Detectors are clocked by SCL and SDA too, through their own
 # pinmux inputs. Pin these to the same pads as the inputs of their I3C instance.
-set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_83/q_reg
-set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_84/q_reg
-set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_85/q_reg
-set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_86/q_reg
+set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_96/q_reg
+set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_97/q_reg
+set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_98/q_reg
+set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_99/q_reg
 
-# insel 21 = 6'b010101
-set_case_analysis 1 [get_pins [list ${i3c0_rstdet_scl_insel}\[0\]/Q \
-    ${i3c0_rstdet_scl_insel}\[2\]/Q ${i3c0_rstdet_scl_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c0_rstdet_scl_insel}\[1\]/Q \
-    ${i3c0_rstdet_scl_insel}\[3\]/Q ${i3c0_rstdet_scl_insel}\[5\]/Q]]
-# insel 20 = 6'b010100
-set_case_analysis 1 [get_pins [list ${i3c0_rstdet_sda_insel}\[2\]/Q \
-    ${i3c0_rstdet_sda_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c0_rstdet_sda_insel}\[0\]/Q \
-    ${i3c0_rstdet_sda_insel}\[1\]/Q ${i3c0_rstdet_sda_insel}\[3\]/Q \
+# insel 34 = 6'b100010
+set_case_analysis 1 [get_pins [list ${i3c0_rstdet_scl_insel}\[1\]/Q \
+    ${i3c0_rstdet_scl_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c0_rstdet_scl_insel}\[0\]/Q ${i3c0_rstdet_scl_insel}\[2\]/Q \
+    ${i3c0_rstdet_scl_insel}\[3\]/Q ${i3c0_rstdet_scl_insel}\[4\]/Q]]
+# insel 35 = 6'b100011
+set_case_analysis 1 [get_pins [list ${i3c0_rstdet_sda_insel}\[0\]/Q ${i3c0_rstdet_sda_insel}\[1\]/Q \
     ${i3c0_rstdet_sda_insel}\[5\]/Q]]
-# insel 22 = 6'b010110
-set_case_analysis 1 [get_pins [list ${i3c1_rstdet_scl_insel}\[1\]/Q \
-    ${i3c1_rstdet_scl_insel}\[2\]/Q ${i3c1_rstdet_scl_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c1_rstdet_scl_insel}\[0\]/Q \
-    ${i3c1_rstdet_scl_insel}\[3\]/Q ${i3c1_rstdet_scl_insel}\[5\]/Q]]
-# insel 23 = 6'b010111
+set_case_analysis 0 [get_pins [list ${i3c0_rstdet_sda_insel}\[2\]/Q ${i3c0_rstdet_sda_insel}\[3\]/Q \
+    ${i3c0_rstdet_sda_insel}\[4\]/Q]]
+# insel 32 = 6'b100000
+set_case_analysis 1 [get_pins [list ${i3c1_rstdet_scl_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_rstdet_scl_insel}\[0\]/Q ${i3c1_rstdet_scl_insel}\[1\]/Q \
+    ${i3c1_rstdet_scl_insel}\[2\]/Q ${i3c1_rstdet_scl_insel}\[3\]/Q \
+    ${i3c1_rstdet_scl_insel}\[4\]/Q]]
+# insel 33 = 6'b100001
 set_case_analysis 1 [get_pins [list ${i3c1_rstdet_sda_insel}\[0\]/Q \
-    ${i3c1_rstdet_sda_insel}\[1\]/Q ${i3c1_rstdet_sda_insel}\[2\]/Q \
-    ${i3c1_rstdet_sda_insel}\[4\]/Q]]
-set_case_analysis 0 [get_pins [list ${i3c1_rstdet_sda_insel}\[3\]/Q \
     ${i3c1_rstdet_sda_insel}\[5\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_rstdet_sda_insel}\[1\]/Q ${i3c1_rstdet_sda_insel}\[2\]/Q \
+    ${i3c1_rstdet_sda_insel}\[3\]/Q ${i3c1_rstdet_sda_insel}\[4\]/Q]]
 
-# Also fix the input inversion pad attribute of these pads (MIO pads 18 to 21) to off.
+# Also fix the input inversion pad attribute of these pads (MIO pads 30 to 33) to off.
 # Otherwise, the XOR in the pad wrapper is non-unate, potentially leading Vivado to
 # propagating each clock with both polarities.
 set_case_analysis 0 [get_pins [list \
-    ${u_pinmux}/mio_pad_attr_q_reg\[18\]\[invert\]/Q \
-    ${u_pinmux}/mio_pad_attr_q_reg\[19\]\[invert\]/Q \
-    ${u_pinmux}/mio_pad_attr_q_reg\[20\]\[invert\]/Q \
-    ${u_pinmux}/mio_pad_attr_q_reg\[21\]\[invert\]/Q]]
+    ${u_pinmux}/mio_pad_attr_q_reg\[30\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[31\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[32\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[33\]\[invert\]/Q]]
 
 # SCL runs at up to 12.5 MHz. SDA changes at most once per SCL half period
 # (HDR-DDR), so the same period bounds it. The inverted clock trees derive from
 # the same clocks through inverting BUFGCEs, so the HDR-DDR half-cycle paths
 # between both SCL edges remain timed.
 set i3c_period 80
-create_clock -name i3c0_scl -period ${i3c_period} [get_ports IOB10]
-create_clock -name i3c0_sda -period ${i3c_period} [get_ports IOB9]
-create_clock -name i3c1_scl -period ${i3c_period} [get_ports IOB11]
-create_clock -name i3c1_sda -period ${i3c_period} [get_ports IOB12]
+create_clock -name i3c0_scl -period ${i3c_period} [get_ports IOB11]
+create_clock -name i3c0_sda -period ${i3c_period} [get_ports IOB12]
+create_clock -name i3c1_scl -period ${i3c_period} [get_ports IOB9]
+create_clock -name i3c1_sda -period ${i3c_period} [get_ports IOB10]
 
 # For now, treat all I3C bus clock as asynchronous to all other clocks, including
 # the other bus clocks. This cuts the crossings between the bus and the IP

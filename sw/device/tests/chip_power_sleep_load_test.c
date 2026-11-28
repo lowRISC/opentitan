@@ -51,6 +51,8 @@ static dif_alert_handler_t alert_handler;
 static dif_pinmux_t pinmux;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
+// IOA2 signals the power state. Only gpio0 pin 14 can drive it.
+static const dif_gpio_pin_t kIoa2GpioPin = 14;
 static dif_adc_ctrl_t adc_ctrl;
 
 static volatile const bool kCoreClkOff = false;
@@ -102,7 +104,7 @@ static void wdog_irq_handler(void) {
 }
 
 static void prepare_to_exit(void) {
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 0));
 
   LOG_INFO("Prepare to exit");
 
@@ -141,18 +143,17 @@ bool test_main(void) {
   // Testplan: "The test should set a GPIO (mapped to the IOA2 pin) to high
   // while the power state of interest is active".
 
-  const uint32_t kGpioMask = 0x00000004;
+  const uint32_t kGpioMask = 1u << kIoa2GpioPin;
 
   // PINMUX.
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
-                               (kTopEarlgreyPinmuxOutselGpio0Gpio0 + 2)));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio14));
 
   // Set output modes of all GPIO pins.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
 
   // Write to set IOA2 low at the start of the test:
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 0));
 
   LOG_INFO("GPIO active");
 
@@ -366,7 +367,7 @@ bool test_main(void) {
       pwrmgr_testutils_enable_low_power(&pwrmgr, pwrmgr_wakeups, pwrmgr_cfg));
   LOG_INFO("Power Manage configured");
 
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 1));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 1));
   LOG_INFO("all HW is active");
   test_status_set(0xff20);
   wait_for_interrupt();

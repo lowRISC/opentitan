@@ -49,17 +49,15 @@ bool test_main(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR);
   CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
 
-  // If we're testing UART0 we need to move the console to UART1.
+  // If we're testing UART0 we need to move the console to UART2.
   if (uart_idx == 0) {
-    CHECK_STATUS_OK(
-        uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
+    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 2));
     ottf_console_configure_uart(ottf_console_get(),
-                                TOP_EARLGREY_UART1_BASE_ADDR);
+                                TOP_EARLGREY_UART2_BASE_ADDR);
   }
 
-  // Attach the UART under test to the DUT channel.
-  CHECK_STATUS_OK(
-      uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
+  // Attach the UART under test.
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, uart_idx));
 
   base_addr = mmio_region_from_addr(kBaseAddrs[uart_idx]);
   CHECK_DIF_OK(dif_uart_init(base_addr, &uart));

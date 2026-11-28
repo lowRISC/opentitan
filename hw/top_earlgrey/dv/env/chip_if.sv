@@ -126,18 +126,24 @@ interface chip_if;
         dios_if.pins_pu[top_earlgrey_pkg::DioPadPoraN] = 1;
       end
       dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
-      dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
-      dios_if.pins_pu[top_earlgrey_pkg::DioPadIor9] = 1;
-
-      // No need of pulls for the SPI host peripheral.
-      dios_if.pins_pd[top_earlgrey_pkg::DioPadSpiHostCsL:top_earlgrey_pkg::DioPadSpiHostD0] = '0;
     end else begin
       dios_if.disconnect();
     end
   endfunction
 
+  function automatic void cfg_default_weak_pulls_on_mios(bit enable);
+    // The SPI device pads are muxed but keep their weak pull downs. The SPI host pads need none.
+    mios_if.pins_pd[top_earlgrey_pkg::MioPadSpiDevCsL:top_earlgrey_pkg::MioPadSpiDevD0] =
+        {6{enable}};
+    // The sysrst_ctrl ec_rst_l and flash_wp_l open drain pads are muxed, but they are active low
+    // and default to sysrst_ctrl, so they get the same pull ups.
+    mios_if.pins_pu[top_earlgrey_pkg::MioPadIor8] = enable;
+    mios_if.pins_pu[top_earlgrey_pkg::MioPadIor9] = enable;
+  endfunction
+
   initial begin
     cfg_default_weak_pulls_on_dios(1);
+    cfg_default_weak_pulls_on_mios(1);
   end
 
   // X-check monitor on the muxed chip IOs.
@@ -145,6 +151,10 @@ interface chip_if;
   // Chip IOs must always either be undriven or driven to a known value. Xs indicate multiple
   // drivers, which is an issue likely caused by multiple functions simultaneously attempting to
   // control the shared (muxed) pads.
+  //
+  // The SPI_HOST_* and SPI_DEV_* pads are not checked, since the SPI agents drive X on their idle
+  // data lines.
+  // TODO: Can we change the SPI drives to not drive X so we can test these pads as well?
   bit disable_mios_x_check = 0;
   for (genvar i = top_earlgrey_pkg::MioPadIoa0; i < top_earlgrey_pkg::MioPadCount; i++)
   begin : gen_mios_x_check
@@ -210,16 +220,16 @@ interface chip_if;
     return (pad === 1'bz) ? 1'b1 : pad;
   endfunction
 
-  // Functional (dedicated) interface: SPI host interface (drives traffic into the chip).
+  // Functional (muxed) interface: SPI host interface (drives traffic into the chip).
   bit enable_spi_host = 1;
   bit enable_spi_tpm;
   spi_if spi_host_if(
     .rst_n(`SPI_DEVICE_HIER.rst_ni),
-    .sio  (dios[top_earlgrey_pkg::DioPadSpiDevD3:top_earlgrey_pkg::DioPadSpiDevD0])
+    .sio  (mios[top_earlgrey_pkg::MioPadSpiDevD3:top_earlgrey_pkg::MioPadSpiDevD0])
   );
-  assign dios[top_earlgrey_pkg::DioPadSpiDevClk] = enable_spi_host | enable_spi_tpm ?
+  assign mios[top_earlgrey_pkg::MioPadSpiDevClk] = enable_spi_host | enable_spi_tpm ?
       spi_host_if.sck : 1'bz;
-  assign dios[top_earlgrey_pkg::DioPadSpiDevCsL] = enable_spi_host ? spi_host_if.csb[0] : 1'bz;
+  assign mios[top_earlgrey_pkg::MioPadSpiDevCsL] = enable_spi_host ? spi_host_if.csb[0] : 1'bz;
   assign mios[top_earlgrey_pkg::MioPadIoa7] = enable_spi_tpm ? spi_host_if.csb[1] : 1'bz;
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_host_agent*", "vif", spi_host_if);
@@ -229,24 +239,24 @@ interface chip_if;
     end while (1);
   end
 
-  // Functional (dedicated) interface: SPI device 0 interface (receives traffic from the chip).
+  // Functional (muxed) interface: SPI device 0 interface (receives traffic from the chip).
   // TODO: Update spi_if to emit all signals as inout ports and internal drivers on all ports.
   bit [NUM_SPI_HOSTS-1:0] __enable_spi_device;
 
   spi_if spi_device0_if(
     .rst_n(`SPI_HOST_HIER(0).rst_ni),
-    .sio  (dios[top_earlgrey_pkg::DioPadSpiHostD3:
-                top_earlgrey_pkg::DioPadSpiHostD0])
+    .sio  (mios[top_earlgrey_pkg::MioPadSpiHostD3:
+                top_earlgrey_pkg::MioPadSpiHostD0])
   );
 
   assign spi_device0_if.sck = __enable_spi_device[0] ?
-      dios[top_earlgrey_pkg::DioPadSpiHostClk] : 1'bz;
+      mios[top_earlgrey_pkg::MioPadSpiHostClk] : 1'bz;
 
-  // CSB[0] is on a dedicated pad, CSB[1] and CSB[2] are muxed.  Undriven pads are inactive.
+  // CSB[0] is on SPI_HOST_CS_L, CSB[1] and CSB[2] on IOA pads. Undriven pads are inactive.
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoa6]),
-       pulled_up(mios[top_earlgrey_pkg::MioPadIoa3]),
-       dios[top_earlgrey_pkg::DioPadSpiHostCsL]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoa3]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIoa2]),
+       mios[top_earlgrey_pkg::MioPadSpiHostCsL]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);
@@ -260,19 +270,19 @@ interface chip_if;
   spi_if spi_device1_if(
     .rst_n(`SPI_HOST_HIER(1).rst_ni),
     .sio  ({mios[top_earlgrey_pkg::MioPadIob6],  // sio[3]
-            mios[top_earlgrey_pkg::MioPadIob5],  // sio[2]
-            mios[top_earlgrey_pkg::MioPadIob4],  // sio[1]
-            mios[top_earlgrey_pkg::MioPadIob3]}) // sio[0]
+            mios[top_earlgrey_pkg::MioPadIob4],  // sio[2]
+            mios[top_earlgrey_pkg::MioPadIob2],  // sio[1]
+            mios[top_earlgrey_pkg::MioPadIob1]}) // sio[0]
   );
 
   assign spi_device1_if.sck = __enable_spi_device[1] ?
-      mios[top_earlgrey_pkg::MioPadIob0] : 1'bz;
+      mios[top_earlgrey_pkg::MioPadIob3] : 1'bz;
 
   // All CSB lines are muxed.  Undriven pads are inactive.
   assign spi_device1_if.csb = __enable_spi_device[1] ?
-      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoc10]),
-       pulled_up(mios[top_earlgrey_pkg::MioPadIob7]),
-       mios[top_earlgrey_pkg::MioPadIob1]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIob7]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIob5]),
+       mios[top_earlgrey_pkg::MioPadIob0]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1*", "vif", spi_device1_if);
@@ -290,34 +300,41 @@ interface chip_if;
   endfunction : enable_spi_device
 
 
-  // Functional (dedicated) interface (inout): EC reset.
+  // Functional (muxed) interface (inout): EC reset.
   pins_if #(.Width(1), .PullStrength("Weak")) ec_rst_l_if(
-    .pins(dios[top_earlgrey_pkg::DioPadIor8])
+    .pins(mios[top_earlgrey_pkg::MioPadIor8])
   );
 
-  // Functional (dedicated) interface (inout): flash write protect.
+  // Functional (muxed) interface (inout): flash write protect.
   pins_if #(.Width(1), .PullStrength("Weak")) flash_wp_l_if(
-    .pins(dios[top_earlgrey_pkg::DioPadIor9])
+    .pins(mios[top_earlgrey_pkg::MioPadIor9])
   );
 
-  // Functional (dedicated) interface (inout): power button.
+  // Functional (muxed) interface: power button.
   pins_if #(.Width(1), .PullStrength("Weak")) pwrb_in_if(
-    .pins(mios[top_earlgrey_pkg::MioPadIor13])
-  );  // TODO: move to R0.
-
-  // Functional (muxed) interface: sysrst_ctrl.
-  // TODO: Replace with sysrst_ctrl IP level interface.
-  // TODO; combine all into 1 single sysrst_ctrl_if.
-  pins_if #(.Width(8), .PullStrength("Weak")) sysrst_ctrl_if(
-    .pins({mios[top_earlgrey_pkg::MioPadIor6], mios[top_earlgrey_pkg::MioPadIor5],
-           mios[top_earlgrey_pkg::MioPadIoc9], mios[top_earlgrey_pkg::MioPadIoc7],
-           mios[top_earlgrey_pkg::MioPadIob9], mios[top_earlgrey_pkg::MioPadIob8],
-           mios[top_earlgrey_pkg::MioPadIob6], mios[top_earlgrey_pkg::MioPadIob3]})
+    .pins(mios[top_earlgrey_pkg::MioPadIor0])
   );
 
-  // Functional (muxed) interface: DFT straps.
+  // Functional (muxed) interface: sysrst_ctrl inputs except the power button, indexed by
+  // chip_env_pkg::sysrst_ctrl_pad_in_idx_e. Each input can only be muxed to a single pad.
+  // TODO: Replace with sysrst_ctrl IP level interface.
+  pins_if #(.Width(5), .PullStrength("Weak")) sysrst_ctrl_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIor11], mios[top_earlgrey_pkg::MioPadIor2],
+           mios[top_earlgrey_pkg::MioPadIor5], mios[top_earlgrey_pkg::MioPadIor3],
+           mios[top_earlgrey_pkg::MioPadIor1]})
+  );
+
+  // Functional (muxed) interface: sysrst_ctrl outputs, indexed by
+  // chip_env_pkg::sysrst_ctrl_pad_out_idx_e. Each output can only be muxed to a single pad.
+  pins_if #(.Width(6), .PullStrength("Weak")) sysrst_ctrl_out_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIor4], mios[top_earlgrey_pkg::MioPadIor12],
+           mios[top_earlgrey_pkg::MioPadIor10], mios[top_earlgrey_pkg::MioPadIor7],
+           mios[top_earlgrey_pkg::MioPadIor13], mios[top_earlgrey_pkg::MioPadIor6]})
+  );
+
+  // Functional (muxed) interface: DFT straps
   pins_if #(.Width(2), .PullStrength("Weak")) dft_straps_if(
-    .pins({mios[top_earlgrey_pkg::MioPadIor7], mios[top_earlgrey_pkg::MioPadIor5]})
+    .pins({mios[top_earlgrey_pkg::MioPadSpiHostD3], mios[top_earlgrey_pkg::MioPadSpiHostD2]})
   );
 
   // Functional (muxed) interface: TAP straps.
@@ -436,6 +453,23 @@ interface chip_if;
            mios[top_earlgrey_pkg::MioPadIoa1], mios[top_earlgrey_pkg::MioPadIoa0]})
   );
 
+  // Functional (muxed) interfaces: the pads of each GPIO instance. All GPIO connect to one pad.
+  // gpio0 pin k reaches MIO pad k and gpio1 pin k MIO pad 32 + k. gpio1 pins 29-31 reach
+  // the pads of pins 25-27 again so they are left unconnected here.
+  wire [2:0] gpio1_unused_pins;
+  pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpio0_pads_if(
+    .pins(mios[top_earlgrey_pkg::MioPadIob10:top_earlgrey_pkg::MioPadSpiHostD0])
+  );
+  pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")) gpio1_pads_if(
+    .pins({gpio1_unused_pins, mios[top_earlgrey_pkg::MioPadIor13:top_earlgrey_pkg::MioPadIob11]})
+  );
+  initial begin
+    uvm_config_db#(virtual pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")))::set(
+        null, "*.env", "gpio_pads_vif0", gpio0_pads_if);
+    uvm_config_db#(virtual pins_if #(.Width(NUM_GPIOS), .PullStrength("Weak")))::set(
+        null, "*.env", "gpio_pads_vif1", gpio1_pads_if);
+  end
+
   // Functional (muxed) interface: JTAG (valid during debug enabled LC state only).
 
   // To connect the JTAG interface to chip IOs, just set the TAP strap to the desired value.
@@ -446,19 +480,19 @@ interface chip_if;
   wire __enable_jtag = |tap_straps_if.pins_oe;
   jtag_if jtag_if();
 
-  assign mios[top_earlgrey_pkg::MioPadIor0] = __enable_jtag ? jtag_if.tms : 1'bz;
-  assign jtag_if.tdo = __enable_jtag ? mios[top_earlgrey_pkg::MioPadIor1] : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIor2] = __enable_jtag ? jtag_if.tdi : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIor3] = __enable_jtag ? jtag_if.tck : 1'bz;
-  assign mios[top_earlgrey_pkg::MioPadIor4] = __enable_jtag ? jtag_if.trst_n : 1'bz;
+  assign mios[top_earlgrey_pkg::MioPadIoa0] = __enable_jtag ? jtag_if.tms : 1'bz;
+  assign jtag_if.tdo = __enable_jtag ? mios[top_earlgrey_pkg::MioPadIoa1] : 1'bz;
+  assign mios[top_earlgrey_pkg::MioPadIoa4] = __enable_jtag ? jtag_if.tdi : 1'bz;
+  assign mios[top_earlgrey_pkg::MioPadIoa5] = __enable_jtag ? jtag_if.tck : 1'bz;
+  assign mios[top_earlgrey_pkg::MioPadIoa6] = __enable_jtag ? jtag_if.trst_n : 1'bz;
 
   function automatic void set_tdo_pull(bit value);
     if (value) begin
-      mios_if.pins_pd[top_earlgrey_pkg::MioPadIor1] = 0;
-      mios_if.pins_pu[top_earlgrey_pkg::MioPadIor1] = 1;
+      mios_if.pins_pd[top_earlgrey_pkg::MioPadIoa1] = 0;
+      mios_if.pins_pu[top_earlgrey_pkg::MioPadIoa1] = 1;
     end else begin
-      mios_if.pins_pu[top_earlgrey_pkg::MioPadIor1] = 0;
-      mios_if.pins_pd[top_earlgrey_pkg::MioPadIor1] = 1;
+      mios_if.pins_pu[top_earlgrey_pkg::MioPadIoa1] = 0;
+      mios_if.pins_pd[top_earlgrey_pkg::MioPadIoa1] = 1;
     end
   endfunction
 
@@ -486,12 +520,12 @@ interface chip_if;
 
   // Functional (muxed) interface: UARTs.
   localparam int AssignedUartTxIos[NUM_UARTS] = {
-      top_earlgrey_pkg::MioPadIoc4, top_earlgrey_pkg::MioPadIob5,
-      top_earlgrey_pkg::MioPadIoa5, top_earlgrey_pkg::MioPadIoa1
+      top_earlgrey_pkg::MioPadIoc4, top_earlgrey_pkg::MioPadIoa1,
+      top_earlgrey_pkg::MioPadIob5, top_earlgrey_pkg::MioPadIoa5
   };
   localparam int AssignedUartRxIos[NUM_UARTS] = {
-      top_earlgrey_pkg::MioPadIoc3, top_earlgrey_pkg::MioPadIob4,
-      top_earlgrey_pkg::MioPadIoa4, top_earlgrey_pkg::MioPadIoa0
+      top_earlgrey_pkg::MioPadIoc3, top_earlgrey_pkg::MioPadIoa0,
+      top_earlgrey_pkg::MioPadIob4, top_earlgrey_pkg::MioPadIoa4
   };
   bit [NUM_UARTS-1:0] __enable_uart;  // Internal signal.
 
@@ -523,16 +557,16 @@ interface chip_if;
   // Functional (muxed) interface: I2Cs.
   bit [NUM_I2CS-1:0] __enable_i2c = {NUM_I2CS{1'b0}}; // Internal signal.
 
-  // {ioa7, ioa8}, {iob9, iob10}, {iob11, iob12} are the i2c connections
+  // {ioa7, ioa8}, {iob12, iob11} and {iob10, iob9} are the i2c connections
   localparam int AssignedI2cSclIos [NUM_I2CS]  = {
     top_earlgrey_pkg::MioPadIoa8,
-    top_earlgrey_pkg::MioPadIob9,
-    top_earlgrey_pkg::MioPadIob11
+    top_earlgrey_pkg::MioPadIob11,
+    top_earlgrey_pkg::MioPadIob9
   };
   localparam int AssignedI2cSdaIos [NUM_I2CS] = {
     top_earlgrey_pkg::MioPadIoa7,
-    top_earlgrey_pkg::MioPadIob10,
-    top_earlgrey_pkg::MioPadIob12
+    top_earlgrey_pkg::MioPadIob12,
+    top_earlgrey_pkg::MioPadIob10
   };
 
   // This part unfortunately has to be hardcoded since the macro cannot interpret a genvar.
@@ -964,21 +998,25 @@ interface chip_if;
   // Disconnects all interfaces from chip IOs.
   //
   // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
-  // The por_n_if and pora_n_if are exempt from this. The disconnection of default pulls using
-  // dios_if is conditioned on the `disconnect_default_pulls` arg.
+  // The por_n_if and pora_n_if are exempt from this. The default pulls on dios_if and the default
+  // MIO pulls are only disconnected if the `disconnect_default_pulls` arg is set.
   function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) dios_if.disconnect();
     mios_if.disconnect();
+    if (!disconnect_default_pulls) cfg_default_weak_pulls_on_mios(1);
     cc_if.disconnect();
     ec_rst_l_if.disconnect();
     flash_wp_l_if.disconnect();
     pwrb_in_if.disconnect();
     sysrst_ctrl_if.disconnect();
+    sysrst_ctrl_out_if.disconnect();
     dft_straps_if.disconnect();
     tap_straps_if.disconnect();
     sw_straps_if.disconnect();
     gpios_if.disconnect();
+    gpio0_pads_if.disconnect();
+    gpio1_pads_if.disconnect();
     ast2pad_if.disconnect();
     pad2ast_if.disconnect();
     pinmux_wkup_if.disconnect();
@@ -1139,12 +1177,8 @@ interface chip_if;
 
   // Signal probe function for peripheral to DIO in pinmux.
   wire [UVM_HDL_MAX_WIDTH-1:0] dio_to_periph = `PINMUX_HIER.dio_to_periph_o;
-  // We cannot force bits 12:13 since they are inputs. So we split the probe functions into two.
-  // TODO: Find a more elegant solution for this.
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_11_0,
-      `PINMUX_HIER.periph_to_dio_i[11:0])
-  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i_15_14,
-      `PINMUX_HIER.periph_to_dio_i[15:14])
+  `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_i,
+      `PINMUX_HIER.periph_to_dio_i)
 
   // Signal probe function for peripheral to DIO output enable in pinmux.
   `DV_CREATE_SIGNAL_PROBE_FUNCTION(signal_probe_pinmux_periph_to_dio_oe_i,

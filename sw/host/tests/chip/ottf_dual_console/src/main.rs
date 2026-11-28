@@ -21,18 +21,26 @@ struct Opts {
     timeout: Duration,
 
     /// Name of the UART interface to connect to the debug OTTF console.
-    #[arg(long, default_value = "dut")]
+    #[arg(long, default_value = "ot_uart2")]
     debug_console: String,
 }
 
 fn ottf_dual_console_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let debug_uart = transport.uart(&opts.debug_console)?;
+    // Arm the host transmitter of ot_uart2 on configurations that release it by default.
+    let host_tx = transport.optional_pin_strapping("UART2_HOST_TX")?;
+    if let Some(strapping) = &host_tx {
+        strapping.apply()?;
+    }
 
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
     let _ = UartConsole::wait_for(&*uart, r"Main UART console", opts.timeout)?;
     let _ = UartConsole::wait_for(&*debug_uart, r"Second UART console", opts.timeout)?;
     let _ = UartConsole::wait_for(&*uart, r"PASS!", opts.timeout)?;
+    if let Some(strapping) = &host_tx {
+        strapping.remove()?;
+    }
     Ok(())
 }
 

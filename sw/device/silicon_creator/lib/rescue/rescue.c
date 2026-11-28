@@ -471,7 +471,7 @@ hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config,
       }
       break;
     case kRescueDetectGpio:
-      if (pinmux_read_gpio(0) == gpio_val) {
+      if (pinmux_read_gpio(index) == gpio_val) {
         return kHardenedBoolTrue;
       }
       break;

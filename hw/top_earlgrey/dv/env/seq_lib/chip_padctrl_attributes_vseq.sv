@@ -24,21 +24,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   localparam prim_pad_wrapper_pkg::pad_type_e DioPadType[DioCount] = '{
     prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dp
-    prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dn
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_ec_rst_l
-    prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_flash_wp_l
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sck
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_csb
-    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sck
-    prim_pad_wrapper_pkg::BidirStr  // DIO spi_host0_csb0
+    prim_pad_wrapper_pkg::BidirStd  // DIO usbdev_usb_dn
   };
 
   int dio_input_pads[$];
@@ -135,6 +121,56 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     }
   }
 
+  // Constraints due to the sparse pinmux
+  // This test does randomize:
+  // - which peripheral output is used to drive the pad
+  // - which peripheral input is used to sample the pad
+  //
+  // This randomization must be constraint to legal options / what the sparse pinmux matrix allows.
+  // For this we generate a list of legal choices based on the pinmux capabilities. We use the RTL
+  // constants MioOutselLegal/MioPeriphInselLegal to generate these constraints. Constraining this
+  // test on constants defining the RTL is ok here as this test does not check if the desired
+  // connectivity is correct. It just checks the pad's behaviour.
+  //
+  // The outsel/insel randomization must come before the MIO map constraints. Otherwise the MIO map
+  // can fail on impossible input sets. This is ensured with solve-before constraint and by
+  // sampling the pairs together.
+
+  // This are the legal options:
+  // - mio_outsel_legal: Per pad a list which peripheral output is legal
+  // - mio_insel_legal:  Per peripheral input which pad is legal.
+  // The extra entry covers the count value.
+  bit mio_outsel_legal[MioPadCount][MioOutCount+1];
+  bit mio_insel_legal[MioInCount][MioPadCount+1];
+
+  constraint outsel_legal_c {
+    solve outsel_value_kind before periph_to_mio_map;
+    foreach (outsel_value_kind[i]) {
+      outsel_value_kind[i] == OutselPad -> mio_outsel_legal[i][periph_to_mio_map[i]];
+    }
+  }
+
+  constraint insel_legal_c {
+    solve insel_value_kind before mio_to_periph_map;
+    foreach (insel_value_kind[i]) {
+      insel_value_kind[i] == InselPad -> mio_insel_legal[i][mio_to_periph_map[i]];
+    }
+  }
+
+  function void pre_randomize();
+    super.pre_randomize();
+    for (int i = 0; i < MioPadCount; i++) begin
+      for (int j = 0; j < MioOutCount; j++) begin
+        mio_outsel_legal[i][j] = pinmux_pkg::MioOutselLegal[i][j + int'(OutselPad)];
+      end
+    end
+    for (int i = 0; i < MioInCount; i++) begin
+      for (int j = 0; j < MioPadCount; j++) begin
+        mio_insel_legal[i][j] = pinmux_pkg::MioPeriphInselLegal[i][j + int'(InselPad)];
+      end
+    end
+  endfunction
+
   // For DIO pinmux testing.
   //
   // Pads are either analog, input only or bidirectional. For bidirectional, only drive either the
@@ -163,12 +199,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
         }
       }
     }
-    // spi_device only reads sck and csb, the top ties their periph output enables to 0.
-    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceSck] == 0;
-    periph_to_dio_oe[top_earlgrey_pkg::DioSpiDeviceCsb] == 0;
   }
 
   virtual task body();
+    bit enable_spi_host_save;
     // The chip_padctrl_attributes test verifies the input / output connections of the pads to
     // peripherals and fully verifies all pad attributes. In doing so, Xs may end up propagating
     // into the peripheral. We hence, disable SVAs in these blocks while the test is running.
@@ -177,6 +211,10 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     // Remove default pulls on these interfaces.
     cfg.chip_vif.tap_straps_if.disconnect();
     cfg.chip_vif.mios_if.disconnect();
+    // The SPI host agent drives the SPI device pads per default. Disable it for this test
+    // temporarily.
+    enable_spi_host_save = cfg.chip_vif.enable_spi_host;
+    cfg.chip_vif.enable_spi_host = 0;
 
     foreach (DioPadType[i]) begin
       if (DioPadType[i] == prim_pad_wrapper_pkg::InputStd) dio_input_pads.push_back(i);
@@ -197,11 +235,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // the FPGA target. For the ASIC target, these DIOs are connected to the padring in the same
       // way as regular DIOs.
       begin : dio_test
-        bit enable_spi_host_save = cfg.chip_vif.enable_spi_host;
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(0);
-        cfg.chip_vif.enable_spi_host = 0;
         pinmux_dio_test();
-        cfg.chip_vif.enable_spi_host = enable_spi_host_save;
         cfg.chip_vif.dios_if.disconnect();
         cfg.chip_vif.cfg_default_weak_pulls_on_dios(1);
       end : dio_test
@@ -223,9 +258,11 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_i(SignalProbeRelease));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeRelease));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeRelease));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeRelease));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i(SignalProbeRelease));
     cfg.chip_vif.mios_if.disconnect();
+    // Restore the default state at the end.
+    cfg.chip_vif.cfg_default_weak_pulls_on_mios(1);
+    cfg.chip_vif.enable_spi_host = enable_spi_host_save;
 
     // Reset the DUT before reenabling the assertions.
     dut_init();
@@ -316,8 +353,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // Program the MIO outsel registers based on the values randomized.
   task pinmux_mio_outsel_config();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(periph_to_mio_map)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(outsel_value_kind)
+    // Randomize together to increase the chance of valid results.
+    // See the constraints for more details.
+    `DV_CHECK_FATAL(randomize(periph_to_mio_map, outsel_value_kind))
     for (int i = 0; i < MioPadCount; i++) begin
       uvm_reg_data_t value = int'(outsel_value_kind[i]);
       if (outsel_value_kind[i] == OutselPad) begin
@@ -399,6 +437,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   task pinmux_mio_insel_test();
     int iterations;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(iterations, iterations inside {[5:20]};)
+    // Some MIO outsel registers reset to a peripheral output, keep the chip from driving the pads.
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_mio_oe_i(SignalProbeForce, '0));
     for (int i = 1; i <= iterations; i++) begin
       `uvm_info(`gfn, $sformatf("pinmux_insel_test %0d/%0d", i, iterations), UVM_LOW)
       pinmux_mio_pad_attr_config();
@@ -429,8 +469,9 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   // Program the MIO insel registers based on the values randomized.
   task pinmux_mio_insel_config();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(mio_to_periph_map)
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(insel_value_kind)
+    // Randomize together to increase the chance of valid results.
+    // See the constraints for more details.
+    `DV_CHECK_FATAL(randomize(mio_to_periph_map, insel_value_kind))
     for (int i = 0; i < MioInCount; i++) begin
       uvm_reg_data_t value = int'(insel_value_kind[i]);
       if (insel_value_kind[i] == InselPad) begin
@@ -544,10 +585,7 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
 
   function void pinmux_dio_drive_inputs();
     cfg.chip_vif.dios_if.pins_oe = '0;
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_11_0(SignalProbeForce,
-                                                                periph_to_dio[11:0]));
-    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i_15_14(SignalProbeForce,
-                                                                 periph_to_dio[15:14]));
+    void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_i(SignalProbeForce, periph_to_dio));
     void'(cfg.chip_vif.signal_probe_pinmux_periph_to_dio_oe_i(SignalProbeForce, periph_to_dio_oe));
     for (int i = 0; i < DioCount; i++) begin
       cfg.chip_vif.dios_if.pins_oe[DioToDioPadMap[i]] = dio_to_periph_oe[i];

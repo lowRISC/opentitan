@@ -12,16 +12,17 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
-static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 0;
+static const dif_gpio_pin_t kGpioPinSpiConsoleTxReady = 25;  // gpio1, IOR10
 
 OTTF_DEFINE_TEST_CONFIG(
         .console.type = kOttfConsoleSpiDevice,
         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
         .console.test_may_clobber = false, .console.putbuf_buffered = true,
         .silence_console_prints = true, .console_tx_indicator.enable = true,
-        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIoa5,
+        .console_tx_indicator.spi_console_tx_ready_mio = kDtPadIor10,
+        // The GPIO id is global, so skip the 32 gpio0 pins to reach gpio1.
         .console_tx_indicator.spi_console_tx_ready_gpio =
-            kGpioPinSpiConsoleTxReady);
+            kDifGpioNumPins + kGpioPinSpiConsoleTxReady);
 
 static const char kTest4KbDataStr[] =
     "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"

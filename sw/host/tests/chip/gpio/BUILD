@@ -2,9 +2,24 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_binary")
+load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_library", "rust_test")
 
 package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "fpga_pads",
+    srcs = [
+        "src/fpga_pads.rs",
+    ],
+    deps = [
+        "//sw/host/ot_hal",
+    ],
+)
+
+rust_test(
+    name = "fpga_pads_test",
+    crate = ":fpga_pads",
+)
 
 rust_binary(
     name = "gpio_pinmux",
@@ -12,6 +27,7 @@ rust_binary(
         "src/gpio_pinmux.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
         "@crate_index//:anyhow",
@@ -28,6 +44,7 @@ rust_binary(
         "src/gpio_intr.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "//sw/host/ot_hal",
         "@crate_index//:anyhow",
@@ -44,6 +61,7 @@ rust_binary(
         "src/sleep_pin_mio_dio_val.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
@@ -74,6 +92,7 @@ rust_binary(
         "src/sleep_pin_wake.rs",
     ],
     deps = [
+        ":fpga_pads",
         "//sw/host/opentitanlib",
         "@crate_index//:anyhow",
         "@crate_index//:clap",

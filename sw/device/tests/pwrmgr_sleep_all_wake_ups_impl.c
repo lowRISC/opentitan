@@ -65,7 +65,7 @@ dif_rv_plic_t rv_plic;
 /**
  * sysrst_ctrl config for test #1
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
- * . use IOR13 as pwrb_in for DV, and IOC0 otherwise
+ * . use IOR0 as pwrb_in, the only pad it can be muxed to
  */
 static void sysrst_ctrl_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   INIT_DIF_DT(sysrst_ctrl, src, sysrst_ctrl)
@@ -79,8 +79,7 @@ static void sysrst_ctrl_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn,
-      kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
-                                  : kTopEarlgreyPinmuxInselIoc0));
+      kTopEarlgreyPinmuxInselIor0));
 }
 
 static void sysrst_ctrl_wakeup_check(dt_pwrmgr_wakeup_src_t src) {
@@ -174,6 +173,9 @@ static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
   dif_pinmux_index_t wakeup_pin = kDeviceType == kDeviceSimDV
                                       ? kTopEarlgreyPinmuxInselIob7
                                       : kTopEarlgreyPinmuxInselIoc0;
+  dif_pinmux_index_t wakeup_pad = kDeviceType == kDeviceSimDV
+                                      ? kTopEarlgreyMuxedPadsIob7
+                                      : kTopEarlgreyMuxedPadsIoc0;
 #else
 #error Unsupported top, please provide a pin configuration
 #endif
@@ -193,7 +195,7 @@ static void pinmux_wakeup_config(dt_pwrmgr_wakeup_src_t src) {
                      ? kDifPinmuxPadAttrPullResistorEnable
                      : 0};
     CHECK_DIF_OK(dif_pinmux_pad_write_attrs(
-        &pinmux, wakeup_pin, kDifPinmuxPadKindMio, in_attr, &out_attr));
+        &pinmux, wakeup_pad, kDifPinmuxPadKindMio, in_attr, &out_attr));
   }
   CHECK_DIF_OK(dif_pinmux_wakeup_detector_enable(&pinmux, kPinmuxWkupDetector5,
                                                  detector_cfg));

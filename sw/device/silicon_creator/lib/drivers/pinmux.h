@@ -77,6 +77,9 @@ void pinmux_init_usb(void);
 /**
  * Read the value of a GPIO
  *
+ * GPIO pins are numbered across instances: 0-31 are gpio0, 32-63 gpio1. Pin i
+ * owns MIO pad i, so a pad index can be passed directly.
+ *
  * @param gpio The GPIO to read.
  * @return The value read.
  */

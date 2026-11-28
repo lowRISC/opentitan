@@ -74,6 +74,7 @@ cc_library(
         "//sw/device:is_english_breakfast": [],
         "//conditions:default": [
             "//sw/device/lib/testing:entropy_testutils",
+            "//sw/device/lib/testing:uart_testutils",
         ],
     }),
 )

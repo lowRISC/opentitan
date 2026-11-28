@@ -16,6 +16,9 @@
  * teacup`.
  */
 {
+  // TODO: This configuration is not compatible with the EG1 teacup board. The pad
+  // aliases assume a new teacup revision that routes the pads like the CW340, with JTAG on
+  // IOA0/1/4/5/6.
   "includes": [
     "/__builtin__/hyperdebug.json5",
     "/__builtin__/opentitan.json5"
@@ -29,27 +32,19 @@
       "alias_of": "CN10_29"
     },
     {
-      "name": "DFT_STRAP0",
-      "mode": "Alternate",
-      "alias_of": "IOC3"
-    },
-    {
-      "name": "DFT_STRAP1",
-      "mode": "Alternate",
-      "alias_of": "IOC4"
-    },
-    {
       "name": "IOA0",
-      "alias_of": "CN8_6"
+      "alias_of": "CN7_7"
     },
     {
       "name": "IOA1",
-      "alias_of": "CN8_8"
+      "alias_of": "CN7_5"
     },
     {
+      // This net / the IOA2 pad is the SPIDFU rescue trigger. It must read low unless a test uses
+      // this pad for other functions. We pull it down weakly on the HD so OT can overdrive it.
       "name": "IOA2",
-      "mode": "PushPull",
-      "level": false,
+      "mode": "Input",
+      "pull_mode": "PullDown",
       "alias_of": "CN9_29"
     },
     {
@@ -58,15 +53,15 @@
     },
     {
       "name": "IOA4",
-      "alias_of": "CN8_10"
+      "alias_of": "CN7_3"
     },
     {
       "name": "IOA5",
-      "alias_of": "CN8_12"
+      "alias_of": "CN7_1"
     },
     {
       "name": "IOA6",
-      "alias_of": "CN7_20"
+      "alias_of": "CN7_16"
     },
     {
       "name": "IOA7",
@@ -122,11 +117,11 @@
     },
     {
       "name": "IOB11",
-      "alias_of": "CN9_21"
+      "alias_of": "CN9_19"
     },
     {
       "name": "IOB12",
-      "alias_of": "CN9_19"
+      "alias_of": "CN9_21"
     },
     {
       "name": "IOC0",
@@ -182,31 +177,31 @@
     },
     {
       "name": "IOR0",
-      "alias_of": "CN7_7"
+      "alias_of": "CN7_20"
     },
     {
       "name": "IOR1",
-      "alias_of": "CN7_5"
-    },
-    {
-      "name": "IOR2",
-      "alias_of": "CN7_3"
-    },
-    {
-      "name": "IOR3",
-      "alias_of": "CN7_1"
-    },
-    {
-      "name": "IOR4",
-      "alias_of": "CN7_16"
-    },
-    {
-      "name": "IOR5",
       "alias_of": "CN9_14"
     },
     {
-      "name": "IOR6",
+      "name": "IOR2",
       "alias_of": "CN9_16"
+    },
+    {
+      "name": "IOR3",
+      "alias_of": "CN8_10"
+    },
+    {
+      "name": "IOR4",
+      "alias_of": "CN8_12"
+    },
+    {
+      "name": "IOR5",
+      "alias_of": "CN8_6"
+    },
+    {
+      "name": "IOR6",
+      "alias_of": "CN8_8"
     },
     {
       "name": "IOR7",
@@ -466,6 +461,10 @@
       "bits_per_sec": 100000,
       "address": 0x11,
       "alias_of": "I2C4"
+    },
+    {
+      "name": "OT_I2C1",
+      "alias_of": "I2C2"
     }
   ],
   "uarts": [
@@ -473,27 +472,34 @@
       "name": "console",
       "alias_of": "UART2"
     },
+    // The Opentitan chip's UARTs can only be multiplexed to certain pads for some tops.
+    // These aliases map the chip's UARTs (ot_uartN) to host's UARTs.
     {
-      "name": "dut",
+      "name": "ot_uart0",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART2"
+    },
+    {
+      "name": "ot_uart1",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART4"
+    },
+    {
+      "name": "ot_uart2",
+      "baudrate": 115200,
+      "parity": "None",
       "alias_of": "UART3"
+    },
+    {
+      "name": "ot_uart3",
+      "baudrate": 115200,
+      "parity": "None",
+      "alias_of": "UART5"
     }
   ],
   "strappings": [
-    {
-      "name": "PRERESET_DFT_DISABLE",
-      "pins": [
-        {
-          "name": "DFT_STRAP0",
-          "mode": "PushPull",
-          "level": false
-        },
-        {
-          "name": "DFT_STRAP1",
-          "mode": "PushPull",
-          "level": false
-        }
-      ]
-    },
     {
       "name": "SPI_TPM",
       "pins": [
@@ -530,13 +536,13 @@
           "mode": "PushPull"
         }
       ]
-    }
+    },
     {
       "name": "USB_VBUS_SENSE",
       "pins": [
-        // The IOA2 is set to push-pull low by default to prevent entering SPI rescue mode
-        // But IOA2 is also connected to the USB VBUS SENSE buffer which prevents the OT
-        // device from sensing USB.
+        // IOA2 is pulled low by default to prevent entering SPI rescue mode.
+        // IOA2 is also connected to the USB VBUS SENSE buffer. HD must not drive it while OT
+        // senses USB.
         {
           "name": "IOA2",
           "mode": "Input",

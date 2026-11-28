@@ -59,16 +59,16 @@ enum TestPhase {
 static CONFIG: LazyLock<Config> = LazyLock::new(|| {
     Config {
         // key0_in, key1_in, key2_in, pwrb_in
-        output_pins: vec!["IOR10", "IOR11", "IOR12", "IOR5"],
+        output_pins: vec!["IOR1", "IOR3", "IOR5", "IOR0"],
         open_drain: vec![false, false, false, false],
         // key0_out, key1_out, key2_out, pwrb_out, bat_dis_out, z3_wakeup_out, ec_rst, flash_wp
         input_pins: vec![
             "IOR6",
+            "IOR13",
             "IOR7",
-            "IOB0",
-            "IOB1",
-            "IOB2",
-            "IOB3",
+            "IOR10",
+            "IOR12",
+            "IOR4",
             "SYSRST_CTRL_EC_RST_L",
             "SYSRST_CTRL_FLASH_WP_L",
         ],

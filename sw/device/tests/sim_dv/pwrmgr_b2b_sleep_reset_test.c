@@ -28,7 +28,7 @@
 
    For the reset event, the sequence assert power on resets by driving the
    POR_N and/or PORA_N PADs. For the wake up event, the sequence assert power
-   button in by driving IOR13 PAD.
+   button in by driving IOR0 PAD.
 
  */
 OTTF_DEFINE_TEST_CONFIG();
@@ -53,7 +53,7 @@ static dif_pinmux_t pinmux;
 /**
  * sysrst_ctrl config for test #1
  * . set sysrst_ctrl.KEY_INTR_CTL.pwrb_in_H2L to 1
- * . use IOR13 as pwrb_in
+ * . use IOR0 as pwrb_in
  */
 static void prgm_push_button_wakeup(void) {
   dif_sysrst_ctrl_input_change_config_t config = {
@@ -65,7 +65,7 @@ static void prgm_push_button_wakeup(void) {
   CHECK_DIF_OK(dif_pinmux_mio_select_input(
       &pinmux,
       dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kDtSysrstCtrlPeriphIoPwrbIn),
-      kDtPadIor13));
+      kDtPadIor0));
 }
 
 bool test_main(void) {

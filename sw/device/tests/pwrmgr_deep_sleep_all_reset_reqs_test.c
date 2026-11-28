@@ -85,8 +85,7 @@ bool test_main(void) {
 
   switch (reset_case) {
     case 0:
-      config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
-                                                : kTopEarlgreyPinmuxInselIoc0);
+      config_sysrst(kTopEarlgreyPinmuxInselIor1);
       prepare_for_sysrst(kPwrmgrSleepResetsLibModesDeepSleep);
       break;
     case 1:

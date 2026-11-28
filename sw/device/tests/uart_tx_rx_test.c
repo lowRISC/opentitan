@@ -511,19 +511,17 @@ bool test_main(void) {
   CHECK(kUartIdx < kDtUartCount, "UART index out of bounds");
   uart_dt = (dt_uart_t)kUartIdx;
 
-  // If we're testing UART0 we need to move the console to UART1.
+  // If we're testing UART0 we need to move the console to UART2.
   if (kUartIdx == 0 && kDeviceType != kDeviceSimDV) {
-    CHECK_STATUS_OK(
-        uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
+    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 2));
     ottf_console_configure_uart(ottf_console_get(),
-                                dt_uart_primary_reg_block(kDtUart1));
+                                dt_uart_primary_reg_block(kDtUart2));
   }
 
   LOG_INFO("Test UART%d", kUartIdx);
 
   // Attach the UART under test.
-  CHECK_STATUS_OK(
-      uart_testutils_select_pinmux(&pinmux, kUartIdx, kUartPinmuxChannelDut));
+  CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, kUartIdx));
 
   if (kUseExtClk) {
     config_external_clock(&clkmgr);

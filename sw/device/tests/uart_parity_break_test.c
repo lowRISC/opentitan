@@ -90,7 +90,7 @@ static status_t configure_uart(void) {
                              .rx_enable = kDifToggleDisabled,
                          }));
 
-  TRY(uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
+  TRY(uart_testutils_select_pinmux(&pinmux, uart_idx));
 
   TRY(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
   TRY(dif_uart_set_enable(&uart, kDifUartDatapathAll, kDifToggleEnabled));
@@ -255,12 +255,11 @@ bool test_main(void) {
   OTTF_WAIT_FOR(uart_idx != UINT8_MAX && parity != UINT8_MAX,
                 kCommandTimeoutMicros);
 
-  // If we're testing UART0 we need to move the console to UART1.
+  // If we're testing UART0 we need to move the console to UART2.
   if (uart_idx == 0) {
-    CHECK_STATUS_OK(
-        uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
+    CHECK_STATUS_OK(uart_testutils_select_pinmux(&pinmux, 2));
     ottf_console_configure_uart(ottf_console_get(),
-                                dt_uart_primary_reg_block(kDtUart1));
+                                dt_uart_primary_reg_block(kDtUart2));
   }
 
   // Configure the UART under test.

@@ -1,4 +1,6 @@
 {
+  // TODO: Update this configuration in case the CW310 is re-enabled for Earlgrey. The shared pad
+  // aliases are updated for the sparse pinmux, the CW310 specific part of this file is not.
   "includes": ["/__builtin__/hyperdebug_chipwhisperer.json5"],
   "interface": "hyper310",
   "pins": [

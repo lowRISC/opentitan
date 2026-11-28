@@ -14,11 +14,19 @@
  * The SPI device pins for which `spi_device_testutils_configure_pad_attrs()`
  * configures the pad attributes.
  */
-static const dt_pad_t kSpiDeviceDirectPads[4] = {
+static const dt_pad_t kSpiDevicePads[4] = {
+#if defined(OPENTITAN_IS_EARLGREY)
+    // Earlgrey has muxed SPI pads.
+    kDtPadSpiDevD3,  // sio[3]
+    kDtPadSpiDevD2,  // sio[2]
+    kDtPadSpiDevD1,  // sio[1]
+    kDtPadSpiDevD0   // sio[0]
+#else
     kDtPadSpiDeviceSd3,  // sio[3]
     kDtPadSpiDeviceSd2,  // sio[2]
     kDtPadSpiDeviceSd1,  // sio[1]
     kDtPadSpiDeviceSd0   // sio[0]
+#endif
 };
 
 status_t spi_device_testutils_configure_passthrough(
@@ -366,8 +374,8 @@ status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux) {
   dif_pinmux_pad_attr_t out_attr;
   dif_pinmux_pad_attr_t in_attr = {.slew_rate = 1, .drive_strength = 3};
   dif_result_t res;
-  for (uint32_t i = 0; i < ARRAYSIZE(kSpiDeviceDirectPads); ++i) {
-    dt_pad_t pad = kSpiDeviceDirectPads[i];
+  for (uint32_t i = 0; i < ARRAYSIZE(kSpiDevicePads); ++i) {
+    dt_pad_t pad = kSpiDevicePads[i];
     res = dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr);
     if (res == kDifError) {
       // Some target platforms may not support the specified value for slew rate

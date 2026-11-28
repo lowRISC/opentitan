@@ -58,6 +58,8 @@ static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
 static const dt_gpio_t kGpioDt = kDtGpioFirst;
 static_assert(kDtGpioCount >= 1, "this test expects at least one gpio");
+// IOA2 signals the power state. Only gpio0 pin 14 can drive it.
+static const dif_gpio_pin_t kIoa2GpioPin = 14;
 static const dt_otp_ctrl_t kOtpCtrlDt = 0;
 static_assert(kDtOtpCtrlCount == 1, "this test expects exactly one otp_ctrl");
 
@@ -112,17 +114,16 @@ bool test_main(void) {
 
   LOG_INFO("Running CHIP Power Idle Load test");
 
-  static const uint32_t kGpioMask = 0x00000004;
+  static const uint32_t kGpioMask = 1u << kIoa2GpioPin;
 
-  CHECK_DIF_OK(
-      dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
-                               (kTopEarlgreyPinmuxOutselGpio0Gpio0 + 2)));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio14));
 
   // Set output modes of all GPIO pins
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
 
   // Write to set IOA2 low at the start of the test:
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 0));
 
   LOG_INFO("GPIO active");
 
@@ -244,7 +245,7 @@ bool test_main(void) {
 
   LOG_INFO("AON Timer active");
 
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 1));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 1));
   LOG_INFO("all HW is active");
   IBEX_SPIN_FOR(nmi_fired, kTimeTillBark * 2);
 
@@ -253,7 +254,7 @@ bool test_main(void) {
   // finish with "pass". Without this, the CPU will remain idle and the
   // simulator will end the test (due to simulation timeout) with "fail".
 
-  CHECK_DIF_OK(dif_gpio_write(&gpio, 2, 0));
+  CHECK_DIF_OK(dif_gpio_write(&gpio, kIoa2GpioPin, 0));
 
   // Prepare to exit
   LOG_INFO("Prepare to exit");

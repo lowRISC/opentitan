@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #include "sw/device/lib/base/status.h"
@@ -31,9 +32,20 @@ static dif_gpio_t gpios[kDtGpioCount];
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 static dif_rv_plic_t plic;
-static const uint32_t kExpected_intr[] = {17, 18, 19, 20, 21,
-                                          22, 25, 26, 27, 28};
-static uint32_t intr_index = 0;
+// The pins of each GPIO instance in the order the host walks them. Must match
+// the CW340 pads (valid_cw340) of each instance in MIO_PADS of
+// sw/host/tests/chip/gpio/src/fpga_pads.rs.
+static const uint32_t kExpectedIntrGpio0[] = {14, 15, 27, 29};
+static const uint32_t kExpectedIntrGpio1[] = {12, 13, 14, 15, 16, 17,
+                                              22, 25, 26, 27, 28};
+static const struct {
+  const uint32_t *pins;
+  size_t len;
+} kExpectedIntr[kDtGpioCount] = {
+    [kDtGpio0] = {kExpectedIntrGpio0, ARRAYSIZE(kExpectedIntrGpio0)},
+    [kDtGpio1] = {kExpectedIntrGpio1, ARRAYSIZE(kExpectedIntrGpio1)},
+};
+static size_t intr_index[kDtGpioCount];
 
 status_t command_processor(ujson_t *uj) {
   while (true) {
@@ -81,22 +93,23 @@ void ottf_external_isr(uint32_t *exc_info) {
     return;
   }
 
-  // For each test, interrupt triggers in order.
-  // Once all interrupts are triggered, `intr_index` will be set to 0 for the
-  // next test.
+  // For each test, the interrupts of an instance trigger in order.
+  // Once all interrupts of the instance are triggered, its `intr_index` will be
+  // set to 0 for the next test.
   if (dt_device_type(inst_id) == kDtDeviceTypeGpio) {
     // Correlate the interrupt fired from GPIO.
     dt_gpio_t gpio_dt = dt_gpio_from_instance_id(inst_id);
     dif_gpio_t *gpio = &gpios[gpio_dt];
     uint32_t gpio_pin_irq_fired =
         dt_gpio_irq_from_plic_id(gpio_dt, plic_irq_id);
-    CHECK(gpio_pin_irq_fired == kExpected_intr[intr_index],
-          "Unexpected interrupt rcv:%d  exp:%d", gpio_pin_irq_fired,
-          kExpected_intr[intr_index]);
-    intr_index += 1;
-    if (intr_index == ARRAYSIZE(kExpected_intr)) {
-      intr_index = 0;
-      LOG_INFO("index back to 0");
+    uint32_t expected = kExpectedIntr[gpio_dt].pins[intr_index[gpio_dt]];
+    CHECK(gpio_pin_irq_fired == expected,
+          "Unexpected interrupt gpio%d rcv:%d  exp:%d", gpio_dt,
+          gpio_pin_irq_fired, expected);
+    intr_index[gpio_dt] += 1;
+    if (intr_index[gpio_dt] == kExpectedIntr[gpio_dt].len) {
+      intr_index[gpio_dt] = 0;
+      LOG_INFO("gpio%d index back to 0", gpio_dt);
     }
 
     // To test low frequency level interrupt,

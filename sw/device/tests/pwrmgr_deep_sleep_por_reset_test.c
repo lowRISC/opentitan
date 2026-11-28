@@ -96,7 +96,7 @@ static void config_sysrst(const dif_pwrmgr_t *pwrmgr,
   CHECK_DIF_OK(dif_pinmux_mio_select_input(
       &pinmux,
       dt_sysrst_ctrl_periph_io(kSysrstCtrlDt, kDtSysrstCtrlPeriphIoKey0In),
-      kDtPadIor13));
+      kDtPadIor1));
 }
 
 static void low_power_por(const dif_pwrmgr_t *pwrmgr) {

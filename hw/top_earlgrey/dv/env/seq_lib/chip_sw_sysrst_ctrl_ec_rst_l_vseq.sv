@@ -116,11 +116,6 @@ class chip_sw_sysrst_ctrl_ec_rst_l_vseq extends chip_sw_base_vseq;
   virtual task body();
     super.body();
 
-    // TODO(lowRISC/opentitan:#13373): Revisit pad assignments.
-    // pinmux_wkup_vif (at Iob7) is re-used for PinZ3WakeupOut
-    // due to lack of unused pins. Disable the default drive
-    // to this pin.
-    cfg.chip_vif.pinmux_wkup_if.drive_en_pin(0, 0);
     set_combo0_pads_high();
 
     // At this point WP_L and EC_RST_L have not been released yet after reset.

@@ -99,8 +99,8 @@ static void gpio_output_test(const dif_gpio_t *gpio, uint32_t mask) {
     CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
 
     // Check written and read val for correctness.
-    CHECK(gpio_val == read_val, "GPIOs mismatched (written = %x, read = %x)",
-          gpio_val, read_val);
+    CHECK((gpio_val & mask) == (read_val & mask),
+          "GPIOs mismatched (written = %x, read = %x)", gpio_val, read_val);
   }
 
   // Write all 0s to the GPIOs.
@@ -124,8 +124,8 @@ static void gpio_output_test(const dif_gpio_t *gpio, uint32_t mask) {
     CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
 
     // Check written and read val for correctness.
-    CHECK(gpio_val == read_val, "GPIOs mismatched (written = %x, read = %x)",
-          gpio_val, read_val);
+    CHECK((gpio_val & mask) == (read_val & mask),
+          "GPIOs mismatched (written = %x, read = %x)", gpio_val, read_val);
   }
 
   // Write all 1s to the GPIOs.
@@ -166,14 +166,16 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
   expected_irq_edge = true;
   for (expected_gpio_pin_irq = 0; expected_gpio_pin_irq < kDifGpioNumPins;
        ++expected_gpio_pin_irq) {
-    wait_for_interrupt();
+    if (mask & (1u << expected_gpio_pin_irq)) {
+      wait_for_interrupt();
+    }
   }
   uint32_t read_val;
   uint32_t gpio_exp_val;
 
   gpio_exp_val = mask;
   CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
-  CHECK(gpio_exp_val == read_val,
+  CHECK(gpio_exp_val == (read_val & mask),
         "GPIOs mismatched (expected = %x, actual = %x)", gpio_exp_val,
         read_val);
 
@@ -181,12 +183,14 @@ static void gpio_input_test(const dif_gpio_t *gpio, uint32_t mask) {
   expected_irq_edge = false;
   for (expected_gpio_pin_irq = 0; expected_gpio_pin_irq < kDifGpioNumPins;
        ++expected_gpio_pin_irq) {
-    wait_for_interrupt();
+    if (mask & (1u << expected_gpio_pin_irq)) {
+      wait_for_interrupt();
+    }
   }
 
-  gpio_exp_val = ~mask;
+  gpio_exp_val = 0;
   CHECK_DIF_OK(dif_gpio_read_all(gpio, &read_val));
-  CHECK(gpio_exp_val == read_val,
+  CHECK(gpio_exp_val == (read_val & mask),
         "GPIOs mismatched (expected = %x, actual = %x)", gpio_exp_val,
         read_val);
 }
@@ -239,14 +243,26 @@ void ottf_external_isr(uint32_t *exc_info) {
 
 OTTF_DEFINE_TEST_CONFIG();
 
-void configure_pinmux(void) {
+void configure_pinmux(uint32_t gpio_mask) {
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     // Assume that the pins in dt_gpio_pin_t are numbered 0, 1, and so on.
     dt_periph_io_t periph_io =
         dt_gpio_periph_io(gpio_dt, kDtGpioPeriphIoGpio0 + i);
-    dt_pad_t pad = kPinmuxTestutilsGpioPads[i];
+    if (!(gpio_mask & (1u << i))) {
+      // Detach the untested pins from the pads that pinmux_testutils_init()
+      // connects, such as the SW straps. A floating pad reads as X in
+      // simulation.
+      CHECK_STATUS_OK(pinmux_testutils_connect(
+          &pinmux, periph_io, kDtPeriphIoDirIn, kDtPadConstantZero));
+      continue;
+    }
+    dt_pad_t pad = kPinmuxTestutilsGpioPads[gpio_dt][i];
     CHECK_STATUS_OK(
         pinmux_testutils_connect(&pinmux, periph_io, kDtPeriphIoDirInout, pad));
+    // Clear the attributes some pads reset with, such as the IOR8/IOR9
+    // virtual open drain.
+    pinmux_pad_attributes_t attr = {.pad = pad, .flags = 0};
+    pinmux_testutils_configure_pads(&pinmux, &attr, 1);
   }
 }
 
@@ -259,7 +275,8 @@ bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   pinmux_testutils_init(&pinmux);
-  configure_pinmux();
+  uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask(gpio_dt);
+  configure_pinmux(gpio_mask);
 
   // Initialize the GPIO.
   CHECK_DIF_OK(dif_gpio_init_from_dt(gpio_dt, &gpio));
@@ -277,7 +294,6 @@ bool test_main(void) {
   irq_external_ctrl(true);
 
   // Run the tests.
-  uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
   gpio_output_test(&gpio, gpio_mask);
   gpio_input_test(&gpio, gpio_mask);
 

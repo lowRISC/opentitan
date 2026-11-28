@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashMap;
-use std::iter;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -15,7 +14,7 @@ use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::uart::Uart;
 use opentitanlib::test_utils::gpio::{
-    GPIO_INSTANCES, GPIO_PINS, GpioGet, GpioSet, input_pin, output_pin, outsel, peripheral_in,
+    GPIO_INSTANCES, GpioGet, GpioSet, input_pin, output_pin, outsel, peripheral_in,
 };
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
@@ -174,18 +173,23 @@ fn read_all_verify(
 }
 
 fn get_config(transport: &TransportWrapper, instance: u8) -> Config {
-    let gpio_pins = transport.gpios();
-    let pinmux_insels = gpio_pins
-        .iter()
-        .map(|pin| PinmuxInsel::from_str(pin).unwrap());
-    let pinmux_mio_outs = gpio_pins
-        .iter()
-        .map(|pin| PinmuxMioOut::from_str(pin).unwrap());
-    let gpio_inputs = (0..GPIO_PINS).map(|i| peripheral_in(instance, i));
-    let gpio_outputs = (0..GPIO_PINS).map(|i| outsel(instance, i));
-
-    let input: HashMap<_, _> = iter::zip(gpio_inputs, pinmux_insels).collect();
-    let output: HashMap<_, _> = iter::zip(pinmux_mio_outs, gpio_outputs).collect();
+    // For EG every GPIO pin can only reach one pad, see fpga_pads::GPIO_PIN_PADS.
+    // Use the pads of the transport that the instance reaches.
+    let mut input = HashMap::new();
+    let mut output = HashMap::new();
+    for name in transport.gpios().iter() {
+        let pad = PinmuxMioOut::from_str(name).unwrap();
+        match fpga_pads::gpio_pin_of_pad(pad) {
+            Some((i, pin)) if i == instance => {
+                input.insert(
+                    peripheral_in(instance, pin),
+                    PinmuxInsel::from_str(name).unwrap(),
+                );
+                output.insert(pad, outsel(instance, pin));
+            }
+            _ => {}
+        }
+    }
 
     Config {
         instance,

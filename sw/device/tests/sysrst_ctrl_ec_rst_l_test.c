@@ -47,8 +47,8 @@ static const dif_pinmux_index_t kPeripheralInputs[] = {
 };
 
 static const dif_pinmux_index_t kInputPads[] = {
-    kTopEarlgreyPinmuxInselIor6,
-    kTopEarlgreyPinmuxInselIor7,
+    kTopEarlgreyPinmuxInselIor1,
+    kTopEarlgreyPinmuxInselIor3,
 };
 
 // Threshold/Duration values are not specific to a real-world debounce
@@ -105,7 +105,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   pinmux_setup();
-  sysrst_ctrl_testutils_setup_dio(&pinmux);
+  sysrst_ctrl_testutils_setup_io(&pinmux);
   rstmgr_reset_info = rstmgr_testutils_reason_get();
 
   // On a POR, start the test: prepare the sysrst_ctrl with a combo to reset

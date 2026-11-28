@@ -52,12 +52,12 @@ bool test_main(void) {
                  kDifPinmuxPadAttrPullResistorUp};
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd2,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD2,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
 
     CHECK_DIF_OK(
-        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyDirectPadsSpiHost0Sd3,
-                                   kDifPinmuxPadKindDio, in_attr, &out_attr));
+        dif_pinmux_pad_write_attrs(&pinmux, kTopEarlgreyMuxedPadsSpiHostD3,
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
   }
 
   CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,

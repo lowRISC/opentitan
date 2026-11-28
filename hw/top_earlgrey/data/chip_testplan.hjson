@@ -590,7 +590,7 @@
         - Simultaneous IO toggling as defined below
           - ideally for digital activity, 3xUART / I2C modules should be activated
             - for first pass simplicity can activate IO portion only for now through GPIO
-          - for dedicated pins, focus on SPI device quad activity
+          - for the SPI pads, focus on SPI device quad activity
           - USB activity should be activated
             - for first pass simplicity activate IO portion only for now via pin forcing in usbdev.
         - Ongoing cpu activity (icache / SRAM scrambling both activated)

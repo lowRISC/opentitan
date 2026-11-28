@@ -471,16 +471,19 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
 
   // Setup TX GPIO if requested.
   if (tx_ready_enable) {
-    console->data.spi.tx_ready_gpio = tx_ready_gpio;
+    dt_gpio_t gpio_dt =
+        (dt_gpio_t)(kDtGpioFirst + tx_ready_gpio / kDifGpioNumPins);
+    CHECK(gpio_dt < kDtGpioCount, "Invalid TX ready GPIO %u", tx_ready_gpio);
+    uint32_t pin = tx_ready_gpio % kDifGpioNumPins;
+    console->data.spi.tx_ready_gpio = pin;
 
-    CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpio0, &ottf_console_gpio));
+    CHECK_DIF_OK(dif_gpio_init_from_dt(gpio_dt, &ottf_console_gpio));
     CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxFirst, &ottf_console_pinmux));
     CHECK_DIF_OK(dif_pinmux_mio_select_output(
         &ottf_console_pinmux, tx_ready_mio,
-        dt_gpio_periph_io(kDtGpio0, kDtGpioPeriphIoGpio0 + tx_ready_gpio)));
-    CHECK_DIF_OK(dif_gpio_write(&ottf_console_gpio, tx_ready_gpio, false));
-    CHECK_DIF_OK(
-        dif_gpio_output_set_enabled(&ottf_console_gpio, tx_ready_gpio, true));
+        dt_gpio_periph_io(gpio_dt, kDtGpioPeriphIoGpio0 + pin)));
+    CHECK_DIF_OK(dif_gpio_write(&ottf_console_gpio, pin, false));
+    CHECK_DIF_OK(dif_gpio_output_set_enabled(&ottf_console_gpio, pin, true));
     spi_device_clear_flash_buffer(spi_device);
   } else {
     console->data.spi.tx_ready_gpio = kOttfSpiNoTxGpio;

@@ -51,18 +51,14 @@ set_clock_sense -positive \
     ] \
   ]
 
-## Muxed I/Os
-set ioa_muxed_ports [get_ports IOA*]
-set iob_muxed_ports [get_ports IOB*]
-set ioc_muxed_ports [get_ports IOC*]
-set ior_muxed_ports [get_ports -filter {NAME != IOR8 && NAME != IOR9} IOR*]
-set all_muxed_ports "${ioa_muxed_ports} ${iob_muxed_ports} ${ioc_muxed_ports} ${ior_muxed_ports}"
+## Pads the pinmux allows for the SPI device TPM CSB
+set tpm_csb_ports [get_ports {IOA2 IOA4 IOA7}]
 
 ## JTAG clocks and I/O delays
 # Create clocks for the various TAPs.
-create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOR3]
-create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
-create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_clock -add -name jtag_tck -period 100.00 -waveform {0 50} [get_ports IOA5]
+create_generated_clock -name lc_jtag_tck -source [get_ports IOA5] -divide_by 1 [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
+create_generated_clock -name rv_jtag_tck -source [get_ports IOA5] -divide_by 1 [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.gen_bufg.bufg_i/O]
 
 set lc_jtag_tck_inv_pin  \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
@@ -77,14 +73,14 @@ set_clock_sense -negative ${lc_jtag_tck_inv_pin}
 set_clock_sense -negative ${rv_jtag_tck_inv_pin}
 
 # Assign input and output delays.
-set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports IOR1]
-set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports IOR1]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOR0 IOR2}]
-set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOR0 IOR2}]
+set_output_delay -add_delay -clock_fall -clock jtag_tck -max 10.0 [get_ports IOA1]
+set_output_delay -add_delay -clock_fall -clock jtag_tck -min -5.0 [get_ports IOA1]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -min  0.0 [get_ports {IOA0 IOA4}]
+set_input_delay  -add_delay -clock_fall -clock jtag_tck -max 12.5 [get_ports {IOA0 IOA4}]
 # The TAPs have no combinational path from TMS/TDI to TDO. Any port-to-port path
 # between them only exists through the pinmux and is not a JTAG timing path.
 # The delays above still constrain the paths to and from the TAP flops.
-set_false_path -from [get_ports {IOR0 IOR2}] -to [get_ports IOR1]
+set_false_path -from [get_ports {IOA0 IOA4}] -to [get_ports IOA1]
 
 ## SPI clocks
 set spi_dev_period 100.0
@@ -182,9 +178,9 @@ set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
 
 # TPM CSB
 set_input_delay -clock clk_spi_tpm -clock_fall -min ${spi_dev_in_delay_min} \
-    [get_ports ${all_muxed_ports}] -add_delay
+    ${tpm_csb_ports} -add_delay
 set_input_delay -clock clk_spi_tpm -clock_fall -max ${spi_dev_in_delay_max} \
-    [get_ports ${all_muxed_ports}] -add_delay
+    ${tpm_csb_ports} -add_delay
 
 # Use half-cycle sampling to comply with TPM spec.
 set_output_delay -clock clk_spi_tpm -min ${spi_dev_out_hold}  ${spi_dev_data} -add_delay
@@ -302,7 +298,7 @@ set_max_delay -datapath_only -from [get_clocks clk_spid_csb] -to [get_clocks clk
 set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
     -to [get_clocks clk_spi_out] 1
 set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
-    -through [get_ports ${all_muxed_ports}] \
+    -through ${tpm_csb_ports} \
     -to [get_clocks clk_spi_tpm_out] 1
 
 

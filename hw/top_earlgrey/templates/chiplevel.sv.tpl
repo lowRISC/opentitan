@@ -1055,19 +1055,19 @@ module chip_${top["name"]}_${target["name"]} #(
 
   // Capture trigger.
   // We use the clkmgr_idle signal of the IP of interest to form a precise capture trigger.
-  // GPIO[11:10] is used for selecting the IP of interest. The encoding is as follows (see
-  // hint_names_e enum in clkmgr_pkg.sv for details).
+  // The outputs of the IOB2 and IOB1 pads (gpio0 pins 23 and 22) select the IP of interest. The
+  // encoding is as follows (see hint_names_e enum in clkmgr_pkg.sv for details).
   //
-  // IP              - GPIO[11:10] - Index for clkmgr_idle
+  // IP              - IOB2, IOB1  - Index for clkmgr_idle
   // -------------------------------------------------------------
   //  AES            -   00       -  0
   //  HMAC           -   01       -  1 - not implemented on CW305
   //  KMAC           -   10       -  2 - not implemented on CW305
   //  OTBN           -   11       -  3 - not implemented on CW305
   //
-  // GPIO9 is used for gating the selected capture trigger in software. Alternatively, GPIO8
-  // can be used to implement a less precise but fully software-controlled capture trigger
-  // similar to what can be done on ASIC.
+  // IOB0 (gpio0 pin 21) is used for gating the selected capture trigger in software.
+  // Alternatively, IOA8 (gpio0 pin 20) can be used to implement a less precise but fully
+  // software-controlled capture trigger similar to what can be done on ASIC.
   //
   // Note that on the CW305, GPIO[9,8] are connected to LED[5(Green),7(Red)].
 
@@ -1078,7 +1078,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpio0Gpio11], mio_out[MioOutGpio0Gpio10]})
+    unique case ({mio_out[MioPadIob2], mio_out[MioPadIob1]})
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1093,10 +1093,10 @@ module chip_${top["name"]}_${target["name"]} #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioPadIob0];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioPadIob0];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioPadIoa8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioPadIoa8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

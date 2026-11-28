@@ -16,8 +16,8 @@ use opentitanlib::execute_test;
 use opentitanlib::io::uart::{Parity, Uart};
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::mem::MemWriteReq;
 use opentitanlib::uart::console::UartConsole;
+use test_uarts::select_uart;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -95,9 +95,9 @@ fn uart_tx_rx(
     } = test_data;
 
     UartConsole::wait_for(console, r"waiting for commands", opts.timeout)?;
-    MemWriteReq::execute(console, *uart_id_addr as u32, &[*uart_id])?;
+    let (console, uart) = select_uart(transport, console, *uart_id_addr as u32, *uart_id)?;
+    let console = &*console;
 
-    let uart = transport.uart("dut")?;
     uart.set_parity(Parity::None)
         .context("failed to set parity")?;
 

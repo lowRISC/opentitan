@@ -564,6 +564,7 @@ cc_library(
     deps = [
         ":pinmux_testutils",
         "//hw/top/dt",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
@@ -614,6 +615,7 @@ cc_library(
     deps = [
         "//hw/top:uart_c_regs",
         "//hw/top/dt",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:ibex",

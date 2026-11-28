@@ -63,6 +63,8 @@ static dif_edn_t edn_0;
 static dif_edn_t edn_1;
 static dif_entropy_src_t entropy_src;
 static dif_gpio_t gpio;
+// The max-power indicator pad IOB8 can only be driven by gpio0 pin 29.
+static const dif_gpio_pin_t kMaxPowerGpioPin = 29;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c_0;
 static dif_i2c_t i2c_1;
@@ -379,17 +381,17 @@ static void configure_pinmux(void) {
 
   // Configure GPIO max-power period indicator pin on IOB8.
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob8,
-                                        kTopEarlgreyPinmuxOutselGpio0Gpio0));
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio29));
 
   // UART1:
-  //    RX on IOA4
-  //    TX on IOA5
+  //    RX on IOR5
+  //    TX on IOR6
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIoa4));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa4,
+                                       kTopEarlgreyPinmuxInselIor5));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor5,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa5,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor6,
                                         kTopEarlgreyPinmuxOutselUart1Tx));
 
   // Apply this configuration only for the FPGA.
@@ -409,14 +411,14 @@ static void configure_pinmux(void) {
   }
 
   // UART3:
-  //    RX on IOA0
-  //    TX on IOA1
+  //    RX on IOR3
+  //    TX on IOR4
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInUart3Rx,
-                                       kTopEarlgreyPinmuxInselIoa0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa0,
+                                       kTopEarlgreyPinmuxInselIor3));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor3,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa1,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor4,
                                         kTopEarlgreyPinmuxOutselUart3Tx));
 
   // I2C0:
@@ -434,36 +436,39 @@ static void configure_pinmux(void) {
                                         kTopEarlgreyPinmuxOutselI2c0Sda));
 
   // I2C1:
-  //    SCL on IOB9
-  //    SDA on IOB10
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
-                                       kTopEarlgreyPinmuxInselIob9));
-  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
-                                       kTopEarlgreyPinmuxInselIob10));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
-                                        kTopEarlgreyPinmuxOutselI2c1Scl));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
-                                        kTopEarlgreyPinmuxOutselI2c1Sda));
-
-  // I2C2:
   //    SCL on IOB11
   //    SDA on IOB12
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Scl,
                                        kTopEarlgreyPinmuxInselIob11));
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+                                       kTopEarlgreyPinmuxPeripheralInI2c1Sda,
                                        kTopEarlgreyPinmuxInselIob12));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob11,
-                                        kTopEarlgreyPinmuxOutselI2c2Scl));
+                                        kTopEarlgreyPinmuxOutselI2c1Scl));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob12,
+                                        kTopEarlgreyPinmuxOutselI2c1Sda));
+
+  // I2C2:
+  //    SCL on IOB9
+  //    SDA on IOB10
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Scl,
+                                       kTopEarlgreyPinmuxInselIob9));
+  CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
+                                       kTopEarlgreyPinmuxPeripheralInI2c2Sda,
+                                       kTopEarlgreyPinmuxInselIob10));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob9,
+                                        kTopEarlgreyPinmuxOutselI2c2Scl));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob10,
                                         kTopEarlgreyPinmuxOutselI2c2Sda));
 
   // Apply this configuration only for the FPGA.
   // For the simulation, apply the config in configure_pinmux_sim().
   if (kDeviceType == kDeviceFpgaCw305 || kDeviceType == kDeviceFpgaCw310) {
+    // TODO: The sparse pinmux only allows spi_host1 sd[0:3] on IOB1, IOB2, IOB4
+    // and IOB6, so the SD selections below are dropped, and IOB4 is the UART2
+    // RX pad above. No CW305/CW310 exec env runs this test on Earlgrey.
     // SPI Host 1:
     //    CSB on IOB0
     //    SCK on IOB3
@@ -515,38 +520,38 @@ static void configure_pinmux_sim(void) {
   const pinmux_pad_attributes_t pinmux_pad_attributes[] = {
       // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
       {
-          .pad = kDtPadSpiHost0Sd0,
+          .pad = kDtPadSpiHostD0,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd1,
+          .pad = kDtPadSpiHostD1,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd2,
+          .pad = kDtPadSpiHostD2,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadSpiHost0Sd3,
+          .pad = kDtPadSpiHostD3,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       // Enable pull-ups for spi_host_1 data pins to avoid floating inputs.
       {
-          .pad = kDtPadIob3,  // SD0
+          .pad = kDtPadIob1,  // SD0
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadIob4,  // SD1
+          .pad = kDtPadIob2,  // SD1
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kDtPadIob5,  // SD2
+          .pad = kDtPadIob4,  // SD2
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
@@ -562,33 +567,33 @@ static void configure_pinmux_sim(void) {
                                   ARRAYSIZE(pinmux_pad_attributes));
 
   // SPI Host 1 (from chip_if.sv):
-  //    CSB on IOB1
-  //    SCK on IOB0
-  //    SD0 on IOB3
-  //    SD1 on IOB4
-  //    SD2 on IOB5
+  //    CSB on IOB0
+  //    SCK on IOB3
+  //    SD0 on IOB1
+  //    SD1 on IOB2
+  //    SD2 on IOB4
   //    SD3 on IOB6
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
+                                        kTopEarlgreyPinmuxOutselSpiHost1Sck));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd1));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob5,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob4,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd2));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob6,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sd3));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-      kTopEarlgreyPinmuxInselIob3));
+      kTopEarlgreyPinmuxInselIob1));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-      kTopEarlgreyPinmuxInselIob4));
+      kTopEarlgreyPinmuxInselIob2));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-      kTopEarlgreyPinmuxInselIob5));
+      kTopEarlgreyPinmuxInselIob4));
   CHECK_DIF_OK(dif_pinmux_input_select(
       &pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
       kTopEarlgreyPinmuxInselIob6));
@@ -597,14 +602,14 @@ static void configure_pinmux_sim(void) {
   // On FPGA, UART2 uses IOB4/IOB5 as RX/TX.
   // In chip_if.sv, IOB4/IOB5 are connected to the spi_device_agent1.
   // To prevent contamination in DVSIM, switch UART2 RX/TX to other MIOs.
-  //    RX on IOR12
-  //    TX on IOR11
+  //    RX on IOC10
+  //    TX on IOC11
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
                                        kTopEarlgreyPinmuxPeripheralInUart2Rx,
-                                       kTopEarlgreyPinmuxInselIor12));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor12,
+                                       kTopEarlgreyPinmuxInselIoc10));
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc10,
                                         kTopEarlgreyPinmuxOutselConstantHighZ));
-  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIor13,
+  CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc11,
                                         kTopEarlgreyPinmuxOutselUart2Tx));
 
   // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
@@ -1152,8 +1157,11 @@ static void max_power(void) {
                                       ADC_CTRL_ADC_EN_CTL_ADC_ENABLE_BIT, true);
 
   // Prepare GPIO register values (for max power indicator).
-  const uint32_t gpio_on_reg_val = (1u << 16) | 1u;
-  const uint32_t gpio_off_reg_val = 1u << 16;
+  // MASKED_OUT_UPPER holds the mask in its upper and the data of pins 16-31 in
+  // its lower half.
+  const uint32_t gpio_on_reg_val =
+      (1u << kMaxPowerGpioPin) | (1u << (kMaxPowerGpioPin - 16));
+  const uint32_t gpio_off_reg_val = 1u << kMaxPowerGpioPin;
 
   check_crypto_blocks_idle();
 
@@ -1212,7 +1220,7 @@ static void max_power(void) {
   mmio_region_write32(aes.base_addr, AES_TRIGGER_REG_OFFSET, aes_trigger_reg);
 
   // Toggle GPIO pin to indicate we are in max power consumption epoch.
-  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_UPPER_REG_OFFSET,
                       gpio_on_reg_val);
 
   mmio_region_write32(hmac.base_addr, HMAC_CMD_REG_OFFSET,
@@ -1226,7 +1234,7 @@ static void max_power(void) {
     ;
 
   // Toggle GPIO pin to indicate we are out of max power consumption epoch.
-  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+  mmio_region_write32(gpio.base_addr, GPIO_MASKED_OUT_UPPER_REG_OFFSET,
                       gpio_off_reg_val);
 
   LOG_INFO("Exited max power epoch.");
@@ -1368,9 +1376,9 @@ bool test_main(void) {
   if (kDeviceType == kDeviceSimDV || kDeviceType == kDeviceSimVerilator) {
     configure_pinmux_sim();
   }
-  // Clear GPIO pin 0 (max power indicator pin).
+  // Enable the max power indicator pin.
   CHECK_DIF_OK(
-      dif_gpio_output_set_enabled(&gpio, /*pin=*/0, kDifToggleEnabled));
+      dif_gpio_output_set_enabled(&gpio, kMaxPowerGpioPin, kDifToggleEnabled));
   configure_adc_ctrl_to_continuously_sample();
   configure_entropy_complex();
   configure_otbn();

@@ -19,8 +19,8 @@ module pinmux_tb
   parameter int TrstNPadIdx = 6,
   parameter int TdiPadIdx = 7,
   parameter int TdoPadIdx = 8,
-  parameter int DioUsbdevDp = 9,
-  parameter int DioUsbdevDn = 10,
+  parameter int DioUsbdevDp = 0,
+  parameter int DioUsbdevDn = 1,
   parameter int MioInUsbdevSense = 11,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit SecVolatileRawUnlockEn = 1

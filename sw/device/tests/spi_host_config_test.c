@@ -44,6 +44,7 @@ uint32_t backdoor_data = UINT32_MAX;
 static status_t spi_config_test(dif_spi_host_t *spi);
 
 static status_t configure_pinmux(const dif_pinmux_t *pinmux);
+static status_t release_pinmux(const dif_pinmux_t *pinmux);
 
 bool test_main(void) {
   dif_spi_host_t spi_host;
@@ -59,6 +60,7 @@ bool test_main(void) {
   for (size_t i = 0; i < 4; ++i) {
     CHECK_STATUS_OK(spi_config_test(&spi_host));
   }
+  CHECK_STATUS_OK(release_pinmux(&pinmux));
   return true;
 }
 
@@ -91,22 +93,37 @@ static status_t spi_config_test(dif_spi_host_t *spi) {
 }
 
 static status_t configure_pinmux(const dif_pinmux_t *pinmux) {
+  // spi_host1 can only reach the IOB pads: CSB on IOB0, SCLK on IOB3, SD0 on
+  // IOB1 and SD1 on IOB2.
   // CSB.
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor10,
+  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob0,
                                kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   // SCLK.
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor11,
+  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob3,
                                kTopEarlgreyPinmuxOutselSpiHost1Sck));
   // SD0.
   TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-                              kTopEarlgreyPinmuxInselIor12));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor12,
+                              kTopEarlgreyPinmuxInselIob1));
+  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob1,
                                kTopEarlgreyPinmuxOutselSpiHost1Sd0));
 
   // SD1.
   TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-                              kTopEarlgreyPinmuxInselIor13));
-  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIor13,
+                              kTopEarlgreyPinmuxInselIob2));
+  TRY(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob2,
                                kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  return OK_STATUS();
+}
+
+// HyperDebug drives IOB0, IOB1 and IOB3 again at the next reinit, before the
+// chip is reset, so do not leave spi_host1 driving them.
+static status_t release_pinmux(const dif_pinmux_t *pinmux) {
+  const dif_pinmux_index_t kPads[] = {
+      kTopEarlgreyPinmuxMioOutIob0, kTopEarlgreyPinmuxMioOutIob1,
+      kTopEarlgreyPinmuxMioOutIob2, kTopEarlgreyPinmuxMioOutIob3};
+  for (size_t i = 0; i < ARRAYSIZE(kPads); ++i) {
+    TRY(dif_pinmux_output_select(pinmux, kPads[i],
+                                 kTopEarlgreyPinmuxOutselConstantHighZ));
+  }
   return OK_STATUS();
 }

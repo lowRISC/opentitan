@@ -70,8 +70,7 @@ bool test_main(void) {
     case 0:
       CHECK(rst_info == kDifRstmgrResetInfoPor, "Wrong reset reason 0x%x",
             rst_info);
-      config_sysrst(kDeviceType == kDeviceSimDV ? kTopEarlgreyPinmuxInselIor13
-                                                : kTopEarlgreyPinmuxInselIoc0);
+      config_sysrst(kTopEarlgreyPinmuxInselIor1);
       prepare_for_sysrst(kPwrmgrSleepResetsLibModesActive);
       break;
     case 1:

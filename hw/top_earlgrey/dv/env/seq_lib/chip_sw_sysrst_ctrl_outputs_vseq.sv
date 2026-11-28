@@ -49,20 +49,20 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual function void read_loopback_pads();
-    loopback_pad_read_values[0] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(3);
-    loopback_pad_read_values[1] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(6);
-    loopback_pad_read_values[2] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(7);
-    loopback_pad_read_values[3] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(4);
+    loopback_pad_read_values[0] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey0Out);
+    loopback_pad_read_values[1] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey1Out);
+    loopback_pad_read_values[2] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey2Out);
+    loopback_pad_read_values[3] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadPwrbOut);
   endfunction
 
   virtual task read_output_pads();
     #(3 * AON_CYCLE_PERIOD);
-    output_pad_read_values[0] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(3);
-    output_pad_read_values[1] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(6);
-    output_pad_read_values[2] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(7);
-    output_pad_read_values[3] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(4);
-    output_pad_read_values[4] = cfg.chip_vif.sysrst_ctrl_if.sample_pin(5);
-    output_pad_read_values[5] = cfg.chip_vif.pinmux_wkup_if.sample_pin(0);
+    output_pad_read_values[0] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey0Out);
+    output_pad_read_values[1] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey1Out);
+    output_pad_read_values[2] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadKey2Out);
+    output_pad_read_values[3] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadPwrbOut);
+    output_pad_read_values[4] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadBatDisable);
+    output_pad_read_values[5] = cfg.chip_vif.sysrst_ctrl_out_if.sample_pin(SysrstCtrlPadZ3Wakeup);
     output_pad_read_values[6] = cfg.chip_vif.ec_rst_l_if.sample_pin(0);
     output_pad_read_values[7] = cfg.chip_vif.flash_wp_l_if.sample_pin(0);
   endtask
@@ -92,12 +92,6 @@ class chip_sw_sysrst_ctrl_outputs_vseq extends chip_sw_base_vseq;
 
   virtual task body();
     super.body();
-
-    // TODO(lowRISC/opentitan:#13373): Revisit pad assignments.
-    // pinmux_wkup_if (at Iob7) is re-used for PinZ3WakeupOut
-    // due to lack of unused pins. Disable the default drive
-    // to this pin.
-    cfg.chip_vif.pinmux_wkup_if.drive_en_pin(0, 0);
 
     write_test_phase(PHASE_INITIAL);
     sync_with_sw();

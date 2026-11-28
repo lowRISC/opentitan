@@ -123,14 +123,19 @@ fn main() -> Result<()> {
         backdoor_cpha: test_utils::object::symbol_addr(&object, "backdoor_cpha")?,
         backdoor_cpol: test_utils::object::symbol_addr(&object, "backdoor_cpol")?,
         backdoor_data: test_utils::object::symbol_addr(&object, "backdoor_data")?,
-        gpio_pins: &transport
-            .gpio_pins(&["IOR10", "IOR11", "IOR12", "IOR13"].map(str::to_owned))?,
+        gpio_pins: &transport.gpio_pins(&["IOB0", "IOB3", "IOB1", "IOB2"].map(str::to_owned))?,
         cpol: 0,
         cpha: 0,
     };
     for pin in ctx.gpio_pins {
-        pin.set_mode(PinMode::OpenDrain)?;
-        pin.set_pull_mode(PullMode::PullUp)?;
+        // Release the pins to open-drain high in the same call that sets the mode. Otherwise the
+        // HyperDebug pulls them low until the bit-banging starts.
+        pin.set(
+            Some(PinMode::OpenDrain),
+            Some(true),
+            Some(PullMode::PullUp),
+            None,
+        )?;
     }
     ctx.cpol = 0;
     ctx.cpha = 0;
